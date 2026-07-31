@@ -9,6 +9,13 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 |---|---|---|
 | Corpus EOS complet — 34 vagues, entrées #001-174, grammaire consolidée, référentiel de risques | [`corpus/CORPUS_EOS_COMPLET.md`](corpus/CORPUS_EOS_COMPLET.md) | ✅ Quasi complet (manquent uniquement le titre et les premières lignes de l'entrée #154, lacune marquée dans le fichier) |
 
+## Référence canonique
+
+| Document | Emplacement | Statut |
+|---|---|---|
+| `eosKeys.ts` — 1155 touches OSC officielles (projet xtouch2Eos), nom OSC → commande interne | [`reference/eosKeys.ts`](reference/eosKeys.ts) | ✅ Reçu, intégré tel quel |
+| Comparaison eosKeys.ts ↔ table officielle « Eos OSC Keys » du manuel v3.2.0 | [`reference/eosKeys_vs_manual_comparison.md`](reference/eosKeys_vs_manual_comparison.md) | ✅ 1152/1155 entrées identiques ; écarts documentés (résout corpus #148) |
+
 ## Manuels convertis en Markdown
 
 | # | Document | Dossier | Statut |
