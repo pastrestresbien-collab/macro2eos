@@ -18,6 +18,8 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 | 3 | Eos Family L1 Essentials Workbook (v3.3B) | [`manuals/l1-essentials-workbook/`](manuals/l1-essentials-workbook/) | ⏳ En attente du PDF |
 | 4 | Eos Family L3 Advanced/Intermediate Workbook (v3.3B) | [`manuals/l3-advanced-workbook/`](manuals/l3-advanced-workbook/) | ⏳ En attente du PDF |
 | 5 | Eos Family L4 Proficient Workbook (v3.3B) | [`manuals/l4-proficient-workbook/`](manuals/l4-proficient-workbook/) | ⏳ En attente du PDF |
+| 6 | Eos Family Hotkeys v3.0.0 (Rev A, 2020-08) | [`manuals/hotkeys/`](manuals/hotkeys/) | ✅ Converti intégralement (PDF source inclus) |
+| 7 | Eos Integration via OSC (Eos 2.6.0, 2017) | [`manuals/osc-integration/`](manuals/osc-integration/) | ✅ Converti intégralement (PDF source inclus) |
 
 ## Organisation
 
