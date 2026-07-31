@@ -54,6 +54,23 @@ dans le Markdown converti.
 Les PDF sources sont committés dans `manuals/<document>/source/` — toute re-vérification
 future peut être refaite à partir d'eux.
 
+## Documents de référence (`reference/`)
+
+Ajoutés après la première passe de vérification, contrôlés séparément :
+
+| Document | Vérification | Résultat |
+|---|---|---|
+| `eosKeys.ts` (1155 touches, fourni tel quel) | Comparaison croisée automatique contre la table officielle du manuel v3.2.0 | 1152/1155 entrées identiques ; écarts documentés dans `eosKeys_vs_manual_comparison.md` |
+| `JOURNAL_observations_nomad.md` (1017 lignes, fourni tel quel) | Fichier source archivé sans transformation | N/A (verbatim) |
+| `Supported_OSC_Commands.md` (converti depuis PDF, ETCLabs 2017) | Échantillonnage contre le texte extrait du PDF (71 lignes testées) | 100 % de couverture réelle (les 9 écarts apparents étaient des faux positifs : casse de début de phrase, ponctuation de titre, retour à la ligne de tableau) |
+
+**Correction de fidélité appliquée** (session de consolidation) : la première version de
+`Supported_OSC_Commands.md` avait traduit/paraphrasé en français les sections « Explicit/Implicit
+OSC Output » au lieu de conserver le texte anglais verbatim — incohérent avec la convention
+appliquée partout ailleurs dans le projet (anglais verbatim + notes/titres/analyses en français).
+Corrigé : texte source rétabli mot pour mot, notes de conversion clairement identifiées et séparées
+(*italique, préfixées "Note de conversion"*).
+
 ## Limites connues
 
 - Les **illustrations/captures d'écran** des documents source ne sont pas reproduites (texte uniquement).
@@ -62,5 +79,8 @@ future peut être refaite à partir d'eux.
 
 ## État global
 
-Les 14 documents listés dans `INDEX.md` sont désormais **tous convertis intégralement**,
-sources incluses dans `manuals/<document>/source/`. Aucun document en attente à ce jour.
+Les 14 documents listés dans `INDEX.md` (section « Manuels convertis ») sont **tous convertis
+intégralement**, sources incluses dans `manuals/<document>/source/`. La section « Référence
+canonique » de `INDEX.md` ajoute 5 documents complémentaires (`eosKeys.ts` et sa comparaison,
+le journal terrain et ses compléments, `Supported_OSC_Commands.md`), également vérifiés.
+Aucun document en attente à ce jour.

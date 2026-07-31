@@ -19,7 +19,7 @@ You can force the console to boot into the utility instead of the main console a
 
 ### ECU Welcome Screen
 
-![](media/media/image440.jpeg){width="4.984615048118985in" height="1.89in"}
+*(figure omise)*{width="4.984615048118985in" height="1.89in"}
 
 This is the starting screen of the utility. From here you can choose to boot the console in one of several different modes, change various settings, or power off the console.
 
@@ -109,7 +109,7 @@ Allows you to select the language for the alphanumeric keyboard within Eos. A wi
 
 The keyboard can also be changed in the application when the virtual keyboard is open. Click on the flag icon to see a language drop-down menu.
 
-![](media/media/image441.jpeg){width="4.99117782152231in" height="1.167707786526684in"}
+*(figure omise)*{width="4.99117782152231in" height="1.167707786526684in"}
 
 Press {Sym} to switch the keyboard from alphanumeric to symbols. When in symbol mode, press {Abc} to return to the alphanumeric keyboard.
 
@@ -139,7 +139,7 @@ When checked, this box allows primary consoles running software v3.0 and later t
 
 When enabled, ETCnomad will automatically launch fullscreen, on all connected monitors of your computer. Select \"1\" in the \"Windows Per Fullscreen Display\" dropdown to show a single fullscreen ETCnomad display on each monitor, or \"2\" to subdivide each fullscreen display into 2 ETCnomad windows.
 
-![](media/media/image442.jpeg){width="5.805003280839895in" height="2.8559372265966756in"}
+*(figure omise)*{width="5.805003280839895in" height="2.8559372265966756in"}
 
 When disabled, ETCnomad will launch in a standard windowed display. The \"ETCnomad Windows\" dropdown allows you to choose to open up to 6 separate windows.
 
@@ -181,7 +181,7 @@ The first display will have you touch some targets, and the second will have you
 
 #### {Monitor Arrangement\...}
 
-![](media/media/image443.png){width="2.6155402449693788in" height="2.8420833333333335in"}
+*(figure omise)*{width="2.6155402449693788in" height="2.8420833333333335in"}
 
 > **Note:** *The selected monitor will display in yellow. External monitors can be dragged to any of the surrounding black boxes to mimic actual monitor layout. Internal monitors are locked in relationship to each other and cannot be changed.*
 
@@ -231,7 +231,7 @@ When you click on {Software Update\...}, the console looks at the root directory
 
 You will also receive a message if no software update file can be found.
 
-![](media/media/image444.png){width="1.5816316710411198in" height="1.2508333333333332in"}
+*(figure omise)*{width="1.5816316710411198in" height="1.2508333333333332in"}
 
 ##### Installer Archive
 
@@ -259,7 +259,7 @@ You can also retrieve these versions from the archive to save them to a USB driv
 
 Eos v3.0.0 introduced the ability to switch between v2.9.x and v3.0.0 and later on consoles capable of running both. If v2.9.x is already installed, installing v3.0.0 or later automatically retains the 2.9.x version of software.
 
-![](media/media/image445.jpeg){width="4.172516404199475in" height="2.2562489063867015in"}
+*(figure omise)*{width="4.172516404199475in" height="2.2562489063867015in"}
 
 Use the softkey to alternate between versions. A restart will be required before any changes can take effect.
 
@@ -279,7 +279,7 @@ The Network page of ECU Settings provides options for various categories of netw
 
 #### Device
 
-![](media/media/image446.png){width="4.152233158355205in" height="1.4012489063867017in"}
+*(figure omise)*{width="4.152233158355205in" height="1.4012489063867017in"}
 
 These are the settings that determine the method to get an IP address and / or the actual IP address information that Eos uses for network communication.
 
@@ -307,7 +307,7 @@ Enabling or disabling this setting will require you to reboot the console for th
 
 Allows you to assign a static IP address if \"Obtain IP Automatically\" is disabled. Select the field to open a pop-up allowing you to enter the address.
 
-> ![](media/media/image213.png){width="3.3125in" height="3.25in"}
+> *(figure omise)*{width="3.3125in" height="3.25in"}
 
 The following is a list of the default IP addresses:
 
@@ -405,7 +405,7 @@ The Remote Power commands are sent from the browser. The command for Power On is
 
 Ping is used to test the network connection between two devices.
 
-> ![](media/media/image447.png){width="5.026666666666666in" height="2.042082239720035in"}
+> *(figure omise)*{width="5.026666666666666in" height="2.042082239720035in"}
 
 1.  Click the empty box on the left, and enter the IP address of the device you want to ping.
 
@@ -441,7 +441,7 @@ This setting adjusts the show file transfer speed between devices. The default s
 
 ##### Sensor/FDX3000 Feedback
 
-> Allows your console to receive feedback over the network from CEM+, CEM3, or FDX3000. Enabled by default. See [*[About] Address (on page 448)*](#_bookmark441).
+> Allows your console to receive feedback over the network from CEM+, CEM3, or FDX3000. Enabled by default. See *[About] Address (on page 448)*.
 
 ##### Network RDM
 
@@ -569,7 +569,7 @@ Allows you to test peripherals such as fader wings.
 
 Provides a way to manage show files, show data, and software installers. You can create and delete new folders, move, and copy files between the console and USB drives.
 
-> ![](media/media/image448.jpeg){width="5.7254833770778655in" height="2.331457786526684in"}
+> *(figure omise)*{width="5.7254833770778655in" height="2.331457786526684in"}
 
 The file manager display will show the ShowArchive folder on your console as well as any external USB drives that are detected. The display is split into two windows, so you can see two different folders at the same time for copying or moving data between them.
 
@@ -597,7 +597,7 @@ This softkey is used for upgrading the console\'s outputs.
 
 #### {Upgrade I/O Firmware\...}
 
-![](media/media/image449.png){width="3.8322528433945755in" height="0.7474989063867017in"}
+*(figure omise)*{width="3.8322528433945755in" height="0.7474989063867017in"}
 
 Upgrades the firmware for single-port Gadgets and consoles with I/O cards that have a phone remote connection. All other devices can use the Firmware Update window below.
 
@@ -609,7 +609,7 @@ When you first open the I/O Downloader, it will look for the connected console. 
 
 Allows you to select an alternative show file storage location on another console or computer. After setting this location, it will appear as an option within the save and open dialogs in Eos.
 
-![](media/media/image450.png){width="4.582093175853019in" height="1.5754166666666667in"}
+*(figure omise)*{width="4.582093175853019in" height="1.5754166666666667in"}
 
 In the {Network Drives\...} dialog box, there is a {Add} button for mapping a network drive. In the Add Network Drive dialog box, select the drive letter that is appropriate, the network path, and the path type. The network path can use either the IP Address or the Device Name. (Example: \\10.101.90.101\ShowArchive or \\YourDeviceName\ShowArchive) The network path type should match the device. If Other is selected, you will have additional fields to fill out for Username and Password.
 
@@ -621,7 +621,7 @@ Allows you to see if any folders are currently being shared by the console. You 
 
 The firmware update window will display any detected devices that use firmware and may require an update. Devices that need to be updated will display in red.
 
-![](media/media/image451.png){width="1.8964282589676291in" height="0.95875in"}
+*(figure omise)*{width="1.8964282589676291in" height="0.95875in"}
 
 When a device is selected, the {Update} button will display in yellow if the device can be updated using this window. This includes devices that do not currently need to be updated. If the button is grayed out, the device can not be updated using this window.
 

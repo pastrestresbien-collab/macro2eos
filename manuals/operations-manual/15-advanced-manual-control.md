@@ -18,7 +18,7 @@ This section describes some advanced features for manual control functions. Thes
 
 ### Using [Copy To]
 
-[Copy To] allows you to copy all data from one channel to another, either within the current working mode or to a different record target. [Copy To] works much like [Recall From], but in the opposite direction, [Copy To] forces data to a channel from the selected channel, whereas [Recall From] pulls it from a channel to the selected channel. For information on using [Recall From], see [*Using [Recall From] (on the facing page)*](#_bookmark352)
+[Copy To] allows you to copy all data from one channel to another, either within the current working mode or to a different record target. [Copy To] works much like [Recall From], but in the opposite direction, [Copy To] forces data to a channel from the selected channel, whereas [Recall From] pulls it from a channel to the selected channel. For information on using [Recall From], see *Using [Recall From] (on the facing page)*
 
 By using the IFCB category buttons in the ML Controls display or the parameter buttons, you may copy subsets of channel data. Entire cues, cue ranges, and cue lists can be copied to other locations. To only copy over intensity and parameter levels, use the {Only Levels} softkey. This will exclude discrete timing information.
 
@@ -102,7 +102,7 @@ Labels, scenes, and notes can be copied or moved between cues. The {Labels Only}
 
 [Recall From] is similar to [Copy To], except that it retrieves data from other locations, and can be used only for a channel list recalling from the same channel list but in a different location (for example, a cue). [Recall From] is essentially a "copy from" command. For information on
 
-> using [Copy To], see [*Using [Copy To] (on page 366)*](#_bookmark349)
+> using [Copy To], see *Using [Copy To] (on page 366)*
 
 All parameter data for selected channels will be recalled, or by using the IFCB category buttons or parameter buttons, you may recall subsets of channel data. To recall only levels and not effect, timing, mark or other non-level data, use the {Only Levels} softkey.
 
@@ -210,7 +210,7 @@ Release is applied in Blind via the {Release} softkey, or the [Release] hardkey 
 
 When release has been applied, the released content will display in gray with a R in Blind.
 
-![](media/media/image263.png){width="1.799080271216098in" height="0.9099989063867017in"}
+*(figure omise)*{width="1.799080271216098in" height="0.9099989063867017in"}
 
 A Release flag will also appear in the Playback Status Display and the Cue List Index.
 
@@ -336,13 +336,13 @@ The CIA also repaints to display all of the available softkeys by which you can 
 
 ##### Default
 
-![](media/media/image264.png){width="1.9855850831146107in" height="1.1479155730533683in"}
+*(figure omise)*{width="1.9855850831146107in" height="1.1479155730533683in"}
 
 Includes the query softkeys along with additional query conditions.
 
 ##### Text
 
-![](media/media/image265.png){width="2.4477340332458444in" height="1.151874453193351in"}
+*(figure omise)*{width="2.4477340332458444in" height="1.151874453193351in"}
 
 -   {Keywords} - displays buttons for all the text used in the text 1 through 10 fields and all of the default keywords in Patch.
 
@@ -352,7 +352,7 @@ Includes the query softkeys along with additional query conditions.
 
 ##### Fixture Types
 
-![](media/media/image266.png){width="2.736827427821522in" height="1.1360411198600175in"}
+*(figure omise)*{width="2.736827427821522in" height="1.1360411198600175in"}
 
 Displays buttons for all of the fixture types used in the current show file.
 
@@ -374,7 +374,7 @@ Other examples of using a query are:
 
 -   [Query] {Accessory} {Can Be} [Color Palette] [8] [Enter]
 
--   [Query] {Unpatched} [Delete] [Enter] [Enter](Only works while in Patch.)
+-   [Query] {Unpatched} [Delete] [Enter] [Enter] (Only works while in Patch.)
 
 -   [Query] {Fixture Type} {Revolution} {Can Be} [Focus Palette] [6] {Isn't In} [Cue] [4] [Thru] [9] [Enter]
 
@@ -396,7 +396,7 @@ If there are any commands in the command line, pressing [Undo] once clears the c
 
 When [Undo] is pressed from an empty command line, the command history display will open in the CIA and the most recent completed command is highlighted in gold. If you press [Enter], you will undo your last command. [Shift] & [Clear] can be used to clear the command line as well. If the most recent completed command is grayed out, it cannot be undone. Pressing [Undo] again will select the first command which can be undone.
 
-![](media/media/image267.png){width="4.938863735783027in" height="2.35625in"}
+*(figure omise)*{width="4.938863735783027in" height="2.35625in"}
 
 You may use the page arrow keys or a mouse to select multiple commands. When [Enter] is pressed, an advisory is posted. When [Enter] is pressed again, all highlighted commands will be undone and subsequently removed from the command history. When removing more than one command, a confirmation is required.
 

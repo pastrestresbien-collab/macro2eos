@@ -24,13 +24,13 @@ Please reference [vectorworks.net/sysreq](https://www.vectorworks.net/sysreq).
 
 2.  Open Vectorworks and navigate to Tools > Plug-ins > Plug-in Manager > Third-party Plug-ins.
 
-![](media/media/image460.png){width="2.7880424321959754in" height="0.7125in"}
+*(figure omise)*{width="2.7880424321959754in" height="0.7125in"}
 
 3.  Select {Install} and choose the .vwlibrary plug-in file you extracted in Step 1.
 
 4.  Restart Vectorworks when prompted. After relaunch, the installed plug-in will appear in the Built-in Plug-ins tab.
 
-![](media/media/image461.jpeg){width="2.790171697287839in" height="1.35375in"}
+*(figure omise)*{width="2.790171697287839in" height="1.35375in"}
 
 #### Configuring Vectorworks to use the Augment3d Plug-in
 
@@ -42,7 +42,7 @@ Please reference [vectorworks.net/sysreq](https://www.vectorworks.net/sysreq).
 
     b.  Expand the ETC node in the Commands panel:
 
-![](media/media/image462.png){width="2.7694313210848645in" height="1.167707786526684in"}
+*(figure omise)*{width="2.7694313210848645in" height="1.167707786526684in"}
 
 c.  Drag \"Export to ETC Augment3d\" to the Spotlight node.
 
@@ -57,7 +57,7 @@ d.  Select {OK} to close the Workspace Editor.
 
     a.  Select Edit Visualizer Data Mapping. Recommended mapping below:
 
-![](media/media/image463.png){width="1.0356725721784776in" height="0.7560411198600175in"}
+*(figure omise)*{width="1.0356725721784776in" height="0.7560411198600175in"}
 
 b.  Select {OK} to close the Data Mapping window.
 
@@ -74,7 +74,7 @@ b.  Select {OK} to close the Data Mapping window.
 
 When importing, you will likely need to adjust the data before proceeding.
 
-![](media/media/image165.jpeg){width="5.080823490813648in" height="1.1439577865266841in"}
+*(figure omise)*{width="5.080823490813648in" height="1.1439577865266841in"}
 
 ##### Options
 
@@ -102,23 +102,23 @@ Eos will accept multiple address formats for importing. Examples of those format
 
 You can also map Eos fixture library devices to devices in the source file.
 
-![](media/media/image166.png){width="5.13340113735783in" height="1.3220833333333333in"}
+*(figure omise)*{width="5.13340113735783in" height="1.3220833333333333in"}
 
 1.  Select {Map Devices} to open the mapping utility.
 
 2.  Select a device from the Source File column and choose its matching Eos fixture profile. Multiple devices can be selected at a time.
 
-![](media/media/image167.png){width="4.7091447944007in" height="1.1281244531933508in"}
+*(figure omise)*{width="4.7091447944007in" height="1.1281244531933508in"}
 
 3.  Select {Link Devices}.
 
-![](media/media/image168.png){width="4.7091447944007in" height="1.1281244531933508in"}
+*(figure omise)*{width="4.7091447944007in" height="1.1281244531933508in"}
 
 4.  Repeat steps 2 and 3 until all devices have been associated with fixture profiles. To unlink a device, select it in the Mapping column and select {Unlink Device}.
 
 5.  When complete, select {Done}, then {OK}. Your devices and their associated position information will now appear in Patch and Augment3d.
 
-![](media/media/image395.png){width="3.9828740157480316in" height="1.235in"}
+*(figure omise)*{width="3.9828740157480316in" height="1.235in"}
 
 Device mapping and import fields are saved with the show file.
 
@@ -198,4 +198,4 @@ RF:003-190022 TEL:D190021003
 
 R-C-INT-AX200NGW
 
-![](media/media/image464.png){width="8.443350831146107e-2in" height="8.375984251968505e-2in"}![](media/media/image465.png){width="2.1777121609798774e-2in" height="2.211395450568679e-2in"}![](media/media/image465.png){width="1.6332020997375327e-2in" height="1.682633420822397e-2in"}![](media/media/image3.png){width="2.0609142607174103e-2in" height="2.179899387576553e-2in"}![](media/media/image13.png){width="1.4559273840769904e-2in" height="1.8375984251968503e-2in"}![](media/media/image466.png){width="1.0439632545931759e-2in" height="1.3456911636045494e-2in"}![](media/media/image467.png){width="1.3916229221347332e-2in" height="1.7735126859142608e-2in"}![](media/media/image468.png){width="1.4843613298337707e-2in" height="1.8685476815398075e-2in"}![](media/media/image469.png){width="1.5844269466316712e-2in" height="1.9934383202099736e-2in"}![](media/media/image14.png){width="1.5454943132108486e-2in" height="1.6583552055993e-2in"}![](media/media/image470.png){width="1.3916229221347332e-2in" height="1.7730752405949256e-2in"}![](media/media/image471.png){width="1.456583552055993e-2in" height="1.8381452318460192e-2in"}![](media/media/image472.png){width="1.0439632545931759e-2in" height="1.3445975503062117e-2in"}![](media/media/image473.png){width="1.0e-2in" height="1.3001968503937008e-2in"}![](media/media/image474.png){width="1.3319116360454943e-2in" height="1.7127077865266842e-2in"}![](media/media/image475.png){width="1.3314741907261592e-2in" height="1.7130358705161854e-2in"}![](media/media/image476.png){width="1.0e-2in" height="1.3001968503937008e-2in"}![](media/media/image3.png){width="2.4774715660542432e-2in" height="2.441819772528434e-2in"}![](media/media/image8.png){width="2.963801399825022e-2in" height="3.126093613298338e-2in"}![](media/media/image477.png){width="3.952099737532808e-2in" height="4.0498687664041993e-2in"}![](media/media/image478.png){width="3.952099737532808e-2in" height="4.050415573053368e-2in"}![](media/media/image479.png){width="9.993547681539808e-2in" height="0.16488735783027123in"}![](media/media/image8.png){width="2.8138670166229222e-2in" height="3.08584864391951e-2in"}![](media/media/image480.png){width="3.516622922134733e-2in" height="3.8038057742782155e-2in"}![](media/media/image481.png){width="4.396434820647419e-2in" height="4.62412510936133e-2in"}![](media/media/image24.png){width="4.4638013998250216e-2in" height="4.469597550306212e-2in"}![](media/media/image482.png){width="0.1126509186351706in" height="0.11253608923884514in"}![](media/media/image483.png){width="3.343175853018373e-2in" height="3.7560148731408574e-2in"}![](media/media/image7.png){width="3.026356080489939e-2in" height="3.268372703412074e-2in"}![](media/media/image484.png){width="3.891404199475065e-2in" height="4.2178477690288714e-2in"}![](media/media/image485.png){width="4.456911636045494e-2in" height="4.808617672790901e-2in"}![](media/media/image486.png){width="3.0307305336832895e-2in" height="3.570538057742782e-2in"}![](media/media/image487.png){width="2.963801399825022e-2in" height="3.126531058617673e-2in"}![](media/media/image488.png){width="3.516622922134733e-2in" height="3.8028215223097114e-2in"}![](media/media/image489.png){width="2.8138670166229222e-2in" height="3.08584864391951e-2in"}![](media/media/image490.png){width="3.343175853018373e-2in" height="3.7564523184601926e-2in"}![](media/media/image491.png){width="3.0307305336832895e-2in" height="3.570100612423447e-2in"}![](media/media/image492.png){width="4.456911636045494e-2in" height="0.10377952755905512in"}![](media/media/image493.png){width="3.02580927384077e-2in" height="3.2658573928258966e-2in"}![](media/media/image14.png){width="1.5452755905511812e-2in" height="1.656933508311461e-2in"}![](media/media/image494.png){width="9.98578302712161e-3in" height="1.299540682414698e-2in"}![](media/media/image495.png){width="9.994531933508312e-3in" height="1.299540682414698e-2in"}![](media/media/image496.png){width="0.33559930008748906in" height="0.17613188976377953in"}
+*(figure omise)*{width="8.443350831146107e-2in" height="8.375984251968505e-2in"}*(figure omise)*{width="2.1777121609798774e-2in" height="2.211395450568679e-2in"}*(figure omise)*{width="1.6332020997375327e-2in" height="1.682633420822397e-2in"}*(figure omise)*{width="2.0609142607174103e-2in" height="2.179899387576553e-2in"}*(figure omise)*{width="1.4559273840769904e-2in" height="1.8375984251968503e-2in"}*(figure omise)*{width="1.0439632545931759e-2in" height="1.3456911636045494e-2in"}*(figure omise)*{width="1.3916229221347332e-2in" height="1.7735126859142608e-2in"}*(figure omise)*{width="1.4843613298337707e-2in" height="1.8685476815398075e-2in"}*(figure omise)*{width="1.5844269466316712e-2in" height="1.9934383202099736e-2in"}*(figure omise)*{width="1.5454943132108486e-2in" height="1.6583552055993e-2in"}*(figure omise)*{width="1.3916229221347332e-2in" height="1.7730752405949256e-2in"}*(figure omise)*{width="1.456583552055993e-2in" height="1.8381452318460192e-2in"}*(figure omise)*{width="1.0439632545931759e-2in" height="1.3445975503062117e-2in"}*(figure omise)*{width="1.0e-2in" height="1.3001968503937008e-2in"}*(figure omise)*{width="1.3319116360454943e-2in" height="1.7127077865266842e-2in"}*(figure omise)*{width="1.3314741907261592e-2in" height="1.7130358705161854e-2in"}*(figure omise)*{width="1.0e-2in" height="1.3001968503937008e-2in"}*(figure omise)*{width="2.4774715660542432e-2in" height="2.441819772528434e-2in"}*(figure omise)*{width="2.963801399825022e-2in" height="3.126093613298338e-2in"}*(figure omise)*{width="3.952099737532808e-2in" height="4.0498687664041993e-2in"}*(figure omise)*{width="3.952099737532808e-2in" height="4.050415573053368e-2in"}*(figure omise)*{width="9.993547681539808e-2in" height="0.16488735783027123in"}*(figure omise)*{width="2.8138670166229222e-2in" height="3.08584864391951e-2in"}*(figure omise)*{width="3.516622922134733e-2in" height="3.8038057742782155e-2in"}*(figure omise)*{width="4.396434820647419e-2in" height="4.62412510936133e-2in"}*(figure omise)*{width="4.4638013998250216e-2in" height="4.469597550306212e-2in"}*(figure omise)*{width="0.1126509186351706in" height="0.11253608923884514in"}*(figure omise)*{width="3.343175853018373e-2in" height="3.7560148731408574e-2in"}*(figure omise)*{width="3.026356080489939e-2in" height="3.268372703412074e-2in"}*(figure omise)*{width="3.891404199475065e-2in" height="4.2178477690288714e-2in"}*(figure omise)*{width="4.456911636045494e-2in" height="4.808617672790901e-2in"}*(figure omise)*{width="3.0307305336832895e-2in" height="3.570538057742782e-2in"}*(figure omise)*{width="2.963801399825022e-2in" height="3.126531058617673e-2in"}*(figure omise)*{width="3.516622922134733e-2in" height="3.8028215223097114e-2in"}*(figure omise)*{width="2.8138670166229222e-2in" height="3.08584864391951e-2in"}*(figure omise)*{width="3.343175853018373e-2in" height="3.7564523184601926e-2in"}*(figure omise)*{width="3.0307305336832895e-2in" height="3.570100612423447e-2in"}*(figure omise)*{width="4.456911636045494e-2in" height="0.10377952755905512in"}*(figure omise)*{width="3.02580927384077e-2in" height="3.2658573928258966e-2in"}*(figure omise)*{width="1.5452755905511812e-2in" height="1.656933508311461e-2in"}*(figure omise)*{width="9.98578302712161e-3in" height="1.299540682414698e-2in"}*(figure omise)*{width="9.994531933508312e-3in" height="1.299540682414698e-2in"}*(figure omise)*{width="0.33559930008748906in" height="0.17613188976377953in"}

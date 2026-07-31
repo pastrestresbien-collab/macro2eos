@@ -58,7 +58,7 @@ Macro editing is accomplished from the macro editor display. As an alternative t
 
 The display is divided horizontally, the top portion displays the macro contents in detail while the bottom portion lists all macros, including the label and contents.
 
-![](media/media/image302.png){width="5.456986001749781in" height="1.5802077865266841in"}
+*(figure omise)*{width="5.456986001749781in" height="1.5802077865266841in"}
 
 While in the macro editor display, any numeric entry on the command line is assumed to be a macro number. If the macro number entered already exists and [Enter] is pressed, the macro list will page to the selected macro and the macro content detail section will display all of the contents of the selected macro. If the macro number entered does not exist in the list and [Enter] is pressed, an empty macro will be created with the specified macro number.
 
@@ -140,7 +140,7 @@ Press [Select] when you have completed all editing. Press [Escape] to exit the e
 
 #### Macro Softkeys
 
-![](media/media/image303.png){width="4.834646762904637in" height="1.2112489063867016in"}
+*(figure omise)*{width="4.834646762904637in" height="1.2112489063867016in"}
 
 In edit mode, the CIA displays all softkeys available for the system that would otherwise be difficult to find when recording a macro. You can also choose from a list of the most common macro commands, or any lamp commands. The paging buttons allow you to scroll through the available softkeys in any of these selections. Paging buttons are not stored as macro content.
 

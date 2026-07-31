@@ -58,7 +58,7 @@ Eos Family consoles support three event actions:
 >
 > **Note:** *If a macro is selected as the intended action, it will fire using the macro mode specified. see Macro Editor Display (on page 469) for information on macro modes.*
 
-![](media/media/image452.png){width="3.7078740157480317in" height="2.201874453193351in"}
+*(figure omise)*{width="3.7078740157480317in" height="2.201874453193351in"}
 
 Softkeys are available for the various event options:
 
@@ -94,7 +94,7 @@ Softkeys are available for the various event options:
 
 The lower portion of the show control display contains the event lists used in the console. Events are contained within a specific event list (like cues within a cue list). Each event list has a specific show control protocol type that it uses: MIDI, SMPTE, Analog, or RTC. Getting started with an event list is the same regardless of which show control protocol you are using.
 
-![](media/media/image452.png){width="3.7078740157480317in" height="2.201874453193351in"}
+*(figure omise)*{width="3.7078740157480317in" height="2.201874453193351in"}
 
 Softkeys are available for the various event list options:
 
@@ -180,7 +180,7 @@ The number of frames per second is determined by the timing source and the event
 
 ##### Color Coding
 
-![](media/media/image453.png){width="4.508415354330709in" height="2.2799989063867017in"}
+*(figure omise)*{width="4.508415354330709in" height="2.2799989063867017in"}
 
 The color of the time in the Status column of the event list display indicates the source of the timing data. The colors and indications are:
 
@@ -194,7 +194,7 @@ The color of the time in the Status column of the event list display indicates t
 
 You will see an indicator in the upper portion of the main display if valid internal or external time is seen.
 
-> ![](media/media/image454.png){width="5.039820647419073in" height="2.5095833333333335in"}
+> *(figure omise)*{width="5.039820647419073in" height="2.5095833333333335in"}
 
 Select the indicator to see a dropdown menu of all active time code sources. The menu shows the List number, list label (if any), current time (if any), a symbol for MIDI/SMPTE, subscript for framerate, and the list group ID.
 
@@ -1084,7 +1084,7 @@ Eos Family consoles can be configured to respond to specific MIDI messages or me
 
 Strings are configured in the MIDI String configuration display, shown below:
 
-![](media/media/image455.png){width="5.06505905511811in" height="1.3108333333333333in"}
+*(figure omise)*{width="5.06505905511811in" height="1.3108333333333333in"}
 
 #### MIDI Message Types
 
@@ -1100,7 +1100,7 @@ The following MIDI messages can be received:
 
 #### MIDI Note Events (Note On/Note Off)
 
-![](media/media/image455.png){width="5.06505905511811in" height="1.3108333333333333in"}
+*(figure omise)*{width="5.06505905511811in" height="1.3108333333333333in"}
 
 Note On and Note Off commands simulate activating (on) and releasing (off) a musical note. The MIDI data that is expected to be received is shown above the Note selection area, with 'N' shown where any valid number will be considered a match. This display will change as configuration options are selected. When finished configuring a Note On or Note Off event, press {OK} to store the event. Otherwise, press {Cancel} to undo the changes.
 
@@ -1152,7 +1152,7 @@ The Threshold is an optional way to specify the minimum velocity that must be re
 
 #### Program Change Events
 
-![](media/media/image456.png){width="5.0296391076115485in" height="1.3016666666666667in"}
+*(figure omise)*{width="5.0296391076115485in" height="1.3016666666666667in"}
 
 Program Change commands typically represent a change in the MIDI voice or instrument type that should be used for a particular MIDI channel. Similar to MIDI Note commands, the MIDI data that is expected to be received is shown in the CIA and changes as you select event parameters. When finished configuring the program change event, press {OK} to store the event. Otherwise, press {Cancel} to undo the changes.
 
@@ -1174,7 +1174,7 @@ The program number is any value between 0-127 (0-7F). Many devices will display 
 
 #### Control Change Events
 
-![](media/media/image457.png){width="5.0296391076115485in" height="1.3016666666666667in"}
+*(figure omise)*{width="5.0296391076115485in" height="1.3016666666666667in"}
 
 Control Change commands were designed to represent specific actions on MIDI devices, like pedals actuations and effects. For example, the Damper Pedal on a keyboard is often represented by controller number 64 (hex 40). Similar to MIDI Note commands, the MIDI data that is expected to be received is shown in the CIA and changes as you select event parameters. When finished configuring the control change event, press {OK} to store the event. Otherwise, press {Cancel} to undo the changes.
 
@@ -1200,7 +1200,7 @@ The data parameter is any value between 0-127 (00-7F). Many devices will display
 
 #### System Events (MIDI Show Control)
 
-![](media/media/image458.png){width="5.047349081364829in" height="1.30625in"}
+*(figure omise)*{width="5.047349081364829in" height="1.30625in"}
 
 System commands allow you to specify specific MIDI Show Control messages that can be received and interpreted by the console. While any MIDI Show Control command that matches the configured Device ID will be executed normally, this type of event setup allows you to respond to messages sent to different device IDs, or take additional actions based on a show control command.
 
@@ -1487,7 +1487,7 @@ The preferred method for transmitting and receiving OSC packets is over a TCP co
 
 In the ECU>Settings>Network>Interface Protocols, there is an option for changing the OSC TCP mode. By default, OSC 1.0 is selected. There are two TCP modes available -- OSC 1.0 (packet-length headers) and OSC 1.1 (SLIP). Check the documentation for the OSC device you wish to use over a TCP connection to see which mode it supports.
 
-![](media/media/image459.png){width="5.116715879265092in" height="1.4049989063867017in"}
+*(figure omise)*{width="5.116715879265092in" height="1.4049989063867017in"}
 
 ##### UDP
 

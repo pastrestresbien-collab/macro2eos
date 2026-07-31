@@ -43,7 +43,7 @@ From within the patch display, you can open the Device List to use RDM to patch 
 
 > For patching fixtures, there are two different patch modes: *Patching By Channel (on page 166)* and *Patching By Address (on page 166)*. Eos defaults to patch by channel mode. Pressing [Format] while in the Patch display will toggle the mode between patch by channel and patch by address.
 >
-> ![](media/media/image169.png){width="4.563597987751531in" height="1.4764577865266841in"}
+> *(figure omise)*{width="4.563597987751531in" height="1.4764577865266841in"}
 
 The patch screen will display the following information if available:
 
@@ -105,7 +105,7 @@ Holding down [Flexi] will display the following softkeys:
 
 In patch by channel mode, [2] [0] [At] [1] [Enter] patches channel 20 to address 1. Pressing [At] will post address to the command line while patching by channel.
 
-![](media/media/image170.png){width="1.6041666666666667in" height="1.3854166666666667in"}
+*(figure omise)*{width="1.6041666666666667in" height="1.3854166666666667in"}
 
 Additional examples of patch by channel:
 
@@ -127,7 +127,7 @@ You can also use the [+] and [-] keys. [1] [+] [4] [+] [8] [At] [1] [Enter] patc
 
 Pressing [Format] while in the patch display will toggle the mode between patch by channel and patch by address.
 
-> ![](media/media/image171.png){width="1.587280183727034in" height="1.3708333333333333in"}
+> *(figure omise)*{width="1.587280183727034in" height="1.3708333333333333in"}
 
 [2] [0] [At] [1] [Enter] patches address 20 to channel 1. Pressing [At] will post channel to the command line while patching by address.
 
@@ -353,7 +353,7 @@ The process of patching automated fixtures requires more detail than patching a 
 
 After you have entered the channel number, click {Type}. You will then select a device type from the fixture library.
 
-> ![](media/media/image172.png){width="5.060937226596676in" height="1.349582239720035in"}
+> *(figure omise)*{width="5.060937226596676in" height="1.349582239720035in"}
 
 Notice the softkeys {Show}, {Manfctr}, and {Search} located beneath the CIA.
 
@@ -365,7 +365,7 @@ Scroll through the device list and make your selection. If a fixture has multipl
 
 Press {Search} to open the search window. You will need an external alphanumeric keyboard or you can click the keyboard icon in the search window to open the virtual keyboard. You can also navigate the list as you would the browser. You can search by manufacturer name, fixture name, part of a name, and by DMX footprint. For example, if you searched for 31, you would see all of the fixtures that have a DMX footprint of 31. Double clicking on a fixture name will patch it.
 
-![](media/media/image173.png){width="4.978321303587052in" height="1.4831244531933507in"}
+*(figure omise)*{width="4.978321303587052in" height="1.4831244531933507in"}
 
 In the search window, press {Parameters} to view a parameter list for a fixture, or press
 
@@ -413,7 +413,7 @@ When these devices are patched, they will patch a master channel with a whole nu
 
 On the left of the fixture editor, you can see the fixture name, overall DMX footprint and number of cells. Click on the caret to see the DMX footprint for the master and the cells. The cells will be grouped with their profile(s).
 
-> ![](media/media/image174.png){width="5.050928477690289in" height="2.8306244531933507in"}
+> *(figure omise)*{width="5.050928477690289in" height="2.8306244531933507in"}
 
 On the right, you can see the full personality of the selected multicell fixture. If you have the whole fixture selected, you will be able to see all of the parameters for each cell and the master but changes cannot be made here.
 
@@ -423,13 +423,13 @@ On the right, you can see the full personality of the selected multicell fixture
 
 > You will need to select the master or cell profile to edit parameters. In this view, you\'ll be able to edit parameters, DMX, Home, Snap, and ranges/modes. See *Creating a New Fixture (on page 194)* and *Range Editing Parameters (on page 197)*.
 
-![](media/media/image175.jpeg){width="4.915271216097988in" height="2.4473950131233595in"}
+*(figure omise)*{width="4.915271216097988in" height="2.4473950131233595in"}
 
-> ![](media/media/image176.jpeg){width="5.066666666666666in" height="3.0083333333333333in"}
+> *(figure omise)*{width="5.066666666666666in" height="3.0083333333333333in"}
 
 To change specific cell data such as DMX offset, you will need to use {Edit Multicell}. With a multicell fixture or a master cell selected in the fixture editor, press {Edit Multicell}. In the Edit Multicell window, you can edit cell numbers, DMX offset, and mastered cells for each cell.
 
-![](media/media/image177.png){width="4.73326334208224in" height="1.5604166666666666in"}
+*(figure omise)*{width="4.73326334208224in" height="1.5604166666666666in"}
 
 Once you are finished editing, press {Save Fixture} to save your changes or {Cancel Edit} to remove the changes and exit the edit mode.
 
@@ -451,7 +451,7 @@ Default color and pattern media for the selected fixture, as determined in the f
 
 In the image below, the selected channel is a Source Four Revolution® with a color scroller and two gobo wheels. If the selected channel included other wheels, each device would be represented in the display with a button.
 
-![](media/media/image178.jpeg){width="4.402270341207349in" height="1.35375in"}
+*(figure omise)*{width="4.402270341207349in" height="1.35375in"}
 
 The picker displays on the left half of the CIA when you select the specific attribute ({Scroller},
 
@@ -505,13 +505,13 @@ When using the editor, the following softkeys are available for use:
 
 When you create a new scroll or wheel, {New Wheel n} appears in the wheel list as the selected button. The frame list will be empty with only "New" displayed in frame 1.
 
-![](media/media/image179.jpeg){width="4.343082895888014in" height="1.2864577865266842in"}
+*(figure omise)*{width="4.343082895888014in" height="1.2864577865266842in"}
 
 You can label the new wheel by pressing [Label] and typing the desired label on the virtual keyboard and pressing {Enter}.
 
 To select a color or pattern for the specific frame in the scroll/wheel, select the "NEW" text and press {Edit} or click the gray box in the C/G column of the frame. The available gel, color, gobo and effect media selections will be displayed.
 
-![](media/media/image180.png){width="4.249517716535433in" height="1.7577077865266841in"}
+*(figure omise)*{width="4.249517716535433in" height="1.7577077865266841in"}
 
 The media selection includes the following softkeys:
 
@@ -541,7 +541,7 @@ To make a change to a frame, first select the frame then press {Edit} or click t
 
 For example, to insert a new frame in between existing frames 2 and 3, select frame 3 and press the {Insert} key. The media selection will display.
 
-![](media/media/image181.jpeg){width="4.628253499562555in" height="2.30375in"}
+*(figure omise)*{width="4.628253499562555in" height="2.30375in"}
 
 The media selection includes the following softkeys:
 
@@ -613,7 +613,7 @@ To calibrate a scroller:
 
 Calibration information will be displayed in the scroller calibration column. Values in gray are the default data, and the values in blue are calibrated data.
 
-![](media/media/image182.jpeg){width="2.634666447944007in" height="1.235in"}
+*(figure omise)*{width="2.634666447944007in" height="1.235in"}
 
 The displayed calibration information is the DMX level that puts the frame into its center position. Information in the calibration column can be manually edited by clicking on it and typing in a new DMX level.
 
@@ -635,7 +635,7 @@ The {Calibrate} button will now only appear on scroller parameters that are curr
 
 Shutters can be reordered in the Patch {Attributes} page. Press the {Shutter Order} button to open the shutter order display. The {Shutter Order} button will only display if a channel with shutters is currently selected.
 
-> ![](media/media/image183.png){width="3.0156572615923007in" height="1.3975in"}
+> *(figure omise)*{width="3.0156572615923007in" height="1.3975in"}
 
 In this display, you can invert the {Shutter Order} or rotate the order using the arrow buttons. After you have created the order needed, press {Apply} for your changes to take effect.
 
@@ -653,7 +653,7 @@ With Patch open, Eos defaults to this section. It provides access to data input 
 
 > **Note:** *The Art-Net and sACN offset will display here.*
 
-![](media/media/image184.png){width="3.020200131233596in" height="1.859374453193351in"}
+*(figure omise)*{width="3.020200131233596in" height="1.859374453193351in"}
 
 -   {Channel} - In the patch display, all channels are displayed in numerical order. When multiple devices are patched to the same channel, the channel number is only displayed in the first row, additional devices are indicated with part extensions (example P2) on the next row of the table.
 
@@ -691,7 +691,7 @@ The Attributes section provides you with optional fields for additional informat
 
 With one or more channels selected, Scrollers / Wheels will display only the parameters that apply to those fixtures will appear. Press the desired attribute button and use the keypad to set the attribute value.
 
-![](media/media/image185.png){width="3.1671883202099735in" height="1.9960411198600174in"}
+*(figure omise)*{width="3.1671883202099735in" height="1.9960411198600174in"}
 
 -   {Preheat} - This field allows you to specify an intensity value or preset to preheat incandescent filaments. When a preheat flag is applied to a cue, any channels that are fading from zero to an active intensity and have been assigned a preheat value in patch will preheat in the immediately preceding cue. The preheat flag is applied to a cue as an attribute when the cue is recorded.
 
@@ -761,7 +761,7 @@ From address view:
 
 The Database section provides you with additional fields for entering information that can be used by the Query function. See *Query (on page 372)*. These fields include {Notes} and {Text 1} through {Text 10}. Clicking on {Text 1} through {Text 10} will open up a display for selection of keywords. It will display keywords that were already created as well as showing an option for creating new keywords. Clicking on {New Keyword} will display an alphanumeric keyboard for entering in a new keyword.
 
-![](media/media/image186.png){width="4.925597112860892in" height="3.006666666666667in"}
+*(figure omise)*{width="4.925597112860892in" height="3.006666666666667in"}
 
 -   {Text} - Text fields are used to provide up to ten keywords about any channel or group of channels. These fields can be anything that you think is important about a channel, such as its location (FOH), an attribute of it (wash, spot), or other characteristics of the channel (such as gel). Select {New Keyword} and use the virtual keyboard in the CIA, or an external keyboard, to provide up to 30 characters of key words about the device.
 
@@ -821,7 +821,7 @@ The Augment3d section provides you with position, orientation, related propertie
 
 ### Patch > Protocols
 
-![](media/media/image187.jpeg){width="5.84536198600175in" height="1.5108322397200349in"}
+*(figure omise)*{width="5.84536198600175in" height="1.5108322397200349in"}
 
 The Protocols section allows you to configure settings for your console\'s data output.
 
@@ -961,7 +961,7 @@ Open the Dimmer Feedback display while in the Patch display by pressing {Device 
 
 {Dimmers}. When the dimmer list is opened, the dimmers will be displayed in Patch by Address mode.
 
-![](media/media/image188.png){width="5.059214785651793in" height="2.6877077865266843in"}
+*(figure omise)*{width="5.059214785651793in" height="2.6877077865266843in"}
 
 Eos will display the following information that it receives from the dimmers:
 
@@ -993,7 +993,7 @@ Eos will display the following information that it receives from the dimmers:
 
 With a dimmer or dimmers selected, you can edit various dimmer settings in the property view, which will display in the CIA. Items with a caret (>) are editable. When multiple dimmers are selected together for editing, an "*" will show for data that is different between the selected dimmers.
 
-![](media/media/image189.png){width="4.814755030621172in" height="2.0009372265966756in"}
+*(figure omise)*{width="4.814755030621172in" height="2.0009372265966756in"}
 
 FDX dimmers will not display data for the following:
 
@@ -1059,7 +1059,7 @@ Eos will also display what personality from the library the device matches in th
 
 With a device or devices selected, you can edit various device settings in the property view, which will display in the CIA. Items with a caret (>) are editable. When multiple devices are selected together for editing, an "*" will show for data that is different between the selected devices.
 
-![](media/media/image190.png){width="5.081275153105862in" height="1.836353893263342in"}
+*(figure omise)*{width="5.081275153105862in" height="1.836353893263342in"}
 
 The following buttons will also display in the property view:
 
@@ -1143,7 +1143,7 @@ Pressing {Attach} twice will post the {Detach} command.
 
 You can clear the patch entirely by accessing the clear functions from Browser> Clear. The clear functions window will open in the CIA.
 
-![](media/media/image191.png){width="4.196944444444444in" height="1.3885411198600175in"}
+*(figure omise)*{width="4.196944444444444in" height="1.3885411198600175in"}
 
 To clear the patch, click {Clear Patch}. A confirmation is required before the patch will be cleared.
 
@@ -1171,7 +1171,7 @@ The fixture creator is accessible from patch. Once a fixture has been created, i
 
 If you would like to remove any unused fixtures from this list, press {Delete Unused}.
 
-![](media/media/image192.jpeg){width="5.070875984251969in" height="2.2720833333333332in"}
+*(figure omise)*{width="5.070875984251969in" height="2.2720833333333332in"}
 
 To open the fixture editor, open the patch display and press the {Fixtures} softkey. This will open a list on the left displaying those same fixtures that are currently patched or have been added to the show, and the list on the right are the parameters for the selected fixture.
 
@@ -1207,7 +1207,7 @@ To add parameters to a new fixture:
 
 2.  Select the parameter list by clicking on it or touching it.
 
-![](media/media/image193.png){width="4.945543525809274in" height="2.08125in"}
+*(figure omise)*{width="4.945543525809274in" height="2.08125in"}
 
 3.  Determine the total number of parameters that your fixture has. Do not count 16-bit parameters as two parameters, this will be done in a later step.
 
@@ -1219,11 +1219,11 @@ To add parameters to a new fixture:
 
 6.  Click on the slot to open a dropdown list of available parameters.
 
-![](media/media/image194.png){width="1.833096019247594in" height="1.203124453193351in"}
+*(figure omise)*{width="1.833096019247594in" height="1.203124453193351in"}
 
 7.  Click on a category to open the dropdown list to see the parameters, or use the search box to find the parameter.
 
-![](media/media/image195.png){width="1.833096019247594in" height="1.203124453193351in"}
+*(figure omise)*{width="1.833096019247594in" height="1.203124453193351in"}
 
 8.  Press the desired parameter to assign it or press [Enter] when the parameter is selected.
 
@@ -1243,7 +1243,7 @@ Once you have added and specified all of the parameters for the new fixture, you
 
 To define the size (8-bit or 16-bit), DMX address, and LDMX address of any parameter:
 
-![](media/media/image196.png){width="1.324876421697288in" height="1.1266666666666667in"}
+*(figure omise)*{width="1.324876421697288in" height="1.1266666666666667in"}
 
 You can alter the default DMX address assigned to any parameter in the list. This is not the actual address that will be used when patched, but rather it is the order of address for the parameter relative to the other parameters in the fixture.
 
@@ -1273,7 +1273,7 @@ You can enable snap for parameters to exempt them from cue timing, so they snap 
 
 You can enter the operational ranges for specific slots within any specific parameter (such as color scroller, color wheel, gobo wheel, and so on). You can do this by either defining each range individually or you can use the *Quick Actions (on the next page)* tools to define multiple ranges at once.
 
-![](media/media/image197.png){width="3.2952373140857394in" height="1.3695833333333334in"}
+*(figure omise)*{width="3.2952373140857394in" height="1.3695833333333334in"}
 
 If a parameter has only one range, the values for that range will display in the range column. If that parameter has multiple ranges, the number of ranges will be displayed. If a range is used in a *Modes*, the range will not be in bold.
 
@@ -1383,11 +1383,11 @@ A mode is a collection of ranges that will display in the encoder display and in
 
 Examples of mode conditions are \"When Gobo Mode is Indexed\" or \"When Strobe Mode is Random\". Multiple conditions can be assigned. An example of this would be \"When Gobo Wheel Mode is Index or Index Scan\".
 
-![](media/media/image198.png){width="3.286946631671041in" height="1.998957786526684in"}
+*(figure omise)*{width="3.286946631671041in" height="1.998957786526684in"}
 
 When viewing a fixture profile, the parameters that have modes will display the number of modes in the ranges column.
 
-> ![](media/media/image192.jpeg){width="5.070875984251969in" height="2.2720833333333332in"}
+> *(figure omise)*{width="5.070875984251969in" height="2.2720833333333332in"}
 >
 > **Note:** *When adding a new mode, you will need to first add the parameter that the mode needs to be associated with before you will be able to assign the mode. See Creating Modes (on the facing page).*
 >
@@ -1399,7 +1399,7 @@ When viewing a fixture profile, the parameters that have modes will display the 
 
 -   {Next Mode} - advances your selection to the new mode.
 
--   ![](media/media/image199.png){width="2.4251859142607173in" height="1.7337489063867018in"}{Last Mode} - returns your selection to the previous mode. Clicking a new or existing mode will open the mode selection window.
+-   *(figure omise)*{width="2.4251859142607173in" height="1.7337489063867018in"}{Last Mode} - returns your selection to the previous mode. Clicking a new or existing mode will open the mode selection window.
 
 This window displays all the possible conditions that can be applied to the fixture. The active ranges for the mode will already be selected with a checkmark.
 
@@ -1432,27 +1432,27 @@ In the fixture editor, you assign a parameter as gobo wheel mode. Click in the r
 >
 > **Note:** *It is important to name your ranges. Without labels, only the range values will display when selecting conditions, and the mode buttons in the encoder display and ML controls will be blank.*
 
-![](media/media/image200.png){width="3.305534776902887in" height="1.3695833333333334in"}
+*(figure omise)*{width="3.305534776902887in" height="1.3695833333333334in"}
 
 Back in the fixture editor, assign a parameter as gobo index/speed. Click in the range column to open the range editor. Press {New Mode} to create two modes.
 
-![](media/media/image201.png){width="3.314286964129484in" height="1.4764577865266841in"}
+*(figure omise)*{width="3.314286964129484in" height="1.4764577865266841in"}
 
 Click in the mode cell to open the mode selection window.
 
-> ![](media/media/image202.png){width="4.8527045056867895in" height="1.7872911198600174in"}
+> *(figure omise)*{width="4.8527045056867895in" height="1.7872911198600174in"}
 
 This window will display all possible conditions that can be applied to your fixture. In this case, there are only two possible.
 
 If a parameter has multiple ranges and is selected as a condition for a mode parameter, all the ranges for that parameter must be used. The fixture editor will allow you to select a condition for a mode and it will automatically place the other range(s) on the next mode.
 
-![](media/media/image203.png){width="3.3107830271216097in" height="1.464582239720035in"}
+*(figure omise)*{width="3.3107830271216097in" height="1.464582239720035in"}
 
 Assign the DMX and user values. The range values were used for the DMX values. For index, the user values were set to 0-360 degrees. The *Quick Labels (on page 198)* for degree unit was used so the degree symbol will display in the encoder display. For rotate, the user values were to 0-80 rpms.
 
 Once the modes are created using the index and rotate ranges, the gobo wheel mode parameter will be read only. The range editor for gobo wheel mode will give an advisory saying which mode the ranges are used in. If changes are needed to those ranges, press {Remove as Mode} in the range editor. After the changes are made, you will need to reassign the modes.
 
-![](media/media/image204.png){width="3.3024671916010497in" height="1.2112489063867016in"}
+*(figure omise)*{width="3.3024671916010497in" height="1.2112489063867016in"}
 
 After patching the new fixture, you will be able to check your modes in the encoder display and ML controls. There are now buttons for the modes, and for index, the degree symbol is displayed with the user value.
 
@@ -1540,7 +1540,7 @@ Certain parameters may not want to be subjected to cue timing. Those parameters 
 
 In the [About] channel patch screen, the snap column shows which parameters for that channel are currently set to snap. These parameters can be edited for any profile using the Fixture Editor. See *Fixture Editor (on page 193)*
 
-![](media/media/image205.png){width="5.035937226596675in" height="1.3429166666666668in"}
+*(figure omise)*{width="5.035937226596675in" height="1.3429166666666668in"}
 
 ##### Save Fixture
 
@@ -1550,13 +1550,13 @@ Press {Save Fixture} to store the new profile, or {Cancel Edit} to exit out and 
 
 > **Note:** *If you leave the patch display without saving or using {Cancel Edit}, an advisory will display above the command line letting you know that you have unsaved data.*
 
-![](media/media/image206.png){width="4.945543525809274in" height="2.08125in"}
+*(figure omise)*{width="4.945543525809274in" height="2.08125in"}
 
 ##### Color Configuration
 
 Color configuration information is stored within fixture profiles in your show file. Fixtures with additive color properties will display a color configuration button in the fixture editor, which will open the color configuration editor window.
 
-> ![](media/media/image207.jpeg){width="5.8406528871391075in" height="3.1441666666666666in"}
+> *(figure omise)*{width="5.8406528871391075in" height="3.1441666666666666in"}
 
 ###### Editing Color Configuration
 
@@ -1578,7 +1578,7 @@ The data required for color configuration can originate from a variety of source
 
 Calibrated color configuration data has been gathered using lab-quality equipment and measuring techniques. This generally provides higher quality color picking and gel matching.
 
-> ![](media/media/image208.png){width="3.9583333333333335in" height="2.2708333333333335in"}
+> *(figure omise)*{width="3.9583333333333335in" height="2.2708333333333335in"}
 
 Fixture profiles with calibrated color configuration are indicated in the fixture profile editor with a CIE icon.
 
@@ -1598,7 +1598,7 @@ If a fixture profile has none of the above types of color configuration data, Eo
 
 If a pre-v3.2.0 show file with additive color RGB and RGBA fixtures is opened, Eos will automatically simplify the color calculations being used for those fixture profiles. This can greatly improve fixture performance and speed for use in pixel maps.
 
-![](media/media/image209.png){width="3.6145833333333335in" height="1.375in"}
+*(figure omise)*{width="3.6145833333333335in" height="1.375in"}
 
 These fixture profiles can be updated via the color configuration editor to get the full set of color configuration tools.
 
@@ -1628,11 +1628,11 @@ To name a fixture in the creator list:
 
 1.  With the new fixture selected, press {Create Multicell}.
 
-![](media/media/image210.png){width="5.060395888013998in" height="2.129583333333333in"}
+*(figure omise)*{width="5.060395888013998in" height="2.129583333333333in"}
 
 2.  Press {+} to add cells. This will open a fixture list display. Only fixtures added to your fixture list will be here.
 
-![](media/media/image211.png){width="2.6738549868766404in" height="1.5383333333333333in"}
+*(figure omise)*{width="2.6738549868766404in" height="1.5383333333333333in"}
 
 3.  Select a fixture, a cell profile from an existing multicell fixture, or create a new cell profile by selecting + Add New Cell Profile.
 

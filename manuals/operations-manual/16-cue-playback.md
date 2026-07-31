@@ -52,7 +52,7 @@ When working in Live, the selected cue is always the last cue you recorded, edit
 
 Changing the selected cue in Blind will cause the playback status display to change as well, unless {Preserve Blind Cue} has been enabled in Setup > *User > Displays (on page 223)*, which will not synchronize the Blind display to the currently selected cue but rather shows the last cue selected in Blind. When you return to Live, the selected cue is synchronized to the currently active cue.
 
-![](media/media/image268.png){width="4.58622375328084in" height="0.6296872265966754in"}
+*(figure omise)*{width="4.58622375328084in" height="0.6296872265966754in"}
 
 The attributes of the selected cue (such as timing, attributes, label and external links) are shown at the bottom of the Live / Blind display. For more information, see *Assigning Cue Attributes (on page 327)*.
 
@@ -344,11 +344,11 @@ A grandmaster is type of fader that inhibits all live intensity values. Any fade
 
 If a grandmaster is set to a value other than 100%, a grandmaster button with the set value will be shown at the top of each display. If blackout is currently on, a blackout button will be shown at the top of the displays.
 
-![](media/media/image269.jpeg){width="2.6964162292213474in" height="0.15437445319335083in"}
+*(figure omise)*{width="2.6964162292213474in" height="0.15437445319335083in"}
 
 Clicking on either button will open a new display which will allow you to turn off blackout and set the grandmaster to a different level.
 
-![](media/media/image270.png){width="4.9756091426071745in" height="1.275in"}
+*(figure omise)*{width="4.9756091426071745in" height="1.275in"}
 
 #### Go To Cue 0
 
@@ -530,17 +530,17 @@ From Live, use [Learn] {Learn Alert Time} to start learning alert timings. [Lear
 
 > The Alert column can be enabled in the PSD via the *Playback Status Display Configuration (on page 112)* menu.
 
-![](media/media/image271.png){width="5.866816491688539in" height="2.3843744531933506in"}
+*(figure omise)*{width="5.866816491688539in" height="2.3843744531933506in"}
 
 When alerts are being learned, a count-up timer appears in red in the Alert column after each manual [Go] command. After the next [Go], the time is stored and the process repeats.
 
 Once alerts have been learned, after a manual [Go], the recorded time in the Alert column will begin counting down.
 
-![](media/media/image272.png){width="5.851054243219598in" height="0.5006244531933508in"}
+*(figure omise)*{width="5.851054243219598in" height="0.5006244531933508in"}
 
 When the countdown is below 5 seconds, the time will change to gold, and the alert advisory sound will play.
 
-![](media/media/image273.png){width="5.8518099300087485in" height="0.3024989063867017in"}
+*(figure omise)*{width="5.8518099300087485in" height="0.3024989063867017in"}
 
 When the countdown reaches 0, the time will change to green and display until the next manual [Go].
 

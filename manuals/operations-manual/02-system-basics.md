@@ -41,13 +41,13 @@ The Central Information Area (CIA) is the lower portion of the screen. By defaul
 
 > **Note:** *Gio and Gio @ 5 have a mini encoder display as part of their CIA. See Mini Encoder Display (on page 125).*
 
-![](media/media/image81.jpeg){width="4.948465660542432in" height="1.6804166666666667in"}
+*(figure omise)*{width="4.948465660542432in" height="1.6804166666666667in"}
 
 #### CIA Icons
 
 There are three icons located above the CIA.
 
-> ![](media/media/image82.jpeg){width="0.9288888888888889in" height="0.12666666666666668in"}
+> *(figure omise)*{width="0.9288888888888889in" height="0.12666666666666668in"}
 
 ##### Favorite CIA Display
 
@@ -89,7 +89,7 @@ Command line search allows you to search your recorded targets, effects, and cha
 
 Press the Search icon at the end of the command line or use [Shift] & [About] to open the command line search window.
 
-![](media/media/image83.png){width="5.033112423447069in" height="1.5833333333333333in"}
+*(figure omise)*{width="5.033112423447069in" height="1.5833333333333333in"}
 
 #### Parameter Display
 
@@ -137,7 +137,7 @@ To use the browser, you must first draw focus to it by touching anywhere in the 
 
 When focus is on the browser, the window border highlights in gold. The paging keys will now control selection in the browser.
 
-![](media/media/image84.png){width="4.972042869641295in" height="1.9266666666666667in"}
+*(figure omise)*{width="4.972042869641295in" height="1.9266666666666667in"}
 
 -   Use the page arrow keys to move the selection bar up and down the list. You may also use the level wheel to scroll through the list.
 
@@ -181,7 +181,7 @@ The following color coding for selected items is used in the browser:
 
 You can access the various clear options from the browser by selecting {Clear} from the main browser menu. The clear functions window will open in the CIA.
 
-![](media/media/image85.png){width="4.504750656167979in" height="1.546874453193351in"}
+*(figure omise)*{width="4.504750656167979in" height="1.546874453193351in"}
 
 From this menu you can select one of the available clear options by clicking on the desired button in the CIA. Eos will ask you for a confirmation before performing the selected clear. For
 
@@ -189,7 +189,7 @@ From this menu you can select one of the available clear options by clicking on 
 
 > **CAUTION:** *Clear functions cannot be undone by using the Undo option.*
 
-![](media/media/image86.png){width="4.490158573928259in" height="1.625207786526684in"}
+*(figure omise)*{width="4.490158573928259in" height="1.625207786526684in"}
 
 From the {Clear Targets} screen you can select which record targets you wish to clear. The buttons at the center of the CIA represent all of the record targets that you can choose to clear. By default all components are selected (gray) and will be cleared. To withhold any targets from being cleared, simply deselect them in the CIA by clicking the respective button. To deselect all of the targets, click the {Deselect All} button.
 
@@ -249,7 +249,7 @@ There are several terms that are useful to know when discussing the displays on 
 
 Eos has the ability to have one of three different workspaces active on individual monitors, as well as to have up to four frames in use in any workspace. Each frame can hold multiple tabs. Each tab contains one display.
 
-> ![](media/media/image87.png){width="3.955661636045494in" height="2.565in"}
+> *(figure omise)*{width="3.955661636045494in" height="2.565in"}
 
 #### Workspaces
 
@@ -265,7 +265,7 @@ Every monitor can have up to three workspaces, identified by the numbered worksp
 
 #### Frames
 
-> Each workspace can have up to 16 frames in its layout. The number and arrangement of frames can be edited in the [*Workspace Layout Menu (on page 90)*.
+> Each workspace can have up to 16 frames in its layout. The number and arrangement of frames can be edited in the *Workspace Layout Menu (on page 90)*.
 
 #### Tabs
 
@@ -281,7 +281,7 @@ All Display and Control Tabs have fixed *Tab Numbers* under which they open (for
 
 These numbers are identified on the Home Screen in each icon. For multiple instances of the same display, the tab number will be followed with a decimal number. Additional tabs will start their numbering with n.2. When you press [Tab], active focus will move numerically through all open tabs on active workspaces.
 
-![](media/media/image88.png){width="4.790077646544182in" height="0.3325in"}
+*(figure omise)*{width="4.790077646544182in" height="0.3325in"}
 
 > **Note:** *Single clicking on a Controls Tab will bring it to the front of the frame but will not move focus to that tab unless the tab's frame already has focus. Double clicking on a Controls Tab will bring it to the front and grab focus. Single clicking on a Display Tab will bring it to the front and grab focus.*
 
@@ -379,7 +379,7 @@ These numbers are identified on the Home Screen in each icon. For multiple insta
 
 The following displays can be selected, and they will open in a new tab in the selected frame:
 
-![](media/media/image89.png){width="4.588299431321085in" height="1.7509372265966754in"}
+*(figure omise)*{width="4.588299431321085in" height="1.7509372265966754in"}
 
 The following displays can have multiple instances open:
 
@@ -401,13 +401,13 @@ For multiple instances of the same display, the tab number will be followed with
 
 You can select from the following list of virtual controls, and they will open in a new tab in the selected frame:
 
-![](media/media/image90.png){width="1.1458694225721784in" height="1.8168744531933507in"}
+*(figure omise)*{width="1.1458694225721784in" height="1.8168744531933507in"}
 
 ##### Tab Tools
 
 Every frame has a tab tools menu gear icon in the lower left corner of the frame. Selecting this icon will open the tab tools menu, which provides options for opening and closing tabs in that frame.
 
-> ![](media/media/image91.png){width="1.849215879265092in" height="2.2799989063867017in"}
+> *(figure omise)*{width="1.849215879265092in" height="2.2799989063867017in"}
 
 You can double-click or right-click a tab in focus to also see this menu.
 
@@ -503,7 +503,7 @@ To close all displays except for the live/blind display and the playback status 
 
 Upon start up or creation of a new show file, any connected monitor that is not already displaying the Live (Tab 1) or Playback Status Displays (Tab 2) will show the Workspace Layout Menu. This screen will also display when a new tab is opened.
 
-> ![](media/media/image92.png){width="3.950716316710411in" height="2.438332239720035in"}
+> *(figure omise)*{width="3.950716316710411in" height="2.438332239720035in"}
 
 This screen consists of four general areas, each offering different display-related options.
 
@@ -519,27 +519,27 @@ workspace. A workspace can have up to 16 frames. Selecting a layout icon will as
 
 This screen also offers options for opening and closing tabs as well as resizing and resetting the monitor(s).
 
-![](media/media/image93.png){width="3.9857775590551183in" height="0.467082239720035in"}
+*(figure omise)*{width="3.9857775590551183in" height="0.467082239720035in"}
 
 ###### Resize Frames In This Workspace
 
 Allows you to freely resize and edit the frames in any of the workspaces on the monitor. Select this option to activate the frame configuration grid.
 
-> ![](media/media/image94.jpeg){width="5.82879593175853in" height="3.0858333333333334in"}
+> *(figure omise)*{width="5.82879593175853in" height="3.0858333333333334in"}
 
 The grid includes the following tools:
 
-> ![](media/media/image95.png){width="0.4166666666666667in" height="0.4166666666666667in"}Adds a horizontal split, dividing the associated frame horizontally into upper and lower rows.
+> *(figure omise)*{width="0.4166666666666667in" height="0.4166666666666667in"}Adds a horizontal split, dividing the associated frame horizontally into upper and lower rows.
 >
-> ![](media/media/image96.jpeg){width="0.4166666666666667in" height="0.4166666666666667in"}Inserts a vertical split, dividing the associated frame vertically into left and right columns.
+> *(figure omise)*{width="0.4166666666666667in" height="0.4166666666666667in"}Inserts a vertical split, dividing the associated frame vertically into left and right columns.
 >
-> ![](media/media/image97.png){width="0.4166666666666667in" height="0.4166666666666667in"}Drag left or right to freely adjust the width of the associated frames. Double-press to reset to the default horizontal size.
+> *(figure omise)*{width="0.4166666666666667in" height="0.4166666666666667in"}Drag left or right to freely adjust the width of the associated frames. Double-press to reset to the default horizontal size.
 >
-> ![](media/media/image98.jpeg){width="0.4166666666666667in" height="0.4166666666666667in"}Drag up or down to freely adjust the height of the associated frames. Double-press to reset to the default vertical size.
+> *(figure omise)*{width="0.4166666666666667in" height="0.4166666666666667in"}Drag up or down to freely adjust the height of the associated frames. Double-press to reset to the default vertical size.
 >
-> ![](media/media/image99.jpeg){width="0.4166666666666667in" height="0.4166666666666667in"}Eliminates a split by closing the frame to the right and merging its contents into the frame to the left.
+> *(figure omise)*{width="0.4166666666666667in" height="0.4166666666666667in"}Eliminates a split by closing the frame to the right and merging its contents into the frame to the left.
 >
-> ![](media/media/image100.jpeg){width="0.4166666666666667in" height="0.4166666666666667in"}Eliminates a split by closing the frame below and merging its contents into the frame above.
+> *(figure omise)*{width="0.4166666666666667in" height="0.4166666666666667in"}Eliminates a split by closing the frame below and merging its contents into the frame above.
 
 Frames of the same size can be freely merged without altering the rest of the grid. Smaller frames can be merged with larger frames, but this may alter adjacent splits. A larger frame will absorb any smaller frames it is merged towards.
 
@@ -555,11 +555,11 @@ Click on a monitor to display the available numbers, and then click on the numbe
 
 ####### Monitor Mapping
 
-![](media/media/image101.jpeg){width="2.5843657042869643in" height="1.250832239720035in"}
+*(figure omise)*{width="2.5843657042869643in" height="1.250832239720035in"}
 
 ####### Classic Monitor Mapping
 
-![](media/media/image102.jpeg){width="1.5405325896762905in" height="1.5721872265966754in"}
+*(figure omise)*{width="1.5405325896762905in" height="1.5721872265966754in"}
 
 ###### Close All Tabs In This Workspace
 
@@ -643,7 +643,7 @@ To move the active display from one monitor to another, press and hold the [Tab]
 
 Several displays have click supported cells. Clicking on a cell will select and place it on the command line. You can click on multiple cells to select a range of items. Double-clicking a row header will select that row and deselect any other rows. In-Cell editing must be enabled in Setup > Device > Displays. See *{In-Cell Editing} (on page 234)*
 
-![](media/media/image103.png){width="5.094736439195101in" height="0.6in"}
+*(figure omise)*{width="5.094736439195101in" height="0.6in"}
 
 The following displays have clickable support:
 
@@ -685,7 +685,7 @@ The following displays have clickable support:
 
 Quick Access buttons are available at the top of each display, opening tools that appear in a pop-up window that overlays your current display.
 
-![](media/media/image104.jpeg){width="1.3096872265966755in" height="0.13406167979002626in"}
+*(figure omise)*{width="1.3096872265966755in" height="0.13406167979002626in"}
 
 Select an icon to open a tool, and select again to close the pop-up window.
 
@@ -707,7 +707,7 @@ Allows quick access to your favorite snapshots (see *About Snapshots (on page 46
 
 Allows quick access to a keyboard which mimics the hard keys found on the physical face panel of a console. The alphanumeric keyboard shortcut for that hard key displays in the lower right hard corner.
 
-![](media/media/image105.png){width="5.0362653105861765in" height="3.285416666666667in"}
+*(figure omise)*{width="5.0362653105861765in" height="3.285416666666667in"}
 
 The virtual keyboard is also available in a standalone tab via [Tab] [7].
 
@@ -717,7 +717,7 @@ The time the console is using. Defaults to 12 hour format. To use 24 hour format
 
 {24 Hour Clock} is checked.
 
-![](media/media/image106.png){width="2.5104166666666665in" height="2.21875in"}
+*(figure omise)*{width="2.5104166666666665in" height="2.21875in"}
 
 > Time can also be changed from the shell via *Time Service (SNTP) (on page 589)*.
 
@@ -765,11 +765,11 @@ The summary view displays the largest number of channels of any of the formats. 
 
 > FCB icons will appear at the bottom of the channel area for channels that have those parameters patched to them. See *Indicators in the Live / Blind Display (on page 101)*.
 
-![](media/media/image107.png){width="4.941742125984252in" height="2.244374453193351in"}
+*(figure omise)*{width="4.941742125984252in" height="2.244374453193351in"}
 
 To collapse the summary view, hold down the [Data] or [Params] key and press any parameter category key. On Element 2, Ion Classic, and Element Classic, you will need to use [Data].
 
-![](media/media/image108.png){width="5.056550743657043in" height="1.5275in"}
+*(figure omise)*{width="5.056550743657043in" height="1.5275in"}
 
 When the summary view has been collapsed to show only intensity data, you may include focus, color, or beam data in the summary view by holding down [Data] or [Params] and pressing any parameter category key to display all categories again.
 
@@ -777,7 +777,7 @@ When the summary view has been collapsed to show only intensity data, you may in
 
 Table view is available in Live or Blind. Unlike summary view, table view displays the fixture type associated with channels and details about each channel's category and parameter levels.
 
-> ![](media/media/image109.png){width="5.053806867891513in" height="2.0741666666666667in"}
+> *(figure omise)*{width="5.053806867891513in" height="2.0741666666666667in"}
 
 In Live, table view displays all active channel data being output from Eos. In Blind, it will display all data for a single record target (cue, preset, palette) depending on what is viewed. In table view, focus, color, and beam information can be viewed in either a summary of these three categories or an expanded view to show all parameter data.
 
@@ -801,7 +801,7 @@ A {Preview} softkey is available when in Live Summary.
 
 {Preview} allows you to display the intensity values for another cue under the current values in the Live Summary tab. An indicator of what Preview mode you are in will display in the upper left hand corner of the Live Summary display.
 
-![](media/media/image110.png){width="4.909039807524059in" height="1.1875in"}
+*(figure omise)*{width="4.909039807524059in" height="1.1875in"}
 
 In {Preview} mode, the following softkeys are available:
 
@@ -825,7 +825,7 @@ The following examples show other functions that are available in Preview:
 
 To open the Channels in Use display, click on the {CIU} icon in the home screen or press [Tab] &[3][2].
 
-![](media/media/image111.png){width="4.9764698162729655in" height="4.40625in"}
+*(figure omise)*{width="4.9764698162729655in" height="4.40625in"}
 
 A Channels in Use display shows the following information for each channel:
 
@@ -855,7 +855,7 @@ To toggle between viewing just the intensity information and other parameters, p
 
 > The label column can be hidden by checking the Suppress Target Labels option in the Live and Blind configuration menu. For more information, see *Live and Blind Configuration Menu (on page 104)*
 
-![](media/media/image112.png){width="5.042142388451444in" height="0.7353116797900262in"}
+*(figure omise)*{width="5.042142388451444in" height="0.7353116797900262in"}
 
 #### Indicators in the Live / Blind Display
 
@@ -863,9 +863,9 @@ This section identifies the conventions used to indicate various conditions in L
 
 > and *Text Indicators (on page 103)* in the following graphic:
 
-![](media/media/image113.png){width="5.908641732283464in" height="1.8115616797900262in"}
+*(figure omise)*{width="5.908641732283464in" height="1.8115616797900262in"}
 
-> **Note:** *The color and text conventions apply regardless of the format of Live/ Blind being used (see [Using [Format] (on page 97)](#_bookmark58)).*
+> **Note:** *The color and text conventions apply regardless of the format of Live/ Blind being used (see [Using [Format] (on page 97)).*
 >
 > **Note:** *When manual channels are used, there will be an advisory that says \"Manual Channels\" in red in the upper left hand corner of any Live display.*
 
@@ -875,13 +875,13 @@ Several channels in the image are automated fixtures (possessing more parameters
 
 ##### Conventionals
 
-![](media/media/image114.png){width="0.3369378827646544in" height="0.5159372265966754in"}
+*(figure omise)*{width="0.3369378827646544in" height="0.5159372265966754in"}
 
 Conventions display the channel number, intensity, and any additional data below.
 
 ##### Automated Fixtures or Multi-parameter Devices
 
-![](media/media/image115.png){width="0.6539905949256343in" height="0.60125in"}
+*(figure omise)*{width="0.6539905949256343in" height="0.60125in"}
 
 This view also has additional data fields beneath intensity (F, C, B). This information can be suppressed by pressing [Params] and any parameter category (Focus, Color, or Beam) in the CIA. Doing so will leave only the intensity field and FCB indicators at the bottom of the channel.
 
@@ -889,17 +889,17 @@ On Element 2, Ion Classic, and Element Classic, you will need to use [Data].
 
 ##### Multicell Devices
 
-![](media/media/image116.png){width="1.2042290026246718in" height="0.5502077865266841in"}
+*(figure omise)*{width="1.2042290026246718in" height="0.5502077865266841in"}
 
 Multicell devices display the channel number broken into decimals, based on how many cells the device has. Multicell fixtures can be controlled as an entire fixture, individual cells, or a combination of cells. Parameter data can also be suppressed in the same way as automated fixtures.
 
-![](media/media/image117.png){width="1.2448512685914261in" height="0.4184372265966754in"}
+*(figure omise)*{width="1.2448512685914261in" height="0.4184372265966754in"}
 
 > You can use flexichannel modes to hide cells or master channels. See *Using Flexichannel (on page 106)*.
 
 When in Flexi Cells Off mode, the master channel will display its own information in the normal font size, and data indicators will be used for the cells. If all of the cells are at the same value, that value will display. If the majority of the cells are at the same value, that value will be displayed with a superscript plus sign. If there is not a majority, just a plus sign will be used.
 
-![](media/media/image118.png){width="0.608089457567804in" height="0.54625in"}
+*(figure omise)*{width="0.608089457567804in" height="0.54625in"}
 
 > **Note:** *A decimal will display at the end of a master channel when flexi cells off is on.*
 
@@ -907,7 +907,7 @@ When in Flexi Cells Off mode, the master channel will display its own informatio
 
 Eos uses color to indicate information about channel and parameter levels.
 
-![](media/media/image119.png){width="0.918092738407699in" height="0.34041557305336834in"}
+*(figure omise)*{width="0.918092738407699in" height="0.34041557305336834in"}
 
 ###### Channels
 
@@ -1015,13 +1015,13 @@ The Live/ Blind displays have a configuration menu. The configuration settings a
 
 > **Note:** *Each instance of Live/ Blind may be configured individually.*
 >
-> ![](media/media/image120.jpeg){width="3.1339173228346455in" height="2.192707786526684in"}
+> *(figure omise)*{width="3.1339173228346455in" height="2.192707786526684in"}
 
 The following options are available:
 
 -   Suppress Target Status Bar - Hides the target status bar from the display. The target status bar displays at the bottom of the Live/ Blind displays.
 
-![](media/media/image121.png){width="4.592020997375328in" height="0.485in"}
+*(figure omise)*{width="4.592020997375328in" height="0.485in"}
 
 -   MC Line Wrap - When enabled, this option keeps all of the cells together of a multicell fixture when viewing it in Live summary view instead of breaking them up across multiple rows.
 
@@ -1185,7 +1185,7 @@ Expanded cue list format is the default. When the focus is on the playback statu
 
 Pressing [Format] with the playback status display active will access this format. In expanded cue list, the view of the active cue list increases to the full size of the display. The current fader page is visible at the bottom of the screen.
 
-![](media/media/image122.jpeg){width="5.342540463692038in" height="1.6708333333333334in"}
+*(figure omise)*{width="5.342540463692038in" height="1.6708333333333334in"}
 
 #### Fader Display Format
 
@@ -1195,7 +1195,7 @@ Pressing [Format] with the playback status display active will access this forma
 
 Each fader is color coded based on its assigned target type. Grandmasters and inhibitive submasters are in red, additive submasters are yellow, playback faders display in green, and presets and palettes are orange.
 
-> ![](media/media/image123.png){width="3.8601213910761154in" height="2.7247911198600177in"}
+> *(figure omise)*{width="3.8601213910761154in" height="2.7247911198600177in"}
 
 #### Split Playback Status Display
 
@@ -1205,7 +1205,7 @@ Pressing [Format] with the playback status display active will access this forma
 
 > **Note:** *The first time you access the split playback status display, you may need to adjust the splitter bar between the two lists to see the second list.*
 
-![](media/media/image124.jpeg){width="5.06in" height="2.0029166666666667in"}
+*(figure omise)*{width="5.06in" height="2.0029166666666667in"}
 
 #### Paging the Playback Status Display
 
@@ -1219,7 +1219,7 @@ Pressing [Format] with the playback status display active will access this forma
 
 This section identifies the color and text conventions used to indicate various playback conditions.
 
-![](media/media/image125.png){width="5.048962160979878in" height="2.535in"}
+*(figure omise)*{width="5.048962160979878in" height="2.535in"}
 
 **Note:** *The playback status display will show a red counter for sneak time.*
 
@@ -1323,7 +1323,7 @@ This section identifies the color and text conventions used to indicate various 
 
 Playback Status Display (PSD) has a configuration menu, which is accessed by double clicking or right-clicking on the PSD tab, or by selecting the gear icon, and clicking PSD.
 
-![](media/media/image126.jpeg){width="3.787332677165354in" height="2.881666666666667in"}
+*(figure omise)*{width="3.787332677165354in" height="2.881666666666667in"}
 
 The following options are available in the PSD Configuration Menu:
 
@@ -1347,7 +1347,7 @@ The following options are available in the PSD Configuration Menu:
 
 -   Display Fader Ribbon - displays the fader ribbon, which shows the current fader page under the Master Playback Status. Not available on Element 2, Ion Classic, and Element Classic.
 
-![](media/media/image127.png){width="5.0977449693788275in" height="0.8286450131233596in"}
+*(figure omise)*{width="5.0977449693788275in" height="0.8286450131233596in"}
 
 -   Display Notes - displays the *Cue Notes* in a horizontal bar at the bottom of the PSD.
 
@@ -1373,7 +1373,7 @@ You can save your settings as a default state for the PSD. The default PSD is id
 
 Direct selects utilize lists of existing show file components (targets) and assign them to a highly-configurable grid of buttons. Direct selects can be used to quickly access those targets, allowing you to easily interact with them, including placing them on the command line.
 
-![](media/media/image128.png){width="5.839420384951881in" height="1.1241666666666668in"}
+*(figure omise)*{width="5.839420384951881in" height="1.1241666666666668in"}
 
 To open the direct selects, use the direct selects icon on the *Workspace Layout Menu (on page 90)* or [Tab] [4]. Direct selects for specific targets can then be opened using the corresponding button.
 
@@ -1385,7 +1385,7 @@ Direct selects can be used to quickly access show file targets, allowing you to 
 
 When you first open the direct selects tab, you will be presented with one or more banks that can be used to control specified targets.
 
-![](media/media/image129.png){width="5.273307086614174in" height="0.5027077865266841in"}
+*(figure omise)*{width="5.273307086614174in" height="0.5027077865266841in"}
 
 Targets are specific elements of your show file that can be assigned to direct select buttons. With the exception of custom direct selects, only one target type can open in a direct select bank.
 
@@ -1397,7 +1397,7 @@ Custom direct selects allow you to assign multiple target types to the same grid
 
 {Custom} is selected on the direct selects tab, a popup will appear showing all available custom direct select lists in your show file.
 
-![](media/media/image130.png){width="5.166970691163605in" height="2.2262489063867017in"}
+*(figure omise)*{width="5.166970691163605in" height="2.2262489063867017in"}
 
 Once a custom direct select list is open, selecting an empty button will display a popup of the *Target Selection Menu (2) (on page 118)*, allowing you to quickly assign a target or range of targets.
 
@@ -1433,19 +1433,19 @@ The appearance of direct select buttons will change depending on what is selecte
 
 If a target is on the command line, the corresponding direct select tile will be outlined in gold.
 
-![](media/media/image131.png){width="3.2572790901137356in" height="1.3049989063867016in"}
+*(figure omise)*{width="3.2572790901137356in" height="1.3049989063867016in"}
 
 > Open a direct select bank displaying groups. Type [Group] [1] [Enter]. The group 1 direct select button will be outlined in gold.
 
 If channels are selected via the command line, and any direct select targets contain all of those channels, the direct select button(s) will be highlighted.
 
-![](media/media/image132.png){width="3.2572790901137356in" height="1.3049989063867016in"}
+*(figure omise)*{width="3.2572790901137356in" height="1.3049989063867016in"}
 
 > Record preset 1, containing channels 1-10. Open a direct select bank displaying presets. Type [1] [Thru] [10] [Enter]. The preset 1 direct select button will be highlighted gray.
 
 If channels are selected via the command line, and any direct select targets contain some but not all of those channels, the direct select button(s) will be highlighted with a gradient.
 
-![](media/media/image133.png){width="3.2572790901137356in" height="1.305in"}
+*(figure omise)*{width="3.2572790901137356in" height="1.305in"}
 
 > Record beam palette 5, containing channels 10-20. Open a direct select bank displaying beam palettes. Type [1] [Thru] [20] [Enter]. The beam palette 5 direct select button will be highlighted with a gradient.
 
@@ -1457,7 +1457,7 @@ The appearance of direct selects onscreen is highly customizable.
 
 The primary way to configure direct selects is via the direct selects configuration menu. To access the menu, right-click or tap on the direct selects tab, or use the gear icon on the left of the tab bar.
 
-![](media/media/image134.jpeg){width="3.1938976377952755in" height="2.9054166666666665in"}
+*(figure omise)*{width="3.1938976377952755in" height="2.9054166666666665in"}
 
 The following options are available:
 
@@ -1535,7 +1535,7 @@ Whereas direct selects display lists of specific target types, custom direct sel
 
 To open the custom direct selects editor, select the custom direct selects icon on the *Workspace Layout Menu (on page 90)*, or use [Tab] [3] [9]. You can also choose {Custom} on the direct selects tab, and then selecting {Open Custom DS Editor}.
 
-![](media/media/image135.png){width="5.059909230096238in" height="3.5862489063867016in"}
+*(figure omise)*{width="5.059909230096238in" height="3.5862489063867016in"}
 
 The editor is divided into a preview of your custom direct selects grid, a target selection menu for configuring buttons, and an index of all custom direct select lists in your show file.
 
@@ -1607,7 +1607,7 @@ To delete a custom direct select list, use [Delete] [#] [Enter] [Enter], where [
 
 Icons are images that can be applied in various places throughout Eos to customize your workspace.
 
-![](media/media/image136.jpeg){width="5.880543525809274in" height="2.2641655730533685in"}
+*(figure omise)*{width="5.880543525809274in" height="2.2641655730533685in"}
 
 Any targets that can be applied to a direct select (other than channels, scenes, and buttons) can be assigned an icon, which can be configured to appear on the direct select button in Direct Selects (Tab 4) or Custom Direct Selects (Tab 39). See *Custom Direct Selects (on*
 
@@ -1625,7 +1625,7 @@ Accepted image formats for import are .bmp, .gif, .ico, .jpg, .pbm, .pgm, .png, 
 
 ##### Organizing Icons
 
-![](media/media/image137.jpeg){width="5.880543525809274in" height="2.2641655730533685in"}
+*(figure omise)*{width="5.880543525809274in" height="2.2641655730533685in"}
 
 Select the Organize button to enable the following additional button options:
 
@@ -1653,7 +1653,7 @@ Target keys are physical buttons with a customizable surface that can be assigne
 
 To edit the direct selects assigned to your target keys, hold [Displays]. Configuration button overlays will appear on each bank of keys. Use {Edit #} to open the target editor for that bank. The arrows can also be used to change the page of keys displayed on the bank.
 
-> ![](media/media/image138.png){width="5.842458442694663in" height="1.885in"}
+> *(figure omise)*{width="5.842458442694663in" height="1.885in"}
 
 From there, assign targets to the bank using the direct select controls in the editor. Once a starting target is selected for the bank, targets will be assigned consecutively from there.
 
@@ -1673,7 +1673,7 @@ On Gio, Gio @ 5, and Ion Xe, the four encoders are identified in two ways, by th
 
 The encoder display area will show the name of the parameter it controls, display stepped limits (if any) and also a {Home} button which allows you to set that parameter to its default position. You can also home any parameter.
 
-> ![](media/media/image139.png){width="2.1542027559055117in" height="3.5833333333333335in"}
+> *(figure omise)*{width="2.1542027559055117in" height="3.5833333333333335in"}
 
 Some buttons that may be available on the touchscreen are:
 
@@ -1715,7 +1715,7 @@ Some fixtures have more parameters than can be displayed on one encoder page. Th
 
 The encoder controls display is available on Gio, Gio @ 5, and Ion Xe consoles. Press the [Encoder Display] hardkey to open the encoder controls display.
 
-![](media/media/image140.png){width="5.046874453193351in" height="1.345832239720035in"}
+*(figure omise)*{width="5.046874453193351in" height="1.345832239720035in"}
 
 Directly under the middle two encoders are six hardkeys for encoder control. From left to right, these encoder paging keys control intensity, focus, color, shutter, image, and form. Pressing any of these will change the parameters controlled by the encoders. To view other available encoder pages, press the encoder paging keys to advance the pages.
 
@@ -1761,7 +1761,7 @@ On Gio, Gio @ 5, Ion Xe, or ETCnomad using a Programming Wing, information on wh
 
 Use the Parameter Category hardkeys to choose which parameters are currently available on the encoders.
 
-![](media/media/image141.jpeg){width="5.029411636045494in" height="0.35624890638670165in"}
+*(figure omise)*{width="5.029411636045494in" height="0.35624890638670165in"}
 
 Some fixtures have more parameters than can be displayed on one encoder page. The number of. pages for each category is displayed at the bottom of the Parameter Category softkey. To view the other pages, simply press the button to advance the pages or hold the button and press a number key to go directly to the page you want to access.
 
@@ -1793,7 +1793,7 @@ Custom encoder maps allow you to create and store unique parameter layouts for y
 
 > To open the custom encoder map editor, select the encoder maps icon on the *Workspace Layout Menu (on page 90)* or use [Tab] [4] [0].
 
-![](media/media/image142.png){width="5.037023184601924in" height="2.719374453193351in"}
+*(figure omise)*{width="5.037023184601924in" height="2.719374453193351in"}
 
 Custom mode must be enabled to use custom encoder maps, by selecting {Custom}. When custom mode is off, Eos will use the default parameter mapping.
 
@@ -1857,7 +1857,7 @@ Custom encoder maps can be created for a specific device type, and will only app
 
 Assign a map to a device profile via {Map To Fixture}, or by selecting in the Map To Fixture column. When fixtures with this profile are selected, the custom encoder map will populate.
 
-> ![](media/media/image143.png){width="2.496496062992126in" height="1.1903116797900262in"}
+> *(figure omise)*{width="2.496496062992126in" height="1.1903116797900262in"}
 
 If multiple fixture types are selected at once, encoder maps will stack in the encoder display, allowing you to select them individually. This includes any default maps for selected fixtures without custom maps assigned to them.
 
@@ -1887,7 +1887,7 @@ When there is room, multiple rows of parameters will display, and you can scroll
 
 There are category shortcut keys on the left side of the ML Controls display. Press a key to quickly access those controls.
 
-> ![](media/media/image144.jpeg){width="5.06875656167979in" height="1.2904155730533684in"}
+> *(figure omise)*{width="5.06875656167979in" height="1.2904155730533684in"}
 
 1.  Category button (Clicking this button will put the category on the command line.)
 
@@ -1925,11 +1925,11 @@ Playback faders cannot be assigned on Element 2 and Element Classic consoles.
 
 ##### Fader Configuration
 
-![](media/media/image145.jpeg){width="4.952483595800525in" height="1.6611450131233596in"}
+*(figure omise)*{width="4.952483595800525in" height="1.6611450131233596in"}
 
 ##### Element Fader Configuration
 
-![](media/media/image146.png){width="2.0067246281714786in" height="1.0964577865266842in"}
+*(figure omise)*{width="2.0067246281714786in" height="1.0964577865266842in"}
 
 ##### Fader Display Options
 
@@ -1939,7 +1939,7 @@ Use the gear icon at the left of the tab bar or right-click on Tab 36 to choose 
 
 Click on the fader header to open the fader configuration window.
 
-![](media/media/image147.png){width="1.8928915135608049in" height="1.4170822397200349in"}
+*(figure omise)*{width="1.8928915135608049in" height="1.4170822397200349in"}
 
 ##### Target
 
@@ -1993,7 +1993,7 @@ Each fader is color coded based on its assigned target type. Channel faders are 
 
 > The fader status display can be disabled in Setup. See *Device > Displays (on page 233)*.
 
-![](media/media/image148.png){width="5.430987532808399in" height="0.6007283464566929in"}
+*(figure omise)*{width="5.430987532808399in" height="0.6007283464566929in"}
 
 1.  Orange box indicates a channel fader.
 
@@ -2005,7 +2005,7 @@ Each fader is color coded based on its assigned target type. Channel faders are 
 
 5.  Up arrow indicates that there is a higher level currently set for the channel and that the fader needs to be raised to match.
 
-![](media/media/image149.png){width="5.422811679790026in" height="0.49552055993000876in"}
+*(figure omise)*{width="5.422811679790026in" height="0.49552055993000876in"}
 
 1.  Palette on a fader.
 
@@ -2033,7 +2033,7 @@ Each fader is color coded based on its assigned target type. Channel faders are 
 
 The Fader List, which shows all of the faders and their assignments, can be found in Tab 35.
 
-![](media/media/image150.png){width="5.891198600174978in" height="2.4572911198600176in"}
+*(figure omise)*{width="5.891198600174978in" height="2.4572911198600176in"}
 
 You can also make changes to a fader\'s configuration while in the fader list display by clicking on a column. A virtual fader will be displayed. Click on the appropriate area of the fader to access the configuration options. Selection can be done by clicking in the column or from the command line.
 
@@ -2049,13 +2049,13 @@ The fader ribbon shows the fader color coding that is used in the fader configur
 
 Grandmasters and inhibitive submasters are in red, additive submasters are yellow ,playback faders display in green ,and presets and palettes are orange.
 
-![](media/media/image151.png){width="5.03262467191601in" height="0.5660411198600175in"}
+*(figure omise)*{width="5.03262467191601in" height="0.5660411198600175in"}
 
 #### Main Fader Configuration
 
 Use {Main Fader} to open the master fader configuration window.
 
-![](media/media/image152.png){width="1.6004002624671916in" height="1.5281244531933509in"}
+*(figure omise)*{width="1.6004002624671916in" height="1.5281244531933509in"}
 
 ##### Target
 
@@ -2093,7 +2093,7 @@ There are a variety of different master configuration options for faders that ha
 
 When a fader is configured as a grandmaster, you can set the fader itself as a master or disable it. Fader size is set to 1x, and cannot be changed.
 
-![](media/media/image153.png){width="0.5994674103237095in" height="1.11625in"}
+*(figure omise)*{width="0.5994674103237095in" height="1.11625in"}
 
 The first button is locked as a load button, and cannot be configured. The second button is disabled and cannot be configured. The third button can be configured as a blackout button or disabled. When configured as a blackout, both buttons must be pressed to set the grandmaster to blackout.
 
@@ -2183,7 +2183,7 @@ Press the red [X] to clear the channel or parameter filters listed.
 
 A virtual fader module can be opened from the home screen by selecting the Faders display button, or by pressing [Tab] [2][8].
 
-![](media/media/image154.png){width="4.530094050743657in" height="1.7852077865266842in"}
+*(figure omise)*{width="4.530094050743657in" height="1.7852077865266842in"}
 
 The virtual fader module has a configuration menu, which is accessed by first selecting the module tab and then double clicking on the tab to open the menu. With the virtual fader module selected, you can also select the gear icon, which is located by the tabs, to open the configuration menu.
 
@@ -2837,7 +2837,7 @@ You can open the sACN Output Viewer by pressing [Tab] & [3][7] or selecting the 
 
 The sACN Output Viewer is a place to check the current live outputs on a universe by universe basis.
 
-![](media/media/image155.png){width="4.9921052055993in" height="2.37125in"}
+*(figure omise)*{width="4.9921052055993in" height="2.37125in"}
 
 The left side of the viewer is the universe grid. It displays 512 address cells. Cells outlined in a color are currently patched addresses. Each patched cell contains an address number and output value. Unpatched cells are black and only have an address level.
 

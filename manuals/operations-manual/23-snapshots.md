@@ -32,7 +32,7 @@ To store the current state of the console, record a snapshot.
 
 When recording a snapshot, you will see a preview of all of the displays as they will be recorded in the snapshot. You can choose to select/ deselect various components, monitors, frames, etc from your snapshot.
 
-![](media/media/image300.jpeg){width="5.7952012248468945in" height="2.6858333333333335in"}
+*(figure omise)*{width="5.7952012248468945in" height="2.6858333333333335in"}
 
 From the snapshot menu, the following options are available:
 
@@ -56,7 +56,7 @@ From the snapshot menu, the following options are available:
 
 > **Note:** *The Faders and Encoders options are not available on Element 2.*
 
-![](media/media/image301.png){width="3.125in" height="2.4270833333333335in"}
+*(figure omise)*{width="3.125in" height="2.4270833333333335in"}
 
 You may also check or uncheck to include or exclude any of the following:
 

@@ -618,7 +618,7 @@ This specifies the name the console will use to identify itself on the network t
 
 -   *Protocols (on page 186).*
 
-![](media/media/image212.png){width="5.816278433945757in" height="2.4260411198600176in"}
+*(figure omise)*{width="5.816278433945757in" height="2.4260411198600176in"}
 
 These are the settings that determine the method to get an IP address and / or the actual IP address information that Eos uses for network communication.
 
@@ -634,7 +634,7 @@ A port is \"online\" in green if it is configured, connected to a network and op
 
 Allows you to assign a static IP address if \"Obtain IP Automatically\" is disabled. Select the field to open a pop-up allowing you to enter the address.
 
-> ![](media/media/image213.png){width="3.3125in" height="3.25in"}
+> *(figure omise)*{width="3.3125in" height="3.25in"}
 
 The following is a list of the default IP addresses:
 
@@ -728,7 +728,7 @@ When enabled, a launching window will display on start-up. If a network connecti
 
 #### Output Protocols
 
-![](media/media/image214.png){width="5.812665135608049in" height="0.9739577865266842in"}
+*(figure omise)*{width="5.812665135608049in" height="0.9739577865266842in"}
 
 > **Note:** *Apex consoles, Windows 10 consoles, and ETCnomad software do not support Net2 or AVAB UDP output protocols.*
 >
@@ -744,7 +744,7 @@ Enables or disables output of the Art-Net protocol.
 
 #### Interface Protocols
 
-![](media/media/image215.png){width="5.814990157480315in" height="1.9797911198600175in"}
+*(figure omise)*{width="5.814990157480315in" height="1.9797911198600175in"}
 
 ##### FDX2000 Feedback
 
@@ -774,7 +774,7 @@ Enables or disables dedicated server port 3037 for use with third-party OSC appl
 
 ##### Restore Defaults
 
-![](media/media/image216.png){width="5.866733377077865in" height="2.499374453193351in"}
+*(figure omise)*{width="5.866733377077865in" height="2.499374453193351in"}
 
 Selecting the title header of each port allows you to access a restore defaults overlay, displaying a comparison of the current settings, those saved in the show file, and the defaults, allowing you to choose which to keep.
 
@@ -824,7 +824,7 @@ Enables or disables local USB connection to supported MIDI or SMPTE devices. Dis
 
 Contact closures require DC voltage, which is supplied by the console on pins 14 and 15.
 
-![](media/media/image217.png){width="0.6729407261592301in" height="0.53625in"}![](media/media/image218.png){width="1.3367465004374453in" height="0.92625in"}
+*(figure omise)*{width="0.6729407261592301in" height="0.53625in"}*(figure omise)*{width="1.3367465004374453in" height="0.92625in"}
 
 ###### In Source Id
 
@@ -916,7 +916,7 @@ Clicking on the {Manual Config. Off} button turns manual configuration on and di
 
 Clicking {Identify} will display numbers on each wing's display to aid in configuration. The numbers do not identify the wings as to their actual order. Order is determined from left to right. The left most wing will contain the first faders.
 
-![](media/media/image219.jpeg){width="5.015624453193351in" height="2.340624453193351in"}
+*(figure omise)*{width="5.015624453193351in" height="2.340624453193351in"}
 
 Click and drag the wings to match your physical layout. Click {Apply} to save the changes. Clicking {Reset} will restore to the last saved configuration. Clicking {Manual Config. On} will turn off manual configuration and will require a restart of the application before the console will automatically configure the wings.
 
@@ -936,7 +936,7 @@ When advancing fader pages by group, Group 1 is the default used with [Fader Pag
 
 #### Brightness Settings
 
-![](media/media/image220.png){width="3.9544706911636047in" height="1.2666666666666666in"}
+*(figure omise)*{width="3.9544706911636047in" height="1.2666666666666666in"}
 
 This menu allows you to adjust the brightness and contrast settings for your console\'s face panel, as well as any internal monitors, supported external monitors, fader wings, and task lights. All sliders have a range from 0% (dimmest) to 100% (brightest).
 
@@ -964,7 +964,7 @@ This button instantly sets all brightness settings to 0%, and darkens all consol
 
 This option allows you to link any combination of sliders to the Main slider. Linked sliders display a link icon underneath. Unlinked sliders is display a slashed link icon.
 
-![](media/media/image221.png){width="3.9544706911636047in" height="1.2666655730533682in"}
+*(figure omise)*{width="3.9544706911636047in" height="1.2666655730533682in"}
 
 When {Link to Main} is selected, any linked brightness sliders are outlined in yellow. Unlinked sliders are not outlined, and display a broken link icon underneath. Click the icon to toggle between linked and unlinked. LCD Contrast sliders cannot be linked.
 
@@ -1052,7 +1052,7 @@ Sets the brightness of record target colors. Defaults to 50%.
 
 The configuration settings of any device that has joined your Eos system are saved in your show file as device profiles. You can select a profile to overwrite your current device\'s settings entirely, or select partial settings from a profile to copy.
 
-> ![](media/media/image222.png){width="5.850880358705162in" height="3.0766666666666667in"}
+> *(figure omise)*{width="5.850880358705162in" height="3.0766666666666667in"}
 
 The table displays all device profiles saved in the show file, including the online status, name, and type of the associated device in the system.
 
@@ -1110,7 +1110,7 @@ Choose a PDF page size from Letter, 11x17, A2, A3, and A4.
 
 This display shows diagnostic information about the console. Diagnostics can be opened via Browser > Setup, or via [Tab] [9][9].
 
-![](media/media/image223.jpeg){width="5.790242782152231in" height="3.302811679790026in"}
+*(figure omise)*{width="5.790242782152231in" height="3.302811679790026in"}
 
 All logged internal and external actions appear in the scrollable command feed at the top of the display, which can be filtered by typing in the box at the top. Additional software, hardware, and network information is displayed in the live-updating fields below.
 
@@ -1130,16 +1130,16 @@ The following buttons are available on the right side of the display:
 
 This display shows informational, advisory, or warning messages about your console. Console Status can be opened via Browser > Setup, or through About > Console Status.
 
-![](media/media/image224.png){width="5.0569816272965875in" height="2.1216666666666666in"}
+*(figure omise)*{width="5.0569816272965875in" height="2.1216666666666666in"}
 
 The Type column displays the category of the message:
 
 +----------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------+
-| Informational  | > ![](media/media/image225.png){width="0.37552055993000877in" height="0.37552055993000877in"} | > Instructional data that does not impact console functionality. |
+| Informational  | > *(figure omise)*{width="0.37552055993000877in" height="0.37552055993000877in"} | > Instructional data that does not impact console functionality. |
 +================+===============================================================================================+==================================================================+
-| Advisory       | > ![](media/media/image226.png){width="0.37552055993000877in" height="0.37552055993000877in"} | > Console operation can continue, but with caution.              |
+| Advisory       | > *(figure omise)*{width="0.37552055993000877in" height="0.37552055993000877in"} | > Console operation can continue, but with caution.              |
 +----------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------+
-| Warning        | > ![](media/media/image227.png){width="0.37552055993000877in" height="0.37552055993000877in"} | > Urgent issues that require immediate attention.                |
+| Warning        | > *(figure omise)*{width="0.37552055993000877in" height="0.37552055993000877in"} | > Urgent issues that require immediate attention.                |
 +----------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------+
 
 The Message column displays the message details, and any applicable suggested actions to help resolve the issue. The counter in the top-right displays the total quantity of each type of message. The column on the right indicates whether or not the message has been ignored.

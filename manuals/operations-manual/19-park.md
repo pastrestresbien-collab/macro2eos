@@ -94,7 +94,7 @@ DMX addresses can be parked in Live. Below are some examples of parking an addre
 
 You can park and unpark channel parameters or addresses from the park display. Open the display by pressing [Park] [Park] or [Tab] [2] [0]. While in this display, it is assumed that you want to park channels or parameters, therefore the use of the [Park] key is not necessary when parking, but is used for unparking. You can also use [At] [Enter] to unpark.
 
-![](media/media/image288.png){width="4.559010279965005in" height="2.1454166666666667in"}
+*(figure omise)*{width="4.559010279965005in" height="2.1454166666666667in"}
 
 > **Note:** *[Color Palette] is used in the examples below. Element Classic users will need to use {Color Palette}.*
 

@@ -58,7 +58,7 @@ To navigate this list use the navigation keys as described in *Display Control a
 
 Effects can be assigned an icon, which can be configured to appear on the direct select button in Direct Selects (Tab 4) or Custom Direct Selects (Tab 39). See *Icons (on page 120)*.
 
-![](media/media/image274.png){width="5.062657480314961in" height="3.3329166666666667in"}
+*(figure omise)*{width="5.062657480314961in" height="3.3329166666666667in"}
 
 #### Effect List Navigation
 
@@ -74,7 +74,7 @@ When viewing the effect list, the selected effect is displayed in the CIA. The e
 
 The properties display of the effects editor is shown below and definitions of properties follow:
 
-> ![](media/media/image275.png){width="2.8176115485564304in" height="1.5491655730533684in"}
+> *(figure omise)*{width="2.8176115485564304in" height="1.5491655730533684in"}
 
 #### Type
 
@@ -260,7 +260,7 @@ If your console has encoders, when an effect is selected, the encoders and encod
 >
 > Effect 1 is a step effect with the On State set to 50 and the Off State set to 10. If Size is set to 50, the On State will be set to 50% of 50 and the Off State will be 50% of 10. So On would be 25 and Off would be 5.
 
-![](media/media/image276.png){width="5.020182633420823in" height="1.1399989063867018in"}
+*(figure omise)*{width="5.020182633420823in" height="1.1399989063867018in"}
 
 The effect itself can be accessed for editing from this display by pressing {Edit} - any changes made directly in the effect status display are made to the effect itself and must be stored. Cue level overrides also must be stored or updated to the required cue, but do not impact the basic effect itself.
 
@@ -282,7 +282,7 @@ Several color indicators are used in the Effect Status Display. Those colors and
 
 Clicking on the Attributes column will open the Effect Attribute Override display. From that display, you can access most of the same properties as those found in the Effect Editor. This display allows you to make modifications to properties, and store those modifications in a cue or submaster.
 
-> ![](media/media/image277.png){width="5.378811242344707in" height="3.2916666666666665in"}
+> *(figure omise)*{width="5.378811242344707in" height="3.2916666666666665in"}
 >
 > {Restart Effect} is an atrribute that can only be accessed from this display. When enabled,
 
@@ -294,7 +294,7 @@ Clicking on the Attributes column will open the Effect Attribute Override displa
 
 In the Effect Channels Display, you can override certain effect properties per channel at the cue level. To open this display, press [Expand] [Effect], [Tab] [8], or select the effect channel icon from the display management home screen.
 
-![](media/media/image278.png){width="5.061659011373578in" height="2.6679166666666667in"}
+*(figure omise)*{width="5.061659011373578in" height="2.6679166666666667in"}
 
 The following properties can be overridden:
 
@@ -348,7 +348,7 @@ A step effect is displayed in a chart with the following columns:
 
 All times are entered from the keypad in minutes and seconds, tenths and hundredths.
 
-![](media/media/image279.png){width="4.8962806211723535in" height="1.2342705599300088in"}
+*(figure omise)*{width="4.8962806211723535in" height="1.2342705599300088in"}
 
 If an effect step is on the command line or indicated in the blue text to the left of the command line, entering a number on the command line will default to selecting a step for the current selected effect.
 
@@ -460,7 +460,7 @@ Absolute effects are displayed in a chart with the following columns:
 
 -   Level - indicates either the level of the parameter specified in the effect, or the referenced value for the channel(s) to perform (Palette or preset as defined in the command line).
 
-![](media/media/image280.png){width="5.0614752843394575in" height="1.2864577865266842in"}
+*(figure omise)*{width="5.0614752843394575in" height="1.2864577865266842in"}
 
 In the above image, actions 1 through 7 indicate referenced values in the "Level" column (palettes or presets), though these values can be absolute data as well.
 
@@ -622,7 +622,7 @@ New focus effects default to a circle. You can clear this and draw your own shap
 
 {Edit}>{Clear} and drawing on the graph with your finger or the mouse. Press {Apply} when you are done. Other pre-made focus effects can be modified in the same manner. The green arrow indicates default direction of motion, which can be modified in attributes.
 
-![](media/media/image281.png){width="4.9764698162729655in" height="1.2337489063867018in"}
+*(figure omise)*{width="4.9764698162729655in" height="1.2337489063867018in"}
 
 You can adjust the vertical form of a focus effect by holding hold down [Shift] while using the horizontal encoder, if available.
 
@@ -636,13 +636,13 @@ New color effects default to a circle. You can clear this and draw your own shap
 
 {Edit}>{Clear} and drawing on the graph with your finger or the mouse. Press {Apply} when you are done. Other pre-made color effects can be modified in the same manner. The green arrow indicates default direction of color shift, which can be modified in attributes.
 
-![](media/media/image282.png){width="4.9785706474190725in" height="1.5246872265966753in"}
+*(figure omise)*{width="4.9785706474190725in" height="1.5246872265966753in"}
 
 #### Linear Effects
 
 A linear effect does not have to be parameter specific. Rather it can simply be a reference to a linear diagram which can be applied to any parameter. You can redraw the linear diagram for an existing linear effect by pressing {Edit}>{Clear} and then tracing the diagram on the graph with the mouse or your finger. Press {Apply} when you are done.
 
-![](media/media/image283.png){width="4.963636264216973in" height="1.25125in"}
+*(figure omise)*{width="4.963636264216973in" height="1.25125in"}
 
 #### Define a Pattern Shape
 
@@ -660,7 +660,7 @@ To define a shape, press the {Edit} softkey beneath the pattern editor. The soft
 
 -   *[Effect] [904] [Copy To] [8] [Enter]*
 
-> ![](media/media/image284.png){width="4.995145450568679in" height="2.14375in"}
+> *(figure omise)*{width="4.995145450568679in" height="2.14375in"}
 
 The following tools are also available to edit the curve with the mouse or touchscreen:
 
@@ -938,13 +938,13 @@ Variables give additional options for altering StepBased and Absolute effects on
 
 First, insert one or more variables into a StepBased or Absolute effect using the {Variable} softkey. Available fields are Timing, On State, and Off State for StepBased effects, and Level and Timing for Absolute. A maximum of ten variables can be used.
 
-> ![](media/media/image285.png){width="3.267671697287839in" height="0.6016666666666667in"}
+> *(figure omise)*{width="3.267671697287839in" height="0.6016666666666667in"}
 
 Variables can be substituted for any number in an effect, including for relative timing, and to define the number of a target, such as a Color Palette. Variables can also be used more than once in the same effect, or applied across multiple steps.
 
 Variables need to be defined before the effect can be run. This can be done in the Effects editor by selecting the Attributes field.
 
-![](media/media/image286.png){width="4.19451334208224in" height="1.1439577865266841in"}
+*(figure omise)*{width="4.19451334208224in" height="1.1439577865266841in"}
 
 Define your variables by selecting each one and giving them a value.
 
@@ -952,6 +952,6 @@ Define your variables by selecting each one and giving them a value.
 
 Variables can also be defined in the Effects Status Display (ESD) before an effect is run, or redefined after an effect is already running.
 
-![](media/media/image287.png){width="5.060211067366579in" height="1.1439577865266841in"}
+*(figure omise)*{width="5.060211067366579in" height="1.1439577865266841in"}
 
 Select {Attributes} to define or redefine variables. If variables are redefined in an already-running effect, the ESD will show the effect in red, with an asterisk (*) next to the effect number to indicate that it was modified. Store any manual changes using [Record] or [Update] as normal.

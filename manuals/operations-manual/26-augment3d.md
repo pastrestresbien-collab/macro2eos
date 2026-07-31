@@ -34,7 +34,7 @@ Augment3d includes a feature inside of the iRFR and aRFR mobile apps. iRFR requi
 
 > Eos Family consoles and computers that meet the hardware and software requirements can run Augment3d natively (see *Hardware and Software Requirements (above)*).
 
-![](media/media/image355.png){width="2.505084208223972in" height="0.92625in"}
+*(figure omise)*{width="2.505084208223972in" height="0.92625in"}
 
 Either open a new tab and select {Augment3d} from the Displays list, or hold down [Tab] and type [38].
 
@@ -54,7 +54,7 @@ The setup for this mode is identical to that of an ETCnomad client computer in a
 
     -   System > Users.
 
-![](media/media/image356.png){width="2.951502624671916in" height="1.1558333333333333in"}
+*(figure omise)*{width="2.951502624671916in" height="1.1558333333333333in"}
 
 3.  Connect your computer using an Ethernet cable through a network switch. Ensure that the computer\'s network information is in a compatible range with the console.
 
@@ -62,13 +62,13 @@ The setup for this mode is identical to that of an ETCnomad client computer in a
 
 5.  Choose the correct tether device on the console (see *Augment3d (on page 233)*).
 
-![](media/media/image357.png){width="2.7106364829396323in" height="0.5462489063867016in"}
+*(figure omise)*{width="2.7106364829396323in" height="0.5462489063867016in"}
 
 To exit tether mode, click the {X} in the corner. To exit when in Edit mode, choose File > Exit.
 
 ##### Tether Command Line
 
-![](media/media/image358.png){width="1.2666655730533682in" height="0.12666666666666668in"}
+*(figure omise)*{width="1.2666655730533682in" height="0.12666666666666668in"}
 
 A command line can be displayed on the tethered device, which will mirror the command line on the connected console.
 
@@ -146,7 +146,7 @@ Camera view and other Augment3d settings can be saved directly in Eos Snapshots 
 
 Control Mode is the default Augment3d view, allowing for visualization and navigation of your space, fixtures, and objects.
 
-![](media/media/image359.jpeg){width="5.93824365704287in" height="3.4825in"}
+*(figure omise)*{width="5.93824365704287in" height="3.4825in"}
 
 Collectively, the Augment3d virtual environment is referred to as the model. All fixtures and objects must be part of the model in order to be configured.
 
@@ -172,7 +172,7 @@ Limited toolbar options are available in Control Mode:
 
 Edit Mode is the secondary Augment3d view, allowing for editing and configuration of your space, fixtures, and objects.
 
-![](media/media/image360.jpeg){width="5.94321741032371in" height="3.4854166666666666in"}
+*(figure omise)*{width="5.94321741032371in" height="3.4854166666666666in"}
 
 Surrounding the central workspace are primary windows to assist in fixture and object manipulation: the Library, Materials, Preferences, Hierarchy, and Inspector. These windows can be freely dragged, rearranged, re-sized, and closed.
 
@@ -182,7 +182,7 @@ To enter Edit Mode, press the {Edit} button in the upper-right corner.
 
 > **Note:** *Only one console in a multi-console system can be in Edit Mode at a time.*
 
-![](media/media/image361.jpeg){width="1.0555872703412073in" height="0.8589577865266842in"}
+*(figure omise)*{width="1.0555872703412073in" height="0.8589577865266842in"}
 
 To exit Edit Mode, select {Done}. Choose whether to apply the changes you have made to the Augment3d model, or revert them and exit without saving changes.
 
@@ -194,7 +194,7 @@ In a multi-console system, only one console can edit the Augment3d model at once
 
 In Edit Mode, Augment3d models are arranged around three axes; horizontal X (red) and Y (green), and vertical Z (blue).
 
-![](media/media/image362.jpeg){width="4.076937882764654in" height="2.244374453193351in"}
+*(figure omise)*{width="4.076937882764654in" height="2.244374453193351in"}
 
 The point at the intersection of these axes (0,0,0) is the origin. This virtual point in Augment3d must correspond to a real point in your space, ideally on the floor. This could be in the center of your stage, in a corner, or any convenient point.
 
@@ -206,7 +206,7 @@ By default, Augment3d measures distance in metric (meters). This can be changed 
 
 -   System Settings > System > *Metric / Imperial (on page 213)*.
 
-![](media/media/image363.png){width="1.4542935258092737in" height="1.0643744531933508in"}
+*(figure omise)*{width="1.4542935258092737in" height="1.0643744531933508in"}
 
 Available options are meters, decimal feet, or feet and inches.
 
@@ -214,7 +214,7 @@ Available options are meters, decimal feet, or feet and inches.
 
 The Library contains all of the non-fixture items in an Augment3d project and comes preloaded with a large number of stock objects for your convenience. You can also import your own Augment3d objects (see *Importing Augment3d Objects (on page 541)*).
 
-> ![](media/media/image364.png){width="1.5452723097112862in" height="1.6070833333333334in"}
+> *(figure omise)*{width="1.5452723097112862in" height="1.6070833333333334in"}
 
 Drag objects to add them from the Library into your model at the origin. Use the Search function to quickly locate specific items. Create folders from the dropdown to organize Library items.
 
@@ -256,7 +256,7 @@ Materials in Augment3d are collections of assets that can be applied to objects.
 
 ##### Materials Library
 
-![](media/media/image365.png){width="5.825768810148731in" height="3.915in"}
+*(figure omise)*{width="5.825768810148731in" height="3.915in"}
 
 Navigating to Window > Materials will open a window with the materials library, containing all stock materials, along with any you have created or imported.
 
@@ -266,7 +266,7 @@ Search for materials using the search bar. The dropdown menu allows you to creat
 
 Materials can be dragged from the materials library into the Augment3d scene, and dropped onto objects or object subcomponents to apply the material directly.
 
-![](media/media/image366.png){width="5.847887139107612in" height="2.3558333333333334in"}
+*(figure omise)*{width="5.847887139107612in" height="2.3558333333333334in"}
 
 Selecting a material in the library will display the following options:
 
@@ -296,7 +296,7 @@ Accurately editing the properties above may rely on knowing the UV mapping of an
 
 ##### Materials in the Inspector
 
-![](media/media/image367.png){width="3.2916666666666665in" height="2.46875in"}
+*(figure omise)*{width="3.2916666666666665in" height="2.46875in"}
 
 Selecting an object in the *Hierarchy* will display associated information in the *Inspector*. Selecting in the Materials field will show a list of all materials currently applied to that object.
 
@@ -340,7 +340,7 @@ Preferences contains all the settings for your Augment3d model.
 
 ##### Editor
 
-![](media/media/image368.png){width="3.1059383202099737in" height="1.2072911198600176in"}
+*(figure omise)*{width="3.1059383202099737in" height="1.2072911198600176in"}
 
 ###### Grid
 
@@ -372,7 +372,7 @@ Toggles visible frame rate monitoring on or off.
 
 ##### Graphics
 
-![](media/media/image369.png){width="3.0669160104986877in" height="1.54375in"}
+*(figure omise)*{width="3.0669160104986877in" height="1.54375in"}
 
 ###### Quality
 
@@ -470,7 +470,7 @@ Sets the overall contrast of the Augment3d model.
 
 ##### View
 
-![](media/media/image370.png){width="3.11837489063867in" height="1.5952077865266843in"}
+*(figure omise)*{width="3.11837489063867in" height="1.5952077865266843in"}
 
 ###### Camera Follow Mode
 
@@ -514,7 +514,7 @@ Toggles Cue Preview between Default (off) and Pending Cue. Pending Cue mode allo
 
 ##### Reset
 
-![](media/media/image371.png){width="5.422811679790026in" height="0.7746872265966754in"}
+*(figure omise)*{width="5.422811679790026in" height="0.7746872265966754in"}
 
 ###### Reset Settings to Default
 
@@ -528,7 +528,7 @@ Resets the Augment3d window size and layout back to defaults.
 
 The Hierarchy lists the objects and fixtures currently in your Augment3d model. This includes all objects that have been manually added and all fixtures automatically added via Patch.
 
-![](media/media/image372.png){width="1.6610695538057743in" height="1.5991655730533683in"}
+*(figure omise)*{width="1.6610695538057743in" height="1.5991655730533683in"}
 
 The dropdown menu allows you to add query folders, as well as the option to create new objects and groups without using the Library.
 
@@ -546,7 +546,7 @@ To create a new group, use the dropdown menu to add a new group folder. Items ad
 
 Query folders are smart folders that update their contents automatically. Once a query folder is created from the Hierarchy, the *Inspector (on page 513)* will display options for the folder.
 
-![](media/media/image373.png){width="1.3326060804899387in" height="1.6941666666666666in"}
+*(figure omise)*{width="1.3326060804899387in" height="1.6941666666666666in"}
 
 Available options are:
 
@@ -568,7 +568,7 @@ Use the Sort button next to the dropdown button to organize the contents of the 
 
 ##### Triangle Count
 
-![](media/media/image374.png){width="1.676438101487314in" height="1.203332239720035in"}
+*(figure omise)*{width="1.676438101487314in" height="1.203332239720035in"}
 
 This button provides an overview of the objects using the most triangles, along with information about their impact on Augment3d. Reducing the number of triangles used in a model will improve processing performance.
 
@@ -588,7 +588,7 @@ Complex objects added to the Hierarchy may be expanded into a series of nested o
 
 The Inspector window contains a variety of controls for modification of any selected objects.
 
-![](media/media/image375.jpeg){width="1.5798906386701663in" height="2.85in"}
+*(figure omise)*{width="1.5798906386701663in" height="2.85in"}
 
 ##### Name
 
@@ -660,7 +660,7 @@ Camera provides several options to change your view and position in Augment3d. R
 
 > **Note:** *In a multi-console system, the Augment3d camera view is synced between devices assigned to the same user ID. All other Augment3d settings are set and adjusted per-device.*
 
-![](media/media/image376.png){width="1.9030249343832022in" height="1.6149989063867016in"}
+*(figure omise)*{width="1.9030249343832022in" height="1.6149989063867016in"}
 
 ##### Home
 
@@ -692,7 +692,7 @@ Toggles between Fly and Orbit camera modes. In Fly mode (indicated by a Fly symb
 
 #### Focus Tool
 
-![](media/media/image377.jpeg){width="0.8013615485564305in" height="0.9384372265966754in"}
+*(figure omise)*{width="0.8013615485564305in" height="0.9384372265966754in"}
 
 Provides options to edit the Focus Offset height and toggle automated fixture animation on or off. LEFT MOUSE + CENTER WHEEL will also adjust the height. Also available in Preferences.
 
@@ -700,7 +700,7 @@ Provides options to edit the Focus Offset height and toggle automated fixture an
 
 Labels provides options to toggle various informational overlays on or off. Reset all options to default by clicking Restore Label Defaults. All label options are also available in Preferences.
 
-![](media/media/image378.png){width="1.6748436132983378in" height="1.571457786526684in"}
+*(figure omise)*{width="1.6748436132983378in" height="1.571457786526684in"}
 
 ##### Fixture Labels
 
@@ -718,7 +718,7 @@ Toggles focus handles for all, automated, selected, and / or active fixtures. Sp
 
 Stick beams can be toggled to see where a fixture is pointed (even if it is not currently outputting), or for differentiating between multiple fixtures focused on the same location.
 
-![](media/media/image379.jpeg){width="1.584915791776028in" height="0.6175in"}
+*(figure omise)*{width="1.584915791776028in" height="0.6175in"}
 
 Toggle stick beams for all, moving, selected, active, or inactive fixtures. Reset all options to default by clicking Restore Stick Defaults. Also available in Preferences.
 
@@ -726,7 +726,7 @@ Toggle stick beams for all, moving, selected, active, or inactive fixtures. Rese
 
 Provides options to configure the simulated light in an Augment3d model. Reset all options to default by clicking Restore Beam Defaults. All light options are also available in *Graphics*.
 
-![](media/media/image380.png){width="1.601091426071741in" height="1.5081244531933509in"}
+*(figure omise)*{width="1.601091426071741in" height="1.5081244531933509in"}
 
 ##### Beams
 
@@ -752,13 +752,13 @@ Toggles between no, low, medium, and high overall ambient light levels in the Au
 
 This mode allows Augment3d to display a virtual preview of the look used in the next upcoming cue.
 
-> ![](media/media/image381.png){width="1.0323053368328958in" height="1.1903116797900262in"}
+> *(figure omise)*{width="1.0323053368328958in" height="1.1903116797900262in"}
 
 Reset Cue Preview by clicking Cue Preview Mode Defaults. An eye will appear on the Options icon when in Cue Preview mode. Also available in Preferences.
 
 ##### Quality
 
-![](media/media/image382.jpeg){width="1.9949573490813648in" height="1.9435411198600174in"}
+*(figure omise)*{width="1.9949573490813648in" height="1.9435411198600174in"}
 
 Allows you to adjust the quality of the Augment3d render, the Refresh Rate, and the Lighting mode. Eos Apex consoles and ETCnomad on Windows and macOS allow you to set a resolution limit to improve performance. Also available in Preferences. See *Graphics (on page 507)*.
 
@@ -786,43 +786,43 @@ The following tools are only available when in Edit Mode.
 
 ##### Grid Tool
 
-![](media/media/image383.png){width="0.16656167979002626in" height="0.16656167979002626in"}
+*(figure omise)*{width="0.16656167979002626in" height="0.16656167979002626in"}
 
 Toggles the grid on or off. Also available in Preferences.
 
 ##### Snap Tool
 
-![](media/media/image384.jpeg){width="0.15615157480314962in" height="0.16656167979002626in"}
+*(figure omise)*{width="0.15615157480314962in" height="0.16656167979002626in"}
 
 Toggles object snapping to the grid on or off. Also available in Preferences.
 
 ##### Move Tool
 
-![](media/media/image385.png){width="0.15615157480314962in" height="0.16656167979002626in"}
+*(figure omise)*{width="0.15615157480314962in" height="0.16656167979002626in"}
 
 Allows you to move objects along the X/Y/Z axes. Handles have conical ends.
 
 ##### Scale Tool
 
-![](media/media/image386.png){width="0.1769717847769029in" height="0.16656167979002626in"}
+*(figure omise)*{width="0.1769717847769029in" height="0.16656167979002626in"}
 
 Allows you to resize objects along the X/Y/Z axes. Handles have cubic ends. Use the center handle to resize all dimensions proportionally.
 
 ##### Rotate Tool
 
-![](media/media/image387.png){width="0.14574146981627298in" height="0.16656167979002626in"}
+*(figure omise)*{width="0.14574146981627298in" height="0.16656167979002626in"}
 
 Allows you to rotate objects around the X/Y/Z axes.
 
 ##### Local Tool
 
-![](media/media/image388.png){width="0.16656167979002626in" height="0.16656167979002626in"}
+*(figure omise)*{width="0.16656167979002626in" height="0.16656167979002626in"}
 
 Toggles Move and Rotate object tools between global XYZ orientation and object
 
 XYZ orientation. Scale is always performed relative to the object\'s Local XYZ orientation.
 
-![](media/media/image389.jpeg){width="3.413325678040245in" height="1.2431244531933507in"}
+*(figure omise)*{width="3.413325678040245in" height="1.2431244531933507in"}
 
 On the left barrel, Local is toggled off, so the Move tool orients itself based on the Augment3d model. On the right, Local is toggled on, so the Move tool orients itself relative to the position of the barrel.
 
@@ -842,7 +842,7 @@ In Patch, certain fixtures will appear with the Augment3d \"3d\" logo next to th
 
 > Position data is either local or world. For more information, see *Inspector (on page 513)*.
 
-![](media/media/image390.jpeg){width="4.569055118110236in" height="1.4368744531933508in"}
+*(figure omise)*{width="4.569055118110236in" height="1.4368744531933508in"}
 
 In the above example, the fixture patched to Channel 184 is -2 meters offset on the X axis, -13 meters offset on the Y axis, and 7.5 meters offset on the Z axis.
 
@@ -850,13 +850,13 @@ In the above example, the fixture patched to Channel 184 is -2 meters offset on 
 
 Orientation data reflects how the fixture is rotated. The values for X, Y, and Z represent a rotation in degrees around that axis in relation to the global XYZ axes.
 
-![](media/media/image391.jpeg){width="3.3219903762029745in" height="2.28in"}
+*(figure omise)*{width="3.3219903762029745in" height="2.28in"}
 
 The above left example shows the default orientation of 0/0/0, or pointing straight down. The center shows a rotation of 180° about the X axis, pointing the fixture straight up. The final example shows a rotation of 90° about the Y axis, pointing the fixture to the side.
 
 #### Adding Fixtures Manually
 
-![](media/media/image392.png){width="4.261209536307962in" height="1.2825in"}
+*(figure omise)*{width="4.261209536307962in" height="1.2825in"}
 
 Under the Augment3d section in Patch, fixtures have fields for XYZ Position and Orientation. If the fixture is nested, this data is relative to the parent. World Position and Orientation are absolute, relative to the scene overall. If nested, an arrow indicator will apear next to the position and orientation fields. For more information about nesting, see *Nesting Objects*.
 
@@ -914,7 +914,7 @@ to display accurately in Augment3d.
 
 3.  Set the frame assembly angle near the mid-range so that the shutters form a square.
 
-![](media/media/image393.jpeg){width="5.85081583552056in" height="2.2422911198600173in"}
+*(figure omise)*{width="5.85081583552056in" height="2.2422911198600173in"}
 
 Standard shutter controls are now normalized relative to the square so that A controls the top edge, with controls B, C, and D continuing clockwise in that order.
 
@@ -924,7 +924,7 @@ Pushrod-style shutter parameters are normalized so that frame a1 corresponds to 
 
 If your fixture has a moving mirror accessory, it must be patched to a two-part channel, with P1 patched to an address as a dimmer and P2 as a moving mirror accessory.
 
-![](media/media/image394.png){width="5.867490157480315in" height="1.0040616797900261in"}
+*(figure omise)*{width="5.867490157480315in" height="1.0040616797900261in"}
 
 Position and orientation data for the fixture can only be added and edited in P1. Attempting to add position and orientation data to the entire channel will return a syntax error. The moving mirror can be controlled via the pan and tilt parameters for P2.
 
@@ -958,7 +958,7 @@ The Orientation property for conventional (non-automated) fixtures is used to ai
 
 When importing, you will likely need to adjust the data before proceeding.
 
-![](media/media/image165.jpeg){width="5.080823490813648in" height="1.1439577865266841in"}
+*(figure omise)*{width="5.080823490813648in" height="1.1439577865266841in"}
 
 ###### Options
 
@@ -988,23 +988,23 @@ Eos will accept multiple address formats for importing. Examples of those format
 
 You can also map Eos fixture library devices to devices in the source file.
 
-![](media/media/image166.png){width="5.13340113735783in" height="1.3220833333333333in"}
+*(figure omise)*{width="5.13340113735783in" height="1.3220833333333333in"}
 
 1.  Select {Map Devices} to open the mapping utility.
 
 2.  Select a device from the Source File column and choose its matching Eos fixture profile. Multiple devices can be selected at a time.
 
-![](media/media/image167.png){width="4.7091447944007in" height="1.1281244531933508in"}
+*(figure omise)*{width="4.7091447944007in" height="1.1281244531933508in"}
 
 3.  Select {Link Devices}.
 
-![](media/media/image168.png){width="4.7091447944007in" height="1.1281244531933508in"}
+*(figure omise)*{width="4.7091447944007in" height="1.1281244531933508in"}
 
 4.  Repeat steps 2 and 3 until all devices have been associated with fixture profiles. To unlink a device, select it in the Mapping column and select {Unlink Device}.
 
 5.  When complete, select {Done}, then {OK}. Your devices and their associated position information will now appear in Patch and Augment3d.
 
-![](media/media/image395.png){width="3.9828740157480316in" height="1.2349989063867017in"}
+*(figure omise)*{width="3.9828740157480316in" height="1.2349989063867017in"}
 
 Device mapping and import fields are saved with the show file.
 
@@ -1028,7 +1028,7 @@ For best results, the four points should be on the same plane (have the same Z c
 
 1.  Determine the X and Y coordinates of these points by measuring outwards from the origin point.
 
-![](media/media/image396.png){width="3.7538779527559054in" height="1.151874453193351in"}
+*(figure omise)*{width="3.7538779527559054in" height="1.151874453193351in"}
 
 Once you have your points chosen and measured, enter the coordinates for each point.
 
@@ -1066,11 +1066,11 @@ Multiple FPE sets can be useful for consoles that control more than one space, o
 
 Once you have at least four FPE Points matched to Focus Palettes, you are ready to calculate FPE.
 
-![](media/media/image397.png){width="1.8203729221347331in" height="1.151874453193351in"}
+*(figure omise)*{width="1.8203729221347331in" height="1.151874453193351in"}
 
 Press Realculate FPE , then Confirm FPE to commit your changes.
 
-![](media/media/image398.png){width="4.37346675415573in" height="1.413124453193351in"}
+*(figure omise)*{width="4.37346675415573in" height="1.413124453193351in"}
 
 A window will appear summarizing any FPE changes and / or a table of errors.
 
@@ -1106,15 +1106,15 @@ FPE accuracy is dependent on profile information and user-supplied data. If the 
 
 ###### Best Practices
 
-![](media/media/image399.jpeg){width="4.488533464566929in" height="3.9622911198600175in"}
+*(figure omise)*{width="4.488533464566929in" height="3.9622911198600175in"}
 
 There are many ways to select FPE Point positions. The preferred method is to use at least 4 points close to the bounds of your space, as in the example above. Larger angles between points reduces the possibility of redundant information being used in the calculation. It may help to think of the points as outlining the base of a 3D shape that should cover as much of your space as possible.
 
-> ![](media/media/image400.jpeg){width="3.974932195975503in" height="2.2404155730533684in"}
+> *(figure omise)*{width="3.974932195975503in" height="2.2404155730533684in"}
 
 One example of a poor configuration is shown above, with all FPE points in a line. The two center points are redundant, as they are part of the line from the two end points. Additionally, there is no coverage of the stage space possible with all points arranged in a line.
 
-![](media/media/image401.jpeg){width="4.481347331583552in" height="3.96625in"}
+*(figure omise)*{width="4.481347331583552in" height="3.96625in"}
 
 A better (but still problematic) configuration is pictured above. Since one of the points is in a line between two others, the data from that point is redundant and cannot be used to calculate the fixtures\' positions.
 
@@ -1138,7 +1138,7 @@ If fixture response is inaccurate or if fixtures are not generated correctly in 
 
     -   Do any of the fixtures pan more than 180 degrees? If so, press {Flip} and re-record (or update) the Focus Palette
 
-![](media/media/image402.png){width="3.2889916885389328in" height="0.9618744531933509in"}
+*(figure omise)*{width="3.2889916885389328in" height="0.9618744531933509in"}
 
 -   Add an additional FPE Reference Point and Focus Palette. Recalculate FPE. Is fixture response more accurate?
 
@@ -1194,7 +1194,7 @@ If the pan direction is correct, but the virtual fixture pans further in either 
 
 1.  Aim your fixture at a point on your stage. Press the "Flip" button. Does the fixture return to the same point? If so, pan is mapped correctly. If not, set the fixture\'s tilt to +90°,or until the fixture is pointing forwards.
 
-![](media/media/image402.png){width="3.2889916885389328in" height="0.9618744531933509in"}
+*(figure omise)*{width="3.2889916885389328in" height="0.9618744531933509in"}
 
 2.  Test with pan values of -90°, 0°, and +90°. The fixture should point to the left, straight forwards, and to the right, respectively. If so, pan is mapped correctly. If not, follow the steps below to correct the pan range in the Fixture Profile Editor.
 
@@ -1208,7 +1208,7 @@ If the pan direction is correct, but the virtual fixture pans further in either 
 
     c.  *Using About (on page 443)*, find the raw DMX values for pan (including course and fine), and note them.
 
-![](media/media/image403.png){width="3.114663167104112in" height="1.1241666666666668in"}
+*(figure omise)*{width="3.114663167104112in" height="1.1241666666666668in"}
 
 d.  Set this new raw DMX level as your pan DMX home value in the *Fixture Editor (on page 193)*.
 
@@ -1306,11 +1306,11 @@ Selecting and holding on an object or plane in your Augment3d model will focus t
 
 ###### Labels Tool
 
-![](media/media/image404.jpeg){width="5.825024059492564in" height="1.8793744531933507in"}
+*(figure omise)*{width="5.825024059492564in" height="1.8793744531933507in"}
 
 Fixture Labels display the channel number of the fixture. This can be useful in identifying which fixture is creating a particular beam of light.
 
-![](media/media/image405.jpeg){width="5.694514435695538in" height="1.8880205599300088in"}
+*(figure omise)*{width="5.694514435695538in" height="1.8880205599300088in"}
 
 Focus Handles create a controllable point at the end of the beam of an automated fixture, which can be dragged to focus a single fixture, or multiple fixtures together while maintaining their spatial relationships.
 
@@ -1318,7 +1318,7 @@ Focus Handles create a controllable point at the end of the beam of an automated
 
 ###### Sticks Tool
 
-![](media/media/image406.jpeg){width="5.794662073490814in" height="2.0658333333333334in"}
+*(figure omise)*{width="5.794662073490814in" height="2.0658333333333334in"}
 
 Stick Beams draws a line from the fixture to wherever the beam lands. Stick Beams do not require intensity and can be used to focus a fixture that is not currently outputting.
 
@@ -1358,7 +1358,7 @@ The Position, Scale, and Rotation of any object in an Augment3d model can be mod
 
 Selecting one of the modification tools from the toolbar puts the selected object or objects into the corresponding modification mode (Move, Scale, and Rotation, as seen left-to-right below).
 
-![](media/media/image407.jpeg){width="3.6139359142607175in" height="1.832707786526684in"}
+*(figure omise)*{width="3.6139359142607175in" height="1.832707786526684in"}
 
 > These parameters can also be modified using the quick buttons in the Inspector. See *Rotation (on page 513)*.
 
@@ -1404,7 +1404,7 @@ This position and orientation data sets the origin point of the SEM. When an SEM
 
 Zones are volumes (areas of your space) that can be defined in Augment3d which will affect any fixture whose beam interacts with them. The fixture behavior is configurable and will use override data, which will temporarily take control over any recorded or manual data.
 
-> ![](media/media/image408.jpeg){width="5.858543307086614in" height="3.3in"}
+> *(figure omise)*{width="5.858543307086614in" height="3.3in"}
 
 Zones appear in the *Library (on page 502)* as a distinct object type that can be added to your Augment3d model.
 
@@ -1412,7 +1412,7 @@ Zones appear in the *Library (on page 502)* as a distinct object type that can b
 
 > Once added to your model, zones can be configured in the *Inspector (on page 513)*
 
-![](media/media/image409.png){width="2.84375in" height="3.0833333333333335in"}
+*(figure omise)*{width="2.84375in" height="3.0833333333333335in"}
 
 Fields are available to set the name, color, and unique ID number of the zone, along with the following options:
 
@@ -1466,7 +1466,7 @@ Depending on the chosen behavior, additional configuration options may be availa
 
 Zone-based fixture instructions override any recorded or manual data. When one or more fixture beams enters the zone boundary, the override is applied, and the fixtures will follow the zone configuration. This is indicated in Live with pink text indicating the zone source (see *Color Indicators (on page 103)*).
 
-![](media/media/image410.png){width="3.3020833333333335in" height="1.6770833333333333in"}
+*(figure omise)*{width="3.3020833333333335in" height="1.6770833333333333in"}
 
 Once a fixture exits the zone, the override is released and background data is restored.
 
@@ -1494,7 +1494,7 @@ Once imported, the file will appear in the Library. Drag it into your workspace 
 
 After a file is selected via the file browser, the Import Options panel will display.
 
-![](media/media/image411.png){width="2.0892082239720033in" height="2.16125in"}
+*(figure omise)*{width="2.0892082239720033in" height="2.16125in"}
 
 Use the available options to configure the import to correctly represent your file in Augment3d.
 
@@ -1508,7 +1508,7 @@ The original object dimensions are displayed in the original unit. Choose a diff
 
 Determines the position of the object relative to the origin when added to the model from the Library. Defaults to Ground.
 
-> ![](media/media/image412.jpeg){width="4.9620909886264215in" height="2.604582239720035in"}
+> *(figure omise)*{width="4.9620909886264215in" height="2.604582239720035in"}
 
 -   As Model - the object will be placed using the origin point defined in the object model.
 
@@ -1726,7 +1726,7 @@ This is a comprehensive list of all 3D file formats compatible with Augment3d:
 
 > Right-click on the Augment3d tab to reveal the context menu, which contains options for working in tandem with pixel maps (see *Virtual Media Server (on page 548)*) and magic sheets (see *About Magic Sheets (on page 476)*).
 >
-> ![](media/media/image413.png){width="0.9291382327209099in" height="1.5279166666666666in"}
+> *(figure omise)*{width="0.9291382327209099in" height="1.5279166666666666in"}
 >
 > The context menu also has options to set the display mode of Augment3d. See Setup > *User > Displays (on page 223)* > {Augment3d Display Mode}.
 

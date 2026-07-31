@@ -119,7 +119,7 @@ The following actions are possible:
 
 When [Offset] is pressed, a channel distribution display will open.
 
-![](media/media/image228.png){width="3.6886712598425198in" height="1.405207786526684in"}
+*(figure omise)*{width="3.6886712598425198in" height="1.405207786526684in"}
 
 The following options are available as extensions of [Offset]. Options can be used together. These extensions can be used to create *Subgroups (on page 275)*. To close the offset display, press {Close}.
 
@@ -245,7 +245,7 @@ Direct selects provide one-touch selection of channels, groups, palettes, preset
 
 Open a direct select display by selecting {Direct Selects} from the Home Screen and then select the {Channels} button. When channels are posted to the direct selects, you can select one simply by pressing the channel's touchbutton. The command line will show the appropriate channel and the selected direct select will be outlined in yellow.
 
-> ![](media/media/image229.png){width="5.003333333333333in" height="3.5961450131233597in"}
+> *(figure omise)*{width="5.003333333333333in" height="3.5961450131233597in"}
 
 Channel selection from the direct selects is an additive process. When a channel is selected, it is added to the current selection set. To select only one channel and deselect all others, double-press the channel touchbutton.
 
@@ -267,7 +267,7 @@ The following examples illustrate the various methods of selecting channels usin
 
 -   {Channel 5} {Channel 6} - adds channels 5 and 6 to the current channel selection.
 
--   This is similar to pressing [+] [5 [+] [6] [Enter] from the keypad.
+-   This is similar to pressing [+] 5 [+] [6] [Enter] from the keypad.
 
 -   {Channel 5} {Channel 5} - selects channel 5 and deselects all other channels.
 
@@ -339,7 +339,7 @@ The parameters are divided into the following categories: Intensity, Focus, Colo
 
 Beam has three subcategories: {Form}, {Image}, and {Shutter}. These subcategories are represented with buttons in the CIA. Pressing these buttons allows you to select all parameters within those subcategories. On consoles with encoders, these subcategories correspond to the way the encoders are mapped.
 
-![](media/media/image230.png){width="3.380272309711286in" height="2.0467705599300086in"}
+*(figure omise)*{width="3.380272309711286in" height="2.0467705599300086in"}
 
 Within the CIA, in the upper left corner, notice the {All NPs} button. When pressed, this collects all non-intensity parameters for further editing.
 
@@ -553,7 +553,7 @@ The shutter controls window allows you to move individual shutters by holding do
 
 <D> buttons around the outside of the shutter graphic.
 
-![](media/media/image231.png){width="3.8713845144356958in" height="1.605207786526684in"}
+*(figure omise)*{width="3.8713845144356958in" height="1.605207786526684in"}
 
 ###### Encoder Buttons
 
@@ -593,7 +593,7 @@ Depending upon the specific device, color can be established manually with the e
 
 -   CIE color picker tool
 
-> ![](media/media/image232.jpeg){width="5.799040901137358in" height="1.7159372265966755in"}
+> *(figure omise)*{width="5.799040901137358in" height="1.7159372265966755in"}
 >
 > You may also specify color by using the full color picker on [Tab] [2] [7]. See *Using the Color Picker (below)*.
 
@@ -625,7 +625,7 @@ Pressing the {Custom} button enables custom encoder mode. For more information, 
 >
 > With the color picker open, you have the choice between six different *Color Spaces*, a *Gel Picker*, *Color Path*, *Tinting Tools*, and *Spectrum Tools*.
 >
-> ![](media/media/image233.jpeg){width="2.162269247594051in" height="1.6783333333333332in"}
+> *(figure omise)*{width="2.162269247594051in" height="1.6783333333333332in"}
 
 Settings can be enabled or disabled for this tab via the gear icon at the left of the tab bar, or via the tab\'s submenu at the bottom of the *Tab Tools (on page 88)* context menu.
 
@@ -637,7 +637,7 @@ When the color picker is first opened, the CIE xy color space and the gel picker
 
 The available color spaces are:
 
-![](media/media/image234.jpeg){width="4.997229877515311in" height="3.7583333333333333in"}
+*(figure omise)*{width="4.997229877515311in" height="3.7583333333333333in"}
 
 > **Note:** *When a fixture is in HS mode, the brightness control is not provided. Intensity controls the brightness.*
 
@@ -653,7 +653,7 @@ Tapping anywhere in the color space will cause the crosshair to move to that loc
 
 The {\^} button will create the brightest version of the selected color. Press the {?} button to display labels on all of the controls.
 
-![](media/media/image235.png){width="3.1351706036745406in" height="1.9079166666666667in"}
+*(figure omise)*{width="3.1351706036745406in" height="1.9079166666666667in"}
 
 For the RGB and CMY color spaces, you can change which color control is on the vertical encoder. Touch the label of the virtual encoder to change which color control is located on the vertical encoder. In the following graphics, Red is on the vertical encoder in the first one and green is on the vertical encoder in the second one. This is also indicated by the highlighted encoder name.
 
@@ -677,7 +677,7 @@ Regardless which of the six color spaces you work in, Eos will translate the inf
 
 When the gel picker is opened up with a color space, dots will display on the color space. These dots represent the gels in the currently selected gel book. Hovering over a dot with a mouse will display the gel\'s name and a color swatch.
 
-![](media/media/image236.png){width="3.9617661854768156in" height="2.5689577865266844in"}
+*(figure omise)*{width="3.9617661854768156in" height="2.5689577865266844in"}
 
 The following buttons are also available:
 
@@ -713,7 +713,7 @@ The channel display will show the frame number and the corresponding label that 
 
 > The Tinting Tools option is found by right-clicking on the Color Picker tab (*Using the Color Picker (on page 253)*).
 
-![](media/media/image237.png){width="1.0588648293963254in" height="1.9723950131233596in"}
+*(figure omise)*{width="1.0588648293963254in" height="1.9723950131233596in"}
 
 Tint allows you to easily adjust color regardless of the color space that you\'re working in.
 
@@ -731,35 +731,35 @@ Color paths are selected either by clicking on the drop down above the color pat
 
 The color path display has a drop down list of the available paths, a color path preview bar, and control buttons. An indication line will display on the color space to show the color fade.
 
-![](media/media/image238.jpeg){width="5.11055227471566in" height="2.181457786526684in"}
+*(figure omise)*{width="5.11055227471566in" height="2.181457786526684in"}
 
 Available control buttons are:
 
--   ![](media/media/image239.jpeg){width="0.8645833333333334in" height="0.3020833333333333in"}
+-   *(figure omise)*{width="0.8645833333333334in" height="0.3020833333333333in"}
 
     -   replays the color fade using the cue time.
 
--   ![](media/media/image240.jpeg){width="0.875in" height="0.2916666666666667in"}
+-   *(figure omise)*{width="0.875in" height="0.2916666666666667in"}
 
     -   replays the color fade using the Go to Cue time from Setup.
 
--   ![](media/media/image241.png){width="0.875in" height="0.2708333333333333in"}
+-   *(figure omise)*{width="0.875in" height="0.2708333333333333in"}
 
     -   replays the color fade in five seconds.
 
--   ![](media/media/image242.png){width="0.875in" height="0.2604166666666667in"}
+-   *(figure omise)*{width="0.875in" height="0.2604166666666667in"}
 
     -   replays the color fade in ten seconds.
 
--   ![](media/media/image243.png){width="0.875in" height="0.28125in"}
+-   *(figure omise)*{width="0.875in" height="0.28125in"}
 
     -   pauses the color fade.
 
--   ![](media/media/image244.png){width="0.875in" height="0.28125in"}
+-   *(figure omise)*{width="0.875in" height="0.28125in"}
 
     -   plays / resumes the color fade.
 
--   ![](media/media/image245.png){width="0.875in" height="0.2708333333333333in"}
+-   *(figure omise)*{width="0.875in" height="0.2708333333333333in"}
 
     -   skips to the end of the color fade.
 
@@ -767,7 +767,7 @@ You can also click on the color path preview bar to scrub to any point along the
 
 Additional controls may be available based on the color path selected. For example, Color Path 7 has additional controls for Hue, Saturation, and Brightness. You can move those controls to adjust the fade, and you\'ll see a representation of those changes in both the color path preview bar and in the color space.
 
-![](media/media/image246.jpeg){width="5.189430227471566in" height="2.2404166666666665in"}
+*(figure omise)*{width="5.189430227471566in" height="2.2404166666666665in"}
 
 Changes can be stored in the destination cue as absolute data by using [Update] or [Record]. When there\'s a change to the color path information, a red c will display next to the channel number and the color path\'s name will display in red in the color path display. When that data has been saved, a blue c will display. The color path\'s name will also display in blue in the color path display.
 
@@ -775,7 +775,7 @@ You can save changes to a new color path by using [Record] [Path] [n]. Ion Class
 
 > **Note:** *If multiple channels are selected that have different color paths assigned to them, a + will display by the color path name in the color path preview bar.*
 >
-> See *[[About] Color Path (on page 453)](#_bookmark451)* and *Patch > Attributes (on page 182)*.
+> See *[[About] Color Path (on page 453)* and *Patch > Attributes (on page 182)*.
 
 ##### Spectrum Tools
 
@@ -789,11 +789,11 @@ The following screenshots show a 7 color fixture. This display will change based
 
 > **Note:** *The gray line shows the composite color of the fixture. If multiple fixtures are selected, the gray line represents the first channel selected.*
 
-![](media/media/image247.jpeg){width="3.1106496062992126in" height="1.4340616797900263in"}
+*(figure omise)*{width="3.1106496062992126in" height="1.4340616797900263in"}
 
 With the *Gel Picker* open and a gel selected, a dotted line will appear in the Spectrum display. That line represents the selected gel.
 
-![](media/media/image248.jpeg){width="4.8812390638670164in" height="2.5847911198600175in"}
+*(figure omise)*{width="4.8812390638670164in" height="2.5847911198600175in"}
 
 {Hold Color Point} allows you to adjust individual emitters and the other emitters will automatically adjust to hold the color selected. This can only be used with fixtures that have more than three color parameters.
 
@@ -877,7 +877,7 @@ With a cell selected you can apply data to the master channel as long as the cel
 
 Cells will not send data to other cells. Table view is helpful for seeing which cells control what parameters.
 
-> ![](media/media/image249.png){width="4.974757217847769in" height="3.2025in"}
+> *(figure omise)*{width="4.974757217847769in" height="3.2025in"}
 >
 > Cell 2 of a fixture is currently selected. You can adjust the encoders for pan and tilt even if the master actually controls those parameters. The cell will send that information to the master. This allows for greater ease of control.
 
@@ -911,7 +911,7 @@ Lamp Controls (Tab 31) allow you to execute control functions of selected fixtur
 
 If the channel is a conventional (intensity-only) fixture, no control options will be displayed. When the selected channel is an automated fixture, options specific to the fixture type will display for use. Available RDM functions will also display here.
 
-![](media/media/image250.png){width="2.1767727471566056in" height="2.197603893263342in"}
+*(figure omise)*{width="2.1767727471566056in" height="2.197603893263342in"}
 
 Pressing any of these control options will affect the selected channel after a confirmation.
 
@@ -1139,7 +1139,7 @@ Staging Mode allows you to preview changes temporarily, and then either commit t
 
 In either Live or Blind, enter Staging Mode by pressing [Staging Mode] or [Stage]. The command line will append \"Staging Mode.\" Make the desired changes. Staged data will display in orange.
 
-> ![](media/media/image251.png){width="4.555845363079615in" height="2.082082239720035in"}
+> *(figure omise)*{width="4.555845363079615in" height="2.082082239720035in"}
 
 If an Augment3d tab is open, staged data will also preview there (for more information, see *Augment3d (on page 495)*). The physical [Stage] key LED will illuminate when in Staging Mode.
 

@@ -14,23 +14,23 @@ Magic sheets are user created interactive displays that offer customizable views
 
 Below are some examples of magic sheets.
 
-![](media/media/image304.jpeg){width="5.603392388451444in" height="2.363124453193351in"}![](media/media/image305.jpeg){width="3.2743952318460194in" height="1.5754166666666667in"}![](media/media/image306.jpeg){width="2.941182195975503in" height="1.7337489063867018in"}
+*(figure omise)*{width="5.603392388451444in" height="2.363124453193351in"}*(figure omise)*{width="3.2743952318460194in" height="1.5754166666666667in"}*(figure omise)*{width="2.941182195975503in" height="1.7337489063867018in"}
 
 ### Magic Sheet Browser
 
 Open the magic sheet browser by pressing [Tab] [3], or by selecting the magic sheet browser icon from the home screen.
 
-![](media/media/image307.png){width="2.4811439195100613in" height="0.6124989063867017in"}
+*(figure omise)*{width="2.4811439195100613in" height="0.6124989063867017in"}
 
 If no magic sheets exist in the show file, the magic sheet browser will be blank except for the New Magic Sheet icon. Click on the icon to open the magic sheet editor.
 
-![](media/media/image308.png){width="5.229737532808399in" height="2.656874453193351in"}
+*(figure omise)*{width="5.229737532808399in" height="2.656874453193351in"}
 
 After you have created a magic sheet, you can recall a specific magic sheet, by pressing [Displays] {Magic Sheet} [#] [Enter] or you can navigate to Displays > Record Targets > Magic Sheet and press [Select] to open the magic sheet list (see *Magic Sheet List (below)*).
 
 All available magic sheets will also be shown in the magic sheet browser.
 
-![](media/media/image309.png){width="4.938367235345582in" height="2.520624453193351in"}
+*(figure omise)*{width="4.938367235345582in" height="2.520624453193351in"}
 
 #### Direct Selects
 
@@ -50,7 +50,7 @@ Magic sheets can be assigned an icon, which can be configured to appear on the d
 
 The display tools for Magic Sheets are available by either right-clicking or double tapping on the Magic Sheet\'s tab. The tab will also indicate if the Magic Sheet is in Live or Blind.
 
-![](media/media/image310.jpeg){width="3.4182053805774277in" height="2.67375in"}
+*(figure omise)*{width="3.4182053805774277in" height="2.67375in"}
 
 > **Note:** *You can click and hold or tap and hold on the Magic Sheet\'s tab to do a zoom to all of the Magic Sheet display.*
 
@@ -96,11 +96,11 @@ Additional mouse commands include:
 
 Selecting from left to right will open the blue window selection box. This selects any object that is completely inside the box. This can be done with a single touch or using a mouse.
 
-![](media/media/image311.png){width="2.31373687664042in" height="1.975624453193351in"}
+*(figure omise)*{width="2.31373687664042in" height="1.975624453193351in"}
 
 Selecting from right to left will open the green crossing selection box. This selects any object that either crosses the boundary line of the box or is completely inside of it. This can be done with a single touch or using a mouse.
 
-![](media/media/image312.png){width="2.272040682414698in" height="1.9415616797900261in"}
+*(figure omise)*{width="2.272040682414698in" height="1.9415616797900261in"}
 
 #### Multi-Touch Gestures
 
@@ -154,7 +154,7 @@ With an external alphanumeric keyboard attached, the following keyboard shortcut
 
 Pressing the edit button on the right hand side of the magic sheet display will open the editing tools.
 
-![](media/media/image313.png){width="4.947508748906387in" height="2.6902077865266842in"}
+*(figure omise)*{width="4.947508748906387in" height="2.6902077865266842in"}
 
 The main area of the magic sheet will display a grid to aid with layout. The editing tools will be displayed on the right side of the magic sheet. The editing tool window is divided up into three areas: layout tools, the MS Object Library, which is made up of four tabs that contain the MS Objects, and the MS Object Properties.
 
@@ -166,7 +166,7 @@ You can drag and drop objects onto the magic sheet, or you can use the layout to
 
 #### Quick Save
 
-![](media/media/image314.png){width="0.8229166666666666in" height="0.5625in"}Clicking on the {Quick Save} button allows you to save an undo restore point for the magic sheet you are working on. Once saved, a green check mark will temporarily appear next to the {Quick Save} button.
+*(figure omise)*{width="0.8229166666666666in" height="0.5625in"}Clicking on the {Quick Save} button allows you to save an undo restore point for the magic sheet you are working on. Once saved, a green check mark will temporarily appear next to the {Quick Save} button.
 
 It is recommended that you click {Quick Save} before making any major changes to the magic sheet that you think you might want to undo. [Undo] [Enter] will take the magic sheet back to the last undo restore point. An undo restore point is also set whenever you exit the editor.
 
@@ -178,7 +178,7 @@ Quick saving a magic sheet will also send any changes made to the magic sheet to
 
 Clicking on the arrow will open the edit mode options, which include:
 
-![](media/media/image315.png){width="0.7119149168853893in" height="1.25875in"}
+*(figure omise)*{width="0.7119149168853893in" height="1.25875in"}
 
 -   Grid Enabled - toggles between a grid being displayed and no grid. With the grid enabled, the magic sheet will also have a snap to grid behavior when placing objects.
 
@@ -216,7 +216,7 @@ Target is used to specify the object, starting target number, and incrementation
 
 Clicking on the magnifying glass will open the zoom mode options, which include:
 
-![](media/media/image316.png){width="0.9048654855643045in" height="0.894582239720035in"}
+*(figure omise)*{width="0.9048654855643045in" height="0.894582239720035in"}
 
 -   Reset Zoom - sets the zoom level to 1:1 and centers the magic sheet.
 
@@ -230,7 +230,7 @@ Clicking on the magnifying glass will open the zoom mode options, which include:
 
 Clicking on the alignment icon will open the alignment options menu.
 
-![](media/media/image317.png){width="0.959012467191601in" height="2.0108333333333333in"}
+*(figure omise)*{width="0.959012467191601in" height="2.0108333333333333in"}
 
 ###### Create Array
 
@@ -238,25 +238,25 @@ Allows you to create arrays of objects. After placing one object of your choice,
 
 ####### Rectangle
 
-![](media/media/image318.png){width="1.153804680664917in" height="1.4289577865266843in"}
+*(figure omise)*{width="1.153804680664917in" height="1.4289577865266843in"}
 
 Lays out a rectangle array of objects. You can define the rows, columns, and spacing.
 
 ####### Circle
 
-![](media/media/image319.png){width="1.0902285651793526in" height="1.2547911198600175in"}
+*(figure omise)*{width="1.0902285651793526in" height="1.2547911198600175in"}
 
 Lays out a circle array of the objects. You can define the numbers of objects and the size of the circle.
 
 ###### Align Settings
 
-![](media/media/image320.png){width="1.7584011373578303in" height="0.4631244531933508in"}
+*(figure omise)*{width="1.7584011373578303in" height="0.4631244531933508in"}
 
 Allows you to align objects either to the left, center, right, or top, middle, bottom.
 
 ###### Align Rotation
 
-![](media/media/image321.jpeg){width="1.1732491251093613in" height="1.235in"}
+*(figure omise)*{width="1.1732491251093613in" height="1.235in"}
 
 Allows you to select multiple objects and align their rotation to the first object selected.
 
@@ -264,7 +264,7 @@ Allows you to select multiple objects and align their rotation to the first obje
 
 Allows you to distribute objects horizontally at an equal distance apart between two objects.
 
-![](media/media/image322.jpeg){width="2.6453029308836395in" height="0.5159372265966754in"}
+*(figure omise)*{width="2.6453029308836395in" height="0.5159372265966754in"}
 
 Set the distance you would like by placing the first and last objects. Then with all objects selected that you wish to distribute (including the first and last ones you positioned), click the
 
@@ -274,7 +274,7 @@ Set the distance you would like by placing the first and last objects. Then with
 
 Allows you to distribute objects vertically at an equal distance apart between two objects.
 
-![](media/media/image323.jpeg){width="1.1161461067366578in" height="1.1756244531933508in"}
+*(figure omise)*{width="1.1161461067366578in" height="1.1756244531933508in"}
 
 Set the distance you would like by placing the first and last objects. Then with all objects selected that you wish to distribute (including the first and last ones you positioned), click the
 
@@ -284,19 +284,19 @@ Set the distance you would like by placing the first and last objects. Then with
 
 Allows you to distribute objects at an equal rotation between two objects.
 
-![](media/media/image324.jpeg){width="2.5966918197725284in" height="0.4184372265966754in"}
+*(figure omise)*{width="2.5966918197725284in" height="0.4184372265966754in"}
 
 Set the level of rotation you would like by placing the first and last objects at a rotation. Then with all objects selected that you wish to rotate (including the first and last ones you positioned), click the {Distribute Rotation} button.
 
 ###### Flip
 
-![](media/media/image325.png){width="0.9664096675415573in" height="0.7353116797900262in"}
+*(figure omise)*{width="0.9664096675415573in" height="0.7353116797900262in"}
 
 Allows you to flip objects horizontally or vertically. You have the option of also flipping the text position and / or the target field positions.
 
 ##### Ordering
 
-![](media/media/image326.png){width="0.7934656605424322in" height="1.2468744531933509in"}The objects can either be placed on their own or stacked on top or beneath of each other. Clicking on the order icon will open the ordering options, which include:
+*(figure omise)*{width="0.7934656605424322in" height="1.2468744531933509in"}The objects can either be placed on their own or stacked on top or beneath of each other. Clicking on the order icon will open the ordering options, which include:
 
 -   Group - allows you to group objects together so they can be moved and rotated like a single object.
 
@@ -322,87 +322,87 @@ The objects section of the editing tools has four tabs:
 
 -   *Background Settings (on page 487)*
 
-![](media/media/image327.png){width="2.362036307961505in" height="1.3234372265966754in"}
+*(figure omise)*{width="2.362036307961505in" height="1.3234372265966754in"}
 
 ##### Magic Sheet Objects
 
 The following table contains the various magic sheet objects located in the first tab, and a brief description of what they do. Settings for objects can be adjusted in the *MS Object Properties (on page 489)* area.
 
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Channel      | ![](media/media/image328.png){width="8.748906386701663e-3in" height="8.748906386701663e-3in"}acts as a direct select for a channel.                                             |
+| Channel      | *(figure omise)*{width="8.748906386701663e-3in" height="8.748906386701663e-3in"}acts as a direct select for a channel.                                             |
 +==============+=================================================================================================================================================================================+
-| Group        | ![](media/media/image329.png){width="8.957786526684164e-3in" height="8.957786526684164e-3in"}acts as a direct select for a group.                                               |
+| Group        | *(figure omise)*{width="8.957786526684164e-3in" height="8.957786526684164e-3in"}acts as a direct select for a group.                                               |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Preset       | ![](media/media/image330.png){width="1.1561679790026246e-2in" height="1.1561679790026246e-2in"}acts as a direct select for a preset.                                            |
+| Preset       | *(figure omise)*{width="1.1561679790026246e-2in" height="1.1561679790026246e-2in"}acts as a direct select for a preset.                                            |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Palettes     | acts as a direct select for a palette.                                                                                                                                          |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Macro        | ![](media/media/image331.png){width="8.541119860017498e-3in" height="8.541119860017498e-3in"}acts as a direct select for a macro.                                               |
+| Macro        | *(figure omise)*{width="8.541119860017498e-3in" height="8.541119860017498e-3in"}acts as a direct select for a macro.                                               |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Blank        | ![](media/media/image332.png){width="8.748906386701663e-3in" height="8.748906386701663e-3in"}can be assigned a target.                                                          |
+| Blank        | *(figure omise)*{width="8.748906386701663e-3in" height="8.748906386701663e-3in"}can be assigned a target.                                                          |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Tombstone    | ![](media/media/image333.png){width="9.165573053368329e-3in" height="9.166666666666667e-3in"}mirrors the channel indicators from the live/blind                                 |
+| Tombstone    | *(figure omise)*{width="9.165573053368329e-3in" height="9.166666666666667e-3in"}mirrors the channel indicators from the live/blind                                 |
 |              |                                                                                                                                                                                 |
 |              | summary view.                                                                                                                                                                   |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Fader        | assigns a virtual fader. If the virtual fader is assigned to                                                                                                                    |
 |              |                                                                                                                                                                                 |
-|              | ![](media/media/image334.png){width="1.0833333333333334e-2in" height="1.0832239720034996e-2in"}                                                                                 |
+|              | *(figure omise)*{width="1.0833333333333334e-2in" height="1.0832239720034996e-2in"}                                                                                 |
 |              |                                                                                                                                                                                 |
 |              | an existing one, their settings will be the same.                                                                                                                               |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Command Line | mirrors the command line. Can be assigned to mirror the                                                                                                                         |
 |              |                                                                                                                                                                                 |
-|              | ![](media/media/image335.png){width="8.748906386701663e-3in" height="8.748906386701663e-3in"}command line for any user. Multiple command lines for different users can be used. |
+|              | *(figure omise)*{width="8.748906386701663e-3in" height="8.748906386701663e-3in"}command line for any user. Multiple command lines for different users can be used. |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Text         | places descriptive text on the sheet. The text can also be                                                                                                                      |
 |              |                                                                                                                                                                                 |
-|              | ![](media/media/image336.png){width="9.165573053368329e-3in" height="9.166666666666667e-3in"}                                                                                   |
+|              | *(figure omise)*{width="9.165573053368329e-3in" height="9.166666666666667e-3in"}                                                                                   |
 |              |                                                                                                                                                                                 |
 |              | assigned a target.                                                                                                                                                              |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Clock        | ![](media/media/image337.jpeg){width="9.582239720034996e-3in" height="9.582239720034996e-3in"}adds a clock.                                                                     |
+| Clock        | *(figure omise)*{width="9.582239720034996e-3in" height="9.582239720034996e-3in"}adds a clock.                                                                     |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Response     | ![](media/media/image338.png){width="1.0833333333333334e-2in" height="1.0833333333333334e-2in"}displays the status of a connected Response Analog IO gateway.                   |
+| Response     | *(figure omise)*{width="1.0833333333333334e-2in" height="1.0833333333333334e-2in"}displays the status of a connected Response Analog IO gateway.                   |
 |              |                                                                                                                                                                                 |
 | Analog IO    |                                                                                                                                                                                 |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| TimeCode     | ![](media/media/image339.png){width="1.1041119860017498e-2in" height="1.1041119860017498e-2in"}displays the status of a specified event list\'s time code.                      |
+| TimeCode     | *(figure omise)*{width="1.1041119860017498e-2in" height="1.1041119860017498e-2in"}displays the status of a specified event list\'s time code.                      |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| sACN Input   | ![](media/media/image340.png){width="1.0416666666666666e-2in" height="1.0416666666666666e-2in"}displays the sACN input values.                                                  |
+| sACN Input   | *(figure omise)*{width="1.0416666666666666e-2in" height="1.0416666666666666e-2in"}displays the sACN input values.                                                  |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Foundation   | Adds a Foundation Motor item to sync with an actual                                                                                                                             |
 |              |                                                                                                                                                                                 |
-| Motor        | ![](media/media/image341.png){width="9.582239720034996e-3in" height="9.582239720034996e-3in"}Foundation.                                                                        |
+| Motor        | *(figure omise)*{width="9.582239720034996e-3in" height="9.582239720034996e-3in"}Foundation.                                                                        |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Line         | draws a line. Examples of use could be as a pipe for                                                                                                                            |
 |              |                                                                                                                                                                                 |
-|              | ![](media/media/image342.png){width="9.165573053368329e-3in" height="9.165573053368329e-3in"}                                                                                   |
+|              | *(figure omise)*{width="9.165573053368329e-3in" height="9.165573053368329e-3in"}                                                                                   |
 |              |                                                                                                                                                                                 |
 |              | fixtures or a divider between buttons.                                                                                                                                          |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Truss        | ![](media/media/image343.png){width="9.998906386701662e-3in" height="9.998906386701662e-3in"}places truss.                                                                      |
+| Truss        | *(figure omise)*{width="9.998906386701662e-3in" height="9.998906386701662e-3in"}places truss.                                                                      |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Shapes       | draws shapes that can have a target assigned to them or                                                                                                                         |
 |              |                                                                                                                                                                                 |
-|              | ![](media/media/image344.png){width="2.041557305336833e-2in" height="2.041557305336833e-2in"}could be used to represent set pieces.                                             |
+|              | *(figure omise)*{width="2.041557305336833e-2in" height="2.041557305336833e-2in"}could be used to represent set pieces.                                             |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Points       | allows for free form creation of objects.                                                                                                                                       |
 +--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ##### Fixture Symbols
 
-![](media/media/image345.png){width="1.2336417322834645in" height="1.9236450131233596in"}
+*(figure omise)*{width="1.2336417322834645in" height="1.9236450131233596in"}
 
 From the second tab, fixture symbols can be placed on a magic sheet. The symbols can be tied to a channel number. Information about that channel can be displayed with the symbol, such as intensity, FCB data, and error indicators. See *MS Object Properties (on page 489)* on the customizing options available.
 
-![](media/media/image346.png){width="2.3620647419072616in" height="0.7882283464566929in"}
+*(figure omise)*{width="2.3620647419072616in" height="0.7882283464566929in"}
 
 ###### Importing Fixture Symbols
 
 Additional fixture symbols can be imported. The symbol must be saved as a .svg image file, and needs to be tagged properly. These tags can be linked to the channel's color, intensity or both.
 
-![](media/media/image347.png){width="1.4475448381452318in" height="0.8706244531933508in"}
+*(figure omise)*{width="1.4475448381452318in" height="0.8706244531933508in"}
 
 The outline section needs to be tagged as etc_symbol_outline0, etc_symbol_outline, and / or etc_symbol_outline2. The base section needs to be tagged as etc_symbol_base0, etc_symbol_ base, and / or etc_symbol_base2. Tags can be layered, and they will render in the order listed below:
 
@@ -440,7 +440,7 @@ Images can be added from the icon library on the third tab and used as objects o
 
 In the fourth tab, you can adjust the settings for the magic sheet background. Backgrounds can be a solid color, a gradient of two colors, or an image.
 
-![](media/media/image348.png){width="1.6190649606299212in" height="6.08187445319335in"}
+*(figure omise)*{width="1.6190649606299212in" height="6.08187445319335in"}
 
 ###### Interactive
 
@@ -500,11 +500,11 @@ You can select or import an image directly from this tab by pressing the choose 
 
 Magic Sheets can be exported and imported in .xml format. The export and import icons are located at the bottom of the background settings tab.
 
-![](media/media/image349.jpeg){width="1.4459864391951005in" height="0.8696872265966754in"}
+*(figure omise)*{width="1.4459864391951005in" height="0.8696872265966754in"}
 
 #### MS Object Properties
 
-![](media/media/image350.png){width="0.8347626859142607in" height="1.7416655730533683in"}
+*(figure omise)*{width="0.8347626859142607in" height="1.7416655730533683in"}
 
 You can customize MS objects and fixture symbols in numerous ways found in the MS Object Properties area. With an object selected, you can modify its options.
 
@@ -512,7 +512,7 @@ You can customize MS objects and fixture symbols in numerous ways found in the M
 
 The object's outline width, outline and fill colors can be adjusted here. The object can be linked to the target's color and / or intensity.
 
-![](media/media/image351.png){width="1.276165791776028in" height="1.4408333333333334in"}
+*(figure omise)*{width="1.276165791776028in" height="1.4408333333333334in"}
 
 > **Note:** *If any object\'s outline color is set to Link to Channel Intensity, the brightness of the outline color will be tied to the DMX level of the address. The higher that the DMX value is the brighter the outline color will be.*
 
@@ -628,7 +628,7 @@ Mousing over the command box will display a tooltip of the following command exa
 
 Up to six different fields of custom information can be displayed per objects.
 
-![](media/media/image352.png){width="0.8155282152230972in" height="1.8168744531933507in"}
+*(figure omise)*{width="0.8155282152230972in" height="1.8168744531933507in"}
 
 A field may be set to display the icon associated with the object (direct select, macro, preset, etc).
 
@@ -716,7 +716,7 @@ Refers to the number of objects selected for editing. Multiple objects can be ed
 
 In addition to using the editing tools, objects can be manipulated on the magic sheet using a touchscreen or a mouse. For selection methods for multiple objects, see *Navigating a Magic Sheet (on page 479)*.
 
-![](media/media/image353.png){width="3.8766732283464567in" height="2.4435411198600177in"}
+*(figure omise)*{width="3.8766732283464567in" height="2.4435411198600177in"}
 
 -   The blue handles are used to resize objects without keeping the object\'s aspect ratio.
 
@@ -734,7 +734,7 @@ While in this mode, the monitor with the magic sheet will not display a tab numb
 
 Magic sheets are not editable in this mode, but certain options are available from the gear menu in the lower-left.
 
-![](media/media/image354.png){width="0.9566054243219597in" height="1.4606244531933508in"}
+*(figure omise)*{width="0.9566054243219597in" height="1.4606244531933508in"}
 
 The following options are available in this menu:
 

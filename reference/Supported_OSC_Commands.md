@@ -973,15 +973,15 @@ number>/fire
 
 ## Explicit OSC Output
 
-OSC output exactement comme une sortie Serial String, mais la chaîne doit commencer par une adresse
-OSC (ex : `/device/fader`). Il est possible d'ajouter des arguments en ajoutant `=` à la chaîne, suivi
-d'une liste d'arguments séparés par des virgules.
+OSC output exactly like Serial String output, but the string must start with an OSC address (ex:
+"/device/fader"). Optionally, you may add arguments by adding "=" to the string, followed by a comma
+delimited list of arguments.
 
-- Arguments numériques avec décimale → traités comme des nombres flottants 32 bits
-- Arguments numériques sans décimale → traités comme des entiers 32 bits
-- Arguments non numériques → traités comme des chaînes
+- Numeric arguments with a decimal are treated as 32-bit floating point numbers
+- Numeric arguments with no decimal are treated as 32-bit integer numbers
+- Non-numeric arguments are treated as strings
 
-Exemples :
+Examples:
 ```
 "/device/command"
 "/device/command=1"
@@ -992,7 +992,7 @@ Exemples :
 
 ## Implicit OSC Output
 
-Quand la transmission UDP est activée, certaines commandes OSC sont émises automatiquement :
+When udp transmit is enabled, certain OSC commands are sent out as appropriate:
 
 ### Command Lines
 
@@ -1006,8 +1006,8 @@ Quand la transmission UDP est activée, certaines commandes OSC sont émises aut
 ```
 "/eos/out/softkey/<index>", <string argument with softkey label>
 ```
-- `<index>` est en base 1, plage valide 1-12 (2 pages de 6 softkeys)
-- Nécessite Eos 2.6.0
+- NOTE: `<index>` is 1-based, valid range is 1-12, to account for 2 pages of 6 softkeys.
+  - NOTE: requires Eos 2.6.0
 
 ### OSC Settings
 
@@ -1024,10 +1024,8 @@ Quand la transmission UDP est activée, certaines commandes OSC sont émises aut
 "/eos/out/active/chan", <string argument with active channels and current value from the 1st channel>
 "/eos/out/active/wheel/<number>", <string argument with parameter name and current value from the 1st channel>, <uint32 argument for parameter category, Eos 2.6.0+>
 ```
-- Permet de créer une interface façon ML-Controls via OSC (ex : 10 molettes `/eos/active/wheel/<1-10>` avec libellés correspondants)
-- Si utilisé avec `/eos/active/switch/<number>`, utiliser quand même `/eos/out/active/wheel/<number>` pour le feedback de ce switch
-
-Table des catégories de paramètre (confirme et recoupe le corpus, entrée déjà connue) :
+- NOTE: this allows you to create an ML-Controls style interface via OSC. For example, on the OSC-enabled device, setup 10 wheels (/eos/active/wheel/<1-10>) with matching labels
+- NOTE: if using in conjunction with "/eos/active/switch/<number>", you should still use "/eos/out/active/wheel/<number>" to display feedback for that switch
 
 | Category | Number |
 |---|---|
@@ -1041,30 +1039,31 @@ Table des catégories de paramètre (confirme et recoupe le corpus, entrée déj
 ```
 "/eos/out/color/hs", <float argument: hue (0.0-360.0)> <float argument: saturation (0.0-100.0)>
 ```
-- Si la sélection de channels ne contient pas de couleur, la commande est quand même envoyée, sans argument
-- Nécessite Eos 2.6.0
+- NOTE: if channel selection does not contain a color, the command is still sent, but with no arguments
+- NOTE: requires Eos 2.6.0
 
 ```
 "/eos/out/pantilt", <float argument: pan range min> <float argument: pan range max> <float argument: tilt range min> <float argument: tilt range max> <float argument: pan level> <float argument: tilt level>
 ```
-- Si la sélection ne contient pas de paire pan/tilt, la commande est quand même envoyée, sans argument
-- Nécessite Eos 2.6.0 — **confirme et recoupe** le mécanisme `parsePanTiltRange` déjà documenté dans
-  `reference/JOURNAL_observations_nomad.md` (2026-07-19)
+- NOTE: if channel selection does not contain a pan/tilt pair, the command is still sent, but with no arguments
+- NOTE: requires Eos 2.6.0
+
+*(Note de conversion : `/eos/out/pantilt` recoupe et confirme le mécanisme `parsePanTiltRange` déjà documenté dans `reference/JOURNAL_observations_nomad.md`, entrée du 2026-07-19.)*
 
 ### Parameter Subscriptions
 
-Après abonnement à un ou plusieurs paramètres via `/eos/subscribe/param/<parameter>`, Eos envoie un
-paquet OSC pour chaque paramètre à chaque changement :
+After subscribing to one or more parameters using /eos/subscribe/param/<parameter> (see above), Eos
+will send out an OSC packet for each parameter as they change:
 
 ```
 "/eos/out/param/<parameter>", <float argument: level>, <float argument: range min>, <float argument: range max>
 ```
-- Si la sélection ne contient pas le paramètre, la commande est quand même envoyée, sans argument
-- Nécessite Eos 2.6.0
+- NOTE: if channel selection does not contain the parameter, the command is still sent, but with no arguments
+- NOTE: requires Eos 2.6.0
 
 ### Active Cue
 
-Mise à jour une fois par seconde.
+NOTE: updated once per second.
 
 ```
 "/eos/out/active/cue/<cue list number>/<cue number>", <float argument with percent complete (0.0-1.0)>
@@ -1088,14 +1087,13 @@ Mise à jour une fois par seconde.
 "/eos/out/fader/<index>/<fader index>/name", <string argument with fader label for OSC fader bank at <index> for fader <fader index>>
 "/eos/fader/<index>/<fader index>", <floating point number for fader percent: 0.0-1.0>
 ```
-- **Note officielle confirmant le comportement déjà observé au banc et documenté dans le corpus** :
-  Eos retarde l'envoi des niveaux de fader modifiés via OSC de **3 secondes**. Si un fader est déplacé
-  depuis une télécommande OSC, Eos envoie le niveau réel 3 secondes plus tard.
-  ⚠️ Ce délai de 3 s est la valeur **documentée officiellement (2017)** ; le journal terrain
-  (`reference/JOURNAL_observations_nomad.md`, 2026-07-03) avait mesuré un écho réel à **~522 ms** sur
-  nomad 3.3.5.69 en 2026 — écart significatif entre la doc de 2017 (~Eos 2.x) et le comportement mesuré
-  sur une version bien plus récente. Cohérent avec la fenêtre anti-écho de 4 s déjà retenue dans ce
-  projet pour couvrir les deux cas.
+- NOTE: Eos will delay sending fader levels for faders that have been moved via OSC commands for 3 seconds. So, if you move a fader on an OSC remote control, Eos will send the actual fader level 3 seconds later.
+
+*(Note de conversion : ce délai de 3 s est la valeur documentée officiellement (2017) ; le journal
+terrain (`reference/JOURNAL_observations_nomad.md`, 2026-07-03) avait mesuré un écho réel à ~522 ms
+sur nomad 3.3.5.69 en 2026 — écart significatif entre la doc de 2017 (~Eos 2.x) et le comportement
+mesuré sur une version bien plus récente. Cohérent avec la fenêtre anti-écho de 4 s déjà retenue dans
+ce projet pour couvrir les deux cas.)*
 
 ### OSC Cue List Banks
 
@@ -1103,8 +1101,8 @@ Mise à jour une fois par seconde.
 "/eos/out/cuelist/<index>", <string argument with cue list label>, <uint32 argument with total # of cues>, <int32 argument with cue list follow time (ms)>
 "/eos/out/cuelist/<index>/<cue index>", <string argument with descriptive label including cue number, label, time remaining, state>, <string argument cue number>, <string argument label>, <string argument notes>, <string argument scene>, <bool scene end>, <int32 argument duration(ms)>, <int32 argument remaining(ms)>
 ```
-- `remaining (ms)` : -1 = cue inactive, 0 = cue terminée (orange), positif = cue en cours d'exécution (rouge)
-- Nécessite Eos 2.6.0
+- NOTE: remaining (ms), -1=inactive cue, 0=completed cue (orange), positive=actively running cue (red)
+- NOTE: requires Eos 2.6.0
 
 ### OSC Show Control Events
 
@@ -1129,6 +1127,6 @@ Mise à jour une fois par seconde.
 
 ### Other
 
-Quand Eos reçoit la commande `/eos/ping`, il répond par `/eos/out/ping`. Il est possible d'ajouter
-n'importe quel nombre d'arguments ; Eos répond avec les mêmes arguments — utile par exemple pour
-mesurer la latence.
+When Eos receives the command "/eos/ping" it will reply with "/eos/out/ping". You may optionally add
+any number of arguments and Eos will reply with the same arguments. This may be useful, for example,
+to test latency.

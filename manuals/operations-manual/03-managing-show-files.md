@@ -42,7 +42,7 @@ Bold show names indicate that there are several versions of the show file stored
 
 To open an existing Eos Family show file, navigate within the browser to: File > Open and press [Select].
 
-![](media/media/image156.png){width="3.3910925196850394in" height="1.1479166666666667in"}
+*(figure omise)*{width="3.3910925196850394in" height="1.1479166666666667in"}
 
 Eos provides you with multiple locations to retrieve an Eos Family show file including:
 
@@ -86,7 +86,7 @@ If you select the {Advanced} button in the partial show opening screen, you will
 
 For example, you could specify specific cues and load them to a different range of cue numbers in the new show. You could also specify only specific palettes, presets, effects, and so on. To see the complete list of show components, press the {Advanced} key in the partial show loading screen.
 
-> ![](media/media/image157.png){width="5.4535553368328955in" height="1.3581244531933507in"}
+> *(figure omise)*{width="5.4535553368328955in" height="1.3581244531933507in"}
 
 As you specify components, they are added to a table in the CIA. In the table, fields with a dark background may be edited, fields with a light gray background do not apply to that component. For each component in the list, you can specify the desired range by pressing the proper area in the table and entering numbers from the keypad. The columns in the table are:
 
@@ -168,7 +168,7 @@ If you select the {Advanced} button in the merge show loading screen, you will h
 
 For example, you could specify only cues 5-10 and load them as cues 20-25 in the current show. You could also specify only specific palettes, presets, effects, and so on. To see the complete list of show components, press the {Advanced} key in the merge show loading screen.
 
-![](media/media/image158.jpeg){width="5.065357611548556in" height="1.250832239720035in"}
+*(figure omise)*{width="5.065357611548556in" height="1.250832239720035in"}
 
 As you specify components, they are added to a table in the CIA. In the table, fields with a dark background may be edited, fields with a light gray background do not apply to that component. For each component in the list, you can specify the desired range by pressing the proper area in the table and entering numbers from the keypad. The columns in the table are:
 
@@ -218,7 +218,7 @@ Checking the \"Only Merge Augment3d XYZ Location\" box will merge only the Augme
 
 #### Partial Show File Channel Merge
 
-![](media/media/image159.png){width="2.8039107611548557in" height="1.045in"}
+*(figure omise)*{width="2.8039107611548557in" height="1.045in"}
 
 When Merge Channels is selected, channels from cues, submasters, groups, and other channel targets will be added to any existing channel targets of that same type.
 
@@ -240,7 +240,7 @@ To save a PDF of an Eos Family show file, navigate within the browser to Print.
 
 This will open the printing screen in the CIA. From this screen you can choose which aspects of the show file you want to save to PDF. By default all aspects are selected (gray) and will be saved. To withhold any show aspects from printing, simply deselect them in the CIA by touching the respective button. Deselected show aspects will appear in black.
 
-![](media/media/image160.png){width="5.395833333333333in" height="1.4791666666666667in"}
+*(figure omise)*{width="5.395833333333333in" height="1.4791666666666667in"}
 
 To reselect all show aspects, press the {Select All} button and all buttons will return to gray (selected). To stop the show file from being saved to a PDF and return to the browser, press the {Cancel} button. When you have selected/deselected all of the show aspects you require, press the {Ok} button to create the PDF file.
 
@@ -254,7 +254,7 @@ There are three additional options on the far right side of this display:
 
 You can also choose to print specific portions of show aspects. To select this information, press the {Advanced} button. The buttons at the center of the CIA will again represent all of the show aspects that you can choose. By default all aspects will be deselected (black).
 
-![](media/media/image161.png){width="5.437846675415573in" height="1.375207786526684in"}
+*(figure omise)*{width="5.437846675415573in" height="1.375207786526684in"}
 
 As you select aspects, they will be added to the table in the CIA. For each component in the list, you can specify the desired range by pressing the proper area in the table and entering numbers from the keypad. The columns in the table are:
 
@@ -292,7 +292,7 @@ An asterisk beside the word \"Augment3d\" in parentheses indicates there are uns
 
 If there is unsaved data in the current show file, a save warning will display when you attempt to open a new or existing show file.
 
-![](media/media/image162.png){width="3.086029090113736in" height="1.8433333333333333in"}
+*(figure omise)*{width="3.086029090113736in" height="1.8433333333333333in"}
 
 The following options will be available:
 
@@ -312,7 +312,7 @@ To save the current show data to the Show File Archive on the internal drive wit
 
 To save an existing Eos Family show file to a different location or with a different name, navigate within the Browser to: File > Save As > and press [Select].
 
-![](media/media/image163.jpeg){width="3.3132392825896764in" height="1.1215616797900263in"}
+*(figure omise)*{width="3.3132392825896764in" height="1.1215616797900263in"}
 
 Eos provides you with three locations to save an Eos Family show file, including the Show File Archive, the File Server (if connected) or a USB device (if connected).
 
@@ -326,7 +326,7 @@ By default, the current show file name will be used. Pressing [Label] or [Delete
 
 The Save and Save As dialogs include a variety of options for saving show files.
 
-> ![](media/media/image164.png){width="4.691161417322834in" height="4.003124453193351in"}
+> *(figure omise)*{width="4.691161417322834in" height="4.003124453193351in"}
 
 ##### ESF3D
 
@@ -380,7 +380,7 @@ After choosing the appropriate option, navigate to the storage location of the f
 
 When importing a Lightwright file, you will likely need to adjust the data before proceeding.
 
-![](media/media/image165.jpeg){width="5.080823490813648in" height="1.1439577865266841in"}
+*(figure omise)*{width="5.080823490813648in" height="1.1439577865266841in"}
 
 ##### Options
 
@@ -412,17 +412,17 @@ Eos will accept multiple address formats for importing. Examples of those format
 
 You can also map Eos fixture library devices to devices in the source file.
 
-![](media/media/image166.png){width="5.13340113735783in" height="1.3220833333333333in"}
+*(figure omise)*{width="5.13340113735783in" height="1.3220833333333333in"}
 
 1.  Select {Map Devices} to open the mapping utility.
 
 2.  Select a device from the Source File column and choose its matching Eos fixture profile. Multiple devices can be selected at a time.
 
-![](media/media/image167.png){width="4.7091447944007in" height="1.1281244531933508in"}
+*(figure omise)*{width="4.7091447944007in" height="1.1281244531933508in"}
 
 3.  Select {Link Devices}.
 
-![](media/media/image168.png){width="4.7091447944007in" height="1.1281244531933508in"}
+*(figure omise)*{width="4.7091447944007in" height="1.1281244531933508in"}
 
 4.  Repeat steps 2 and 3 until all devices have been associated with fixture profiles. To unlink a device, select it in the Mapping column and select {Unlink Device}.
 

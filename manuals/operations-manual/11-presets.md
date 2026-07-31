@@ -282,7 +282,7 @@ If {By Type} is used when recording, the lowest number channel of each fixture t
 
 In Blind, the default channel's levels will display in blue, discrete data for the other channels will display in white, and any channels that are using the default channel value will display in magenta.
 
-![](media/media/image254.png){width="5.051574803149606in" height="1.3365616797900262in"}
+*(figure omise)*{width="5.051574803149606in" height="1.3365616797900262in"}
 
 Softkeys available for editing presets in blind are {By Type}, {Discrete}, and {Cleanup}.
 
@@ -350,7 +350,7 @@ Click or tap the second row of the fader page to access this properties display.
 
 The following options are available when a fader is configured as a preset or palette fader:
 
-> ![](media/media/image255.png){width="3.4568569553805775in" height="2.18in"}
+> *(figure omise)*{width="3.4568569553805775in" height="2.18in"}
 
 #### Mode
 

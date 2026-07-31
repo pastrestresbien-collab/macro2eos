@@ -15,7 +15,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Eos Apex 5 Layout
 
-![](media/media/image52.jpeg){width="5.842802930883639in" height="2.5725in"}
+*(figure omise)*{width="5.842802930883639in" height="2.5725in"}
 
 1.  Power button
 
@@ -115,7 +115,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image53.jpeg){width="2.668935914260717in" height="1.47in"}
+*(figure omise)*{width="2.668935914260717in" height="1.47in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -259,7 +259,7 @@ Two USB A ports, capable of delivering 5A / 12.5W of power each, are available f
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.537082239720035in"}
+*(figure omise)*{width="3.323423009623797in" height="1.537082239720035in"}
 
 ###### Book Lights
 
@@ -327,7 +327,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Eos Apex 10 Layout
 
-![](media/media/image55.jpeg){width="5.838899825021873in" height="2.5083333333333333in"}
+*(figure omise)*{width="5.838899825021873in" height="2.5083333333333333in"}
 
 1.  Power button
 
@@ -427,7 +427,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image56.jpeg){width="2.664064960629921in" height="1.28in"}
+*(figure omise)*{width="2.664064960629921in" height="1.28in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -569,7 +569,7 @@ Two USB A ports, capable of delivering 5A / 12.5W of power each, are available f
 
 You may connect Littlites to the back of your console.
 
-> ![](media/media/image54.png){width="3.323423009623797in" height="1.537082239720035in"}
+> *(figure omise)*{width="3.323423009623797in" height="1.537082239720035in"}
 
 ###### Book Lights
 
@@ -637,7 +637,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Eos Apex 20 Layout
 
-![](media/media/image57.jpeg){width="5.831761811023622in" height="2.4325in"}
+*(figure omise)*{width="5.831761811023622in" height="2.4325in"}
 
 1.  Power button
 
@@ -737,7 +737,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image56.jpeg){width="2.664064960629921in" height="1.28in"}
+*(figure omise)*{width="2.664064960629921in" height="1.28in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -879,7 +879,7 @@ Two USB A ports, capable of delivering 5A / 12.5W of power each, are available f
 
 You may connect Littlites to the back of your console.
 
-> ![](media/media/image54.png){width="3.323423009623797in" height="1.537082239720035in"}
+> *(figure omise)*{width="3.323423009623797in" height="1.537082239720035in"}
 
 ###### Book Lights
 
@@ -947,7 +947,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Eos Ti Layout
 
-![](media/media/image58.jpeg){width="5.812415791776028in" height="3.8645833333333335in"}![](media/media/image59.jpeg){width="5.823459098862642in" height="2.9895833333333335in"}
+*(figure omise)*{width="5.812415791776028in" height="3.8645833333333335in"}*(figure omise)*{width="5.823459098862642in" height="2.9895833333333335in"}
 
 #### Eos Ti Components
 
@@ -1019,7 +1019,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image60.jpeg){width="2.672836832895888in" height="1.263332239720035in"}
+*(figure omise)*{width="2.672836832895888in" height="1.263332239720035in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -1125,7 +1125,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.5370833333333334in"}
+*(figure omise)*{width="3.323423009623797in" height="1.5370833333333334in"}
 
 ###### Dimming Task Lights
 
@@ -1189,7 +1189,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Gio Layout
 
-![](media/media/image61.jpeg){width="5.826041119860018in" height="4.1125in"}![](media/media/image62.jpeg){width="5.838076334208224in" height="3.215624453193351in"}
+*(figure omise)*{width="5.826041119860018in" height="4.1125in"}*(figure omise)*{width="5.838076334208224in" height="3.215624453193351in"}
 
 #### Gio Components
 
@@ -1257,7 +1257,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image63.jpeg){width="2.6634339457567804in" height="1.3733333333333333in"}
+*(figure omise)*{width="2.6634339457567804in" height="1.3733333333333333in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -1359,7 +1359,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.5370833333333334in"}
+*(figure omise)*{width="3.323423009623797in" height="1.5370833333333334in"}
 
 ###### Dimming Task Lights
 
@@ -1425,7 +1425,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Gio \@5 Layout
 
-![](media/media/image64.jpeg){width="4.837674978127734in" height="3.969374453193351in"}![](media/media/image65.jpeg){width="4.840454943132109in" height="3.1235411198600174in"}
+*(figure omise)*{width="4.837674978127734in" height="3.969374453193351in"}*(figure omise)*{width="4.840454943132109in" height="3.1235411198600174in"}
 
 #### Gio \@5 Components
 
@@ -1493,7 +1493,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image66.jpeg){width="2.6715890201224846in" height="1.3566666666666667in"}
+*(figure omise)*{width="2.6715890201224846in" height="1.3566666666666667in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -1595,7 +1595,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.5370833333333334in"}
+*(figure omise)*{width="3.323423009623797in" height="1.5370833333333334in"}
 
 ###### Dimming Task Lights
 
@@ -1661,7 +1661,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Ion Xe Layout
 
-![](media/media/image67.jpeg){width="5.835958005249344in" height="3.9010411198600177in"}![](media/media/image68.jpeg){width="5.820580708661417in" height="2.3552077865266843in"}
+*(figure omise)*{width="5.835958005249344in" height="3.9010411198600177in"}*(figure omise)*{width="5.820580708661417in" height="2.3552077865266843in"}
 
 #### Ion Xe Components
 
@@ -1721,7 +1721,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image69.jpeg){width="2.669400699912511in" height="1.6266666666666667in"}
+*(figure omise)*{width="2.669400699912511in" height="1.6266666666666667in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -1807,7 +1807,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.537082239720035in"}
+*(figure omise)*{width="3.323423009623797in" height="1.537082239720035in"}
 
 ###### Dimming Task Lights
 
@@ -1869,7 +1869,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Ion Xe 20 Layout
 
-![](media/media/image70.jpeg){width="5.838202099737533in" height="3.2885411198600174in"}![](media/media/image71.jpeg){width="5.81875in" height="1.939582239720035in"}
+*(figure omise)*{width="5.838202099737533in" height="3.2885411198600174in"}*(figure omise)*{width="5.81875in" height="1.939582239720035in"}
 
 #### Ion Xe 20 Components
 
@@ -1929,7 +1929,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image69.jpeg){width="2.669400699912511in" height="1.6266666666666667in"}
+*(figure omise)*{width="2.669400699912511in" height="1.6266666666666667in"}
 
 > Backlit hardkeys are provided on the face panel. The brightness level for those keys can be adjusted in the *Brightness Settings (on page 232)*.
 
@@ -2021,7 +2021,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.5370833333333334in"}
+*(figure omise)*{width="3.323423009623797in" height="1.5370833333333334in"}
 
 ###### Dimming Task Lights
 
@@ -2085,7 +2085,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Element 2 Layout
 
-![](media/media/image72.jpeg){width="5.834349300087489in" height="3.879166666666667in"}![](media/media/image73.jpeg){width="5.846505905511811in" height="2.209374453193351in"}
+*(figure omise)*{width="5.834349300087489in" height="3.879166666666667in"}*(figure omise)*{width="5.846505905511811in" height="2.209374453193351in"}
 
 #### Element 2 Components
 
@@ -2145,7 +2145,7 @@ Windows 10 consoles
 
 ##### Hardkeys
 
-![](media/media/image74.jpeg){width="2.6730238407699036in" height="1.5766655730533683in"}
+*(figure omise)*{width="2.6730238407699036in" height="1.5766655730533683in"}
 
 Hardkeys are provided on the face panel, divided into several sections based on their functionality.
 
@@ -2227,7 +2227,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-> ![](media/media/image54.png){width="3.323423009623797in" height="1.537082239720035in"}
+> *(figure omise)*{width="3.323423009623797in" height="1.537082239720035in"}
 
 ###### Dimming Task Lights
 
@@ -2289,7 +2289,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Ion Classic Layout
 
-![](media/media/image75.jpeg){width="5.836622922134733in" height="4.265624453193351in"}![](media/media/image76.jpeg){width="5.8313156167979in" height="2.93125in"}
+*(figure omise)*{width="5.836622922134733in" height="4.265624453193351in"}*(figure omise)*{width="5.8313156167979in" height="2.93125in"}
 
 #### Ion Classic Components
 
@@ -2315,7 +2315,7 @@ Display Port can use an active adapter to VGA, DVI, or HDMI. DVI-I can be conver
 
 ##### Hardkeys
 
-![](media/media/image77.jpeg){width="1.6685706474190727in" height="1.46in"}
+*(figure omise)*{width="1.6685706474190727in" height="1.46in"}
 
 Hardkeys are provided on the face panel, divided into several sections based on their functionality.
 
@@ -2399,7 +2399,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.5370833333333334in"}
+*(figure omise)*{width="3.323423009623797in" height="1.5370833333333334in"}
 
 ###### Dimming Task Lights
 
@@ -2463,7 +2463,7 @@ This page provides an overview of the physical layout, components, and capacitie
 
 #### Element Classic Layout
 
-![](media/media/image78.jpeg){width="5.839288057742782in" height="2.7270833333333333in"}![](media/media/image79.jpeg){width="5.813989501312336in" height="2.2385411198600176in"}
+*(figure omise)*{width="5.839288057742782in" height="2.7270833333333333in"}*(figure omise)*{width="5.813989501312336in" height="2.2385411198600176in"}
 
 #### Element Classic Components
 
@@ -2489,7 +2489,7 @@ Display Port can use an active adapter to VGA, DVI, or HDMI. DVI-I can be conver
 
 ##### Hardkeys
 
-![](media/media/image80.jpeg){width="1.6606058617672792in" height="1.3699989063867017in"}
+*(figure omise)*{width="1.6606058617672792in" height="1.3699989063867017in"}
 
 Hardkeys are provided on the face panel, divided into several sections based on their functionality.
 
@@ -2569,7 +2569,7 @@ One USB port is provided on the front of the console to connect any USB storage 
 
 You may connect Littlites to the back of your console.
 
-![](media/media/image54.png){width="3.323423009623797in" height="1.537082239720035in"}
+*(figure omise)*{width="3.323423009623797in" height="1.537082239720035in"}
 
 ###### Dimming Task Lights
 

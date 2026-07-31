@@ -9,7 +9,7 @@
 # Chapter 21
 ## Using About
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
-| [[About]](#_bookmark437)         | 444 |                        |                                                           |
+| [About]         | 444 |                        |                                                           |
 +====================================+======================+========================+===========================================================+
 | {What\'s New}     |                      | > 445 |                                                           |
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
@@ -17,7 +17,7 @@
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
-| [[About] Cue](#_bookmark443)     |                      | 451   |                                                           |
+| [About] Cue     |                      | 451   |                                                           |
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
 +------------------------------------+----------------------+------------------------+-----------------------------------------------------------+
@@ -32,13 +32,13 @@ You can also open an About display in a tab by using [Tab] [2][9].
 
 Press the Link icon to break the link to the command line for the current About display. When the link is broken, the About display will be forced to keep showing the type of information currently being displayed, such as channel, address, or presets. When linked, the About display will be linked to the command line, and will updated based on which target is selected.
 
-![](media/media/image294.png){width="3.0611679790026245in" height="0.47895778652668414in"}
+*(figure omise)*{width="3.0611679790026245in" height="0.47895778652668414in"}
 
 Press {.a[A]} to zoom. There are three zoom sizes: small, medium, & large. Medium is the default size.
 
 When in about mode, selecting a channel will reveal information about that channel. Below are examples of the Current Values view (see below) of information that is presented when selecting conventional or automated fixtures. For more information about the About Channel display, see [*[About] Channel (on page 447)*](#about-channel)
 
-![](media/media/image295.png){width="2.9505872703412073in" height="2.2799989063867017in"}
+*(figure omise)*{width="2.9505872703412073in" height="2.2799989063867017in"}
 
 > About can also be used to display additional information in Live and Blind. See *About and* *Display Toggles (on page 107)*.
 
@@ -276,7 +276,7 @@ Press [About] to put the CIA into About mode. When a channel is selected, the in
 
 -   List of all parameter values with their address, home value, snap parameter, DMX value, and parked value (if any)
 
-![](media/media/image296.png){width="5.032257217847769in" height="1.9499989063867016in"}
+*(figure omise)*{width="5.032257217847769in" height="1.9499989063867016in"}
 
 {Fixture Notes} displays information found in the fixture library such as:
 
@@ -478,7 +478,7 @@ The following information will be displayed when a cue list is selected:
 
 ### [About] Cue
 
-![](media/media/image297.png){width="4.972042869641295in" height="1.9266666666666667in"}
+*(figure omise)*{width="4.972042869641295in" height="1.9266666666666667in"}
 
 The following information will be displayed when a cue is selected:
 

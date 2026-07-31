@@ -132,7 +132,7 @@ To create a pixel map, type in the number you want to assign to it and hit [Ente
 
 The virtual media server and layer(s) need to be assigned to the pixel map.
 
-![](media/media/image414.png){width="5.393685476815398in" height="0.8074989063867016in"}
+*(figure omise)*{width="5.393685476815398in" height="0.8074989063867016in"}
 
 Using the softkeys, select {Server Chan}, {Media Layer Chan}, and {Effect Layer Chan}, and associate them with the channels you want to patch. If those channels are unassigned, Eos will automatically patch them accordingly. An error will appear if any channels are assigned to a different device type.
 
@@ -252,7 +252,7 @@ When working with the Layer Channels, the following controls will be available:
 
 > **Note:** *All Virtual Media Layers operate in 16-bit color mode.*
 
-![](media/media/image415.jpeg){width="4.954593175853018in" height="1.9534372265966755in"}
+*(figure omise)*{width="4.954593175853018in" height="1.9534372265966755in"}
 
 -   {Playback Mode 1}:
 
@@ -280,50 +280,50 @@ When working with the Layer Channels, the following controls will be available:
 
 -   {Mix Modes} - sets how the layers will interact. The following table shows the various mixer modes available. To illustrate the modes, the following layers were used:
 
-![](media/media/image416.jpeg){width="1.575in" height="1.130624453193351in"}
+*(figure omise)*{width="1.575in" height="1.130624453193351in"}
 
   -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   Mode                        Description                                                                                    Result
   --------------------------- ---------------------------------------------------------------------------------------------- --------------------------------------------------------------------------------------------
-  {Over} (Default)            Top layer blended with bottom layer                                                            ![](media/media/image417.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Over} (Default)            Top layer blended with bottom layer                                                            *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {In}                        Top layer with opacity reduced by opacity of bottom layer                                      ![](media/media/image418.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {In}                        Top layer with opacity reduced by opacity of bottom layer                                      *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Out}                       Top layer with opacity reduced by inverse opacity of bottom layer                              ![](media/media/image419.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Out}                       Top layer with opacity reduced by inverse opacity of bottom layer                              *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Atop}                      Top layer with opacity reduced by opacity of bottom layer and then blended with bottom layer   ![](media/media/image420.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Atop}                      Top layer with opacity reduced by opacity of bottom layer and then blended with bottom layer   *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
   -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   Mode                        Description                                                                               Result
   --------------------------- ----------------------------------------------------------------------------------------- --------------------------------------------------------------------------------------------
-  {Add}                       Top and bottom layers color and opacity added together                                    ![](media/media/image421.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Add}                       Top and bottom layers color and opacity added together                                    *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Subtract}                  Top and bottom layers color and opacity subtracted from each other                        ![](media/media/image422.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Subtract}                  Top and bottom layers color and opacity subtracted from each other                        *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Multiply}                  Top and bottom layers color and opacity multiplied together                               ![](media/media/image423.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Multiply}                  Top and bottom layers color and opacity multiplied together                               *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Screen}                    Top and bottom layers colors inverted and then multiplied together                        ![](media/media/image424.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Screen}                    Top and bottom layers colors inverted and then multiplied together                        *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Overlay}                   Does a multiply or screen effect based on the lightness or darkness of the bottom layer   ![](media/media/image425.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Overlay}                   Does a multiply or screen effect based on the lightness or darkness of the bottom layer   *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Lighten}                   Top layer's color merges with bottom layer's color, with the lighter color winning        ![](media/media/image426.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Lighten}                   Top layer's color merges with bottom layer's color, with the lighter color winning        *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Darken}                    Top layer's color merges with the bottom layer's color, with the darker color winning     ![](media/media/image427.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Darken}                    Top layer's color merges with the bottom layer's color, with the darker color winning     *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   Mode                        Description                                                                                                                                                              Result
   --------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ --------------------------------------------------------------------------------------------
-  {Dodge}                     Bottom layer's color brightened to reflect top layer's color                                                                                                             ![](media/media/image428.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Dodge}                     Bottom layer's color brightened to reflect top layer's color                                                                                                             *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Burn}                      Bottom layer's color darkened to reflect the top layer's color                                                                                                           ![](media/media/image429.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Burn}                      Bottom layer's color darkened to reflect the top layer's color                                                                                                           *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Hard Light}                Does a multiply or screen effect on the lightness or darkness of the top layer                                                                                           ![](media/media/image430.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Hard Light}                Does a multiply or screen effect on the lightness or darkness of the top layer                                                                                           *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Soft Light}                Darkens or lightens colors depending on the top layer                                                                                                                    ![](media/media/image431.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Soft Light}                Darkens or lightens colors depending on the top layer                                                                                                                    *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
 
-  {Xor}                       Top layer with opacity reduced by inverse opacity of bottom layer, and then blended with the bottom layer with opacity reduced by the inverse opacity of the top layer   ![](media/media/image432.jpeg){width="1.1066666666666667in" height="1.1066666666666667in"}
+  {Xor}                       Top layer with opacity reduced by inverse opacity of bottom layer, and then blended with the bottom layer with opacity reduced by the inverse opacity of the top layer   *(figure omise)*{width="1.1066666666666667in" height="1.1066666666666667in"}
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -   {Library} - selects the image library.
@@ -356,7 +356,7 @@ In order to use procedurally generated content, you must patch the pixel map lay
 
 #### Types of Effects
 
-![](media/media/image433.png){width="1.4440409011373578in" height="1.7475in"}
+*(figure omise)*{width="1.4440409011373578in" height="1.7475in"}
 
 There are three main effect types:
 
@@ -414,7 +414,7 @@ For perlin noise effects, there are different options for control:
 
 The effect layers have a two color pickers for selecting the start and end colors.
 
-![](media/media/image434.png){width="4.1149562554680665in" height="1.9693744531933508in"}
+*(figure omise)*{width="4.1149562554680665in" height="1.9693744531933508in"}
 
 Using the buttons located between the two color pickers, you can also copy the start color to the end color, swap the start color and the end color, or copy the end color to the start color.
 
@@ -438,7 +438,7 @@ Setting up the Primary
 
 4.  Make sure that the {Share Media Archive} box is checked. This will allow for sharing of the primary's media archive. Copy the path name, you will need it to setup the backup and / or client.
 
-![](media/media/image435.png){width="4.024298993875766in" height="1.8140616797900262in"}
+*(figure omise)*{width="4.024298993875766in" height="1.8140616797900262in"}
 
 5.  Setting up the Backup and Clients
 
@@ -450,19 +450,19 @@ Setting up the Primary
 
 9.  Press {Network Drives}.
 
-![](media/media/image436.png){width="1.8027580927384077in" height="1.6672911198600175in"}
+*(figure omise)*{width="1.8027580927384077in" height="1.6672911198600175in"}
 
 10. In the Network Drives display, click the {Add} button.
 
 11. In the Add Network Drive display, choose a drive letter for {Local Drive}.
 
-![](media/media/image437.png){width="1.7349781277340333in" height="1.24375in"}
+*(figure omise)*{width="1.7349781277340333in" height="1.24375in"}
 
 12. Enter in the {Network Path}. The path name is listed next to the primary's {Share Media Archive} checkbox.
 
 13. Select the appropriate console type for the {Network Path Type}.
 
-![](media/media/image438.png){width="2.186926946631671in" height="1.0571872265966755in"}
+*(figure omise)*{width="2.186926946631671in" height="1.0571872265966755in"}
 
 14. Click {Ok}. You will now be able to access the primary's media archive from the backup or client. This new drive will appear in the browser like a USB drive.
 
@@ -482,7 +482,7 @@ Steps for Synchronizing Show Pixel Map Media
 
 2.  Expand File>Import>Import Pixel Map Media>Import Show Pixel Map Media.
 
-![](media/media/image439.png){width="4.4409864391951in" height="1.2643744531933507in"}
+*(figure omise)*{width="4.4409864391951in" height="1.2643744531933507in"}
 
 3.  Select the appropriate network drive.
 

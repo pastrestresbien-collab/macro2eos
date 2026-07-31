@@ -22,7 +22,7 @@ When applied to a scroller fan, the output of the fan will be controlled by the 
 
 Curves can also be applied to fixtures with non-intensity parameters (NPs). When a channel with NPs is selected in Patch > Attributes > Curve, individual buttons for each available parameter will be displayed in the CIA. Click one or more buttons to apply a curve to the desired parameter(s).
 
-![](media/media/image298.png){width="4.175651793525809in" height="1.4340616797900263in"}
+*(figure omise)*{width="4.175651793525809in" height="1.4340616797900263in"}
 
 Eos provides 11 pre-programmed, commonly used curves. They can be edited or copied to a new curve location. When a pre-established curve is deleted, it will return to its original state.
 
@@ -32,7 +32,7 @@ You can scroll through the list using the [Next] and [Last] keys, or you can spe
 
 -   {Curve} [9] [0] [4] [Enter] - selects curve 904 from the list and displays its shape in the CIA.
 
-> ![](media/media/image298.png){width="4.175651793525809in" height="1.4340616797900263in"}
+> *(figure omise)*{width="4.175651793525809in" height="1.4340616797900263in"}
 
 ### Creating a Curve
 
@@ -86,7 +86,7 @@ You can also toggle between an "interpolated" or "stepped" curve shape. Eos defa
 
 Below are two examples of the same curve. The first is stepped and the second is interpolated.
 
-> ![](media/media/image299.png){width="4.9698031496062995in" height="2.640207786526684in"}
+> *(figure omise)*{width="4.9698031496062995in" height="2.640207786526684in"}
 
 #### Clearing the Curve
 

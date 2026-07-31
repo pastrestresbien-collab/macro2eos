@@ -114,7 +114,7 @@ These subsets of channels or subgroups are treated as a single channel in the fo
 
 -   Subgroups can be created either in the group list or Live.
 
-> ![](media/media/image252.png){width="4.144889545056868in" height="0.9770833333333333in"}
+> *(figure omise)*{width="4.144889545056868in" height="0.9770833333333333in"}
 
 To create a subgroup in Live:
 
@@ -158,7 +158,7 @@ To create a group with only the master cells:
 
 -   [Group] [3] [5] [Enter] [5] [0] [0] [.] [1] [Shift] & [/] [5] [0] [1] [.] [1] [Enter]
 
-![](media/media/image253.png){width="4.563345363079615in" height="1.0014577865266843in"}
+*(figure omise)*{width="4.563345363079615in" height="1.0014577865266843in"}
 
 You can also use the {Offset} softkeys to aid in create of groups and subgroups. See *Offset (on* *page 242)*.
 

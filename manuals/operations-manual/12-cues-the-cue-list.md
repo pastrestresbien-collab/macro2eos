@@ -82,7 +82,7 @@ When the [Record] button is pressed the keypad defaults to cue mode; use of the 
 
 > **Note:** *When using the console in tracking mode or when using track editing, it is important to understand the concept of Blocking. A cue containing a Block flag will stop edited levels from tracking through that cue. Blocks are often placed on the cue at the top of an act or scene, or anywhere you want to protect cues from levels that may track in from upstream cues. Block flags should also be set on cues that you want to have behave as blackouts (see Block (on page 332)).*
 >
-> **Note:** *[+] can be used with [Record] to specify a range of cues for recording. See [Update [+] (on page 343)](#_bookmark324).*
+> **Note:** *[+] can be used with [Record] to specify a range of cues for recording. See Update [+] (on page 343).*
 
 #### Using Record Only in Live
 
@@ -474,7 +474,7 @@ You can use the virtual alphanumeric keyboard or an external keyboard to enter t
 
 Scenes are a cue organization tool that provide a visual identifier for breaks in your show and allow for quick cue list navigation.
 
-![](media/media/image256.png){width="5.488077427821523in" height="1.1903116797900262in"}
+*(figure omise)*{width="5.488077427821523in" height="1.1903116797900262in"}
 
 Scenes display in the cue list index and the playback status display as a green bar above the cue they are associated with in the list. An end of scene can also be created, and those display as a green bar under their associated cue.
 
@@ -482,7 +482,7 @@ You can recall a scene to quickly jump to a cue without needing to remember its 
 
 This will open up the scene selection display in the CIA. The scene\'s label and cue will display. Press or click on the scene to select it.
 
-![](media/media/image257.png){width="1.1653116797900263in" height="0.39187445319335085in"}
+*(figure omise)*{width="1.1653116797900263in" height="0.39187445319335085in"}
 
 > Scenes can also be recalled by using the direct selects. See *Using Direct Selects (on page 113)*.
 
@@ -668,7 +668,7 @@ Triggers can be used to tie actions such as macros, show control, or snapshots t
 
 When used after selecting a cue on the command line, {Execute} will open a trigger display in the CIA.
 
-![](media/media/image258.png){width="5.83323053368329in" height="2.0795833333333333in"}
+*(figure omise)*{width="5.83323053368329in" height="2.0795833333333333in"}
 
 Buttons for common targets are available on the left. These options are also available below as softkeys.
 
@@ -744,7 +744,7 @@ Recorded cues can be modified live. *Assigning Cue Attributes (on page 327)* (su
 
 [Recall From], [Copy To], and Move To may be used to create and edit cue data.
 
-> See [*Using [Recall From] (on page 367)*](#_bookmark352), [*Using [Copy To] (on page 366)*](#_bookmark349), *Move To (on page 345)*.
+> See *Using [Recall From] (on page 367)*, *Using [Copy To] (on page 366)*, *Move To (on page 345)*.
 
 #### Using [At] [Enter]
 
@@ -786,7 +786,7 @@ You may modify a cue by re-recording it entirely. After making changes to channe
 
 > **Note:** *[Record Only] is used in the examples below. Element Classic users will need to use [Record] [Record].*
 
-Modifying existing cues using [Record Only] is considered a "selective store" function. As such, it adds or modifies only manual data to the target cue, but leaves any other data that was already in the cue intact and does not include playback values from other cue lists or submasters. [Record Only] is a good way to modify existing cues without including contributions from other playbacks in the cue. In that way, it is very similar to *[[Update] (on the](#_bookmark319) facing page)*.
+Modifying existing cues using [Record Only] is considered a "selective store" function. As such, it adds or modifies only manual data to the target cue, but leaves any other data that was already in the cue intact and does not include playback values from other cue lists or submasters. [Record Only] is a good way to modify existing cues without including contributions from other playbacks in the cue. In that way, it is very similar to *[Update] (on the facing page)*.
 
 All of the same commands used for Record may also be used for Record Only.
 
@@ -822,7 +822,7 @@ When you press [Update], a dialogue box will open in the CIA. Update styles and 
 
 -   {Reset Update} - clears any commands after the [Update] command to quickly undo pending changes before [Enter] is pressed.
 
-![](media/media/image259.png){width="4.986045494313211in" height="2.2333333333333334in"}
+*(figure omise)*{width="4.986045494313211in" height="2.2333333333333334in"}
 
 The dialogue box also provides you with a listing (by record target) of what channels/parameters will be impacted by the update instruction. If the channel contains a reference in the cue, it is indicated. Channels that have been manually added to the stage output, but are not overrides of an active cue will update to the selected cue list.
 
@@ -1164,7 +1164,7 @@ The {Edit} softkey opens a blind channel view of the selected cue and changes fo
 
 The Cue List Index has a configuration menu, which is accessed by first selecting the Cue List Index tab and then double clicking on the tab to open the menu. With the Cue List Index selected, you can also select the gear icon, which is located by the tabs, to open the configuration menu.
 
-> ![](media/media/image260.jpeg){width="3.958499562554681in" height="2.625in"}
+> *(figure omise)*{width="3.958499562554681in" height="2.625in"}
 
 The following options are available in this configuration menu:
 
@@ -1200,7 +1200,7 @@ By default, all columns except notes will be displayed. The arrow keys on the ri
 
 When the cue list index is open, the cue list properties dialogue box will display in the CIA. The cue list properties determine how the cue list will interact.
 
-> ![](media/media/image261.png){width="4.953845144356955in" height="1.3416666666666666in"}
+> *(figure omise)*{width="4.953845144356955in" height="1.3416666666666666in"}
 
 Cue list properties include:
 
@@ -1376,7 +1376,7 @@ Press the red [X] to clear the channel or parameter filters listed.
 
 Click or tap on the virtual buttons or fader to see a list of available configuration options.
 
-> ![](media/media/image262.png){width="0.7537314085739283in" height="1.8791655730533683in"}
+> *(figure omise)*{width="0.7537314085739283in" height="1.8791655730533683in"}
 
 ##### Button Options
 

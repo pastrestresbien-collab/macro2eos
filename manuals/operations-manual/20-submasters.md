@@ -38,13 +38,13 @@ Element 2 has a total of 1000 submasters. The fader position switch can be place
 
 Element has a total of 1000 submasters. With the fader position switch in submaster mode, an Element 60 will display 60 submasters, and an Element 40 will display 40 submasters at a time. Element will default to the first 40 or 60 submasters. To page through the available submasters, hold down the {Page Subs} softkey in the Live display. The bump buttons will light up in green, and the bump buttons that correspond to the currently selected pages will flash. Press the corresponding bump button to go to that page. The fader ribbon will change to show the submaster pages.
 
-![](media/media/image289.png){width="5.001851487314085in" height="0.2813538932633421in"}
+*(figure omise)*{width="5.001851487314085in" height="0.2813538932633421in"}
 
 There are 20 pages available on Element 40 for a total of 800 submasters
 
 > **Note:** *Submasters 801-1000 can only be controlled by the keypad on Element 40.*
 
-![](media/media/image290.png){width="5.035in" height="0.4195833333333333in"}
+*(figure omise)*{width="5.035in" height="0.4195833333333333in"}
 
 There are 17 pages available on Element 60 for a total of 1000 submasters.
 
@@ -106,7 +106,7 @@ Any changes made in this screen are automatically stored. A [Record] or [Update]
 
 If a fader has been configured for default mapping in the fader configuration display, the fader will receive its configuration from the *Submaster List (above)*. Changes made to a submaster in the submaster list will be shared with any default mapping faders loaded with that submaster. If changes are made to a fader set to default mapping in the fader configuration display, those changes will also happen in the Submaster List. If set to Local, any changes made in the fader configuration display will impact only that instance of the content.
 
-![](media/media/image291.png){width="5.046025809273841in" height="1.5873950131233596in"}
+*(figure omise)*{width="5.046025809273841in" height="1.5873950131233596in"}
 
 The following options are available for submaster faders:
 
@@ -254,7 +254,7 @@ Starts the effect when master fader is moved from 0, stops the effect when it is
 
 Click or tap on the virtual buttons or fader to see a list of available configuration options.
 
-![](media/media/image292.png){width="0.7537314085739283in" height="1.8791666666666667in"}
+*(figure omise)*{width="0.7537314085739283in" height="1.8791666666666667in"}
 
 #### Button Options
 
@@ -382,7 +382,7 @@ Triggers can be used to tie actions such as macros, show control, or snapshots t
 
 When used after selecting a sub on the command line, {Execute} will open a trigger display in the CIA.
 
-> ![](media/media/image293.png){width="5.83323053368329in" height="2.0795833333333333in"}
+> *(figure omise)*{width="5.83323053368329in" height="2.0795833333333333in"}
 
 Buttons for common targets are available on the left. These options are also available below as softkeys.
 
