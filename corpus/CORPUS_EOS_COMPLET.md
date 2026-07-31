@@ -2575,16 +2575,264 @@ Source : Eos Family L3 Advanced Workbook (déjà consulté, nouvel extrait)
 - **Confiance** : A
 
 
-<!-- ⚠️⚠️⚠️ LACUNE DE TRANSMISSION ⚠️⚠️⚠️
-     Segment manquant entre l'entrée #135 (vague 27, ci-dessus) et le milieu de
-     l'entrée #154 (vague 30, ci-dessous) :
-       - fin de la vague 27 (impact du #135 + synthèse)
-       - vague 28 complète : vague28_journal_terrain_xtouch2eos.md (#136-145, source S)
-       - vague 29 complète : vague29_eoskeys_integration.md (#146-153, intégration
-         eosKeys.ts — TABLE CANONIQUE, la plus importante du corpus)
-       - début de la vague 30 : vague30_resolution_isnt_in_syntaxe_generale.md
-         (titre, contexte et début de l'entrée #154)
-     À compléter dès réception du segment. -->
+- **Impact** : confirme que la famille Query peut cibler explicitement une plage de cues, cohérent avec le motif déjà vu en vague 14 (#083, `[Que] [Home] [Thru]`) mais avec une syntaxe légèrement différente (`[Cue] [1] [Thru]` plutôt que `[Que] [Home] [Thru]`) — à noter comme variantes possibles selon le contexte, sans certitude sur laquelle est la plus canonique
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Nouveau domaine fonctionnel découvert et documenté avec un exemple officiel complet** : Highlight/Lowlight/RemDim, absent du corpus jusqu'ici
+2. **Nouvelle syntaxe de paramètre double via séparateur `/`** — motif à ajouter à la grammaire générale
+3. **Confirmation supplémentaire de la flexibilité de ciblage de `Query`** sur des plages de cues
+
+## Mise à jour de la taxonomie suggérée
+
+Ajouter Highlight/Lowlight/RemDim comme sous-thématique, rattachée à Sélection & patch (mécanisme de sélection différenciée avec niveaux de référence multiples).
+
+<!-- ===== FIN : vague27_highlight_lowlight_remdim.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague28_journal_terrain_xtouch2eos.md ===== -->
+
+# Corpus — vague 28 : intégration du journal d'observations terrain (projet xtouch2Eos)
+
+Date d'intégration : 29/07/2026
+Source : documents de cadrage internes de Cy (JOURNAL_observations_nomad.md, Etude_Pont_MIDI-OSC_EOS.md)
+
+## NOUVEAU NIVEAU DE CONFIANCE À INTRODUIRE : **S** (supérieur à A)
+
+Jusqu'ici l'échelle du corpus plafonnait à A (manuel/doc officielle ETC). Ce journal introduit une catégorie au-dessus : **observation directe et datée sur nomad réel, avec protocole de test explicite et résultat mesuré**. Contrairement à la doc officielle (qui peut être ambiguë, obsolète ou silencieuse sur un point), ce niveau S est vérifié empiriquement par quelqu'un dont je peux tracer exactement ce qu'il a fait et observé. Je propose de noter ces entrées **S** dans le référentiel, au-dessus de A.
+
+À noter : ce journal documente le **canal OSC/TCP + MIDI** pour un pont temps réel (hors macro), donc il ne remplace pas le corpus macro — mais il éclaire directement plusieurs zones où le corpus macro restait dans l'incertitude (comportement de connexion, fiabilité de certaines touches, anti-répétition).
+
+---
+
+## 136 — Framing OSC : auto-détection nécessaire, aucune version fixe garantie (S, observé sur nomad réel)
+
+- **Fait constaté (2026-07-03)** : ce nomad (3.3.5.69, FR) fonctionne en **TCP OSC 1.1 SLIP**, pas en 1.0 packet-length. Détecté par le premier octet reçu (`0xC0` = délimiteur SLIP).
+- **Impact direct pour ton projet macro** : si ton futur moteur OSC pour le traducteur de macros communique en TCP, il ne doit **jamais supposer un framing fixe** — l'auto-détection (discriminant : un flux 1.0 ne commence jamais par `0xC0`, un flux SLIP jamais par `0x00`) est une nécessité pratique confirmée, pas une précaution excessive.
+
+## 137 — À la connexion TCP, Eos rejoue tout son état (~40 messages, ~130 ms) (S, observé)
+
+- **Fait constaté** : show/name, user, cues active/previous/pending, 12 softkeys (libellés localisés FR), wheel, switch, active/chan, color/hs, pantilt, xyz, event/state, event/locked — rejoués systématiquement à chaque nouvelle connexion.
+- **Impact pour ton outil** : si ton appli Android se connecte à la console pour envoyer une macro, elle recevra un burst initial d'état à absorber/ignorer avant tout envoi — à anticiper dans la gestion de connexion.
+
+## 138 — Eos accepte plusieurs clients TCP simultanés et diffuse à tous (S, observé)
+
+- Confirmé en conditions réelles : observation passive possible pendant qu'un autre logiciel pilote activement la console via un autre client.
+- **Impact** : ton appli peut coexister avec un pupitreur qui travaille en direct sur la console sans le perturber, au niveau transport — mais rappelle le risque déjà noté au niveau macro (vague 9, #067 : édition de macro en cours + déclenchement background simultané reste un risque logique, distinct du transport).
+
+## 139 — Feedback de niveau de sub : PAS spontané sur `/eos/out/sub/<n>`, doit passer par les banques OSC (S, confirmé au banc actif)
+
+- **Fait constaté (2026-07-03, banc actif)** : niveau réglé sur `/eos/sub/1` à 0.75 → **aucun retour en 8 secondes** sur `/eos/out/sub/<n>`. Le feedback de niveau nécessite les banques OSC (`/eos/fader/<bank>/config/...` puis niveaux sur `/eos/fader/<bank>/<n>`).
+- **Écho de niveau via banque** : mesuré à **+522 ms**, beaucoup plus rapide que les "+3 s" documentés dans l'étude de cadrage (R2) — donnée corrigée empiriquement par rapport à une inquiétude initiale issue de la communauté.
+- **Impact pour le corpus macro** : ceci nuance/précise directement le risque déjà noté en vague 3 (#027, macro `SubDown`/`SubUp` et survie ASCII). Ce n'est pas le même sujet exactement (ici c'est le feedback temps réel, pas la persistance ASCII), mais ça confirme que **l'écosystème sub/fader OSC d'EOS a des comportements de feedback non triviaux et non uniformément documentés** — cohérence avec la prudence déjà appliquée à ce risque.
+
+## 140 — Ligne de commande diffusée en clair avec flag d'erreur (S, observé — TRÈS PERTINENT pour un validateur de macro)
+
+- **Fait constaté** : `/eos/out/cmd` et `/eos/out/user/<u>/cmd` diffusent le texte de la ligne de commande en clair, avec un flag d'erreur (`flag_erreur_int`, 1 = erreur de syntaxe). Exemple observé : `"LIVE: Cue 2 : Sub 2 Bouton Go Go Bump #"`.
+- **IMPACT MAJEUR POUR TON PROJET DE TRADUCTEUR MACRO** : ceci est potentiellement **le mécanisme de validation en temps réel** que ton architecture cherchait. Le cadrage initial prévoyait un validateur *avant* envoi (syntaxique, statique) — mais ce canal permet une **validation après envoi, par observation du flag d'erreur retourné par la console elle-même**. C'est un filet de sécurité supplémentaire directement exploitable : ton appli pourrait envoyer une commande de test, observer si `/eos/out/cmd` retourne une erreur de syntaxe, et alerter l'utilisateur avant de la graver dans une macro. **Piste d'architecture à ajouter explicitement à la conception.**
+
+## 141 — Liste ETC "Eos OSC Keys" — 1155 touches, déjà récupérée et convertie par toi-même (S — CHANGE COMPLÈTEMENT LA PRIORITÉ 5 DU CORPUS)
+
+- **Fait constaté (2026-07-03)** : <cite reformulé>liste officielle ETC "Eos OSC Keys" récupérée et convertie en module TypeScript (`src/shared/eosKeys.ts`), 1155 touches, nom OSC → commande interne.</cite>
+- **CORRECTION MAJEURE À APPORTER AU CORPUS** : la priorité banc n°5 ("liste de recherche complète de l'éditeur, capturer au-delà de F→M") est **déjà résolue** par ce fichier, avec une couverture bien supérieure (1155 entrées vs ~60 vues en image) et une source officielle ETC directe, pas une capture d'écran partielle. **Ce fichier `eosKeys.ts` devient la référence prioritaire absolue pour toute la grammaire de touches** — bien au-dessus de tout ce que la collecte web a pu produire jusqu'ici.
+- **Correction de contenu déjà identifiée par toi** : `stop_0` n'existe pas — le stop du master playback est `stop`. `go_0` = GO, `go` = PLAYBACK_GO, `stopback` = PLAYBACK_STOP_BACK. Ceci **contredit potentiellement** l'entrée #109 du corpus (`Go_0` confirmé comme équivalent du Stop/Back) — à clarifier : soit une confusion de casse/nom entre les deux sources, soit deux touches réellement différentes. **Point de vigilance à trancher.**
+- Insensible à la casse ; l'espace remplace `_` dans les noms de touches.
+- **Action recommandée immédiate** : si tu peux partager `src/shared/eosKeys.ts`, je l'intègre comme référence structurelle unique du corpus de touches — ça remplacerait avantageusement des dizaines d'entrées collectées une par une depuis le début du projet.
+
+## 142 — Anti-répétition : Eos supprime les répétitions rapides de LA MÊME touche OSC (S, mesuré précisément)
+
+- **Fait constaté et quantifié (2026-07-04)** : Eos supprime les répétitions consécutives de la même touche OSC espacées de moins de ~1 s. Mesures précises : à 700 ms, une frappe sur deux passe ; à 1000 ms, tout passe. Les touches différentes passent sans limite. Le clavier physique n'est pas concerné. L'alternance de casse ne contourne pas le filtre (normalisation avant anti-répétition).
+- **Correction ultérieure importante (2026-07-07)**, à ne pas perdre : re-test avec la touche Go (`go_0`) en rafale de 13 appuis à ~150 ms → **13/13 reçus et exécutés**, aucune coalescence. **La règle "~1 s" n'est PAS universelle** — elle s'avère **spécifique aux touches `encoder_category_*`** (Eos coalesce le fait de re-sélectionner une catégorie déjà active), pas une règle générale de anti-répétition de touche.
+- **IMPACT MAJEUR, CORRECTION À APPORTER AU CORPUS** : ceci nuance très concrètement plusieurs entrées déjà collectées sur des comportements "capricieux" de touches en macro (ex: vague 16 sur Lamp Control, vague 8 sur Go_To_Cue). Une partie de ce qui semblait être des bugs aléatoires côté communauté pourrait en réalité être ce mécanisme d'anti-répétition **ciblé sur certaines familles de touches précises**, pas un problème de macro en général. Priorité de recherche à ajouter : identifier si d'autres familles de touches que `encoder_category_*` sont concernées.
+- **Leçon méthodologique explicitement formulée par toi, à adopter pour tout le corpus** : *"ne jamais figer un comportement matériel à partir de la seule lecture d'un tableau/menu d'éditeur — toujours revérifier avec un envoi réel et une observation confirmée avant de coder en dur."* Cette leçon s'applique un cran plus haut à mon propre travail de collecte web : je devrais systématiquement signaler, comme tu le fais, quand une hypothèse a été révisée après test, plutôt que de la laisser comme un fait isolé.
+
+## 143 — Encodeurs relatifs : complément à deux confirmé, pas sign-magnitude Mackie (S, mesuré)
+
+- **Fait constaté (2026-07-03)** : encodeur 1 (CC10) en relatif complément à deux — droite = valeur 1, gauche = valeur 127 (pas de convention "65 = -1" façon Mackie). Décodage confirmé par distribution mesurée ({1×35, 127×28}).
+- **Pertinence pour le corpus macro** : périphérique au projet macro directement, mais utile si un jour ton traducteur doit produire des séquences liées à des molettes/encodeurs (`/eos/wheel`) — la convention d'encodage réelle est confirmée expérimentalement, contrairement à toute documentation qui pourrait laisser deviner l'autre convention.
+
+## 144 — Pagination des encodeurs NON publiée en OSC — limite structurelle confirmée par ETC en creux (S, observé + recherche communautaire)
+
+- **Fait constaté** : cliquer les onglets de catégorie sur la GUI Eos n'émet **aucun** message OSC — confirmé par appui clavier direct ("Encoder Page Focus" → rien en OSC). Demande communautaire de "subscribe to the active encoder page" jamais implémentée par ETC.
+- **Règle de correspondance déduite et validée sur deux projecteurs différents** : Pan/Tilt épinglés seuls en première page de Focus, reste dans l'ordre des index Eos par tranches de 4 — reproductible et confirmée par observation croisée (Rogue R2 Wash et K15).
+- **Pertinence pour le corpus macro** : confirme une **limite structurelle du protocole OSC d'EOS** (certains états d'affichage/navigation restent invisibles en OSC) cohérente avec ce qu'on avait déjà déduit indirectement en vague 21 (motif de contournement Snapshot pour la navigation Encoder Display non capturable en macro, #111). Ce journal **confirme empiriquement, au niveau protocole**, la même limite que la communauté du forum contournait de façon empirique au niveau macro.
+
+## 145 — Deux touches à clarifier d'urgence entre les deux sources du projet (conflit potentiel à trancher)
+
+- Corpus macro (vague 20, #109) : `Go_0` = équivalent du Stop/Back du playback principal, trouvé dans le champ de recherche macro
+- Journal xtouch2Eos (#141 ci-dessus) : `go_0` = GO (démarrage de cue), distinct de `stopback` = PLAYBACK_STOP_BACK
+- **Ces deux affirmations semblent contradictoires** sur ce que fait `go_0`/`Go_0`. Possibilités : erreur dans l'une des deux sources, confusion de casse représentant en fait deux touches distinctes (`Go_0` vs `go_0` pourraient être normalisées différemment), ou erreur de ma part en vague 20 dans l'interprétation du témoignage forum d'origine.
+- **Statut : à trancher en priorité.** La source `eosKeys.ts` (1155 entrées officielles) devrait faire foi si elle est consultée directement — recommandation de vérifier ce point spécifiquement en premier si tu partages ce fichier.
+
+---
+
+## Synthèse de cette vague — la plus importante en qualité de source depuis le début du corpus
+
+1. **Nouveau niveau de confiance S introduit**, au-dessus de A — observation directe datée et protocolée sur matériel réel
+2. **La priorité banc n°5 du corpus (liste de touches complète) est en réalité déjà résolue** ailleurs dans ton propre travail (`eosKeys.ts`, 1155 entrées) — la recherche web que je menais pour la reconstituer était une duplication d'effort
+3. **Piste d'architecture majeure découverte** : validation post-envoi via observation du flag d'erreur sur `/eos/out/cmd` — à ajouter au cadrage du validateur
+4. **Correction méthodologique de fond, applicable rétroactivement à plusieurs entrées C du corpus** : l'anti-répétition ~1s n'est pas générale, elle cible spécifiquement `encoder_category_*` — plusieurs comportements "capricieux" rapportés par la communauté forum pourraient avoir des explications structurelles similaires, non génériques
+5. **Un conflit factuel à trancher** entre deux sources internes au corpus (#145)
+
+## Recommandation immédiate
+
+Si tu peux partager `src/shared/eosKeys.ts`, c'est la pièce la plus précieuse identifiable à ce stade pour l'ensemble du projet — elle remplacerait avantageusement une bonne partie de la collecte fragmentaire de touches menée depuis le début, avec une fiabilité largement supérieure (source officielle ETC directe, complète, déjà structurée en code).
+
+<!-- ===== FIN : vague28_journal_terrain_xtouch2eos.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague29_eoskeys_integration.md ===== -->
+
+# Corpus — vague 29 : intégration eosKeys.ts (liste officielle ETC, 1155 touches)
+
+Date d'intégration : 29/07/2026
+Source : `src/shared/eosKeys.ts`, projet xtouch2Eos de Cy — extraction du PDF officiel ETC "Eos OSC Keys.pdf"
+**Niveau de confiance : A — la meilleure source structurelle du corpus entier pour la grammaire de touches.**
+
+Ce fichier devient LA référence pour toute question "cette touche existe-t-elle, sous quel nom OSC exact".
+
+---
+
+## 146 — RÉSOLUTION DU CONFLIT #145 : Go_0 tranché, correction à porter au corpus macro
+
+Vérification directe dans la liste :
+```
+{ osc: "go", internal: "PLAYBACK_GO" }
+{ osc: "go_0", internal: "GO" }
+{ osc: "gocue0", internal: "PLAYBACK_CUE_ZERO" }
+{ osc: "gotocue", internal: "PLAYBACK_GOTOCUE" }
+{ osc: "stopback", internal: "PLAYBACK_STOP_BACK" }
+{ osc: "stop", internal: "STOP" }
+```
+
+**Verdict** : le journal terrain (#141) avait raison, ma vague 20 (#109) était **incorrecte**. `go_0` correspond bien à `GO` (déclenchement de cue), pas au Stop/Back. Le témoignage forum que j'avais interprété en vague 20 concernant "une commande native `Go_0` qui fait la même chose que Send_String /eos/key/stop=1" était soit une erreur de l'utilisateur du forum, soit une mauvaise lecture de ma part. **`stopback` est la touche correcte pour Stop/Back du playback principal**, `go_0`/`GO` sert à déclencher.
+
+**Action : corriger l'entrée #109 du corpus** (vague 20) — la commande citée pour l'auto-adressage OSC "stop" devrait être `stopback`, pas `Go_0`.
+
+## 147 — Confirmation et correction de casse pour toute la famille déjà connue
+
+Vérifications directes contre la liste officielle — tout ce qui suit est maintenant **niveau A certain**, remplaçant les niveaux C/D antérieurs du corpus :
+
+| Terme du corpus (vagues 1-27) | Confirmé dans eosKeys.ts | Note |
+|---|---|---|
+| `Macro_Loop_Begin` | `macro_loop_begin` → `MACRO_LOOP_BEGIN` | confirmé exact |
+| `Macro_Loop_End` | `macro_loop_end` → `MACRO_LOOP_END` | confirmé exact |
+| `Macro_Wait` | `macro_wait` → `MACRO_WAIT` | confirmé exact |
+| `Wait_For_Enter` | `wait_for_enter` → `MACRO_PAUSE_FOR_ENTER` | confirmé, nom interne différent |
+| `Wait_For_Input` | `wait_for_input` → `MACRO_PAUSE_FOR_INPUT` | confirmé |
+| `Select_Last` | `select_last` → `SELECT_LAST` | confirmé |
+| `Select_Active` | `select_active` → `SELECT_ACTIVE` | confirmé |
+| `select_last_params` | `select_last_params` → `SELECT_LAST_PARAMS` | confirmé exact |
+| `SubDown`/`SubUp` | `subdown` → `SUB_BUMP_DOWN`, `subup` → `SUB_BUMP_UP` | **confirmé A, remplace la confiance C de la vague 3** |
+| `Is In` | `is_in` → `IS_IN` | confirmé |
+| `Greater Than` / `Less Than` | `greater_than` → `GREATER_THAN`, `less_than` → `LESS_THAN` | confirmé — **existent bel et bien comme touches macro à part entière**, pas seulement comme concept Query abstrait (nuance à la correction de vague 13) |
+| `Can Be` | absent — mais `can_be` → `CAN_BE` existe | confirmé, orthographe correcte = `can_be` (le corpus vague 14 #083 utilisait "Can Be" avec espace, à corriger) |
+| **`Isn't In` / `Could Be`** | **ABSENTS de la liste officielle** | ⚠️ voir #148 ci-dessous — écart important |
+| `Highlight`/`Highlight RemDim` | `highlight` → `HIGHLIGHT`, `highlight_remdim` → `HIGHLIGHT_REM_DIM`, `highlight_preset` → `HIGHLIGHT_PRESET`, `lowlight_preset` → `LOWLIGHT_PRESET` | confirmé exact |
+| `From Absolute` | absent tel quel — voir `make_absolute` → `MAKE_ABSOLUTE` | ⚠️ nuance, voir #149 |
+| `Break Nested` | `break_nested` → `BREAK_NESTED`, `break_nested_off` → `BREAK_NESTED_OFF` | confirmé exact |
+| `Fan` (mirror in/out, etc.) | `mirror_in` → `FAN_MIRROR_IN`, `mirror_out` → `FAN_MIRROR_OUT`, `interleave` → `FAN_INTERLEAVE`, `cluster` → `FAN_CLUSTER`, `jump` → `FAN_JUMP`, `repeat` → `FAN_REPEAT`, `center` → `FAN_CENTER`, `chan_per_group` → `FAN_CHANNELS_PER_GROUP`, `num_groups` → `FAN_NUM_GROUPS` | **découverte majeure, voir #150** |
+| `Effect_Edit` | absent tel quel — `open_pattern_effects`, `effect_edit`... en réalité `effect_edit` → `EFFECT_PATTERN_EDIT` existe | ⚠️ nuance, voir #151 |
+| `More_SoftKeys` | `more_softkeys` → `MORE_SOFTKEYS` | confirmé existant — infirme partiellement la vague 4 (#035) qui le donnait comme "ne s'enregistre pas" : la touche EXISTE officiellement, le problème rapporté était peut-être un bug d'enregistrement spécifique, pas une absence de la touche elle-même |
+| `Open_Browser` | `open_browser` → `OPENBROWSER` | confirmé existant, même remarque que ci-dessus |
+| `RFR Enable` | `rfr` → `RFR_ENABLE` | confirmé, nom OSC = `rfr` seul (pas `rfr_enable`) |
+| `Macro Mode` | `macro_mode` → `MACRO_MODE` ; `background_mode` → `MACRO_BACKGROUND` ; `foreground_mode` → `MACRO_USER` ; `default_mode` → `MACRO_DEFAULT_MODE` | confirmé, et révèle que Foreground/Background/Default sont *trois touches distinctes*, pas un seul softkey cyclique comme je le pensais |
+| `Send_String` | `send_string` → `SEND_SERIAL_STRING` | confirmé — nom interne révèle qu'il s'agit d'abord d'un mécanisme "serial string", l'OSC en est une extension |
+| `Macro Entry Delete` | `macro_entry_delete` → `MACRO_ENTRY_DELETE` | confirmé exact (vu dans l'image, vague 12) |
+| `List Partition` | `list_partition` → `CUE_PARTITION` | confirmé, nom interne clarifie le sens (partition de cue list) |
+| `Interpolate` | `interpolate` → `INTERPOLATE` | confirmé existant — **reste à documenter fonctionnellement**, mais son existence est maintenant certaine |
+| `Group Cells` | **ABSENT** — le plus proche est `group_channels_by_5` → `GROUP_CHANNELS_BY_5` | ⚠️ écart, voir #148 |
+
+## 148 — Écarts constatés entre l'image (vague 12) et la liste officielle eosKeys.ts
+
+Plusieurs termes vus dans ton image de capture n'apparaissent pas identiques dans cette liste :
+- **"Group Cells"** de l'image ≠ toute entrée de eosKeys.ts. Le plus proche sémantiquement est `group_channels_by_5`. Hypothèse : l'image montrait peut-être un intitulé d'affichage (UI) différent du nom de commande OSC sous-jacent, ou une fonctionnalité plus récente que la version du PDF source d'eosKeys.ts.
+- **"Isn't In"** et **"Could Be"** (confirmés textuellement en vague 14, #081, comme faisant partie de la famille Query) sont **absents** de eosKeys.ts, alors que `is_in` et `can_be` y figurent. Hypothèse la plus probable : ces variantes existent dans l'interface (softkeys CIA) mais ne sont peut-être pas exposées comme commandes OSC nommées séparément — ou bien elles se construisent différemment en syntaxe OSC (ex: peut-être `is_in` avec un modificateur de négation plutôt qu'un mot-clé dédié). **Point à clarifier, non résolu par cette vague.**
+- **Constat général important** : eosKeys.ts liste des **noms de touches OSC** (`/eos/key/<nom>`), pas nécessairement l'intégralité du vocabulaire de la grammaire de ligne de commande au sens large (qui peut inclure des mots comme `Thru`, `Enter`, des labels de softkeys contextuels non listés séparément, etc. — même si beaucoup s'y trouvent aussi, ex: `thru` → `THRU` est bien présent). Les deux corpus (grammaire ligne de commande générale et liste de touches OSC) se recoupent très largement mais ne sont pas rigoureusement identiques.
+
+## 149 — Nuance sur `{From Absolute}` : absent en tant que tel, mais mécanique confirmée autrement
+
+- eosKeys.ts ne contient pas d'entrée `from_absolute`. Ce qui existe : `make_absolute` → `MAKE_ABSOLUTE`.
+- **Hypothèse à vérifier** : soit `{From Absolute}` (vu dans l'image et le Level 4 workbook, vague 11 #077) est un **softkey contextuel** de l'écran Copy To, pas une touche macro nommée indépendamment dans le dictionnaire OSC général ; soit c'est une erreur de transcription de ma part en vague 11/12 et le vrai nom est `make_absolute`. **À trancher : les deux corpus se recoupent mais ne sont pas identiques (cf. #148).**
+
+## 150 — DÉCOUVERTE MAJEURE : la famille complète des paramètres Fan est maintenant connue (source A directe)
+
+Confirmé dans eosKeys.ts, réponse directe à la zone encore ouverte "styles de Fan alternatifs" (référentiel, vague 26) :
+
+```
+center        → FAN_CENTER
+chan_per_group → FAN_CHANNELS_PER_GROUP
+cluster       → FAN_CLUSTER
+interleave    → FAN_INTERLEAVE
+jump          → FAN_JUMP
+mirror_in     → FAN_MIRROR_IN
+mirror_out    → FAN_MIRROR_OUT
+num_groups    → FAN_NUM_GROUPS
+repeat        → FAN_REPEAT
+fan_curve     → FAN_CURVE
+```
+
+**Impact** : la zone "styles de Fan non exhaustivement documentés" (référentiel de risques, section zones ouvertes) est **résolue**. Fan dispose d'au moins 9 modificateurs/styles distincts : Center, Channels Per Group, Cluster, Interleave, Jump, Mirror In, Mirror Out, Num Groups, Repeat, plus une Curve dédiée. C'est une richesse de contrôle bien supérieure à ce qu'on avait supposé — chacun mériterait une vérification fonctionnelle individuelle avant usage dans le traducteur, mais leur existence et leur nom exact ne sont plus une inconnue.
+
+## 151 — Nuance sur Effect_Edit : la touche existe réellement, contredit le statut D de la vague 2
+
+- eosKeys.ts confirme : `effect_edit` → `EFFECT_PATTERN_EDIT`
+- **Correction à porter à l'entrée #021** (vague 2) : la commande `Effect_Edit` **existe bel et bien** comme touche officielle. L'échec rapporté par l'utilisateur du forum (vague 2) tenait donc probablement à une erreur de syntaxe des arguments qui suivent (`action 1 level CP1`), pas à l'inexistence de la commande elle-même. Le statut D doit être révisé : la touche est confirmée A, seul l'usage précis rapporté par l'utilisateur reste non résolu.
+
+## 152 — Champ complet de nouvelles familles jamais vues dans le corpus, à fort potentiel
+
+Plusieurs familles entières découvertes d'un coup, absentes de toute vague précédente :
+
+- **RTC (Real Time Clock) / Astro** : `after_sunrise`, `before_sunrise`, `after_sunset`, `before_sunset`, `rtc_date`, `rtc_days`, `rtc_time`, jours de la semaine (`rtc_monday`...`rtc_sunday`) — système de déclenchement horaire/astronomique jamais mentionné dans tout le corpus jusqu'ici. Pertinent si un régisseur veut un jour une macro liée à l'heure réelle.
+- **Pixel Mapping complet** : `pixelmap`, `pixel_map_edit`, `pixel_map_flash`, `pixel_map_mask`, `pixel_map_direction`, etc. — domaine entièrement absent du corpus, pertinent pour dance floors/LED walls (en lien avec le contexte Capture déjà connu de Cy).
+- **Multiconsole power management** : `multiconsole_power_off`/`_on` — gestion d'extinction à distance, absent du corpus vague 9.
+- **RVI (Remote Video Interface)** : `rvi_settings` — jamais vu.
+- **Curve editing** : `curve`, `curve_edit`, `curves` — courbes de fade personnalisées, domaine jamais exploré.
+- **Color Path avancé** : `color_path`, `cie_xyy`, `gel_match_setting_brightest/hybrid/spectrum` — bien plus riche que ce que la vague 5 (palettes) avait couvert.
+- **Partition de cue list et de contrôle** : `partition`, `partitionedcontrol`, `list_partition` — confirme et enrichit #058 (vague 7).
+- **Lamp Controls étendus** : `lamp_on`, `lamp_control`, `lamp_controls_edit`, `lamp_ctrls`, `preheat`/`preheat_off`/`preheat_time`, `shutdown_fixture`, `shutdown_macro`, `test_fixture` — bien plus complet que la vague 16.
+- **`startup_macro`** — mécanisme de macro exécutée au démarrage du show, jamais documenté dans le corpus, potentiellement très pertinent pour ton cas d'usage "début de show" déjà évoqué en vague 4 (#031 exemples officiels channel check).
+- **`shutdown_macro`** — équivalent en fin de show.
+
+## 153 — Confirmation de `Query {Unpatched}` sous forme de touche dédiée
+
+- `unpatched` → `UNPATCHED_QUERY` — confirme et précise l'usage vu en vague 14 (#084) et vague 27 (#135), avec la clarification que c'est un mot-clé de filtre Query dédié, nom interne explicite
+
+---
+
+## Synthèse — apports de cette vague (la plus corrective du corpus à ce jour)
+
+1. **Conflit #145 résolu** : `go_0` = GO (démarrage), pas Stop/Back — correction à porter rétroactivement sur l'entrée #109
+2. **Dizaines d'entrées C/D élevées à confiance A** par confirmation directe dans la source officielle
+3. **Famille Fan complète découverte** (9+ modificateurs) — comble une zone ouverte identifiée depuis la vague 26
+4. **`Effect_Edit` réhabilité** : la touche existe, l'échec rapporté n'invalide pas son existence
+5. **Plusieurs familles entières jamais couvertes découvertes d'un coup** (RTC/Astro, Pixel Mapping, Curves, Lamp Controls étendus, startup/shutdown macro) — perimètre de la grammaire globale bien plus large que ce que la collecte fragmentaire avait laissé deviner
+6. **Deux écarts non résolus** à garder en tête : `Isn't In`/`Could Be` absents de cette liste malgré confirmation textuelle ailleurs ; `Group Cells` et `From Absolute` de l'image ne correspondent à aucune entrée exacte
+
+## Action immédiate recommandée
+
+Ce fichier devrait être considéré comme **la table de référence canonique** pour toute validation syntaxique future du traducteur — bien supérieure à toute liste partielle collectée par recherche web. Toute nouvelle vague de collecte devrait désormais **vérifier systématiquement contre cette liste** avant de qualifier une touche de "confirmée" ou "non trouvée".
+
+<!-- ===== FIN : vague29_eoskeys_integration.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague30_resolution_isnt_in_syntaxe_generale.md ===== -->
+
+# Corpus — vague 30 : résolution Isn't In / Could Be, syntaxe softkey vs mot OSC clarifiée
+
+Date de collecte : 29/07/2026
+
+---
+
+<!-- ⚠️ Il manque ici uniquement le titre et les premières lignes de l'entrée #154
+     (vague 30) — le texte reprend ci-dessous en cours d'entrée #154, à la ligne
+     « Confiance : C/B ». Lacune mineure, à compléter si retrouvée. -->
+
 
 - **Confiance** : C/B — softkeys confirmés fonctionnels dans plusieurs témoignages indépendants et un article pédagogique dédié, mais nom OSC exact toujours non capturé formellement
 - **Statut** : la fonctionnalité existe et est documentée en usage réel ; seul le nom de touche OSC précis (si distinct de `is_in`/`can_be` avec un modificateur) reste à vérifier au banc
