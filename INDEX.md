@@ -26,6 +26,7 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 | 11 | Busking with the Eos Family Workbook (v3.0.1, 2021-04) | [`manuals/busking-workbook/`](manuals/busking-workbook/) | ✅ Converti intégralement (PDF source inclus) |
 | 12 | Intro to Augment3d Workbook (v3.0 Rev B, 2020-11) | [`manuals/augment3d-workbook/`](manuals/augment3d-workbook/) | ✅ Converti intégralement (PDF source inclus) |
 | 13 | Virtual Media Server & Pixel Map Control Workbook (v3.0.0A, 2020-12) | [`manuals/virtual-media-server-workbook/`](manuals/virtual-media-server-workbook/) | ✅ Converti intégralement (PDF source inclus) |
+| 14 | White Paper « Entertainment Lighting Control Philosophy » (ETC, 2009) | [`manuals/control-philosophy-whitepaper/`](manuals/control-philosophy-whitepaper/) | ✅ Converti intégralement (PDF source inclus) |
 
 ## Organisation
 
