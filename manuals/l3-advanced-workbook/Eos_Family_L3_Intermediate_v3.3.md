@@ -5,9 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
-Eos Family Console Programming
-
           Level 3: Intermediate
 
                         Workbook
@@ -21,8 +18,6 @@ Eos Family Console Programming
 
 ETC permits the reproduction of materials in this manual only for non-commercial purposes. All
      other rights are reserved by ETC.
-
-4    Eos Family Level 3 Intermediate
 
 ## Purpose of the Class
 
@@ -129,8 +124,6 @@ current show file.
 
         {Return} goes back to the full target display of Merge
 
-6    Eos Family Level 3 Intermediate
-
 ### PATCH A MULTICELL FIXTURE
 
     Some fixtures have multiple segments, or cells, that can be individually
@@ -221,8 +214,6 @@ current show file.
    [Clear] [Sneak] [Enter]                                                                         takes all light out
 
    [Snapshot] [1] [Enter]                                                                          recalls Snapshot 1
-
-8    Eos Family Level 3 Intermediate
 
     Patch Exercise - see Appendix 1
 
@@ -325,8 +316,6 @@ NOTE:      When copying a channel, park information from the original channel do
                                                                                            remove channels from these groups for
         [Group] [5] [+] [23] [+] [99] [Enter]     [-] [107] [Thru] [108] [Enter]
                                                                                            future operations
-
-10    Eos Family Level 3 Intermediate
 
 ## Database & Keywords
 
@@ -442,8 +431,6 @@ error (if no channels meet the criteria).
      [1] [Thru] [50] [Query] {Isn’t In} [Time] [7] [Enter]
                                                                                        time of 7
 
-12    Eos Family Level 3 Intermediate
-
 ### QUERY AND FLEXI
 
          [Live], [Flexi], and change the Flexi state to Active
@@ -553,8 +540,6 @@ NOTE: In addition to calling a macro on the command line, macros can be called b
 
    [Next] [Label] App Enable [Enter]
 
-14     Eos Family Level 3 Intermediate
-
 ### EDITING A MACRO
 
            Select Macro 4, press {Edit} or [Learn]                                                        enters Edit mode for the macro
@@ -641,8 +626,6 @@ can be mapped to any direct select tab.
    Notice the list at the bottom – a list of CDS layouts
 
      With 11 highlighted, [Label] Mixed Targets [Enter]
-
-16   Eos Family Level 3 Intermediate
 
 ### LAYOUTS
 
@@ -758,8 +741,6 @@ can be mapped to any direct select tab.
     Note:   Show files saved in versions prior to v3.1 will bring in their custom DS layouts as long
             as they were stored into a Snapshot.
 
-18    Eos Family Level 3 Intermediate
-
 ### MULTICELL CHANNELS IN GROUPS
 
           [Group] [Group]                                                                 to go into the Group List
@@ -849,8 +830,6 @@ Let’s look at some additional channel selection offset tools.
   [Group] [32] [Out]            [Shift] & [Clear]
   [(] [301] [thru] [312] [.] {Offset} {Mirror in} [)] {Offset} {Odd} [@] [0] [Thru]
   [Full] [Enter]
-
-20    Eos Family Level 3 Intermediate
 
 ## Manual Control
 
@@ -963,8 +942,6 @@ Let’s look at some additional channel selection offset tools.
         you cannot control, like work lights, or while programming outdoors.
     - With Highlight RemDim disabled, all channels not in the selected group
         remain at their current values. So you’ll have light on stage.
-
-22    Eos Family Level 3 Intermediate
 
 ## Fan
 
@@ -1090,8 +1067,6 @@ Ranges can be used to fan discrete time and delays.
   Note:     To view discrete timing, hold the Time Display button or [About]&[Time].
             [About] [Time] [Time] latches the timing view.
 
-24   Eos Family Level 3 Intermediate
-
      Building Palettes
 
 ### RECORDING COLOR PALETTES WITH MACROS
@@ -1160,8 +1135,6 @@ Ranges can be used to fan discrete time and delays.
  [Select Last]    [Update] «Down Center» (FP11)                                      updates Focus Palette
 
  [High]/{Highlight}                                                                  to exit Highlight mode
-
-26   Eos Family Level 3 Intermediate
 
 ## Reference Data Explanation
 
@@ -1267,8 +1240,6 @@ and to convert data between.
     Record Only is not a selection tool; it is a store manual values tool. Therefore,
     only the manual data was stored into this Preset.
 
-28    Eos Family Level 3 Intermediate
-
 ## Update
 
      Update is a ‘save changes’ tool. It only pertains to values that are red or
@@ -1353,8 +1324,6 @@ the desk, Intensity modifications will always be Cue only.
 Non-intensity modifications will update based on the Track/Cue Only setting of
 the desk, or the application of Track/Cue Only key prior to Enter.
 Previously would have been 2 commands.
-
-30    Eos Family Level 3 Intermediate
 
 ### UPDATE TRACE
 
@@ -1463,8 +1432,6 @@ front of the command line and in the top left corner of each display.
       NOTE:      By default, encoders are disabled in Blind. To enable use of the encoders, press
                  any of the Encoder Page navigation buttons.
 
-32    Eos Family Level 3 Intermediate
-
 ### EDITING DATA IN BLIND
 
      Data that is changed in Blind is automatically stored, without the need for a
@@ -1561,8 +1528,6 @@ front of the command line and in the top left corner of each display.
      - If a cue on stage is edited in Blind (either through cue changes or
          referenced data changes), the cue must be reloaded on stage. Sub edits
          in Blind are immediately changed in Live.
-
-34    Eos Family Level 3 Intermediate
 
 ## Additional Display Functions
 
@@ -1670,8 +1635,6 @@ Display tools in Eos follow tab focus. There are two types of display tabs:
                                                                                        now in the rotation when using [Shift] & [Live]
      Hold [Shift] and press [Live], [Live], [Live]…
                                                                                        with other Live and Blind tabs
-
-36    Eos Family Level 3 Intermediate
 
 ## Referenced Marks
 
@@ -1789,8 +1752,6 @@ setup mark time is to use discrete timing.
 
  [121] [+] [122] [Mark] [Enter] [Update] [Enter]                                                     removes a mark on a specific channel
 
-38    Eos Family Level 3 Intermediate
-
 ## Effects Editing
 
 ### EFFECT STATUS DISPLAY
@@ -1865,8 +1826,6 @@ setup mark time is to use discrete timing.
  [Clear]   [Update] [110] [Enter]                                                             larger circle size is stored in cue 110
 
  [Go To Cue] [110] [Enter]
-
-40    Eos Family Level 3 Intermediate
 
 ### EFFECT CHANNELS DISPLAY
 
@@ -1965,8 +1924,6 @@ setup mark time is to use discrete timing.
     [Update] [Enter]
                                                                                      (3* in effects column on PSD)
 
-42    Eos Family Level 3 Intermediate
-
 ## Intermediate Magic Sheets
 
 ### OPEN THE MAGIC SHEET TAB
@@ -2058,8 +2015,6 @@ Note:    The target for these objects refers to which cue list it will reference
 
  Add an Intensity Palette (IP1), make field 1 Label, field 2 & 3 nothing
 
-44    Eos Family Level 3 Intermediate
-
 ### COMMAND OBJECTS
 
      The Command Object allows you to type a function and trigger it directly
@@ -2120,8 +2075,6 @@ Note:    The target for these objects refers to which cue list it will reference
   Don’t forget Magic Sheet List to see all magic sheets and views
   If you call a Magic Sheet without a view, it will zoom to all and takes the Magic
   Sheet and fills the space that you have.
-
-46    Eos Family Level 3 Intermediate
 
 ### POPUP MAGIC SHEET
 
@@ -2208,8 +2161,6 @@ Note:    The target for these objects refers to which cue list it will reference
 
 Depending on the style and experience of the programmer, Magic Sheets
 can be a great way to expediate their programming process.
-
-48    Eos Family Level 3 Intermediate
 
 ### COMMAND LINE SEARCH
 

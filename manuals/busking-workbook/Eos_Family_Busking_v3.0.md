@@ -5,7 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
 Busking with the Eos Family of Consoles
 
                                 Workbook
@@ -21,8 +20,6 @@ Table of Contents:
 
       ETC permits the reproduction of materials in this manual only for non-commercial purposes. All other
            rights are reserved by ETC.
-
-4   Eos Family Busking
 
 ## Purpose of the Class
 
@@ -110,8 +107,6 @@ What is destructive and why you don’t want to hurt the person who will
 be back tomorrow….
 - Moving / Overwriting
 - Save-As a new show
-
-6   Eos Family Busking
 
 ## Burn In
 
@@ -204,8 +199,6 @@ Why build a base cue?
 
       Blocky Gobo (BP9221.4)
 
-8   Eos Family Busking
-
            Go back to the Cyc Page
 
            Cyc Top (G301) [At] [10] [Enter]
@@ -268,8 +261,6 @@ Why build a base cue?
   two places on either end for flexibility.
   Might be a good time to check the back timing in settings and adjust that if
   you feel it is necessary.
-
-10   Eos Family Busking
 
 ## Presets
 
@@ -383,8 +374,6 @@ Let’s look at the Focus Palettes that exist for the OH Washes.
         Load that in the 6th fader on the top row – right above the FP
         Playlist just built.
 
-12   Eos Family Busking
-
      Let’s build another using a few different systems
 
       Grab the Side Spots (G105), bring to Full and tilt them as far up as they
@@ -491,8 +480,6 @@ Let’s create one more Color List for the Backwall Pixels.
 
  Go back to Live and run the list
 
-14   Eos Family Busking
-
 ## Gobo List for Spot Fixtures
 
      In order to add quick access to texture, let’s build a Beam Palette list for
@@ -584,8 +571,6 @@ Now it is possible to overwrite contents without affecting settings.
 
  {Fader} [2/9] [Label] [Label] OHS FX [Enter]                                   to relabel the fader
 
-16   Eos Family Busking
-
 ## Timing and Global Faders
 
      Hitting the bump button to step through the playlist, you see that
@@ -653,8 +638,6 @@ then stops. Now bring it slowly all the way to full. Woohoo!
 Bring that size fader back to half and slowly bring the rate fader down.
 Watch how the fixtures slow down and then stop wherever they are.
 Now bring the Rate Fader all the way up. Woohoo!
-
-18   Eos Family Busking
 
 ## Stomp!
 
@@ -760,8 +743,6 @@ Let’s put these in Presets.
 
  Tap Preset 331 and 332. Hit [Enter]
 
-20   Eos Family Busking
-
         There are now two presets with two effects with the same data in them.
         This will allow us to fire the effect before the last one completes for some
         fun flexibility.
@@ -812,8 +793,6 @@ sets already built.
    There is no reason to rebuild all the data if it’s in the file already.
    Looking at this Magic Sheet, keep your workflow in mind.
 
-22   Eos Family Busking
-
 ### WORK FLOW
 
      What is the first thing you do?
@@ -836,8 +815,6 @@ sets already built.
 ### INTENSITY CONTROL
 
 ### NP MODIFIERS: FOCUS, COLOR, BEAM
-
-24   Eos Family Busking
 
 ### SYSTEM CONTROL OPTIONS
 
@@ -927,8 +904,6 @@ set in Settings.
 
  Change the Fader page back to 1.
 
-26   Eos Family Busking
-
      Before talking about the last section of the magic sheet, it’s time to play
      around a little.
      - Use the tools created to change the scene as the song is playing.
@@ -990,8 +965,6 @@ Let’s take a look at Magic Sheet 8002 “Busking”.
    scene, including all data coming from the faders and store it in the specific
    cue. The Manual Record button will only take the manual data and record it
    into the cue, leaving the faders to keep control over the data.
-
-28   Eos Family Busking
 
 ### FULL RECORD
 
@@ -1097,8 +1070,6 @@ SS Focus Playlist is no longer contributing, and that data is now in the cue.
 
  Hit the OHS FX top bump button()                                                 OHS FX was not recorded into a cue.
 
-30   Eos Family Busking
-
 ### RECORD NEXT
 
         The two Rec Next Available macros are able to be recorded from any cue.
@@ -1153,8 +1124,6 @@ Let’s discuss what happened.
     data next time you busk?
     _____________________________________________________
     _____________________________________________________
-
-32   Eos Family Busking
 
                                                                                    Hookup             33
 

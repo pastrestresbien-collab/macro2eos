@@ -5,9 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
-Eos Family Console Programming
-
              Level 4: Proficient
 
                         Workbook
@@ -21,8 +18,6 @@ Eos Family Console Programming
 
 ETC permits the reproduction of materials in this manual only for non-commercial
     purposes. All other rights are reserved by ETC.
-
-     Eos Family Console Programming Level 4
 
 ## Purpose of the Class
 
@@ -123,8 +118,6 @@ populate all other fixtures of that type.
   [Select Last] {Color Select 2} [Record] [Color Palette] [31] {By Type} [Enter]             the color palette
         We didn’t specify a default channel, but a default was created for the
         fixture type.
-
-    Eos Family Console Programming Level 4
 
 ### EDITING BY TYPE PALETTES IN BLIND
 
@@ -229,8 +222,6 @@ when recalled.
            lights focused in the area, before tweaking them and recording
            actual focus palettes
 
-     Eos Family Console Programming Level 4
-
 ### LOCKED PALETTES
 
     Once a Palette or Preset is locked, data can not be accidentally modified. It
@@ -325,8 +316,6 @@ when recalled.
         [Escape] to go back to the macro editor
       [Enter] {Delete} to remove 
       [Learn] or {Done}                                                             Macro should look like the below
-
-      Eos Family Console Programming Level 4
 
             [Live]     Recall Snapshot 4
             «OS Movers-Wash» (G7) [Full] [Full], «X Stage Look» (FP12)
@@ -437,8 +426,6 @@ Note:      Non-motorized faders need to be placed at Full position to run the cu
     want to go to a cue in that list, you don't need to specify 2/. If you [Go To Cue] [1]
     [/] [Enter], then future [Go To Cue] commands will be in list 1.
 
-      Eos Family Console Programming Level 4
-
 ### MANAGING CUE LISTS ON FADERS
 
         Note:    On non-motorized hardware, the [Load] function is achieved by pressing both
@@ -547,8 +534,6 @@ Lists can be triggered in the middle of a main cue list to run an effect.
 
   [] (Go) on Cue 104                                                                      also runs cue 2/0 as well
 
-      Eos Family Console Programming Level 4
-
          [Assert] allows tracked or blocked data from a cue to be replayed, even when
          another cue list has taken control of that channel/ parameter. Asserted channels
          play back tracked and blocked values, regardless of cue list ownership, when the
@@ -647,8 +632,6 @@ file, and change their behaviors.
       Move the Master Fader pair back down to 0% and hit [] (Go)                             control of another cue
       Run the faders up
 
-      Eos Family Console Programming Level 4
-
 ### GO FROM LAST AND BACK FROM FIRST
 
 ### BACK FROM FIRST
@@ -737,8 +720,6 @@ file, and change their behaviors.
 
       [Cue] [1] [/] {Autoblk Clean} [Enter] [Enter]                                           removes all the autoblocks from list 1
 
-      Eos Family Console Programming Level 4
-
 ## Priority
 
      Priority is another way of managing ownership of channels. There are ten levels
@@ -811,8 +792,6 @@ file, and change their behaviors.
  [] (Go) on Master Fader into cue 2                                          take control of that channel
  [Sub] [Sub]   [Sub] [2]      select {Priority}, then {P4}                    set back to default, HTP has ownership
 ```
-
-      Eos Family Console Programming Level 4
 
 ## Capture
 
@@ -901,8 +880,6 @@ file, and change their behaviors.
         will smoothly transition back into the cue list on the next move
         instruction.
 
-      Eos Family Console Programming Level 4
-
 ## Custom Encoder Mapping
 
      Custom Encoder Mapping allows you to define the placement of specific
@@ -989,8 +966,6 @@ file, and change their behaviors.
 {Color} to page 3                                                                     Shows rest of parameters: lime, hue, sat
 ```
 
-      Eos Family Console Programming Level 4
-
 ### USE OF DEFAULTS IN CUSTOM MAPPING
 
      If you are planning on having the same parameter on an encoder throughout
@@ -1050,8 +1025,6 @@ Use the softkey {Create from Fixture} and choose {SolaFrame Theatre}
     On page 1, click {Shutter Strobe}, {Change Parameter}, select {Diffusion}
 
     On page 2, add {Shutter Strobe} on the first tile
-
-      Eos Family Console Programming Level 4
 
 ### COPY/PASTE PAGES OF PARAMETERS
 
@@ -1145,8 +1118,6 @@ Back in the Encoder Maps – Tab 40
    fixture type.
 
 {Filter to Users} [Enter]                                                                Restores a map’s User Filter to “All”
-
-      Eos Family Console Programming Level 4
 
 ## Fader Configuration
 
@@ -1249,8 +1220,6 @@ Back in the Encoder Maps – Tab 40
    «Yellow» (CP3)                                                                      fades immediately
 
   Moving the Man Time fader while channel is fading has no effect.
-
-     Eos Family Console Programming Level 4
 
 ### EFFECTS ON FADERS
 
@@ -1364,8 +1333,6 @@ Back in the Encoder Maps – Tab 40
 Note:      This is currently only a TEMPORARY fader mapping. While it can be moved and
            copied to different faders, if cleared off the fader, the list is gone.
 
-      Eos Family Console Programming Level 4
-
 ## Virtual Faders
 
      Without physical faders?
@@ -1435,8 +1402,6 @@ effect and target. Playback filters do not impact how data is stored.
  [Go To Cue] [37.3] [Enter]                                                           Chase on cyc)
  Run Fader 9 (Global Effects rate) up and down, leave at 100 (mid-way)                all 3 chases run faster, then slower
 ```
-
-     Eos Family Console Programming Level 4
 
 ### USE FILTER BUTTON
 
@@ -1546,8 +1511,6 @@ button is with the parameter tiles in the CIA.
     stores all parameters of a selection, because filters were on, only the filtered
     parameters were stored.
 
-      Eos Family Console Programming Level 4
-
        [Live] [Go To Cue] [18] [Enter]
 
        [{Filters}]
@@ -1651,8 +1614,6 @@ the show file, can be recalled on any device on the network.
   [Enter] [Enter]
   Recall Snapshot 3                                                                Patch and Group List are not included
 
-      Eos Family Console Programming Level 4
-
 ### TO CHANGE A SINGLE TAB
 
             In Direct Selects, change from Groups to Focus Palettes
@@ -1717,8 +1678,6 @@ This button will open the Color Configuration Editor window.
         from color mixing. You will still be able to control excluded parameters
         directly, and none of their stored data will be cleared. UV parameters are
         excluded (unchecked) automatically.
-
-     Eos Family Console Programming Level 4
 
 ### COLOR CONFIGURATION DATA
 
@@ -1804,8 +1763,6 @@ This button will open the Color Configuration Editor window.
   increase the brightness because they live at the center of the spectrum. Fixtures
   that are three colors plus the white emitter do not have the increased ability to
   have metamers.
-
-     Eos Family Console Programming Level 4
 
 ### GEL PICKER
 
@@ -1897,8 +1854,6 @@ even though there isn’t a green parameter.
  [101] [At] [Full] [Enter], using the color picker, make them blue
                                                                                               moves the color point away form the
  Even though no green parameter, use {Green +} of {Green -}                                   green part of the spectrum
-
-      Eos Family Console Programming Level 4
 
 ### COLOR PATH
 
@@ -1997,8 +1952,6 @@ change or modification to the path.
   Change the Gel path to {7) Hue/Sat}                                                   again a different color space
     Adjustments here determine how closely the fade hugs the outside of the
     color space.
-
-     Eos Family Console Programming Level 4
 
 ### SAVE A NEW COLOR PATH
 

@@ -5,9 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
-Eos Family Effects Intensive
-
                    Workbook
 
                            V3.0.1B
@@ -23,8 +20,6 @@ Table of Contents
 
            Graphics courtesy of David Kane
            .
-
-2    Eos Family Effects Intensive
 
 ## Purpose of the Class
 
@@ -126,7 +121,6 @@ You have 20 minutes to build a color effect, effect 400
             2                                (1)               1        0           CP 9034 (Violet)
              3                                (1)              1        0       CP 9028 (Turquoise)
 
-4       Eos Family Effects Intensive
 ```
 
 ## Unit 2 – Step-based Effects
@@ -167,8 +161,6 @@ You have 20 minutes to build a color effect, effect 400
         the second step reaches its dwell
     - You can then modify each individual time for specific steps/channels
         from there for a unique, specific effect.
-
-6    Eos Family Effects Intensive
 
 ### CREATE A SIMPLE STEP-BASED EFFECT
 
@@ -267,8 +259,6 @@ Let’s look at the options on the right in the CIA
 
           This randomizes the rate between steps, and is great for flickers
             Select Random Rate and hit [Enter] without entering a value             To reset or remove the random rate
-
-8   Eos Family Effects Intensive
 
       - Build: Keeps each step’s value at its on state even when the step isn’t
              active. It adds each step until it gets to the last step, and then turns all
@@ -369,8 +359,6 @@ do this?
        It records the state of the channels when the effect is stopped if stop &
        hold is selected.
 
-10    Eos Family Effects Intensive
-
 ## Unit 3 – Absolute Effects
 
 ### WHAT IS AN ABSOLUTE EFFECT?
@@ -430,8 +418,6 @@ Let’s look at this effect on different channels!
     effect, so they run on the channels selected, in the order selected.
 
  [Clear] [Sneak] [Enter]                                                               Remove manual values
-
-12    Eos Family Effects Intensive
 
 ### OFFSETTING
 
@@ -514,8 +500,6 @@ Let’s look at this effect on different channels!
 [Cue] [6] [Assert] [Enter]                                                       Puts an assert on cue 6.
 
 [Go To Cue] [3] [Enter] and rerun the series of cues
-
-14    Eos Family Effects Intensive
 
 ### EFFECT MODIFIERS
 
@@ -619,8 +603,6 @@ need to make a Red, White, and Blue effect.
    The lights now snap to each color, remain there for 1 second, and then
    snap to the next color.
 
-16   Eos Family Effects Intensive
-
 ### ANOTHER MODIFICATION
 
        What if we want the lights to go to 70 while they do this? We don’t know
@@ -698,8 +680,6 @@ We want the effect to go across all the channels and bounce back.
 
  [Live]   [Record] [401] [/] [8] [Label] Bouncing Red [Enter]
 
-18   Eos Family Effects Intensive
-
 ### EXERCISE!
 
        We want a white sparkle effect (407), where the lights jump to full and
@@ -759,8 +739,6 @@ A common effect asked for is a flyout. A flyout has four elements
     {Grouping} {1} [Enter]
 
     [Live]   FOH Spots (G102) [Stop Effect] [Enter] [Home] [Enter]
-
-20   Eos Family Effects Intensive
 
 ### FLYOUT USING PARAMETERS
 
@@ -878,8 +856,6 @@ enters the last action.
 
      [Record] [11] [Label] Trailing Star [Enter]
 
-22    Eos Family Effects Intensive
-
 ## Unit 4 – Relative Effect
 
 ### WHAT IS A RELATIVE EFFECT?
@@ -949,8 +925,6 @@ back up
     in a group will act as an individual channel.
     You can do grouping 0 through 2000. Grouping 0 is spread.
 
-24   Eos Family Effects Intensive
-
              Set {Grouping} to {2}
 
             Every other channel (or subgroup) running the effect will move
@@ -1004,8 +978,6 @@ start when the previous has finished. One at a time!
 When the first group is 50% through the effect, the second group will
 start, and so on through the remaining groups. The groups trail 50%
 behind each other as a percentage of the cycle time
-
-26   Eos Family Effects Intensive
 
             25%
 
@@ -1077,8 +1049,6 @@ Flickers like to be random! Let’s change some attributes
 
  OH Spots (G103) [Stop Effect] [Enter]       [Home] [Enter]
 
-28   Eos Family Effects Intensive
-
 ### CREATE LINEAR FX 413 – INTENSITY FIRE FLICKER
 
        We would like to make another flicker effect. This time, we don’t want it
@@ -1131,8 +1101,6 @@ As this is another flicker, Let’s do some random!
  {Attributes}     {Random Rate} [50] [Thru] [200] [Enter]
 
  [Live]     FOH Spots (G102)      Orange (CP9022)      [Effect] [414] [Enter]   Automatically applied to magenta
-
-30   Eos Family Effects Intensive
 
 ### EXERCISE
 
@@ -1205,8 +1173,6 @@ channels.
     trail is even) around the effect, as shown on the right above.
 
      Set {Grouping} back to {Spread}
-
-32   Eos Family Effects Intensive
 
 ### TRAIL
 
@@ -1313,8 +1279,6 @@ Answer:     Straight Line Focus Effect. This effect is applied to pan and tilt, 
             it to just do a pan wave. With the linear pan effect, it is only applied to
             pan. A separate effect can be applied to tilt
 
-34   Eos Family Effects Intensive
-
 ### COLOR EFFECTS
 
        A color effect impacts a channel’s color parameters. Hue and saturation
@@ -1387,8 +1351,6 @@ Possible Answer: Absolute effect using color palettes. All the fixtures in this 
             Turn on the cyc bottom (Group 304) and apply this effect to the cells
             >< group (group 315). This mirrors the effect in on the cells of the top
             & bottom together. Record Q401/17 Rainbow
-
-36       Eos Family Effects Intensive
 
      Unit 5 – An Effects Library
      Programmers will typically have a file that contains effects they have
@@ -1491,8 +1453,6 @@ In this form, the channels ramp to the first level and snap to the second
                                                                                  down to 0 and pops up to the background
      Change the grouping to 1
 
-38    Eos Family Effects Intensive
-
 ### PULSE/BURST
 
          In a Pulse/Burst, the channels snap to their first level and fade to the
@@ -1567,8 +1527,6 @@ good base to start with, with a lot of common “effects library” effects.
     - The first section, outlined in yellow, contains relative effects. We went
         over many of these. There are step, wave, pulse, and ramp effects as
 
-40   Eos Family Effects Intensive
-
             well as a shimmer. There are two of each – one random, and one
             normal.
        - The second section, outlined in red, contains absolute effects. Again,
@@ -1622,8 +1580,6 @@ button. The decimal reflects what form and grouping the effect is.
 - A more complete version of this library would have all four forms –
     wave, step, pulse/burst, and ramp. They would also have more
     groupings. Often Spread, 1, 2,3 or 4, 8, and then a Random grouping.
-
-42   Eos Family Effects Intensive
 
 ### SPECIAL FX
 
@@ -1705,8 +1661,6 @@ button. The decimal reflects what form and grouping the effect is.
    [Undo] [Enter]
 
    Make sure the fader is down and the sub is off
-
-44   Eos Family Effects Intensive
 
 ### INTENSITY MASTER
 
@@ -1824,8 +1778,6 @@ This will turn off the global effect fader and it will no longer affect the
 channels. Notice it did not reset the faders. If you press the bump button
 again the rate & size will be where you left them. For now, keep this fader
 off.
-
-46   Eos Family Effects Intensive
 
 ### FILTERS
 
@@ -1954,8 +1906,6 @@ Macro 401 already exists that will do just that.
 
      Press that Macro button                                                              Watch these fader release.
 
-48    Eos Family Effects Intensive
-
      Unit 8 – Effect Overrides
 
 ### EFFECT OVERRIDES IN CUES & PRESETS
@@ -2059,8 +2009,6 @@ Notice that effects 416, 420, and 421 all have asterisks in the FX column in
 the PSD in this cue. This is letting you know you have made overrides on
 either the cue or channel level
 
-50   Eos Family Effects Intensive
-
 ### EFFECTS IN PRESETS
 
        In addition to recording effects in cues and submasters, effects can be
@@ -2154,8 +2102,6 @@ The designer has asked for a shimmer on the back-wall pixels (Group
 Stop the candle effect and turn the fixture off. Record this back-wall
 shimmer into cue 402/3
 
-52    Eos Family Effects Intensive
-
      Effect 454: Problem:
      We have been asked to create an effect that looks like fireworks
      shooting up and an exploding using the FOH Movers (Group 102)
@@ -2189,8 +2135,6 @@ We are going to be doing a jail scene later and the convicts have
 escaped. We want to create police searchlights using the FOH movers
 (group 102). We are making this ahead of time, and we don’t know
 how often we will use it. We should be able to recall this easily
-
-54    Eos Family Effects Intensive
 
      Appendix 1 Unit 9 Solutions
 
@@ -2277,8 +2221,6 @@ how often we will use it. We should be able to recall this easily
      -   Duration Infinite
      -   Entry Immediate, Fade by Size, Cue/Sub
      -   Exit Immediate, Fade by Size, Cue/Sub
-
-56    Eos Family Effects Intensive
 
 ### EFFECT 454 SOLUTION:
 
@@ -2389,8 +2331,6 @@ color or linear applied to color parameters.
        -   I ran the edge until you couldn’t see the gobo or the animation
            wheel sharp. It looked likes movement.
 
-58    Eos Family Effects Intensive
-
 ### EFFECT 456: SOLUTION
 
      I made this effect using the cyan, magenta, and yellow parameters.
@@ -2476,8 +2416,6 @@ lights will be when they next turn on.
        -   Exit Immediate, Fade by Size, Cue/Sub
        -   Scale 20
        I recorded this into preset 458 plus FX
-
-60   Eos Family Effects Intensive
 
 Corporate Headquarters  Middleton, WI, USA  Tel +608 831 4116  Service (Americas) service@etcconnect.com
 London, UK  Tel +44 (0)20 8896 1000  Service (UK) service@etceurope.com

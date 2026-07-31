@@ -5,9 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
-Eos Family Console Programming
-
              Level 2: Enhanced
 
                          Workbook
@@ -21,8 +18,6 @@ Eos Family Console Programming
 
                 ETC permits the reproduction of materials in this manual only for non-commercial
                 purposes. All other rights are reserved by ETC.
-
-4    Eos Family Console Programming Level 2
 
 ## Purpose of the Class
 
@@ -126,8 +121,6 @@ Select {Settings} when buttons are highlighted
         under File > New called New From Template. A blank show file can
         always be created with File > New.
 
-6   Eos Family Console Programming Level 2
-
 ### MONITOR ARRANGEMENT
 
          The selected monitor will display in yellow. Monitors can be dragged
@@ -220,8 +213,6 @@ Double hit [Address/Patch] to get to the Patch display.
    {GM EXEMPT} – A TOGGLE PER CHANNEL
    A toggle state, if selected, channels are exempt from a Grandmaster
    fader or Blackout button, [Rem Dim], and Intensity Master operations.
-
-8   Eos Family Console Programming Level 2
 
       {INVERT PAN OR TILT}
       A moving light attribute is used to invert the output of pan, tilt, or both.
@@ -330,8 +321,6 @@ Now complete the scroll in Appendix 1 of the workbook
 
          {Animation Select}       (HES Effect Wheel 14)
 
-10    Eos Family Console Programming Level 2
-
 ## Display Layouts and Workspaces
 
      Upon start up or creation of a new show file, any connected monitor
@@ -410,8 +399,6 @@ tabs as well as resizing and resetting the monitor(s).
                                                                                             closes all the tabs and frames on all
   After playing, use the Reset all Monitors and Workspaces icon
                                                                                             monitors
-
-12    Eos Family Console Programming Level 2
 
 ## Snapshots
 
@@ -518,8 +505,6 @@ tabs as well as resizing and resetting the monitor(s).
    [Group] [102] [Effect] [99] [Enter]                                                        Mirror in Intensity Effect
 
    [Clear] [Sneak] [Enter]
-
-14   Eos Family Console Programming Level 2
 
 ### ADDITIONAL OFFSET MODIFIERS
 
@@ -633,8 +618,6 @@ tabs as well as resizing and resetting the monitor(s).
    Bring the fader back up                                                   leave up for duration of class
 
    [Go To Cue] [Out] [Enter]
-
-16   Eos Family Console Programming Level 2
 
 ### FOH INHIBITIVE SUB
 
@@ -761,8 +744,6 @@ Channel Selection and/or Categories & Parameters  Modifiers and/or Action
             Copy To and Recall From also works between targets. Channel information can be
             recalled from other cues or palettes that are not currently live.
 
-18    Eos Family Console Programming Level 2
-
 ## Palettes
 
      Palettes are building blocks for programming. There are four types of
@@ -856,8 +837,6 @@ Channel Selection and/or Categories & Parameters  Modifiers and/or Action
       [Group] [5] [Full] [Enter]      [Focus Palette] [1] [Thru] [5] [Enter]   fans the lights across all 5 palettes
 
       OR [Group] [5] [Focus Palette] [3] [+] [4] [Enter]                       fans lights from palette 3 to 4 in a line
-
-20   Eos Family Console Programming Level 2
 
 ### BEAM PALETTES
 
@@ -990,8 +969,6 @@ parameter type like with a palette.
           for a parameter or channel, it will use the console’s default home values for that
           parameter.
 
-22    Eos Family Console Programming Level 2
-
 ## Direct Selects
 
       Still in Snapshot 1, on the right monitor, collapse the CIA
@@ -1120,8 +1097,6 @@ channels within the current command line selection will highlight.
 
  [Record] [{Snapshot}] [3] [Label] Programming [Enter]
 
-24   Eos Family Console Programming Level 2
-
 ### APEX TARGET KEYS AND KEYPAD TOUCHSCREEN
 
 ### TARGET KEYS
@@ -1216,8 +1191,6 @@ completely. (Setup, Device Settings, Face Panel, Haptics tab)
     Select the desired target                                                   screen remaps to the selected target
       Custom Direct Selects are covered in Level 3. They are a way to combine
       target types in one frame.
-
-26   Eos Family Console Programming Level 2
 
 ## Write Cues with Palettes
 
@@ -1316,8 +1289,6 @@ submasters.
    make to palettes will be stored only in the cue and will not affect the
    palette as a whole. If you want to update the palette, you need to
    specifically call it out on the command line.
-
-28    Eos Family Console Programming Level 2
 
 ## Auto-Mark
 
@@ -1438,8 +1409,6 @@ submasters.
       [Go To Cue] «Act 1» - self-terminating                                                 use DS to navigate to scenes
        As with all Direct Selects, if don’t want it to terminate, can press [Shift] & «DS»
 
-30   Eos Family Console Programming Level 2
-
 ### NOTES
 
        Cues can have notes attached to them. This is more of a long form
@@ -1542,8 +1511,6 @@ On the left side, (Lock Status)
 
 Feel free to set up the PSD the way that you prefer.
  [Record] [{Snapshot}] [1] [Enter]   [Enter]                                    to re-record Snapshot 1
-
-32    Eos Family Console Programming Level 2
 
 ### DISCRETE TIMING
 
@@ -1678,8 +1645,6 @@ parts.
           menu.
      - Effects will always be in Part 1. They cannot be put in another part.
 
-34    Eos Family Console Programming Level 2
-
 ## Effects
 
 ### WORKING WITH A PRE-PROGRAMMED EFFECT
@@ -1808,8 +1773,6 @@ fixtures that have pan and tilt parameters.
 
      [Live] [Group] [5] [Full] [Enter] [FP2] [Enter] [Effect] [2] [Enter]         if not already there
 
-36   Eos Family Console Programming Level 2
-
 ### CREATE A LINEAR EFFECT
 
        A linear effect does not have to be parameter specific. Rather it can
@@ -1912,8 +1875,6 @@ have data stored in those color palettes.
 
       [Live]   [Go to Cue] [Out] [Enter]                                         clears effect and cue
 
-38    Eos Family Console Programming Level 2
-
 ### WRITING EFFECTS INTO CUES
 
               [Go To Cue] [37] [Enter]
@@ -2010,8 +1971,6 @@ OR
        - Redo - CTRL+Y or CMD+Y
      Closing and re-opening your Editor will also create an Undo Restore
      Point.
-
-40    Eos Family Console Programming Level 2
 
 ### PLACE AN OBJECT
 
@@ -2120,8 +2079,6 @@ Array tools.
   Don’t forget to hit Done!
 
   Back on Layout Toolbar, change back to Normal pointer (simple arrow)
-
-42   Eos Family Console Programming Level 2
 
 ### QUICK TOOL MENU
 
@@ -2238,8 +2195,6 @@ backgrounds to be used for Live and Blind Magic Sheets.
 
  Choose a top color and a bottom color
 
-44   Eos Family Console Programming Level 2
-
 ### LET’S ADD OTHER OBJECTS
 
         Back in the Objects Library, select the Color Palette Object – 2nd down on
@@ -2313,8 +2268,6 @@ The magic sheet might look like this:
 
                                                                                                (Larger version on page 48)
 
-46   Eos Family Console Programming Level 2
-
 ### MAGIC SHEET NAVIGATION
 
 ### MULTI-TOUCH GESTURES
@@ -2384,8 +2337,6 @@ The magic sheet might look like this:
 11    R090 – Dark Yellow Green
 
 ### DON’T FORGET TO HIT DONE WHEN FINISHED!
-
-48   Eos Family Console Programming Level 2
 
 ## Appendix 2 – Magic Sheet
 

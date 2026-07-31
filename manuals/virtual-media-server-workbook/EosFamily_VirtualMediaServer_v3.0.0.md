@@ -5,7 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
 Virtual Media Server and Pixel Map Control
 
                   Eos Family Expert Topics
@@ -22,8 +21,6 @@ Virtual Media Server and Pixel Map Control
 
          ETC permits the reproduction of materials in this manual only for non-commercial purposes.
          All other rights are reserved by ETC.
-
-4    Eos Family Virtual Media Server
 
 ## Purpose of the Class
 
@@ -136,8 +133,6 @@ mapped to which output devices.
 
       [Label] “Cyc Pixels” [Enter]                                                  assigns a label to the pixel map
 
-6   Eos Family Virtual Media Server
-
 ### OPENING THE EDITOR
 
       Once you have laid out a basic Pixel Map space, you need to add the specific
@@ -189,8 +184,6 @@ the Pixel Map.
   Click {Done} – a softkey!!!                                                       exits editor and saves work
 
     All pixels/fixtures turn pink.
-
-8    Eos Family Virtual Media Server
 
 ### A NOTE ABOUT PIXEL MAPS:
 
@@ -262,8 +255,6 @@ There are two display options that will assist in the usage of VMS:
       Use Add-a-Tab (the {+} sign)
 
       {ML Control}                                                                select ML Controls
-
-10    Eos Family Virtual Media Server
 
 ## VMS Manual Control
 
@@ -340,8 +331,6 @@ There are two display options that will assist in the usage of VMS:
         {Contrast} {Max}            {Contrast} {Home}
                                                                                home = 0 or normal
 
-12   Eos Family Virtual Media Server
-
 ### ADJUSTING CONTENT SHAPE AND LOCATION OPTIONS
 
            Scroll right to Shutter section                                       with chan 512 still on the command line
@@ -411,8 +400,6 @@ There are two display options that will assist in the usage of VMS:
           Roll Z Rotate encoder
                                                                              fast
           {Z Rotate} {Home}                                                  homes the content
-
-14    Eos Family Virtual Media Server
 
 ### MULTIPLE LAYER CONTROL AND OPTIONS
 
@@ -486,8 +473,6 @@ always be applied to the lower of the two layers.
  [513] [Enter]
 
  Scroll to Library :: 0, select {File 20}, {Scale} [12] [Enter], {Focus} {Home}   loads and sets the star content
-
-16   Eos Family Virtual Media Server
 
 ### MIXER MODE
 
@@ -563,8 +548,6 @@ always be applied to the lower of the two layers.
 {Xor}
                layer with opacity reduced by the inverse opacity
                of the top layer
-
-18    Eos Family Virtual Media Server
 
 ### VIRTUAL EFFECT LAYERS
 
@@ -649,8 +632,6 @@ always be applied to the lower of the two layers.
     Parameters with no affect on rainbow effects are Intensity 2, Red, Blue, Green, Red2,
     Blue2, Green2, Hue, Saturation, In Point, and Out Point.
 
-20   Eos Family Virtual Media Server
-
 ### CONTINUING CONTENT: USER DEFINED COLORS (GRADIENT)
 
        User-Defined Colors use a Start Color and an End Color to define their range
@@ -716,8 +697,6 @@ you decide to use a VMS Effect Layer.
                                                                                   makes the red more opaque – gives a
  {Intensity 3} [40] [Enter]
                                                                                   smoldering look
-
-22    Eos Family Virtual Media Server
 
 ## Server Controls
 
@@ -812,8 +791,6 @@ you decide to use a VMS Effect Layer.
       - Overall Look Recall
 
      Locked Palettes are very useful when working with Virtual Media Servers.
-
-24    Eos Family Virtual Media Server
 
 ### OTHER PIXEL MAP TOOLS
 
@@ -912,7 +889,6 @@ Channel   Universe   Address   Manufacturer   Type                     Focus/Not
 748       20         142       Generic        LED RGB – 8B             Cyc Pixels
 749       20         145       Generic        LED RGB – 8B             Cyc Pixels
 
-26   Eos Family Virtual Media Server
 ```
 
 ### CYC PIXELS (CONTINUED)
@@ -1027,7 +1003,6 @@ Channel   Universe   Address   Manufacturer   Type                     Focus/Not
 849       20         445       Generic        LED RGB – 8B             Cyc Pixels
 850       20         448       Generic        LED RGB – 8B             Cyc Pixels
 
-28   Eos Family Virtual Media Server
 ```
 
 ### CYC PIXELS (CONTINUED)
@@ -1102,7 +1077,6 @@ Channel   Universe   Address   Manufacturer   Type                     Focus/Not
 926       22         76        Generic        LED RGB – 8B             MTG Pixels
 927       22         79        Generic        LED RGB – 8B             MTG Pixels
 
-30   Eos Family Virtual Media Server
 ```
 
 ## Appendix 2 – Hookup Additions
@@ -1169,8 +1143,6 @@ Options in this display include:
        appear to indicate the status of the import process. When
        finished, click {Done}.
    - {Cancel} - stops the import and exits the display.
-
-32    Eos Family Virtual Media Server
 
 ### IMPORTING WITH THE FILE MANAGER
 
@@ -1240,8 +1212,6 @@ consoles, follow these steps to configure your multi-console system:
                    the path name, you will need it to setup the backup and/or
                    client.
 
-34   Eos Family Virtual Media Server
-
 ### SETTING UP THE BACKUP AND CLIENTS
 
                      On the backup or client, exit to the Eos Configuration Utility
@@ -1302,8 +1272,6 @@ importing media:
       Step 5:
                    see the media playing in the Pixel Map Preview display on the
                    backup and/or clients.
-
-36    Eos Family Virtual Media Server
 
      Appendix 5 – General Notes on VMS Usage
 
@@ -1389,8 +1357,6 @@ tools that allow changes to content before or while it is being played back.
     other objects, the Media Server can map the right pixels of the content to
     the right object and its pixels:
 
-38   Eos Family Virtual Media Server
-
        The actual output of your Media Server and its associated objects will be
        what content resides on the output devices:
 
@@ -1455,8 +1421,6 @@ control you have. But more layers usually mean using a more expensive
 Media Server. For basic Media Server programming, four layers are usually
 enough. When we start controlling Media Servers, we’ll discuss some
 situations that may require more layers.
-
-40    Eos Family Virtual Media Server
 
 ### PATCHING AN EXTERNAL MEDIA SERVER
 

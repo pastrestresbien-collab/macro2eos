@@ -5,9 +5,6 @@
 - Confiance : A (document officiel ETC — conversion intégrale du texte ; les illustrations/captures d'écran du PDF ne sont pas reproduites)
 - Conventions du workbook : **gras** = syntaxe/menus browser ; [crochets] = touches de façade ; {accolades} = softkeys/boutons tactiles ; <chevrons> = touches optionnelles ; & = touches pressées simultanément ; «Direct Select» = appui Direct Select
 
-
-Eos Family Magic Sheet Intensive
-
                         Workbook
 
                           V3.0.1 Rev. A
@@ -25,8 +22,6 @@ Table of Contents
 
            Contact education@etcconnect.com with any comments about the workbook and
              support files.
-
-2    Eos Family Magic Sheet Intensive
 
 ## Purpose of the Class
 
@@ -121,8 +116,6 @@ tools are nearly endless.
 
     - 99 Magic Sheets in a show
     - Each Magic Sheet can have up to 16 views
-
-4    Eos Family Magic Sheet Intensive
 
 ## Magic Sheet Editor Review
 
@@ -222,8 +215,6 @@ tools are nearly endless.
        Change the fields to Interior mapping
 
   The object might look something like the image to the right.
-
-6    Eos Family Magic Sheet Intensive
 
           Select the Group 102 object and copy and paste                           CTRL+C and CTRL+V
 
@@ -349,8 +340,6 @@ tools are nearly endless.
     Notice we can’t type in the text to label it…it only shows the actual command.
       This also runs in the foreground. How do we run it in the background?
 
-8   Eos Family Magic Sheet Intensive
-
        Drop a Label to the left of the Command button
 
           Change the text from Label to Sneak All
@@ -454,8 +443,6 @@ But we can’t see the status on the Magic Sheet!
 Only Color Palettes and channels change the state of the Magic Sheet
 object based on the console data.
 
-10   Eos Family Magic Sheet Intensive
-
        Now let’s make an indicator channel!
           In Patch,
                                                                               This is under show – already in the file. A copy
@@ -535,8 +522,6 @@ object based on the console data.
                                                                             line – remember user 0 in the command!
 
   Your Magic Sheet might look something like this now:
-
-12    Eos Family Magic Sheet Intensive
 
 ### A REVIEW OF MAGIC SHEET DISPLAYS & NAVIGATION
 
@@ -654,8 +639,6 @@ of the Magic Sheet Editor. There are three options:
 
        Fire Snapshot 101
 
-14   Eos Family Magic Sheet Intensive
-
 ### MAGIC SHEET SHOW & TELL
 
 ### MAGIC SHEET EXAMPLES
@@ -738,8 +721,6 @@ fixtures
 
     NOTE:    All the groups are in the 300s since this is the third Magic Sheet. MS 303
              & macro 303
-
-16   Eos Family Magic Sheet Intensive
 
        - Cyc Pixels! The cyc pixels are in groups as well, in various offsets.
              - Click on the Pixel Wall popup. It looks like a popup, but it is just
@@ -844,8 +825,6 @@ The channels’ fill property is linked to Target Intensity & Color.
 - This MS has CPs, IPs, and Home macros like the other MSs with
     fixtures on them.
 
-18    Eos Family Magic Sheet Intensive
-
 ## Magic Sheet Navigation Tricks
 
 ### MAGIC SHEET NAVIGATION – IN THE SAME TAB
@@ -917,8 +896,6 @@ The channels’ fill property is linked to Target Intensity & Color.
  Test the navigation of your menu structure.
 
 Your Magic Sheet might look something like this:
-
-20    Eos Family Magic Sheet Intensive
 
 ### MAGIC SHEET NAVIGATION – IN ANOTHER TAB/FRAME
 
@@ -1016,8 +993,6 @@ In LEM, Currently only records one screen not both
                     online first, it will not fire the macro
 
       Shut the console down
-
-22    Eos Family Magic Sheet Intensive
 
 ## Setting up a Home Tab
 
@@ -1134,8 +1109,6 @@ examples are:
 
         Make the group above the fixtures Group 109 – OH Wash
 
-24   Eos Family Magic Sheet Intensive
-
        Side Spots
         Copy and Paste the OH Spots and their group
 
@@ -1200,8 +1173,6 @@ Students can choose to continue working on this Magic Sheet (maybe
 layout Beam Palettes or more macros) or use the blank system Magic
 Sheet 203 to work on a different system of fixtures. They have 15
 minutes to play.
-
-26    Eos Family Magic Sheet Intensive
 
 ## Setting up a “Target” Magic Sheet
 
@@ -1329,8 +1300,6 @@ included in the file as an example, and strongly recommended for the
 students to make as part of their individual exercise. If time, they
 could be made as a class before moving on to the exercise.
 
-28   Eos Family Magic Sheet Intensive
-
        Your Magic Sheet might look something like this:
 
 ### TARGET MAGIC SHEET – INDIVIDUAL EXERCISE
@@ -1391,8 +1360,6 @@ Magic Sheets
 
        Drop truss onto the Magic Sheet. Resize so it is the size of the FOH truss.
        Copy it onto the 1st through 4th electrics and the cyc top/bottom.
-
-30   Eos Family Magic Sheet Intensive
 
         Drop a Moving Spot onto the Magic Sheet.
 
@@ -1462,8 +1429,6 @@ systems you may not want individual fixtures for (Side systems, Front
 light, Back wall pixels, High Sides, etc.).
 You may also want some macros or commands that home or sneak if you
 are using palettes.
-
-32    Eos Family Magic Sheet Intensive
 
 ## Programming Surface Magic Sheet
 
@@ -1536,8 +1501,6 @@ An Example of a Shutter Tool from completed class file:
 
 If this tool is not applicable to a student, they may choose to make
 something else that they can justify being on a programmer Magic Sheet.
-
-34       Eos Family Magic Sheet Intensive
 
 ## Control Tab Magic Sheet
 
