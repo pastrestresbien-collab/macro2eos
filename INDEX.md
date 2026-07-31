@@ -15,6 +15,8 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 |---|---|---|
 | `eosKeys.ts` — 1155 touches OSC officielles (projet xtouch2Eos), nom OSC → commande interne | [`reference/eosKeys.ts`](reference/eosKeys.ts) | ✅ Reçu, intégré tel quel |
 | Comparaison eosKeys.ts ↔ table officielle « Eos OSC Keys » du manuel v3.2.0 | [`reference/eosKeys_vs_manual_comparison.md`](reference/eosKeys_vs_manual_comparison.md) | ✅ 1152/1155 entrées identiques ; écarts documentés (résout corpus #148) |
+| Journal d'observations terrain nomad réel (projet xtouch2Eos, source de la vague 28) | [`reference/JOURNAL_observations_nomad.md`](reference/JOURNAL_observations_nomad.md) | ✅ Reçu, intégré tel quel (source S) |
+| Compléments du journal utiles à macro2eos (au-delà de la vague 28) | [`reference/JOURNAL_nomad_complements.md`](reference/JOURNAL_nomad_complements.md) | ✅ `/eos/macro/.../fire` confirmé, Assert sans mot-clé cmd, syntaxe wheel coarse/fine/home |
 
 ## Manuels convertis en Markdown
 

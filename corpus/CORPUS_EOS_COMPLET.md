@@ -199,6 +199,10 @@ Pièges : `effect_edit` → `EFFECT_PATTERN_EDIT` — ⚠️ CORRIGÉ vague29 : 
 
 OSC fondamentaux : `/eos/cmd="<commande>"` avec substitution `%1`; `/eos/key/<touche>` pour fonctions à état ; `/eos/user/<n>` pour ciblage utilisateur [065, C]. CR systématique en fin de chaîne [076, A].
 
+**Déclenchement de macro par OSC, confirmé A (manuel v3.2.0 chapitre 31 + confirmation terrain indépendante)** : `/eos/macro=<n>` sélectionne une macro ; `/eos/macro/fire=<n>` l'exécute ; `/eos/macro/<n>/fire=1.0` l'exécute avec argument optionnel de front de bouton (1.0=appui, 0.0=relâchement). C'est l'adresse normative pour le moteur d'injection OSC de macro2eos. Voir `reference/JOURNAL_nomad_complements.md`.
+
+**Assert — confirmé sans mot-clé de ligne de commande dédié** : `/eos/newcmd "Sub n Assert#"` échoue en erreur de syntaxe (confirmé au banc à deux reprises, source S). Assert est une fonction de touche/contexte console, pas un mot-clé `newcmd`/`cmd` — toute génération de macro impliquant Assert doit passer par la séquence de touches console normale, pas par une construction de chaîne de commande. Voir `reference/JOURNAL_nomad_complements.md`.
+
 Send_String — bugs à tickets ETC (règles non négociables) :
 - **[EOS-55864]** : toujours en dernière position d'une macro multi-lignes (sinon `/r` parasite) [106, B/A]
 - **[EOS-53576]** : `Macro_Wait` entre `Send_String` multiples si déclenché depuis un Client [107, B]
