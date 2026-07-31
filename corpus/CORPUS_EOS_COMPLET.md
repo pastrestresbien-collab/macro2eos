@@ -2289,3 +2289,585 @@ Date de collecte : 29/07/2026
 - **Fil source** : "Marking"
 - **Question posée dans le fil** : <cite reformulé>est-il possible d'utiliser l'option enable/disable dans les macros pour le marking ? Je n'arrive pas à le faire fonctionner.</cite>
 - **Réponse d'un autre contributeur, non résolutive** : <cite reformulé>ça continue à se comporter comme un toggle, ou du moins c'est le cas sur l'OLE (Offline Editor).</cite>
+- **Confiance** : C, mais **contrediction directe et documentée** avec la règle officielle déjà établie niveau A (vague 10, #074 : *"les macros pour des options à bascule... peuvent utiliser les softkeys {Enable} et {Disable} pour créer des actions absolues plutôt que des toggles"*)
+- **Statut** : ni confirmé ni infirmé de façon définitive dans ce fil — semble être un cas spécifique où la règle générale documentée par ETC ne s'applique pas comme attendu, au moins pour le marking et au moins en Offline Editor
+- **Impact architecture majeur** : ceci est la **preuve la plus directe et la plus nette, à ce stade du corpus, que la règle générale "utiliser {Enable}/{Disable} pour éviter le comportement toggle" n'est pas fiable à 100% selon le contexte fonctionnel visé** (ici : marking spécifiquement). Le référentiel de risques traitait déjà `{Enable}/{Disable}` comme risque contextuel générique — cette entrée **confirme concrètement** ce risque avec un cas d'usage précis et documenté, plutôt que par simple prudence théorique. À signaler comme prioritaire pour un test au banc, avec un scénario précis reproductible (macro de bascule d'AutoMark).
+
+## 119 — Piège de construction de macro pour Mark en cue part : contexte Live vs Blind déterminant (C, syntaxe fine confirmée)
+
+- **Fil source** : "Mark Macro"
+- **Contexte du besoin** : créer une macro pour marquer dans un cue part 20 spécifique
+- **Explication technique confirmée** : <cite reformulé>il faut d'abord qu'un part 20 existe pour qu'une instruction y faisant référence fonctionne. Si ce part 20 est enregistré en Live, il n'inclura pas que les marks — il embarquera aussi une forme de données de cue additionnelles. Si ce part est ajouté en Blind, ce problème ne se produit pas.</cite>
+- **Conséquence pratique pour la macro** : <cite reformulé>la macro proposée par l'auteur du fil devrait fonctionner correctement si elle est exécutée en Blind. On peut aussi ajouter des commandes dans la macro pour basculer en Blind puis revenir en Live — mais l'entrée en Blind depuis une macro doit être plus spécifique qu'un simple `[Blind] [Enter]` : dans ce cas précis, il faut `[Blind] [Cue] [Enter]`, alors que dans d'autres contextes ce serait `[Blind] [Sub] [Enter]`.</cite>
+- **Confiance** : C, réponse technique précise et cohérente
+- **Impact architecture** : **nouveau piège de syntaxe contextuelle** : `[Blind] [Enter]` seul est ambigu/insuffisant en macro, il faut préciser la cible (`Cue`, `Sub`, etc.) explicitement. Règle de génération à intégrer : le moteur ne doit jamais générer un `[Blind] [Enter]` nu, toujours qualifié par son objet cible.
+
+## 120 — Confirmation officielle A du mécanisme de Referenced Mark (structurel, complète la compréhension du domaine)
+
+- Source : etcconnect.com/WebDocs, "Referenced Marks"
+- <cite>Si la programmation démarre avec AutoMark activé puis que la fonctionnalité est désactivée, tous les AutoMarks du show sont convertis en marks référencés.</cite>
+- <cite>Un mark référencé réussi comporte deux parties : la cue portant le flag de mark (définie par l'utilisateur) — appelée cue marquée — où les paramètres non-intensité changeront ; et la cue portant la valeur d'intensité pour les channels concernés — appelée cue source — qui est aussi celle où sont stockés les mouvements non-intensité. Pour utiliser le mark correctement, il faut spécifier les channels à marquer dans la cue source ; Eos ne suppose pas que tous les fixtures automatisés s'appliquent à un mark donné.</cite>
+- **Confiance** : A
+- **Thématique** : Mark/Auto-Mark — clarifie enfin structurellement ce domaine resté flou depuis les mentions éparses en vague 11 (#078, indicateurs mh/MH/ml/ML)
+
+## 121 — Confirmation d'une limitation connue et assumée par ETC sur les cues multi-parts et le marking (B, réponse ETC directe)
+
+- **Fil source** : "Marking"
+- <cite reformulé>Un contributeur identifié comme faisant partie de l'équipe ETC confirme que le problème de marking sur cues multi-parts (où le marking semble attendre la fin de toute la cue plutôt que de démarrer dès que le channel concerné atteint zéro) est un comportement connu, actuellement sur la liste des points à corriger côté ETC.</cite>
+- **Confiance** : B
+- **Statut** : limitation reconnue par ETC — statut de correction actuel non vérifié séparément dans cette vague
+
+---
+
+## Synthèse — apports de cette vague (importante pour la robustesse du référentiel)
+
+1. **Confirmation concrète et documentée du risque déjà identifié sur `{Enable}/{Disable}`** (#118) — passe de risque générique théorique à cas précis reproductible (marking), renforçant la priorité de test au banc sur ce point
+2. **Nouveau piège de syntaxe contextuelle découvert** : `[Blind] [Enter]` doit toujours être qualifié par son objet cible en macro — règle de génération à intégrer immédiatement
+3. **Mécanique AutoMark/Mark/Referenced Mark désormais bien comprise structurellement**, avec confirmation A pour les Referenced Marks
+
+## Mise à jour du référentiel de risques
+
+Ajouter :
+- `{Enable}/{Disable}` pour le marking spécifiquement → confirmé comme se comportant encore comme un toggle en macro, malgré la doctrine générale officielle contraire (C, contredit #074, vague22 #118) — **cas prioritaire de test au banc**
+- `[Blind] [Enter]` non qualifié → syntaxe ambiguë/insuffisante en macro, doit toujours préciser l'objet cible (`Cue`, `Sub`, etc.) (C, vague22 #119)
+
+<!-- ===== FIN : vague22_mark_automark.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague23_merge_selectif_constat.md ===== -->
+
+# Corpus — vague 23 : Merge sélectif (rendement faible sur multiconsole/backup ce tour-ci)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 122 — Merge sélectif par type d'objet, confirmé officiellement (source A, procédure claire)
+
+- Source : support.etcconnect.com, "Merging custom fixture profiles into an Eos showfile"
+- **Procédure confirmée** : <cite reformulé>charger le showfile source contenant l'objet à fusionner sur une clé USB formatée en FAT32, l'insérer dans la console, puis dans le File Browser naviguer vers File > Merge > [clé USB] > [showfile source]. Un écran de sélection apparaît ; il faut s'assurer que seule la catégorie voulue (ex: "Fixtures") est cochée avant de valider.</cite>
+- **Confiance** : A
+- **Impact** : confirme et précise le mécanisme de Merge sélectif déjà évoqué en creux depuis la vague 5 (pattern dummy channels/palettes réutilisables entre showfiles) — ici avec la procédure exacte et officielle. Directement pertinent pour ta problématique de réutilisabilité inter-tournées : ton outil pourrait générer des showfiles "modèles" contenant uniquement des macros, à fusionner sélectivement (catégorie "Macros" plutôt que tout le show) dans le showfile de chaque date de tournée.
+
+## 123 — Confirmation indirecte, via anecdote d'un tiers, que Change To et Merge sont utilisés en pratique pour l'harmonisation de patch entre venues (D, source non fiable en tant que telle mais usage confirmé cohérent)
+
+- **Fil source** : "My NOMAD ---> Other NOMAD" (déjà partiellement en corpus, vague 3 #026, relu sous un angle différent ici)
+- **Contexte particulier de cette source** : l'utilisateur du forum partage littéralement une réponse générée par un assistant IA générique (nommé dans le fil), en demandant l'avis de la communauté dessus — <cite reformulé>"voici ce que Gemini me suggère... mais je prends ça avec des pincettes."</cite>
+- **Confiance** : **D — cette portion spécifique du fil n'est PAS une source humaine vérifiée**, c'est du contenu généré par un autre outil IA, partagé pour avis. À ne jamais traiter comme donnée de grammaire fiable en soi.
+- **Ce qui reste exploitable malgré tout** : la fonction `Change To` elle-même (déjà confirmée ailleurs, vague 3 #026, comme `Channel Change To`) est correctement décrite dans ce contenu généré, de façon cohérente avec le reste du corpus — mais ce n'est pas une confirmation supplémentaire indépendante, juste une reformulation non vérifiée d'un fait déjà établi par ailleurs
+- **Note méthodologique importante** : cette source illustre un risque réel pour la collecte — du contenu IA généré peut se retrouver posté sur des forums techniques par des utilisateurs de bonne foi cherchant une validation. Vigilance à maintenir : toujours vérifier si un extrait de forum est un témoignage humain direct ou une reproduction de sortie IA, avant de lui accorder un niveau de confiance C.
+
+## 124 — Constat d'échec partiel de cette vague sur la thématique visée
+
+- La recherche ciblée sur "backup console failover sync macro" n'a pas produit de résultat solide spécifiquement pour **Eos** — le résultat le plus détaillé concernait un bug de sauvegarde sur console **Hog** (marque concurrente, hors périmètre du corpus)
+- **Statut** : la thématique "multiconsole/backup" reste incomplète au-delà de ce qui était déjà établi en vague 9 (ciblage User OSC, bug d'édition concurrente) — pas de nouvelle donnée solide sur la mécanique de failover Primary/Backup elle-même pour Eos
+- **Action suggérée pour une prochaine vague** : reformuler la recherche avec des termes plus spécifiques à Eos (ex: "Eos Backup console troubleshoot reconnect", déjà partiellement vu en vague 9 avec le fil "Issues with Multiconsole", jamais approfondi)
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Procédure Merge sélective confirmée officiellement (A)** — actionnable directement pour la stratégie de distribution multi-tournée de ton outil
+2. **Alerte méthodologique importante** : détection d'une source de forum contenant en réalité du contenu généré par IA, partagé pour avis — renforce la nécessité de rester vigilant sur la nature exacte de chaque source avant de lui attribuer une confiance C
+3. **Échec honnête signalé** sur la thématique failover/backup Eos spécifiquement — pas de nouvelle donnée exploitable, à retenter avec des termes différents plus tard
+
+<!-- ===== FIN : vague23_merge_selectif_constat.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague24_fan_autopalette_precedent.md ===== -->
+
+# Corpus — vague 24 : Fan mode, Break Nested, et un précédent direct au projet (Autopalette)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 125 — Découverte du mode Fan, mécanisme de répartition automatique de valeurs (source A, nouveau concept)
+
+- Source : Eos Family L3 Intermediate Workbook v3.1 (officiel ETC)
+- <cite reformulé>Fan est un mode du logiciel Eos. Une fois activé, tout paramètre déplacé se répartit uniformément sur la sélection courante, selon différents styles. Il est possible de répartir ("fan") des données référencées sur une plage de channels, et les plages peuvent aussi être utilisées pour répartir des temps et délais discrets.</cite>
+- **Confiance** : A
+- **Impact architecture majeur** : c'est un **quatrième mécanisme de génération en masse natif d'EOS**, distinct des trois déjà identifiés (spread par plage `[Thru]`/`[Thru]`, boucle `SelectLast`/`Macro_Loop`, indirection macro-dans-macro). Fan semble être le mécanisme le plus proche d'une vraie fonction mathématique de distribution — pertinent en particulier pour tout scénario de gradient (déjà vu avec le spread de teintes en vague 5 #040, qui aurait peut-être pu s'exprimer plus simplement via Fan). **À investiguer en priorité dans une prochaine vague** — syntaxe exacte non capturée dans cet extrait, seulement le principe.
+
+## 126 — Précisions officielles sur Break Nested et Make Absolute lors d'un Update (source A, complète #041/#042)
+
+- **Fil source** : "Palettes" (2009, mais principe stable)
+- <cite reformulé>Lors d'un Update, la CIA affiche des informations sur la cue en cours de mise à jour ainsi que les channels concernés. Si des palettes/presets sont listés, "Update All" permet de mettre à jour les palettes de intensité/focus/couleur/beam de ces lumières. "Make Absolute" code l'information en donnée figée directement dans la cue. "Break Nested" est censé "casser le lien" palette-preset.</cite>
+- **Confiance** : C pour cette formulation (utilisateur expérimenté, pas ETC direct dans ce fil), mais cohérente et confirmée en creux par les mentions déjà en corpus (#042, "make absolute" mentionné sans détail)
+- **Piège rapporté par l'auteur, non résolu explicitement** : le réglage Make Absolute/Break Nested/Update All est **persistant d'une session à l'autre** — la console se souvient du dernier choix effectué et le réapplique par défaut au prochain Update, ce qui peut piéger un opérateur qui a oublié son dernier réglage
+- **Impact** : nouveau cas à ajouter au référentiel — un `Update` peut se comporter différemment non seulement selon le contexte immédiat (déjà documenté, #025), mais aussi selon un **état persistant de préférence utilisateur** non visible dans la macro elle-même. Renforce encore la nécessité de traiter `Update` comme commande à haut risque contextuel.
+
+## 127 — DÉCOUVERTE MAJEURE : un précédent direct et non abouti du projet de Cy existe déjà dans la communauté ("Autopalette Macros")
+
+- **Fil source** : "Autopallette Macros" (2024, récent)
+- **Projet décrit par l'auteur du fil, en tous points comparable à une sous-fonction de ton propre projet** : <cite reformulé>l'objectif est de sélectionner n'importe quel fixture du showfile et de faire en sorte qu'une macro construise automatiquement une palette by-type de base pour chaque paramètre, sans avoir à détailler chaque profil manuellement — inspiré d'une fonctionnalité équivalente déjà existante sur les consoles Hog (marque concurrente), qui aurait fait gagner des heures de programmation sur plusieurs shows passés.</cite>
+- **État d'avancement rapporté par l'auteur lui-même** : <cite reformulé>le prototype actuel demande à l'utilisateur de sélectionner un instrument, valide, puis parcourt tous les paramètres du fixture pour les mettre à 0 ; ensuite, pour chaque paramètre de couleur, les met à 100%, met à jour une palette by-type, remet le paramètre à 0%, et recommence. Ça casse actuellement après la première palette — des erreurs de programmation restent à corriger.</cite>
+- **Conseil apporté par un autre contributeur** : privilégier Hue/Saturation (disponible virtuellement dans EOS, à activer) plutôt que RGB, car tous les fixtures n'ont pas les mêmes paramètres de couleur natifs — offre à partager la syntaxe de macro pour affiner l'aide
+- **Confiance** : C, témoignage direct et détaillé d'un projet en cours, non finalisé
+- **Statut** : projet inachevé au moment du post (avril 2024), issue non connue dans cet extrait
+- **IMPACT MAJEUR POUR TON PROJET** : cette découverte mérite une attention particulière. Un membre de la communauté ETC a entrepris, de façon indépendante et pour un besoin très proche du tien (génération automatique de palettes par un mécanisme de macro auto-itérant), un projet non abouti à ce jour. Ça confirme trois choses :
+  1. **Le besoin est réel et partagé** au-delà de ton propre contexte
+  2. **La difficulté est réelle aussi** — même un utilisateur avancé bute sur la fiabilité de bout en bout d'une macro auto-itérante complexe
+  3. **Une piste de collecte à fort potentiel existe** : si ce fil a eu une suite (résolution, code final, abandon), la retrouver donnerait un retour d'expérience direct et très proche de ton cas d'usage — bien plus précieux qu'un exemple isolé
+
+## Action prioritaire suggérée pour la prochaine vague
+
+Rechercher la suite du fil "Autopallette Macros" ou tout fil connexe plus récent du même auteur, pour savoir si ce projet communautaire a abouti — ce serait le retour d'expérience le plus directement transposable trouvé à ce jour dans tout le corpus.
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Nouveau mécanisme de génération en masse identifié** (Fan) — syntaxe à creuser en priorité, quatrième stratégie disponible aux côtés des trois déjà connues
+2. **Nouveau facteur de risque contextuel** pour `Update` : état persistant de préférence utilisateur (Make Absolute/Break Nested), non visible dans le texte de la macro elle-même
+3. **Découverte du précédent communautaire le plus proche du projet de Cy trouvé à ce jour** — piste de suivi prioritaire
+
+## Mise à jour du référentiel de risques
+
+Ajouter :
+- `Update` — en plus de l'ambiguïté de cible déjà connue (#025), le comportement Make Absolute/Break Nested/Update All est **persistant entre sessions** et non visible dans le texte de la macro (C, vague24 #126)
+
+## Mise à jour des stratégies de génération en masse
+
+Ajouter comme 4e stratégie, à documenter :
+- **Fan mode** — répartition automatique de valeurs sur une sélection ou une plage de channels, mécanisme natif EOS distinct des trois autres déjà listées. Syntaxe exacte non capturée, à rechercher en priorité.
+
+<!-- ===== FIN : vague24_fan_autopalette_precedent.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague25_confirmation_absence_autopalette.md ===== -->
+
+# Corpus — vague 25 : confirmation officielle de l'absence d'auto-palette native (2010, toujours pertinent)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 128 — CONFIRMATION OFFICIELLE ETC : pas de fonction auto-palette native, et raisons produit explicites (B/A, réponse ETC directe et argumentée)
+
+- **Fil source** : "Auto-Pallets" (2010)
+- **Réponse officielle ETC citée dans le fil (contributeur identifiable comme faisant partie d'ETC)** : <cite reformulé>il n'existe pas actuellement de fonction auto-palette dans la gamme Eos. Le sujet a été beaucoup discuté en interne — pour que ce soit un outil réellement utile, la génération des palettes et l'ordre dans lequel elles apparaissent sont des aspects que la plupart des utilisateurs veulent contrôler eux-mêmes.</cite>
+- **Exemple donné par ETC pour justifier la prudence** : <cite reformulé>prendre l'exemple de la couleur — faire générer par la console 500+ palettes basées sur le nombre de correspondances de gélatine qu'un fixture peut atteindre n'est pas réellement utile. La plupart des shows utilisent une palette de couleurs spécifique, organisée avec soin par les programmeurs (ex: ordre RGBIV, ou regroupement par teintes chaudes/froides saturées/non saturées).</cite>
+- **Position officielle sur l'avenir de la fonctionnalité** : <cite reformulé>une fonction auto-palette sera envisagée à l'avenir, ainsi que des données de groupement abstraites, mais ce n'est pas encore arrivé en haut de la liste des priorités.</cite>
+- **Confiance** : B/A — réponse directe et argumentée d'un profil ETC identifiable, formulée comme position produit officielle
+- **Statut temporel important** : réponse datée de 2010. Le fil "Autopallette Macros" de 2024 (vague 24, #127) confirme, 14 ans plus tard, qu'**aucune fonction auto-palette native n'a été ajoutée depuis** — la situation décrite en 2010 reste d'actualité, un utilisateur devant encore bricoler sa propre solution par macro en 2024.
+
+## Impact architecture majeur — le plus important de cette vague
+
+Cette confirmation officielle, croisée avec le témoignage indépendant de 2024, établit un fait solide et déterminant pour la valeur de ton projet :
+
+1. **ETC a délibérément choisi de ne jamais automatiser entièrement la génération de palettes**, pour une raison de fond assumée : la personnalisation de l'organisation des palettes est jugée essentielle par la profession, et une génération purement automatique produirait un résultat jugé peu utile (trop de palettes, mal organisées)
+2. **Cette position n'a pas changé en 14 ans** — ce n'est donc pas un oubli temporaire mais un choix de conception stable
+3. **Pour ton outil, ça implique une nuance de conception importante** : un traducteur NL qui générerait des palettes de façon totalement automatique, sans intervention de l'utilisateur sur l'organisation/l'ordre, irait à l'encontre de ce qu'ETC elle-même a identifié comme le vrai besoin de la profession. Ton système déjà prévu de **validation avec menus déroulants avant envoi** (note produit du tout début de la conversation) est donc **aligné avec la doctrine produit officielle d'ETC**, pas juste une bonne pratique générique de ton cru — c'est exactement le type de contrôle utilisateur qu'ETC identifie comme manquant dans toute automatisation complète.
+
+## Exemple concret donné par un second contributeur du fil de 2010 (C, illustratif)
+
+- <cite reformulé>Idée d'auto-palette simplifiée proposée par un utilisateur : pour un parc de 8 VL3000 et 12 Mac700, générer automatiquement des groupes par type de fixture et par parité (tous VL3000, tous Mac700, VL3000 pairs, VL3000 impairs, etc.), puis pour la couleur une palette de base simple (Cyan, Magenta, Jaune, Bleu Congo, Rouge, Vert, Orange, Lavande), et pour le beam tous les gobos des deux roues en une palette.</cite>
+- **Confiance** : D (idée non implémentée, proposition informelle)
+- **Intérêt** : illustre concrètement à quoi pourrait ressembler un jeu de règles de génération "raisonnable" (pas 500+ palettes, mais un jeu limité et structuré) — cohérent avec l'argument officiel d'ETC sur la nécessité de limiter et structurer plutôt que tout générer
+
+---
+
+## Synthèse — apports de cette vague (validation stratégique majeure pour le projet)
+
+1. **Confirmation officielle et durable (14 ans) qu'aucune solution native n'existe** pour l'auto-génération de palettes — validation de la pertinence du projet de Cy sur ce point précis
+2. **La doctrine produit d'ETC elle-même valide le choix déjà fait par Cy** de prévoir une étape de validation/ajustement utilisateur après génération automatique, plutôt qu'un pipeline entièrement automatique
+3. Cette vague n'apporte pas de nouvelle syntaxe technique, mais une **validation stratégique de fond** pour la direction du projet — à conserver comme argumentaire de référence
+
+<!-- ===== FIN : vague25_confirmation_absence_autopalette.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague26_fan_syntaxe_confirmee.md ===== -->
+
+# Corpus — vague 26 : Fan — syntaxe confirmée (source A)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 129 — DÉCOUVERTE MAJEURE : Fan n'est pas une commande séparée, c'est un comportement implicite de [Thru] (source A)
+
+- Source : etcconnect.com/WebDocs, page "Fan From the Command Line" (manuel v3.3.5)
+- <cite>Une commande de niveau ou de temps qui utilise [Thru] ou une liste de références est une commande de fan en ligne de commande. Utiliser la touche [Fan] n'est nécessaire que si un style de fan autre que celui par défaut est souhaité.</cite>
+- **Confiance** : A
+- **IMPACT ARCHITECTURAL MAJEUR, qui reformule complètement la vague 24** : ceci change la compréhension du mécanisme. Fan **n'est pas** une quatrième stratégie de génération en masse distincte des trois autres — **c'est le mécanisme sous-jacent qui explique pourquoi le spread par plage `[Thru] x [Thru] y` fonctionne déjà** (stratégie n°1 déjà identifiée, vague 6 #056, confirmée A). Autrement dit : chaque fois que ton traducteur génère une commande du type `[Thru]` avec une plage de valeurs de part et d'autre, il utilise déjà Fan implicitement, par défaut, sans avoir besoin d'invoquer `[Fan]` explicitement — sauf s'il faut un style de répartition non standard.
+- **Correction à faire dans le référentiel** : retirer "Fan mode" comme 4e stratégie séparée, et la fusionner avec la stratégie n°1 (spread par plage), en précisant que c'est le même mécanisme sous un nom différent.
+
+## 130 — Confirmation de la disponibilité de plusieurs "styles" de Fan, non exhaustivement listés dans cet extrait (A, incomplet)
+
+- **Fil source complémentaire** : "Fan Instructions" (2012), confirmant et pointant vers la documentation officielle
+- <cite reformulé>Quand [Fan]/{Fan} est pressé après une sélection de channels, les softkeys se repeignent pour afficher les différents styles de fan disponibles.</cite>
+- **Confiance** : A pour l'existence de plusieurs styles, mais liste exacte des styles **non capturée** dans les extraits consultés — seule la page support/vidéo YouTube ETC mentionnée (v1.8 update) semble détailler la liste complète, non consultée directement dans cette vague
+- **Historique de version confirmé** : Fan a été introduit avec Eos v1.8
+
+## 131 — Confirmation A du principe général de Fan, complète #125 avec plus de détail
+
+- Source : Eos Family L3 Advanced Workbook (déjà consulté en partie, relu ici sous cet angle)
+- <cite>Dans le logiciel Eos Family, Fan est un mode. Quand il est activé, tout paramètre déplacé se répartit uniformément sur la sélection, selon le style choisi.</cite>
+- Exemple illustratif du workbook (contexte pratique, non verbatim) : application de Fan sur un délai (**"delay"**), avec un exemple explicite où les channels de rang inférieur reçoivent une valeur différente de ceux de rang supérieur selon une progression — cohérent avec le principe déjà bien compris de spread linéaire
+- **Confiance** : A
+
+---
+
+## Synthèse — apports de cette vague (correction structurelle importante)
+
+1. **Correction majeure de la vague 24** : Fan n'est pas une 4e stratégie de génération en masse indépendante — c'est le mécanisme natif déjà à l'œuvre dans la stratégie n°1 (spread par plage `[Thru]`). Le référentiel doit être corrigé en conséquence.
+2. **Simplification bienvenue pour l'architecture** : ça réduit le nombre de mécanismes distincts que le moteur de génération doit vraiment traiter comme des cas séparés — de 4 stratégies apparentes à 3 réelles, l'une d'elles (spread par plage) étant elle-même l'expression de Fan
+3. **Reste à documenter** : la liste exacte des styles de Fan disponibles (non capturée) — pertinent si ton traducteur doit un jour proposer un choix de style plutôt que le style par défaut
+
+## Correction à appliquer au référentiel
+
+Remplacer la stratégie n°4 ("Fan mode... syntaxe à rechercher") par une note de clarification sur la stratégie n°1 : le spread par plage `[Thru] x [Thru] y` est directement le mécanisme Fan, appliqué par défaut sans invocation explicite de `[Fan]`. `[Fan]`/`{Fan}` ne sert qu'à changer de style de répartition.
+
+<!-- ===== FIN : vague26_fan_syntaxe_confirmee.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague27_highlight_lowlight_remdim.md ===== -->
+
+# Corpus — vague 27 : Highlight/Lowlight/RemDim (nouveau domaine, exemple officiel complet)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 132 — Exemple officiel complet de macro Highlight/Lowlight avec RemDim (source A, workbook L3)
+
+Source : Eos Family L3 Advanced Workbook (déjà consulté, nouvel extrait)
+
+```
+[Query] {Unpatched} {Is In} [Cue] [1] [Thru] [Enter]
+→ sélectionne tous les channels non patchés référencés dans les cues 1 et suivantes
+
+[1] [Thru] [9] [At] [Full] [Enter]  (reformulé du contexte "Turns on channels 1 through 9")
+[11] [Thru] [16] [At] [75] [RemDim] [/] [50] [Enter]
+→ channels 11 à 16 à 75%, avec RemDim (dimming réduit/atténuation) réglé à 50%, séparé par "/"
+
+[Select Last] [-] {Focus} [Record] [Preset] [9997] [Label] Highlight
+→ sélectionne la dernière sélection moins le paramètre Focus, enregistre en Preset 9997 nommé "Highlight"
+```
+
+- **Confiance** : A
+- **Fonction déclarée du système complet** : construire un mécanisme de Highlight/Lowlight avec un preset de référence (9997) et un niveau de "Highlight RemDim" distinct — permet de mettre en avant un ou plusieurs fixtures pendant que le reste du parc passe en Lowlight, avec un niveau intermédiaire (RemDim) pour tout ce qui reste hors sélection
+- **Syntaxe de configuration confirmée** : `{Highlight RemDim} [Preset] [XX] [Enter]` pour définir le preset de référence ; `{Highlight RemDim} [Enter]` seul pour désactiver la fonction
+
+## 133 — Résultat décrit du mécanisme Highlight (A, comportement observable confirmé)
+
+- <cite reformulé>En pratique, le channel sélectionné individuellement affiche sa valeur de Highlight Preset, le reste du Group utilise la valeur de Lowlight Preset, et tous les channels en dehors de la sélection utilisent le niveau de Highlight RemDim.</cite>
+- **Confiance** : A
+- **Thématique** : nouveau — à ajouter comme sous-catégorie de la taxonomie (probablement sous Sélection & patch, ou Affichage/interface selon l'angle)
+
+## 134 — Confirmation de la syntaxe RemDim avec séparateur "/" (A, nouvelle syntaxe confirmée)
+
+- Repris de l'exemple #132 : `[At] [75] [RemDim] [/] [50] [Enter]`
+- **Interprétation** : niveau principal (75) et niveau RemDim (50) spécifiés dans la même commande, séparés par `/`
+- **Confiance** : A
+- **Intérêt pour ton traducteur** : nouveau motif syntaxique à connaître — une commande `[At]` peut porter deux valeurs liées par `/` pour des paramètres de dimming réduit, distinct de la syntaxe simple `[At] [niveau]` déjà bien connue
+
+## 135 — Confirmation de Query avec Cue range comme cible (A, nouvelle combinaison)
+
+- Repris de l'exemple #132 : `[Query] {Unpatched} {Is In} [Cue] [1] [Thru] [Enter]`
+- **Interprétation** : combine le mot-clé déjà connu `Unpatched` (vu en vague 14, #084) avec `{Is In}` (vu en vague 14, #081) et une cible `[Cue] [1] [Thru] [Enter]` — recherche à travers une plage de cues plutôt que sur l'état courant seul
+- **Confiance** : A
+
+
+<!-- ⚠️⚠️⚠️ LACUNE DE TRANSMISSION ⚠️⚠️⚠️
+     Segment manquant entre l'entrée #135 (vague 27, ci-dessus) et le milieu de
+     l'entrée #154 (vague 30, ci-dessous) :
+       - fin de la vague 27 (impact du #135 + synthèse)
+       - vague 28 complète : vague28_journal_terrain_xtouch2eos.md (#136-145, source S)
+       - vague 29 complète : vague29_eoskeys_integration.md (#146-153, intégration
+         eosKeys.ts — TABLE CANONIQUE, la plus importante du corpus)
+       - début de la vague 30 : vague30_resolution_isnt_in_syntaxe_generale.md
+         (titre, contexte et début de l'entrée #154)
+     À compléter dès réception du segment. -->
+
+- **Confiance** : C/B — softkeys confirmés fonctionnels dans plusieurs témoignages indépendants et un article pédagogique dédié, mais nom OSC exact toujours non capturé formellement
+- **Statut** : la fonctionnalité existe et est documentée en usage réel ; seul le nom de touche OSC précis (si distinct de `is_in`/`can_be` avec un modificateur) reste à vérifier au banc
+
+## 155 — DÉCOUVERTE MAJEURE ET NON PRÉVUE : absence native d'un bouton "Not" général, confirmée par ETC lui-même (B, réponse support directe)
+
+- **Fil source** : "query with channels, groups and cue ranges"
+- **Demande formulée par un utilisateur expérimenté** (habitué d'une autre console où ce bouton existe) : <cite reformulé>il manque un bouton "Not" qui fonctionnerait en dehors du contexte Query — par exemple "Select Active Not Enter" (sélectionne tout ce qui n'est pas actif), "Group 990 Not Out" (éteint tout ce qui n'est pas dans le groupe 990), "Capture Not Enter" (sélectionne tout ce qui n'est pas capturé) — un peu comme le softkey "Isn't" de Query, mais utilisable partout.</cite>
+- **Réponse du support technique ETC, confirmant une limite structurelle** : <cite reformulé>la syntaxe recherchée en sélection de Group n'est actuellement pas valide, mais elle l'est en Intensity Palette : `[1] [Thru] [10] [Query] [Can Be] [Intensity Palette]...`</cite>
+- **Confiance** : B — réponse directe du support technique ETC
+- **Impact architecture majeur, nouveau pour le corpus** : ceci confirme une **limite structurelle du langage de commande EOS** — la négation logique (`Not`) n'est PAS un opérateur général disponible partout, elle est **restreinte au contexte Query**. Ça complète et confirme définitivement la correction déjà faite en vague 13/14 : `Greater Than`/`Less Than`/`Is In`/`Isn't In` ne sont *jamais* des opérateurs conditionnels génériques de macro — ils sont structurellement enfermés dans le sous-système Query, et rien d'équivalent n'existe ailleurs dans la grammaire. **Ceci ferme définitivement la piste "logique conditionnelle en macro"** ouverte en vague 12 puis nuancée en vague 13/14 — la réponse est maintenant catégorique et officielle : ce type de logique n'existe structurellement qu'à l'intérieur de Query, nulle part ailleurs.
+
+## 156 — Syntaxe générale de la ligne de commande EOS confirmée officiellement : Objet-Action-Cible (C, mais formulation très claire d'un contributeur expérimenté)
+
+- **Fil source** : "EOS syntax"
+- <cite reformulé>La syntaxe est très cohérente, parfois même de façon rigide — toujours de la forme Objet Action Cible, avec omission possible de l'objet ou de la cible selon le contexte. Exemples : `Chan 1 At 50 Cue 5 Time 20`, `Chan 1 Record Preset 3`. Le comportement qui semblait incohérent à l'utilisateur d'origine (`Cue # label name` accepté, mais pas `Cue # Record`) s'explique : dans le premier cas, `label` est l'action et `name` la cible dans la continuité du même objet `Cue #` ; dans le second cas, `Record` a pour cible ce qui la précède (ex: `group 5 focus Record Cue 5`), donc `Cue # Record` seul n'a pas de sens dans cette grammaire.</cite>
+- **Confiance** : C, mais formulation pédagogique très claire, cohérente avec tout ce qu'on a observé empiriquement dans le corpus jusqu'ici
+- **Impact architecture majeur** : c'est la **première formulation explicite et généralisée de la grammaire syntaxique de fond** de toute la ligne de commande EOS trouvée dans le corpus. Jusqu'ici on avait des dizaines d'exemples concrets mais jamais la règle générale sous-jacente. **Cette règle Objet-Action-Cible devrait devenir le squelette de la grammaire formelle (BNF ou équivalent) que ton parseur NL → représentation interne devra produire.**
+
+---
+
+## Synthèse — apports de cette vague (deux découvertes structurantes majeures)
+
+1. **Écart eosKeys.ts résolu** (#154) : `Isn't In`/`Could Be` sont des softkeys contextuels de l'écran Query, pas des touches OSC nommées indépendamment — cohérent avec l'architecture du dictionnaire OSC
+2. **Confirmation officielle et définitive qu'aucune négation générale n'existe hors du contexte Query** (#155) — ferme la piste de "logique conditionnelle en macro" une fois pour toutes, avec une source B directe
+3. **Règle syntaxique de fond découverte : Objet-Action-Cible** (#156) — pièce manquante pour formaliser la grammaire générale que le traducteur devra produire, au-delà du simple recensement de mots-clés isolés accumulé jusqu'ici
+
+## Mise à jour à porter à la grammaire consolidée
+
+- Ajouter en tête de la section "Mécanique de fond" : **la grammaire de ligne de commande EOS suit la structure Objet-Action-Cible**, avec omissions contextuelles possibles — règle de fond pour tout générateur de commande
+- Fermer définitivement la question de la logique conditionnelle : confirmée absente hors du sous-système Query (limite structurelle assumée, pas un manque à combler)
+
+<!-- ===== FIN : vague30_resolution_isnt_in_syntaxe_generale.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague31_syntaxe_gel_confirmee.md ===== -->
+
+# Corpus — vague 31 : syntaxe Gel confirmée (Color <bibliothèque> / <numéro>)
+
+Date de collecte : 29/07/2026, en réponse à un test pratique de traduction NL→EOS mené par Cy
+
+---
+
+## 157 — Syntaxe officielle confirmée pour sélection de gel par référence fabricant (A, exemple exact du workbook officiel)
+
+- Source : Eos Family Console Programming Level 1 Essentials Workbook v3.1 (officiel ETC)
+- **Syntaxe confirmée** : `[Channel/Select Last] {Color} [n° bibliothèque] [/] [n° gel] [Enter]`
+- Exemple exact donné : `[Select Last] {Color} [5] [/] [381] [Enter]` → bleu (bibliothèque 5)
+- `[At]` peut remplacer `{Color}` dans la même syntaxe, utilisable n'importe où en Live
+- **Confiance** : A
+
+## 158 — Confirmation indépendante de la numérotation des bibliothèques, Lee = 3 (C, deux fils convergents)
+
+- **Fils sources** : "loading color palettes with LEE colors", cheat sheet Tower Theatre (document tiers mais citant fidèlement l'interface officielle)
+- <cite reformulé>Chaque fabricant a un numéro affiché devant son nom dans le color picker — Lee est le numéro 3. La syntaxe `[Channel] {Color} [3] [/] [201]` sélectionne Lee 201.</cite>
+- **Confiance** : C, mais cohérent avec #157 et confirmé par plusieurs utilisateurs indépendants
+- **Réponse au cas testé (Chan 4, Lee 195)** : `Chan 4 Color 3 / 195 Enter`
+
+## 159 — Limite reconnue et documentée : le rendu du gel picker ne correspond pas toujours fidèlement à la teinte physique réelle (C, multiples témoignages convergents, dont un profil technique ETC)
+
+- **Fils sources** : "loading color palettes with LEE colors", "Why do gel colors differ from link-to colors?", "Rosco Files Suit Against ETC" (ControlBooth)
+- <cite reformulé>Ce n'est pas un défaut du logiciel — c'est inévitable compte tenu de l'énorme variété de fixtures pour lesquels le color picker doit fonctionner. Pratique courante des programmeurs : utiliser le gel comme point de départ approximatif, ajuster manuellement jusqu'à obtenir le rendu voulu, puis enregistrer ce résultat ajusté comme palette by-type portant le numéro du gel d'origine — réutilisable ensuite d'un show à l'autre par merge.</cite>
+- **Confiance** : C, mais multiples sources indépendantes convergentes sur ce point, dont une discussion impliquant directement la précision colorimétrique du système (affaire Rosco vs ETC mentionnée dans un fil, hors périmètre juridique mais confirmant que le sujet est reconnu comme un point de friction sérieux dans la profession)
+- **Impact pour le traducteur** : toute commande générée à partir d'une référence de gel doit être présentée à l'utilisateur comme un **point de départ approximatif**, pas un résultat garanti fidèle — cohérent avec le principe déjà retenu de validation utilisateur avant tout envoi définitif. Bon argument supplémentaire pour le système de menus déroulants déjà noté en idée produit.
+
+## 160 — Conventions OSC officielles pour les chaînes de gel (A, référence structurelle utile)
+
+- Source : etcconnect.com/WebDocs, "Eos OSC Conventions"
+- <cite>Les gels sont représentés sous forme de chaînes selon un format tel que : L2 pour Lee 2, AP1150 pour Apollo 1150, T12 pour TokyoBS Poly Color 12.</cite>
+- **Confiance** : A
+- **Impact** : révèle une **deuxième syntaxe possible**, orientée OSC plutôt que ligne de commande console — potentiellement plus directement exploitable si ton moteur de transport communique en OSC pur plutôt qu'en simulation de ligne de commande. Format `<initiale fabricant><numéro>` (ex: `L195` pour Lee 195) plutôt que `<numéro bibliothèque>/<numéro gel>`. **Les deux syntaxes coexistent probablement pour deux contextes différents (ligne de commande vs argument OSC direct) — à clarifier au banc si les deux sont utilisées dans le traducteur.**
+
+---
+
+## Synthèse de cette vague
+
+1. **Syntaxe de gel résolue et confirmée A** : `Chan <n> Color <bibliothèque> / <numéro> Enter`, avec Lee = bibliothèque 3
+2. **Découverte d'une seconde syntaxe possible côté OSC pur** (`L195` façon lettre+chiffre) — distincte de la syntaxe ligne de commande, à clarifier laquelle utiliser selon le mode de transport retenu par le traducteur
+3. **Limite de fidélité colorimétrique bien documentée** — argument supplémentaire pour la validation utilisateur avant envoi définitif, cohérent avec la doctrine produit déjà établie (cf. vague 25, absence délibérée d'auto-palette)
+
+<!-- ===== FIN : vague31_syntaxe_gel_confirmee.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague32_polysemie_contextuelle_at.md ===== -->
+
+# Corpus — vague 32 : polysémie de `At` selon le contexte d'écran (correction de Cy)
+
+Date de collecte : 29/07/2026, via correction directe de Cy sur un test de traduction
+
+---
+
+## 161 — DÉCOUVERTE STRUCTURANTE MAJEURE : `At` a un sens différent selon l'écran/contexte actif (S — source Cy, expert du domaine)
+
+- **Correction directe de Cy** : la commande `1 Thru 100 At 100 Enter` sur l'écran **Patch** assigne l'adresse DMX de départ (channels 1 à 100 patchés à partir de l'adresse 100), alors que la même syntaxe `Chan X At <valeur> Enter` en écran **Live** assigne un niveau d'intensité (0-100%).
+- **Confiance** : S — correction directe d'un expert du domaine sur un cas concret, la source la plus fiable possible pour ce type d'affirmation
+- **IMPACT ARCHITECTURAL MAJEUR, LE PLUS IMPORTANT DEPUIS LA DÉCOUVERTE DE LA RÈGLE OBJET-ACTION-CIBLE (vague 30)** : ceci révèle que la grammaire EOS n'est **pas purement contextuelle au sens Objet-Action-Cible seul** — le sens d'un même mot-clé (`At`) dépend aussi de **l'écran/mode actif au moment de l'exécution** (Patch vs Live vs probablement Blind, Effect, etc.). C'est une dimension supplémentaire de la grammaire qui n'avait jamais été formalisée dans le corpus jusqu'ici, bien qu'on ait déjà croisé des symptômes isolés de ce phénomène sans le nommer clairement :
+  - Vague 22 (#119) : `[Blind] [Enter]` non qualifié était déjà identifié comme ambigu selon le contexte
+  - Vague 9 (#068) : `{Target}` vers un User dépend du mode Foreground/Background
+  - Vague 8 (#061) : `Go_To_Cue` dépend du contexte d'exécution
+  
+  Mais aucune de ces observations n'avait explicitement isolé le mécanisme **"même mot-clé, sens différent selon l'écran"** — c'était toujours interprété comme un problème de fiabilité d'exécution (la commande marche ou pas), pas comme un vrai problème de **polysémie sémantique contextuelle** qu'il faut résoudre AVANT même de valider la syntaxe.
+
+## Conséquence directe et non négociable pour l'architecture du traducteur
+
+**La représentation interne (le "ticket", cf. discussion initiale du projet) doit impérativement inclure un champ "contexte d'écran actif"**, pas seulement l'action et ses paramètres. Sans ce champ, le traducteur ne peut pas savoir si générer `At 100` signifie "adresse DMX 100" ou "intensité 100%" — la même sortie textuelle a un sens radicalement différent selon où elle s'exécute.
+
+Ça reconfigure une partie du modèle déjà esquissé :
+- Avant : `{action: "assign_value", target: "chan_1_thru_100", value: 100}`
+- Correction nécessaire : `{screen_context: "patch", action: "assign_value", target: "chan_1_thru_100", value: 100}` — le contexte d'écran devient un champ de tête, pas une métadonnée secondaire
+
+## Action de collecte prioritaire à ajouter
+
+Établir une **table de correspondance contexte d'écran → sens des mots-clés polysémiques**, en commençant par `At` (Patch=adresse, Live=intensité) et en cherchant systématiquement d'autres cas similaires (`Time`, `Label`, `Record`... ont-ils aussi des sens différents selon l'écran ?). C'est potentiellement plus important pour la fiabilité du traducteur que la poursuite de la collecte de vocabulaire brut.
+
+---
+
+## Synthèse
+
+Cette vague, bien que courte (une seule entrée), est l'une des plus structurantes du corpus : elle révèle une dimension de la grammaire EOS non formalisée jusqu'ici — la **polysémie contextuelle liée à l'écran actif**, distincte de la polysémie liée au mode Foreground/Background déjà bien documentée. Le référentiel et la grammaire consolidée doivent intégrer cette dimension comme un axe de validation à part entière.
+
+<!-- ===== FIN : vague32_polysemie_contextuelle_at.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague33_syntaxe_ecran_patch.md ===== -->
+
+# Corpus — vague 33 : syntaxe complète écran Patch (source A/B)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 162 — CONFIRMATION OFFICIELLE DIRECTE de la découverte de Cy (#161) : la ligne de commande "traduit" @ en Address dans le contexte Patch (B, réponse forum très explicite)
+
+- **Fil source** : "Remove fixture in patch"
+- **Citation reformulée, la plus directement pertinente trouvée à ce jour pour la découverte de Cy** : <cite reformulé>quand on est en Patch, la ligne de commande fait une sorte de traduction, de sorte que `@` devient "address" (adresse) plutôt que "channel" comme ce serait le cas ailleurs.</cite>
+- **Confiance** : B — réponse précise et technique dans un fil de support communautaire
+- **Impact** : ceci confirme, avec une source indépendante de Cy, exactement le phénomène qu'il a lui-même identifié en vague 32. Le mécanisme n'est pas limité au mot-clé `At` seul — c'est plus large : le symbole `@` lui-même change de sens selon l'écran actif. **Ça renforce encore la priorité de la table de correspondance contexte→sens déjà décidée en vague 32.**
+
+## 163 — Deux modes de Patch, bascule via `[Format]` (A, structurel)
+
+- Source : etcconnect.com/WebDocs, "Patch [Tab 12]"
+- <cite>Deux modes de patch existent : Patching By Channel et Patching By Address. Eos utilise par défaut le mode par channel. Presser `[Format]` en affichage Patch bascule entre les deux modes.</cite>
+- **Confiance** : A
+- **Impact** : la syntaxe `1 Thru 100 At 100 Enter` confirmée par Cy suppose très probablement le mode **Patching By Channel** (on part d'une plage de channels, on leur assigne une adresse de départ). En mode Patching By Address, la logique d'entrée serait probablement inversée (partir d'une adresse, assigner un channel) — **point non vérifié, à tester si le traducteur doit un jour couvrir aussi ce second mode.**
+
+## 164 — Comportement du spread automatique en Patch confirmé officiellement (A)
+
+- Même source
+- <cite>Vous pouvez entrer une adresse de départ sans définir d'adresse de fin. Eos tire cette information des données de bibliothèque (fixture library). Si vous souhaitez laisser un espace de sortie plus grand que ce que requiert la bibliothèque, utilisez `{Offset}`. Si vous spécifiez une adresse de départ qui entre en conflit avec des channels déjà patchés, les channels en conflit seront dépatchés après confirmation de l'utilisateur.</cite>
+- **Confiance** : A
+- **Impact direct pour la syntaxe testée** : `1 Thru 100 At 100 Enter` fonctionne parce qu'EOS calcule automatiquement, pour chaque channel de la plage, son adresse de départ en fonction de l'empreinte DMX (footprint) du type de fixture déjà sélectionné — ce n'est pas un simple `+1` linéaire si les fixtures ont un footprint DMX de plusieurs canaux. **Nuance importante pour le traducteur** : le spread `Thru`/`At` en Patch n'est pas garanti donner des adresses consécutives simples si le fixture patché occupe plusieurs canaux DMX (ex: une lyre avec 20 canaux) — c'est le mécanisme Fan/spread déjà connu, mais avec un pas de progression qui dépend du footprint, pas toujours de +1.
+- **Confirmation du risque de conflit géré nativement** : contrairement à d'autres écrans où les conflits pourraient créer un état incohérent silencieux, EOS demande confirmation utilisateur avant d'écraser un patch existant — bon point pour la sécurité du traducteur, EOS a déjà un filet de sécurité natif ici.
+
+## 165 — Champs complets de l'écran Patch confirmés officiellement (A)
+
+- Sources combinées : "Patch > Patch", "Patch Section" (doc Ion, cohérente avec Eos), "Patch [Tab 12]"
+- **Champs confirmés** :
+  - `{Type}` — type de device/dimmer, sélection par fabricant puis modèle (par défaut : dimmer)
+  - `[Label]`/`{Label}` — label optionnel, `[Label][Label]` efface le label existant
+  - `{Offset}` — espace de sortie supplémentaire au-delà du footprint requis
+  - `{Interface}` — protocole/interface de sortie (optionnel, sinon hérite du défaut réseau)
+  - Colonne `Address` vs `Port/Offset` — bascule d'affichage via `[Data]`
+  - Colonne `Type` — type de device/dimmer/élément scénique patché
+  - Indicateurs d'erreur RDM/CEM+/CEM3/ACN : `!` (erreur) et `?` (avertissement), ouverts via `{!}` ou `{?}`
+
+## 166 — Accès à l'écran Patch, raccourcis confirmés (A)
+
+- `[Address/Patch]` en double-tap
+- `[Displays]` puis `{S3 Patch}`
+- Ajout d'onglet (`{+}`) ou `[Tab] [12]` maintenu — Patch est fixé au numéro d'onglet 12
+- Pour fixtures avancés : `{Search}` ouvre une recherche par fabricant, nom, ou empreinte DMX (ex: chercher "31" donne tous les fixtures à empreinte de 31 canaux)
+- `[At] <adresse de départ>` — confirmé comme méthode officielle pour assigner l'adresse de départ d'un channel ou groupe de channels sélectionnés, avec offset automatique selon le type de fixture [025, A — source "Patching Automated Fixtures, LEDs, and Accessories"]
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Confirmation indépendante et directe de la découverte de Cy** (#161/#162) — le phénomène de traduction contextuelle n'est pas limité à `At`, il touche aussi `@` lui-même
+2. **Nuance importante sur le spread en Patch** : le pas de progression d'adresse dépend du footprint DMX du fixture, pas systématiquement +1 — à ne pas simplifier excessivement dans le traducteur
+3. **Structure complète de l'écran Patch documentée** : deux modes (By Channel/By Address), champs, raccourcis, gestion des conflits
+
+## Mise à jour du référentiel
+
+Ajouter à la section polysémie contextuelle (déjà ouverte en vague32) : `@` change de sens selon l'écran (Address en Patch, Channel ailleurs) — confirmé indépendamment par une source communautaire, en plus de la correction directe de Cy.
+
+<!-- ===== FIN : vague33_syntaxe_ecran_patch.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague34_operations_manual_focus_tabs.md ===== -->
+
+# Corpus — vague 34 : Operations Manual v2.7.0 complet — grammaire officielle et mécanisme de focus
+
+Date de collecte : 29/07/2026
+Source : Eos Family Operations Manual v2.7.0 (officiel ETC, via miroir tiers musson.com — contenu ETC)
+Confiance : A
+
+---
+
+## 167 — CONFIRMATION OFFICIELLE EXACTE de la règle Objet-Action-Cible (A, remplace/renforce vague30 #156 qui était C)
+
+- <cite>La plupart des instructions peuvent être saisies dans Eos via la ligne de commande. La ligne de commande attend que les instructions soient saisies dans une structure, ou syntaxe, spécifique. En général, l'ordre de la syntaxe peut être décrit comme : Qu'essayez-vous d'affecter ? (Channel, group) — Que voulez-vous qu'il fasse ? (changer l'intensité, le focus, le pan/tilt) — Quelle valeur voulez-vous ? (Intensité à full, Iris à 50).</cite>
+- <cite>La plupart des autres fonctions sont des modificateurs de ces trois étapes de base. En travaillant avec des Record Targets, la syntaxe est similaire.</cite>
+- **Confiance** : A — remplace la confirmation C de la vague 30, désormais du niveau le plus solide possible pour une règle aussi structurante
+
+## 168 — RÉPONSE DIRECTE à la question de Cy : le focus suit le Tab/Display actif, mécanisme précisé (A)
+
+- <cite>Quand vous appuyez sur [Tab] de façon répétée, le focus se déplace numériquement à travers tous les tabs ouverts sur les workspaces actifs.</cite>
+- <cite>Tous les tabs d'affichage et de contrôle ont des numéros de tab fixes (par exemple, "Live" ouvre sous le Tab 1, "Patch" sous le Tab 12, "Color Picker" sous le Tab 27).</cite>
+- **Table de correspondance officielle Tab → Display, la plus importante trouvée à ce jour** :
+```
+1  Live/Blind          11 Show Control      21 Curves             31 Lamp Controls
+2  Playback Status      12 Patch             22 Intensity Palettes 32 Channels In Use
+3  Magic Sheet          13 Effects           23 Focus Palettes     33 Color Path
+4  Direct Selects        14 Magic Sheet List  24 Color Palettes     34 (non utilisé)
+5  ML Controls          15 Submaster List    25 Beam Palettes      35 Fader List
+6  Effect Status        16 Cue List          26 Presets            36 Fader Configuration
+7  Keys                 17 Groups            27 Color Picker       37 sACN Output View
+8  Effect Channels      18 Macros            28 Virtual Faders     99 Diagnostics
+9  Pixel Maps           19 Snapshots         29 About              100 User Manual
+10 Pixel Preview        20 Park              30 Command History
+```
+- **Confiance** : A
+- **RÉPONSE DIRECTE à ta question "peux-tu ajouter l'envoi vers la bonne page"** : oui, la commande officielle est `[Tab] [n] Enter` où n est le numéro de tab cible — confirmé exhaustif ci-dessus. Exemple pour forcer le focus logique sur Patch avant une commande de patch : `Tab 12 Enter`.
+- **Nuance capitale, réponse à l'inquiétude posée plus tôt sur focus visuel vs focus logique** : <cite reformulé>"draw focus" est le terme employé constamment dans le manuel — presser une touche, toucher un tab, ou taper `[Tab][n]` "tire" le focus vers cet affichage. Rien dans le manuel ne suggère qu'il existe un focus logique distinct de l'affichage visible — ce sont le même mécanisme.</cite> **Ceci répond à l'incertitude que j'avais signalée avant de faire cette recherche : le focus logique ET l'affichage suivent la même mécanique de Tab, il n'y a pas de préfixe de commande séparé qui changerait le contexte sans changer aussi l'affichage.**
+
+## 169 — Confirmation des raccourcis d'accès direct par double-pression de touche de Record Target (A)
+
+- <cite>Les affichages Blind des record targets (aussi appelés "listes") peuvent être rapidement accédés en pressant deux fois le bouton du record target (par exemple, [Cue][Cue] ouvre l'index de la cue list).</cite>
+- **Confiance** : A
+- **Impact** : donne une alternative plus courte à `Tab [n] Enter` pour certains cas — `[Patch][Patch]` n'est cependant pas listé explicitement comme raccourci ici (Patch a son propre raccourci dédié `[Address/Patch]` en double-tap, déjà noté vague 33 #166)
+
+## 170 — Confirmation A de la structure Workspaces > Frames > Tabs > Displays
+
+- <cite>Workspaces offre un contrôle d'affichage indépendant sur tous les moniteurs connectés. Chaque moniteur peut avoir jusqu'à trois workspaces. Chaque workspace peut avoir jusqu'à quatre frames. Chaque frame peut contenir plusieurs tabs. Chaque tab contient un display.</cite>
+- Accès direct à un workspace : `{Workspace}` softkey après `[Displays]`, puis taper 1, 2, ou 3
+- **Confiance** : A — clarifie une hiérarchie qui n'était pas formalisée dans le corpus jusqu'ici, pertinent si le traducteur doit un jour gérer des configurations multi-moniteurs
+
+## 171 — Précisions officielles sur Enter et commandes auto-terminées (A, complète la grammaire de fond)
+
+- <cite>Certaines commandes sont auto-terminées et ne nécessitent donc pas que [Enter] soit pressé. Certaines de ces commandes sont : Out, +%, -%, Level, Actions depuis les direct selects.</cite>
+- **Confiance** : A
+- **Impact pour le traducteur** : nuance importante à la règle Objet-Action-Cible — toutes les commandes ne nécessitent pas `Enter` en fin de séquence. Une liste (même partielle) de commandes auto-terminées est utile pour éviter de générer un `Enter` superflu, ou pire, l'omettre là où il est nécessaire.
+
+## 172 — Confirmation A de la définition Channel = Fixture, structurante pour tout le corpus
+
+- <cite>Un channel est un unique nom numérique utilisé par Eos pour contrôler un dimmer, un groupe de dimmers, un dimmer et un appareil, ou un fixture complet de type moving light. Eos traite fixtures et channels comme une seule et même chose. Contrairement aux anciennes consoles ETC où un fixture occupait un channel par paramètre, Eos assigne à chaque fixture un unique numéro de channel — les paramètres individuels sont ensuite associés à ce channel.</cite>
+- **Confiance** : A
+- **Impact** : clarifie et formalise ce qui était implicite dans tout le corpus depuis le début — utile comme définition de référence pour le glossaire du traducteur
+
+## 173 — Confirmation exacte de la syntaxe `1 Thru 100 At 100` — cohérente avec ce que Cy a montré, contextualisée dans "Advanced Manual Control"
+
+- Le manuel confirme, dans la table des matières et par la structure Objet-Action-Cible, que la syntaxe montrée par Cy suit exactement ce squelette : **Objet** = `1 Thru 100` (plage de channels), **Action** = implicite dans le contexte Patch (assigner une adresse), **Cible/Valeur** = `At 100`
+- Ceci est cohérent avec la découverte indépendante de Cy et la confirme une fois de plus dans le cadre de la grammaire générale officielle
+
+## 174 — Table complète des indicateurs de couleur et texte en Live/Blind (A, très riche, jamais capturée avant)
+
+Cette section est une mine d'information jamais explorée dans le corpus. Extraits les plus pertinents pour un futur validateur/afficheur dans ton outil :
+
+- **Couleurs de niveau** : Rouge vif = donnée manuelle (même User ID) ; Rouge foncé = donnée manuelle (autre User ID) ; Bleu = intensité plus haute que cue précédente / NP en mouvement ; Vert = intensité plus basse / marqué en referenced mark ; Magenta = inchangé (tracké) ; Blanc = bloqué ; Blanc souligné = auto-bloqué ; Gris = défaut/valeur nulle ; Jaune = donnée d'un submaster
+- **Indicateurs texte** : `A`/`a` = asserted (cue entière / partiel) ; `B`/`b` = blocked ; `I` = channel contrôlé par sub inhibitif ou grandmaster (ou intensity block en Flags) ; `IP`/`CP`/`FP`/`BP` = référence à une palette (Intensity/Color/Focus/Beam) suivie du numéro ; `M`/`m` = mark (stocké/non stocké) ; `MK` = marqué pour une cue ultérieure ; `N` = valeur nulle ; `P` = parked ; `Ph` = preheat ; `Pr` = référence à un preset ; `R` = override manuel de référence ; `S` = stocké sur sub shielded
+- **Confiance** : A
+- **Impact potentiel pour ton architecture** : si ton outil doit un jour lire l'état de la console (pas seulement écrire des commandes), cette table d'indicateurs est la référence pour interpréter l'affichage — pertinent pour la piste de "validation post-envoi" évoquée en vague 28 (lecture du flag d'erreur `/eos/out/cmd`), qui pourrait s'étendre à une lecture d'état plus large.
+
+---
+
+## Synthèse — apports de cette vague (réponse directe à la question de Cy + grosse moisson structurelle)
+
+1. **Réponse directe confirmée** : `[Tab] [n] Enter` est la commande officielle pour forcer le focus vers un display donné — table complète des 37 tabs numérotés fournie
+2. **Clarification majeure** : focus logique et affichage visuel sont le même mécanisme dans la doc officielle ("draw focus") — pas de distinction cachée entre les deux comme on se le demandait
+3. **Règle Objet-Action-Cible passée de confiance C à A** — citation officielle exacte trouvée
+4. **Liste des commandes auto-terminées** (sans besoin d'Enter) — nuance utile pour la génération
+5. **Table exhaustive des indicateurs Live/Blind** — ouvre une piste pour une future fonctionnalité de lecture d'état, pas seulement d'écriture de commande
+
+## Mise à jour à porter à la grammaire consolidée
+
+- Ajouter la table Tab→Display complète en référence
+- Confirmer/renforcer à A la règle Objet-Action-Cible déjà notée
+- Ajouter la clarification focus logique = focus visuel (répond à l'incertitude posée avant recherche)
+
+<!-- ===== FIN : vague34_operations_manual_focus_tabs.md ===== -->
+
+---
