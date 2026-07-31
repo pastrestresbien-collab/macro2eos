@@ -1440,4 +1440,852 @@ Date de collecte : 29/07/2026
 
 - **Même fil**
 - **Symptôme rapporté** : pendant l'édition d'une macro (Tab 18), si une macro background déclenchée via OSC se déclenche en parallèle, ses commandes s'insèrent dans la fenêtre d'édition en cours, comme si elles avaient été tapées par l'utilisateur en train d'éditer — au lieu de s'exécuter en arrière-plan comme prévu
-- **Explication analogique fournie par un contributeur** : <cite reformulé>le comportement est similaire à ce qui se produit si on appuie sur un bouton Direct Select de macro pendant qu'on édite une autre macro — la macro déclenchée ne se joue pas, elle est ajoutée au contenu de la macro en cours d'édit
+- **Explication analogique fournie par un contributeur** : <cite reformulé>le comportement est similaire à ce qui se produit si on appuie sur un bouton Direct Select de macro pendant qu'on édite une autre macro — la macro déclenchée ne se joue pas, elle est ajoutée au contenu de la macro en cours d'édition.</cite>
+- **Confiance** : C, bug technique précis et confirmé indirectement par analogie avec un comportement connu
+- **Statut** : bug non résolu au moment du fil (juin 2022) — statut actuel inconnu, à vérifier
+- **Impact architecture majeur** : ceci est une **alerte de sécurité fonctionnelle sérieuse** pour ton outil. Si un régisseur utilise ton appli pour déclencher des macros en background via OSC pendant qu'un tiers (ou lui-même) est en train d'éditer une macro sur la console, le contenu de la macro en cours d'édition peut être silencieusement corrompu par l'injection de commandes non désirées. **À documenter explicitement comme avertissement utilisateur dans ton outil** : ne pas déclencher de macros via l'app pendant qu'une édition de macro est en cours sur la console.
+
+## 068 — Ciblage de macro vers un User spécifique : piège Foreground/Background (C, confirmé par test empirique d'un contributeur)
+
+- **Fil source** : "Macro - Target to User"
+- **Symptôme** : une macro avec `{Target}` réglé sur un User spécifique ne fonctionne pas comme attendu
+- **Diagnostic confirmé par un second contributeur, avec test empirique explicite** : <cite reformulé>il faut s'assurer que la macro tourne en mode Foreground — les tests confirment que le mode Background ne fonctionne pas pour ce cas, ce qui n'est pas totalement surprenant puisque le mode Background n'affecte pas la ligne de commande...</cite> (phrase tronquée dans la source, logique probable : la commande ciblée doit passer par la ligne de commande de l'utilisateur cible, ce que Background ne permet pas de faire correctement)
+- **Confiance** : C, mais avec confirmation empirique explicite ("Testing on my system confirms")
+- **Solution de contournement documentée par l'auteur original du fil** (imparfaite, qualifiée lui-même de non idéale) : une macro qui change temporairement l'utilisateur local, exécute le Sneak + Clear command line, puis revient à l'utilisateur assigné du Gio
+- **Confiance de la solution de contournement** : D (spécifique à une console, l'auteur lui-même la qualifie de non satisfaisante à long terme)
+- **Impact architecture** : **troisième confirmation** (après #027 submasters, #061 Go_To_Cue) que le choix Foreground/Background n'est pas un simple détail cosmétique — c'est un facteur déterminant de succès/échec pour plusieurs catégories de commandes. Ton validateur devrait maintenir une règle explicite : toute macro utilisant `{Target}` vers un User doit être forcée en mode Foreground, jamais Background.
+
+## 069 — Précision officielle sur {Target} du Macro Editor (source A, déjà partiellement en corpus, complétée)
+
+- Rappel de la vague 4 (#037), confirmé et recontextualisé ici : <cite>le Target Device peut être un nom de device ou un User ID, assigné via le softkey {Target} et {Device}/{User}.</cite>
+- **Confiance** : A pour l'existence du mécanisme, complétée par C (#068) pour ses limites pratiques réelles
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Mécanisme `/eos/user/<n>` et bonne pratique de réservation d'un User# dédié pour client OSC** — directement actionnable pour la conception du moteur OSC de ton outil
+2. **Bug sérieux identifié** (#067) : risque de corruption silencieuse d'une macro en cours d'édition si des commandes background arrivent en parallèle — à documenter comme avertissement utilisateur explicite
+3. **Quatrième cas confirmé de sensibilité au mode Foreground/Background** (après Update, Go_To_Cue en usage cue-list complexe, et maintenant le ciblage User) — ce facteur devient une **règle de validation quasi-systématique** à vérifier pour toute macro générée par ton traducteur, pas un détail secondaire
+
+## Mise à jour de la liste des commandes/mécanismes à risque contextuel (cumulée)
+
+- `{Enable}/{Disable}` — dépend de l'état courant (toggle)
+- `Update` — cible ambiguë selon contexte (A, historique confirmé)
+- `SelectManual` — comportement différent macro vs live
+- `SubDown`/`SubUp` sur bump submaster — possible non-survie export ASCII (à tester)
+- `Go_To_Cue` — comportement non déterministe selon Foreground/Background et timing
+- **`{Target}` vers un User** (nouveau) — nécessite Foreground, ne fonctionne pas en Background (confirmé empiriquement)
+- **Édition de macro concurrente avec déclenchement background** (nouveau, bug système plutôt que commande) — risque de corruption de contenu de macro en cours d'édition
+
+<!-- ===== FIN : multiconsole_etc_forum_vague9.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague10_editing_macros_officiel.md ===== -->
+
+# Corpus — vague 10 (page officielle "Editing Macros", dépouillement complet)
+
+Source : etcconnect.com/WebDocs — manuel v3.3.6, page "Editing Macros"
+Confiance : A
+Date de collecte : 29/07/2026
+
+---
+
+## 070 — Exemple complet et inédit : macro avec Select Active, Sneak, et enchaînement vers une autre macro
+
+Exemple officiel donné pour créer la macro 3 :
+
+```
+<Macro> [3] [Enter]
+{Edit}
+[Select Active] [At] [5] [Enter]
+[Sneak] [Time] [1] [0] [Enter]
+[Macro] [5] [Enter]
+[Select]
+```
+- **Fonction déclarée par ETC** : régler tous les channels actifs à 50%, les faire "sneak" (fondu progressif) vers leurs niveaux d'origine sur 10 secondes, puis enchaîner (lier) vers la macro 5
+- **Confiance** : A
+- **Intérêt majeur** : **premier exemple officiel confirmé d'une macro qui en appelle une autre par simple juxtaposition** (`[Macro] [5] [Enter]` en fin de contenu) — jusqu'ici on n'avait que le témoignage communautaire de la vague 2 (#020, indirection macro-dans-macro) pour ce mécanisme. C'est maintenant confirmé niveau A. Ça valide directement la piste retenue pour la génération en masse.
+- **Autre point technique** : confirme `[Select Active]` comme syntaxe officielle (déjà vu en usage communautaire, vague 1 #006), et introduit `[Sneak] [Time] [n] [Enter]` comme motif de fondu temporisé distinct de `Sneak Time n` (variante déjà vue en vague 1 #006 sous forme collée)
+
+## 071 — Procédure officielle complète de création/édition en éditeur (précise et complète ce qui était fragmentaire)
+
+- <cite>Sélectionner un numéro de macro existant et appuyer sur [Enter] affiche le détail du contenu de la macro sélectionnée. Appuyer sur {Edit} pour modifier le contenu.</cite>
+- <cite>Le curseur se déplace dans la liste de contenu via les flèches. Les flèches ne sont pas stockées comme contenu de macro. Pour ajouter du contenu, positionner le curseur à l'endroit voulu puis ajouter la commande. Pour supprimer une commande, positionner le curseur juste avant elle puis presser {Delete}.</cite>
+- <cite>Presser [Select] une fois l'édition terminée. Presser [Escape] pour quitter l'éditeur.</cite>
+- **Confiance** : A
+- **Précision structurante non capturée avant** : **[Select] termine l'édition, [Escape] quitte l'éditeur** — ce sont deux actions distinctes, pas synonymes. Jusqu'ici le corpus ne distinguait pas clairement ces deux sorties. À corriger dans la grammaire : {Done} (déjà connu), [Learn] (déjà connu), et maintenant [Select] comme troisième mécanisme de sortie/validation, différent de [Escape] qui abandonne.
+
+## 072 — Confirmation officielle explicite de {Delete} vs la touche [Delete] (clarifie une ambiguïté du corpus)
+
+- Le texte utilise systématiquement `{Delete}` (softkey) pour la suppression de contenu en édition — cohérent avec le piège déjà noté en vague 4 (#034) où la **hardkey** [Delete] se poste dans la macro par erreur si on l'utilise à la place de la softkey `{Delete}`. Cette page confirme sans ambiguïté que la bonne pratique documentée est bien la softkey.
+- **Confiance** : A
+
+## 073 — Liste des softkeys spécifiques à l'édition, reconfirmée texte par texte (déjà en grande partie en corpus, revalidé mot pour mot)
+
+- `{Loop Begin}` — 0 itérations = boucle infinie (déjà confirmé x2 en usage réel, vagues 1)
+- `{Loop End}`
+- `{Wait}` — doit être suivi d'un nombre entier de secondes (précision : entier, pas décimal — cohérent avec le bug de décimales signalé en vague 4 #044 historique 2012, toujours d'actualité en v3.3.6)
+- `{Delete}`
+- `{Wait for Entr}` — reprend après [Enter]
+- `{Wait for Input}` — pause jusqu'à nouvel appui sur [Macro]
+- `{Done}` — sortie d'édition, alternative à [Learn]
+
+## 074 — Confirmation officielle du motif {Enable}/{Disable} pour toggles (déjà connu, reformulation officielle exacte)
+
+- <cite>Les macros pour des options à bascule entre activé et désactivé, comme AutoMark en setup, peuvent utiliser les softkeys {Enable} et {Disable} pour créer des actions absolues plutôt que des toggles.</cite>
+- **Confiance** : A
+- **Déjà en corpus** (grammaire initiale, référentiel de risques) mais cette formulation officielle confirme que le problème de non-déterminisme du toggle est **connu et documenté par ETC lui-même**, pas seulement déduit par déduction communautaire — renforce la priorité de cette règle dans le validateur.
+
+---
+
+## Sur l'image transmise par Cy
+
+L'image montrée est cohérente avec cette page mais correspond au **champ de recherche** (scrollable, filtrable par frappe), pas à l'image `macro_editor_all_softkeys.png` intégrée à cette page (softkeys du CIA, disposition physique de la console) — ce sont deux vues différentes de la même liste sous-jacente de commandes. Le fetch ne peut pas lire les images (erreur technique), donc `macro_editor_all_softkeys.png` reste non exploitée. Si Cy peut la capturer en écran et la partager, ce serait la meilleure complétion possible pour clore le sujet.
+
+**Estimation à partir de la portion visible dans l'image de Cy** : environ 50 entrées couvrant les lettres F à M de la liste. Si la liste est alphabétique complète (A à Z ou au-delà), le total pourrait avoisiner 250 à 400 commandes distinctes — largement au-delà de ce que 74 entrées collectées via forum ont permis de couvrir jusqu'ici. C'est une estimation, pas un chiffre vérifié.
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Confirmation A du mécanisme macro-dans-macro** (#070) — la piste de génération en masse la plus incertaine du corpus (auparavant confiance C, un seul témoignage) passe à une confirmation officielle
+2. **Clarification [Select] vs [Escape] vs {Done} vs [Learn]** comme sorties distinctes de l'éditeur — zone qui était floue
+3. **La vraie priorité de collecte devient claire** : la liste de recherche complète (visible en partie dans l'image de Cy) est très probablement plus riche que tout ce que la collecte fragmentaire par forum peut fournir en un temps raisonnable. Si cette liste est capturable intégralement (capture d'écran systématique par Cy, ou toute autre méthode d'extraction), ce serait désormais l'action prioritaire n°1 du projet, devant toute poursuite de collecte par recherche web.
+
+<!-- ===== FIN : vague10_editing_macros_officiel.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague11_show_control_l4.md ===== -->
+
+# Corpus — vague 11 (nature de la liste de recherche + nouvelles sources majeures)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 075 — CONFIRMATION IMPORTANTE : la liste de recherche macro contient des doublons (C, mais technique et cohérent)
+
+- **Fil source** : "Macro Editor" (déjà partiellement en corpus, vague 4 #035 — relu plus en profondeur ici)
+- **Citation reformulée** : un utilisateur observe qu'en parcourant la liste de softkeys dans l'éditeur de macro, on voit en fait défiler toutes les "pages" de softkeys successivement, ce qui génère de nombreux doublons dans la liste. Il mentionne avoir vu ailleurs sur le forum une discussion évoquant un projet pour améliorer ça.
+- **Confiance** : C, mais cohérent avec le fonctionnement connu des pages de softkeys sur consoles EOS
+- **Impact direct sur l'estimation faite en vague 10** : mon estimation "250 à 400 commandes distinctes" à partir de l'échantillon transmis par Cy est probablement **surestimée** si la liste contient des doublons structurels. Cela ne remet pas en cause l'intérêt de la capturer, mais il faudra dédupliquer soigneusement en constituant le corpus final à partir de cette liste — ne pas prendre le nombre brut d'entrées comme nombre de commandes réellement distinctes.
+
+## 076 — Nouvelle source majeure identifiée : Eos Family Show Control User Guide (PDF complet, Rev C, 2017 — à vérifier si version plus récente existe)
+
+- URL : media.musson.com/mti/docs/e/o/eosfamily_showcontrol_userguide_revc.pdf (miroir tiers, contenu ETC)
+- **Confiance** : A pour le contenu (document ETC officiel), miroir non-ETC donc à re-confirmer sur etcconnect.com si possible dans une prochaine recherche
+- **Extraits déjà exploitables, source A** :
+```
+<Event> [4] [/] [1] {Address} [2] [Cue] [1] [1] [Enter]
+→ crée un événement d'entrée analogique : une entrée sur l'adresse 2 déclenche la cue 11
+
+<Event> [4] [/] [1] {Address} [3] [Macro] [1] [Enter]
+→ entrée sur adresse 3 déclenche la macro 1, exécution immédiate
+
+<Event> [4] [/] [1] {Address} [4] [Sub] [1] {On} [Enter]
+→ entrée sur adresse 4 met le Sub 1 sur On
+```
+- <cite>Il existe quatre modes pour une entrée de submaster déclenchée en Show Control : On, Off, Bump, et Fader.</cite>
+- <cite>Comme il n'y a pas de softkey d'action dédiée, appuyer sur [Cue], [Sub], ou [Macro] indique que l'on poste sur la ligne de commande.</cite>
+- <cite>Toutes les chaînes envoyées depuis les appareils Eos Family sont complétées par un retour chariot (CR, 0x0D, ou 13).</cite>
+- **Impact majeur** : cette dernière précision (CR systématique en fin de chaîne) est une information technique bas niveau **directement utile pour ton moteur OSC/série** — confirme un détail de protocole qui pourrait autrement causer des bugs de communication difficiles à diagnostiquer.
+- **Thématique** : Show Control (MIDI/analogique/contacts secs) — zone précédemment vide du corpus, désormais couverte
+
+## 077 — Nouvelle source majeure identifiée : Level 4 Proficient Workbook (v3.0, PDF officiel ETC)
+
+- URL : etcconnect.com/uploadedFiles/.../Eos_Family_L4_Proficient_v2.9A.pdf
+- **Confiance** : A
+- Confirme et reformule ce qui était déjà connu du Tab 18 (#037, #069) : <cite>le Target Device peut être un nom de device ou un User ID, assigné via {Target} dans le Macro Display.</cite>
+- **Nouvelle information** : <cite>les macros peuvent être appelées pour s'exécuter sur ou hors de la ligne de commande ("Macros can be called to run on or off the command line")</cite> — reformule et confirme la distinction Foreground/Background déjà bien documentée dans le corpus, mais avec une formulation légèrement différente à noter pour la compréhension de la grammaire
+- **Autre extrait pertinent, hors macro mais utile pour le contexte grammaire général** : `[1] [CopyTo] [2] {From Absolute} [Enter]` — confirme et précise le softkey `{From Absolute}` déjà visible dans l'image transmise par Cy (premier item de la liste !), avec sa fonction exacte : fixe le channel 2 au niveau absolu du channel 1 lors d'un Copy To
+- **Thématique** : ce document couvre officiellement le niveau "Proficient", au-delà du Level 3 déjà dépouillé — probablement riche en contenu macro avancé non encore exploré. À prioriser pour une prochaine vague de dépouillement complet.
+
+## 078 — Softkeys de priorité de marking, confirmées (A, complète la thématique Mark/Auto-Mark encore peu couverte)
+
+- Source : supplément au manuel v2.6.0/v2.6.3
+- <cite>Pour assigner une priorité de marking, on utilise les softkeys {High Priority} et {Low Priority}. Lors du marking, les channels tentent d'abord de marquer vers les cues de haute priorité. Les cues simplement marquées "Mark" sont de priorité normale et utilisées en second recours. Les cues de basse priorité sont utilisées en dernier recours.</cite>
+- Indicateurs d'état : `mh`/`MH` (haute priorité, en attente / en cours de marking), `ml`/`ML` (basse priorité, idem)
+- **Confiance** : A
+- **Intérêt** : `{High Priority}` et `{Low Priority}` apparaissent aussi dans l'image transmise par Cy — confirme que cette liste de recherche inclut bien des softkeys couvrant des fonctions générales de la console (Mark), pas seulement des commandes strictement "macro"
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Correction méthodologique importante** : la liste de recherche macro contient des doublons structurels (pages de softkeys empilées) — à garder en tête pour ne pas surestimer le corpus une fois la liste capturée intégralement
+2. **Deux nouvelles sources A majeures identifiées**, l'une déjà partiellement exploitée (Show Control User Guide — couvre enfin la thématique vide identifiée dans le référentiel), l'autre à peine entamée (Level 4 Proficient Workbook)
+3. **Détail protocole bas niveau utile** : retour chariot systématique en fin de chaîne série/show control
+4. **Confirmation croisée** entre l'image transmise par Cy et les sources texte déjà en corpus (`{From Absolute}`, `{High Priority}`/`{Low Priority}`) — bon signal de cohérence, la liste vue par Cy correspond bien au même référentiel de commandes que celui documenté par ETC
+
+## Mise à jour du référentiel — sources à prioriser pour les prochaines vagues
+
+- Show Control User Guide — entamé, à poursuivre (contacts secs, MIDI Show Control, timecode en détail)
+- Level 4 Proficient Workbook — à peine entamé, probablement riche en Mark/Auto-Mark et fonctions avancées
+- Toujours en attente : Sécurité/exploitation (grand master, inhibitions), Magic Sheets en détail, Lamp Control
+
+<!-- ===== FIN : vague11_show_control_l4.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague12_liste_image_F_M.md ===== -->
+
+# Corpus — vague 12 : liste native de commandes macro (image, portion F→M)
+
+Source : capture d'écran transmise par Cy, provenant très probablement de la liste de recherche
+de l'éditeur de macro EOS (cf. page officielle "Editing Macros", confirmée en vague 10 comme
+contenant une liste "scrollable de toutes les commandes de macro").
+Confiance : **A** — capture directe de l'interface console/logiciel, pas une reformulation tierce
+Statut : liste brute, transcription fidèle. Doublons possibles selon l'avertissement de vague 11 (#075).
+Date de collecte : 29/07/2026
+
+---
+
+## 079 — Transcription intégrale de la portion visible (60 entrées, ordre alphabétique F→M)
+
+Ligne 1 : From Absolute, GEL, Go After Loop, Go To Cue 0, Greater Than, Green, Group Cells, Height, HForm, High Priority
+
+Ligne 2 : Highlight, Hold, HS, HTP, In Time, Infinite, Input String, Insert, Insert After, Insert Before
+
+Ligne 3 (catégorie "Common") : InterLeave, Internal, Interpolate, Intime Effect, Invert, Is In, Isn't In, Jump, Labels Only, Lamp Controls
+
+Ligne 4 (catégorie "Softkeys") : Last Ref, Last Time, Learn Events, Less Than, Level By Address, Linear, Link, List Partition, Live, Live Moves
+
+Ligne 5 (catégorie "Lamp Controls") : Lock, Loop, Low Priority, Macro, Macro Entry Delete, Macro Loop Begin, Macro Loop End, Macro Mode, Macro Wait, Magic Sheet
+
+Ligne 6 (barre de recherche) : Magic Sheet Apply, Magic Sheet Edit, Make Absolute, Make Manual, Make Null, Manual, Manual Override, Mapped To, Mark, Marking
+
+## Nouvelles entrées jamais vues dans le corpus jusqu'ici (à haute valeur)
+
+- **From Absolute** — déjà confirmé en vague 11 (#077) via le Level 4 workbook, avec sa syntaxe complète (`[1] [CopyTo] [2] {From Absolute} [Enter]`) — confirmation croisée entre deux sources indépendantes, confiance renforcée
+- **GEL** — probablement lié à la sélection de couleur par référence de gélatine, à creuser
+- **Go After Loop** — mot-clé de contrôle de boucle jamais vu, distinct de `{Loop Begin}`/`{Loop End}` déjà connus — hypothèse : action à exécuter après la fin d'une boucle. **Non confirmé, à vérifier.**
+- **Go To Cue 0** — confirme qu'il existe une entrée dédiée "aller à Cue 0" dans la liste, cohérent avec le motif déjà vu en vague 4 (#031, exemple officiel `Go To Cue Out`)
+- **Greater Than / Less Than / Is In / Isn't In** — confirme la famille de comparaison/logique déjà repérée à la première lecture de l'image — la présence groupée de ces quatre opérateurs renforce l'hypothèse que les macros supportent une forme de logique conditionnelle, au-delà de la simple séquence linéaire déjà documentée. **Structurant, à investiguer en priorité.**
+- **Group Cells** — terme inconnu du corpus, sens à déterminer (possiblement lié aux tableaux/grilles d'affichage, pas au concept de "Group" de sélection de channels déjà bien documenté)
+- **Height / HForm / HS / HTP** — probablement liés à des paramètres de fixture (HS = Hue/Saturation ? HTP = Highest Takes Precedence, terme d'éclairage standard non spécifique à EOS) ou d'affichage. HTP en particulier est un terme métier connu en dehors d'EOS (règle de priorité DMX classique) — cohérence à confirmer mais probable.
+- **In Time / Intime Effect** — nouveau, probablement lié aux temps d'entrée d'effet (déjà vu "Entry"/"Exit" en vague 6 pour les effets, mais jamais sous ce nom exact)
+- **Infinite** — confirme indirectement le motif "0 = infini" déjà documenté pour les boucles (`{Loop Begin} 0`), suggère qu'il existe peut-être un mot-clé dédié `Infinite` utilisable ailleurs aussi
+- **Input String** — nouveau, pertinent pour `{Wait for Input}` déjà connu — probablement le mécanisme sous-jacent de saisie
+- **InterLeave** — nouveau, terme d'effet ou de patch (interleave = entrelacement), à investiguer
+- **Internal** — nouveau, contexte à déterminer (peut-être lié à Show Control interne, cf. vague 8 #064 "Displays_More_Show Control_Internal")
+- **Invert** — cohérent avec les motifs déjà vus (`{Reverse}` pour les effets, "inverts appropriate things" en vague 1 #009 Framing Mirror) — pourrait être le mot-clé générique sous-jacent
+- **Labels Only** — nouveau, probablement un filtre de record/copy
+- **Lamp Controls** — confirme et catégorise ce qui était déjà mentionné en vague 4 (#034) comme alternative recommandée par ETC à une macro pour l'envoi de valeurs DMX temporisées
+- **Last Ref / Last Time** — nouveau, probablement liés à Select_Last déjà connu, ou au dernier temps utilisé
+- **Learn Events** — confirme et nomme précisément le mécanisme déjà documenté en vague 8 (#064, "Learn_Events" utilisé de façon empirique dans le fil timecode)
+- **Level By Address** — nouveau, méthode d'assignation de niveau par adresse DMX plutôt que par channel/groupe — pertinent pour un usage bas niveau
+- **Link** — nouveau, à rapprocher de l'enchaînement macro-vers-macro déjà confirmé (#070, `[Macro][5][Enter]` en fin de macro) — pourrait être un mécanisme de liaison plus formel
+- **List Partition** — nouveau, terme lié aux cue lists, sens exact à déterminer
+- **Macro Entry Delete** — nouveau, complète la famille déjà connue (Loop Begin/End, Wait, Wait for Entr, Wait for Input, Delete) avec une variante plus spécifique
+- **Macro Mode** — confirme et nomme précisément le softkey déjà documenté en vague 4/vague6 (`{Macro Mode}`, permet de choisir Foreground/Background/Default) — confirmation croisée supplémentaire
+- **Magic Sheet / Magic Sheet Apply / Magic Sheet Edit** — nouveau, trois commandes distinctes liées aux Magic Sheets, jamais vues dans le corpus qui n'avait que la syntaxe `macro:` côté bouton Magic Sheet (vague 8 #063) — ici on voit le sens inverse potentiel (piloter un Magic Sheet depuis une macro)
+- **Make Absolute** — confirme et nomme précisément le mécanisme déjà évoqué en vague 5 (#042, "make absolute" mentionné en passant sans nom de commande officiel)
+- **Make Manual / Make Null** — nouveau, probablement liés au statut de données (manuel vs tracké/référencé, donnée nulle/vide)
+- **Manual Override** — nouveau, cohérent avec le concept déjà documenté de données manuelles (fils vague 3, Proportional/Intensity Master)
+- **Mapped To** — nouveau, probablement lié au patch ou au fader mapping (cohérent avec "Manual Time Master... fader mapped as" en vague 11 #101 non encore intégrée formellement)
+- **Mark / Marking** — confirme et nomme les commandes derrière la thématique Mark/Auto-Mark déjà documentée en creux (vague 11 #078, indicateurs mh/MH/ml/ML) mais jamais vue sous forme de commande de macro elle-même
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Trois confirmations croisées fortes** entre cette image et des sources texte déjà collectées indépendamment : `From Absolute`, `Macro Mode`, `Make Absolute` — la cohérence entre les deux types de sources (image de liste native + documentation textuelle éparse) valide la fiabilité de la méthode de collecte suivie jusqu'ici.
+2. **Découverte structurante non résolue** : la présence groupée de `Greater Than`, `Less Than`, `Is In`, `Isn't In` suggère une capacité de logique conditionnelle dans les macros EOS, jamais documentée ni même évoquée ailleurs dans le corpus. Si confirmée, c'est une extension majeure du modèle mental "macro = séquence linéaire de touches" retenu jusqu'ici pour la conception de la représentation interne.
+3. **Famille Magic Sheet côté macro** (Magic Sheet, Magic Sheet Apply, Magic Sheet Edit) — jamais vue, à investiguer, pertinent pour la thématique Affichage/interface encore peu couverte.
+4. **~40 termes nouveaux au total**, dont la majorité reste **non confirmée quant à sa syntaxe exacte et sa fonction précise** — cette liste donne des noms, pas des exemples d'usage. Elle doit être croisée avec de la recherche ciblée (documentaire ou test au banc) terme par terme pour devenir exploitable dans un traducteur, pas seulement listée.
+
+## Portions encore manquantes de la liste complète
+
+Cette capture couvre uniquement F→M. Restent inconnues : **A→E** et **N→Z** (au minimum — l'ordre alphabétique strict n'est pas garanti sur toute la liste, à vérifier). Etant donné le rythme d'environ 60 entrées pour ~7 lettres, une estimation grossière pour la liste complète serait de l'ordre de 200-250 entrées **avant déduplication** (rappel de l'avertissement vague 11 #075 sur les doublons de pages).
+
+## Action prioritaire suggérée pour la suite
+
+Plutôt que de continuer à chercher cette liste par fragments aléatoires (peu fructueux jusqu'ici), il serait plus efficace de rechercher spécifiquement les termes non résolus de cette vague un par un dans la documentation ou le forum ETC — en particulier `Go After Loop`, `Greater Than`/`Less Than`/`Is In`/`Isn't In` (logique conditionnelle), et la famille Magic Sheet.
+
+<!-- ===== FIN : vague12_liste_image_F_M.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague13_correction_greater_less_than.md ===== -->
+
+# Corpus — vague 13 : clarification des opérateurs de comparaison (correction d'hypothèse)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 080 — CORRECTION : Greater Than / Less Than sont liés au système de Query par mots-clés custom, pas à une logique conditionnelle générale de macro
+
+- **Fil source** : "Possible Query Keyword bug" (fil ancien, ~2010-2011 d'après le contexte, toujours d'actualité pour la mécanique de fond)
+- **Contenu confirmé, source B** (échange direct avec un développeur/support ETC identifié comme "Josh" dans le fil) :
+- <cite reformulé>Après import de mots-clés personnalisés depuis un logiciel tiers (LightWright) vers Eos, un utilisateur teste des requêtes Query et remarque deux problèmes : les mots-clés commençant par un chiffre échouent à la requête et effacent partiellement la ligne de commande ; les mots-clés contenant des espaces échouent aussi.</cite>
+- <cite reformulé>Il note également que les symboles "greater than" (>), "less than" (<), et l'accent circonflexe (^) ne peuvent pas non plus se poster comme premier caractère — ce qui pose problème car de nombreux ALD (Assistant Lighting Designers) utilisent ces symboles en début de mot-clé pour indiquer un objectif ou une intention dans leurs annotations.</cite>
+- **Réponse du support ETC confirmée dans le fil** : le problème des espaces est expliqué — <cite reformulé>quand un mot-clé est stocké dans le show, tous les espaces sont convertis en underscores, probablement parce que des espaces dans le mot-clé le feraient ressembler à deux mots distincts pour le parseur. Ces espaces ne sont pas convertis de façon symétrique dans les champs Texte du Patch, d'où l'échec de correspondance lors d'une requête Query.</cite>
+- **Confiance** : B (échange direct avec profil support/développeur ETC identifiable, contenu technique précis et cohérent)
+- **Statut** : confirmé quant au contexte d'usage, mais **ne donne pas la syntaxe exacte de commande** `Greater Than`/`Less Than` telle qu'utilisable dans une macro moderne — seulement le contexte historique de leur origine (mots-clés Query, pas opérateurs logiques de macro au sens programmation)
+
+## Révision de l'hypothèse posée en vague 12 (#079)
+
+L'hypothèse formulée en vague 12 — "les macros supportent une forme de logique conditionnelle" — **doit être révisée à la baisse**. Ce que confirme cette vague 13 : `Greater Than` et `Less Than` sont très probablement des **opérateurs de filtre pour les requêtes Query sur mots-clés/attributs de patch** (typiquement : rechercher tous les channels dont un attribut numérique personnalisé est supérieur/inférieur à une valeur), pas des instructions de branchement conditionnel façon `if/else` dans une séquence de macro.
+
+Ça reste un mécanisme puissant et pertinent pour ton corpus (motif de **sélection dynamique de channels par condition sur un mot-clé/attribut**, thématique Sélection & patch), mais ce n'est pas la découverte "programmation conditionnelle en macro" que la première lecture de l'image suggérait. **`Is In` / `Isn't In`** restent non résolus dans cette vague — probablement de la même famille (filtre d'appartenance à un ensemble, ex: "channel appartient à Group X"), à confirmer séparément.
+
+- **Impact sur le référentiel** : correction méthodologique importante à retenir — une liste de noms de commandes sans exemple de syntaxe (comme l'image collectée en vague 12) peut suggérer des interprétations excessives. Toujours croiser avec une source d'usage réel avant de tirer une conclusion structurante pour l'architecture.
+
+---
+
+## Synthèse de cette vague
+
+1. **Hypothèse de logique conditionnelle en macro invalidée** (ou du moins non confirmée) — reclassée en mécanisme de filtre Query, cohérent avec la famille déjà connue (`Query Dark_Moves`, `Query Live_Moves`, etc.)
+2. **Deux bugs historiques documentés** sur le système de mots-clés custom (espaces convertis en underscore de façon asymétrique, échec sur premier caractère spécial) — pertinent si ton traducteur doit un jour générer des requêtes Query sur mots-clés personnalisés, mais périphérique à la priorité actuelle (macros)
+3. **`Is In`/`Isn't In` restent à investiguer** séparément — hypothèse actuelle : filtre d'appartenance, cohérent avec la famille Query
+
+<!-- ===== FIN : vague13_correction_greater_less_than.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague14_query_semantique_variables.md ===== -->
+
+# Corpus — vague 14 : sémantique Query complète, fragilité macro confirmée à grande échelle
+
+Date de collecte : 29/07/2026
+
+---
+
+## 081 — Sémantique complète des quatre opérateurs Query (A/B, réponse ETC officielle dans le fil)
+
+- **Fil source** : "Query on Query" — réponse identifiée comme provenant d'ETC (contexte du fil, réponses techniques précises typiques du support)
+- **Contenu confirmé** :
+```
+{Is In}      → le channel est actuellement dans cet état ("is in CP5")
+{Could Be}   → le channel a des données stockées dans la cible visée, sans y être actuellement
+{Can't Be}   → le channel n'a pas de données stockées dans la cible visée
+{Isn't In}   → le channel n'est pas actuellement dans cet état
+```
+- **Exemple officiel donné** : `[Query]{Is In}[Preset][2][0][Enter]`
+- **Confiance** : A/B (réponse à caractère officiel, cohérente et précise)
+- **Impact direct sur la révision de vague 13** : ceci confirme et complète parfaitement l'hypothèse révisée — `{Is In}`/`{Isn't In}` (vus dans l'image, vague 12) sont bien de la famille Query, pas de la logique conditionnelle de macro. Et on découvre au passage **deux opérateurs Query supplémentaires non présents dans l'image** : `{Could Be}` et `{Can't Be}` — la liste de recherche capturée par Cy ne couvrait donc pas tout, même sur les lettres qu'elle affichait (C se trouve avant F, donc logique qu'elle soit absente de la portion F→M).
+
+## 082 — Précision officielle sur {Group} comme sélecteur pur (A/B, distingue Group de Recall From)
+
+- **Même fil**
+- <cite reformulé>Le Group est uniquement un sélecteur de channels. `[Group][Color Palette][1][Enter]` sélectionne tous les channels ayant des données stockées dans la palette couleur 1.</cite>
+- <cite reformulé>`[Group][Preset][xx][Enter]` sélectionne les channels associés à ce preset ET les place à leur valeur IFCB enregistrée ; `[Group][Preset][xx][At][0][Enter]` sélectionne les channels et leur assigne uniquement une valeur de zéro.</cite>
+- **Confiance** : A/B
+- **Note de transparence intéressante d'ETC lui-même** : le même contributeur reconnaît qu'<cite reformulé>il y a eu beaucoup de confusion sur le fonctionnement de Group, Recall From et Query, et que ces règles étaient en cours d'ajustement dans une version à venir (1.3.1) pour rendre le jeu de règles complètement cohérent.</cite>
+- **Impact architecture** : cette reconnaissance officielle d'une ambiguïté historique corrobore directement pourquoi ton système de validation avec menus déroulants (déjà noté en idée produit) est pertinent — même ETC admet que la distinction entre ces mécanismes de sélection a été/est source de confusion pour les utilisateurs eux-mêmes.
+
+## 083 — Exemple complet et avancé combinant Group + Query en macro (C, syntaxe détaillée)
+
+- **Fil source** : "Query; single vs multiple cues in blind; select last"
+```
+[Group] [1] [Query] {Is In} [Que] [Home] [Thru] [Query] {Can Be} [Preset] [3] [Enter]
+```
+- **Fonction déclarée** : limite la recherche au Group 1 en tête de ligne (réduisant fortement le résultat), puis interroge, à travers toute la cue list (Home Thru), quels channels de ce groupe ont des données stockées ("Can Be" — sic, l'utilisateur semble utiliser une variante de {Could Be}) dans le Preset 3
+- **Confiance** : C, utilisateur expérimenté mais syntaxe non revérifiée par ETC dans ce fil précis
+- **Piège confirmé par l'auteur lui-même dans le fil** : `{Select Last}` ne fonctionne pas comme attendu après une requête Query complexe — au lieu de renvoyer la sélection de channels résultante, il relance la syntaxe de la requête Query elle-même. Comportement jugé säcompris comme un problème par l'utilisateur, non résolu formellement dans le fil.
+- **Impact** : nouveau cas à ajouter au référentiel de risques contextuels — `{Select Last}` après une requête Query composée a un comportement différent de son usage simple déjà bien documenté ailleurs dans le corpus (vague 1, vague 7).
+
+## 084 — TÉMOIGNAGE MAJEUR : confirmation systémique et frontale de la fragilité des macros par un utilisateur expérimenté (C, mais extrêmement révélateur)
+
+- **Fil source** : "Macro syntax help"
+- **Contexte** : un utilisateur tente de construire une macro pour sélectionner uniquement les channels patchés (l'inverse fonctionne : sélectionner les non-patchés), en utilisant `Query is_in Unpatched` / `Query isn't in Unpatched` — confirme au passage la syntaxe exacte de cette famille de commandes en usage réel, cohérente avec #081
+- **Citation reformulée, la plus importante du corpus à ce stade** : après plusieurs échanges infructueux avec d'autres membres du forum, l'utilisateur écrit être amusé par toute cette histoire — il indique être venu chercher de l'aide et n'avoir reçu que très peu d'information réellement utile, la plupart de ce qu'on lui a répondu étant soit franchement faux, soit trompeur. Il trouve cela symptomatique d'un problème systémique dans la création de macros sur EOS : de nombreuses astuces, réglages et comportements par défaut qui fonctionnent en usage normal ne se traduisent pas en macro.
+- **Confiance** : C — c'est un témoignage d'expérience, pas une donnée technique vérifiable en soi — **mais sa valeur documentaire pour ton projet est exceptionnelle**, précisément parce qu'il formule en une phrase le problème central que 84 entrées de collecte fragmentaire ont mis en évidence indirectly depuis le début : `Go_To_Cue` inconsistant (#060-061), `SubDown/SubUp` fragile à l'export (#027), `{Target}` vers User qui échoue en Background (#068), `SelectManual` invalide en live mais partiellement utilisable en macro (#043), et maintenant `{Select Last}` après Query composé (#083).
+- **Statut** : à conserver comme citation de référence — pas une donnée de grammaire à proprement parler, mais une validation qualitative forte du besoin auquel ton outil répond, et un rappel que la validation de sécurité (côté outil, pas juste côté syntaxe) doit être prise très au sérieux
+- **Détail technique confirmé dans le même fil, à valeur normative (source utilisateur avancé, résultat vérifié ~20 fois)** : en Blind, la vue par défaut est la Cue List ; invoquer une IP (Intensity Palette ou équivalent) transforme les tombstones de Blind en tombstones IP, mais **ne bascule pas la vue vers la IP List View** — nuance fine sur l'état d'affichage en Blind, pertinente si ton outil doit un jour générer des macros de navigation d'affichage.
+
+## 085 — ABSENCE CONFIRMÉE de variables/formules dans EOS, feature request de longue date sans suite (B/A, réponse ETC directe)
+
+- **Fil source** : "Using variables on EOS"
+- **Demande formulée par les utilisateurs** : possibilité de faire des chases/effets basés sur des maths/formules, sélectionner un groupe selon une condition (`if mode=1 use group 1`), choisir une palette couleur selon l'effet tournant sur un autre groupe
+- **Réponse ETC (identifiable comme tel dans le fil, "Patrick")** : <cite reformulé>c'est sur la liste des évolutions envisagées côté EOS, mais difficile de dire quand — c'est un chemin sinueux.</cite> Puis en réponse à une relance plusieurs mois/années après : <cite reformulé>pas de rumeur particulière, étant donné la charge de travail sur les priorités du haut de la liste, il ne faut pas s'attendre à ce que le sujet des variables prenne beaucoup de traction. Il existe quelques extensions au système de Query qui... (phrase tronquée dans la source)</cite>
+- **Confiance** : A/B pour la confirmation officielle de l'absence de mécanisme de variable global
+- **Impact architecture majeur, et definitif sur un point resté ouvert depuis la vague 2** : ceci **confirme officiellement, par ETC lui-même**, que EOS ne dispose pas nativement d'un vrai système de variables ou de formules. Le mécanisme d'indirection macro-dans-macro (#020, confirmé A en #070) reste donc le seul palliatif disponible — pas une fonctionnalité native cachée, mais un contournement créatif de la communauté face à une limitation reconnue et documentée comme telle par ETC. Cela **valide directement** la pertinence de la stratégie retenue pour la génération en masse dans ton architecture : c'est la meilleure option disponible sur la plateforme, pas une solution de second choix.
+
+---
+
+## Synthèse — apports de cette vague (l'une des plus importantes du corpus à ce stade)
+
+1. **Sémantique Query complètement close** : les 4 opérateurs (`Is In`, `Isn't In`, `Could Be`, `Can't Be`) sont maintenant tous confirmés avec leur fonction exacte — clôt définitivement la question ouverte depuis la vague 12/13
+2. **Confirmation officielle ETC de l'absence de variables** — valide rétroactivement la stratégie de génération en masse retenue pour l'architecture (macro-dans-macro)
+3. **Nouveau cas de risque contextuel** : `{Select Last}` après une requête Query composée
+4. **Le témoignage #084 mérite une place à part** — il ne s'agit pas d'une donnée de grammaire mais d'une validation qualitative externe et indépendante du problème que ton projet cherche à résoudre. À citer si besoin de justifier l'intérêt du projet plus tard (pitch, argumentaire).
+
+## Mise à jour du référentiel de risques
+
+Ajouter au tableau de `REFERENTIEL_RISQUES_ET_GRILLE.md` :
+- `{Select Last}` après une requête `Query` composée — relance la syntaxe de requête au lieu de renvoyer la sélection résultante (C, vague14 #083)
+
+<!-- ===== FIN : vague14_query_semantique_variables.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague15_securite_exploitation.md ===== -->
+
+# Corpus — vague 15 : Sécurité / exploitation (première couverture de cette thématique)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 086 — Distinction officielle Shielded vs Inhibitive (source A, article support dédié)
+
+- Source : support.etcconnect.com, "Is There a Difference Between a Shielded Fader and an Inhibitive Fader?"
+- <cite>Régler le mode d'un submaster sur Inhibitive limite la sortie live de son contenu. Les channels maîtrisés par un submaster inhibitif sont indiqués par un "I" à côté de la valeur d'intensité dans l'affichage live. Les submasters inhibitifs ne fournissent pas de niveaux à l'image scénique, ils les limitent.</cite>
+- <cite>Autrement dit, le submaster inhibitif agit comme un grand master pour les channels qu'il contient, et peut manipuler leur sortie live de façon proportionnelle. Ce comportement est identique sur toutes les versions du logiciel Eos.</cite>
+- **Confiance** : A
+- **Statut** : directement exploitable, formulation officielle exacte
+- **Thématique** : Sécurité / exploitation — première entrée du corpus sur ce sujet
+
+## 087 — Shielded submaster : priorité absolue, y compris sur le Grand Master (C, confirmée, avec contrainte de version)
+
+- **Fil source** : "Independent Submaster"
+- <cite reformulé>Régler la priorité d'un sub sur "Shielded" signifie que les channels de ce sub ne sont contrôlés que par ce sub et ne peuvent être outrepassés par aucun autre moyen, y compris le Grand Master.</cite>
+- **Contrainte de version précisée** : fonctionnalité introduite en v1.9.6 — nécessite une version égale ou supérieure
+- **Confiance** : C, mais cohérente avec la doc officielle #086 (qui n'emploie pas le terme "Shielded" mais en décrit implicitement le principe par contraste)
+- **Cas d'usage concret donné** : protéger des channels d'éclairage de travail (worklights) pour qu'ils restent toujours pilotables indépendamment du reste du système, même en cas de blackout général via Grand Master
+- **Thématique** : Sécurité / exploitation
+- **Statut** : non testé
+
+## 088 — Pattern combiné Inhibitive Sub + macro pour un scénario "pause déjeuner" (C, motif directement transposable)
+
+- **Même fil**
+- <cite reformulé>On pourrait créer un sub inhibitif contenant tous les channels sauf les worklights, le laisser toujours en position haute, et au moment de la pause, baisser ce sub inhibitif tout en montant un autre sub dédié — le tout transformable en une macro pour éviter d'avoir à manipuler physiquement les faders.</cite>
+- **Confiance** : C
+- **Statut** : non testé
+- **Intérêt** : c'est un **motif de sécurité/exploitation directement descriptible en langage naturel** ("mets tout en pause sauf les éclairages de travail") — bon candidat de cas d'usage pour illustrer/tester ton traducteur NL sur cette thématique encore peu couverte
+
+## 089 — Configuration d'un fader en Grand Master : procédure d'interface, pas syntaxe de commande (C, procédure confirmée)
+
+- **Fil source** : "Grand Master Submaster"
+- **Procédure confirmée** : Fader Config (Tab 36) → sélectionner un fader vide → cliquer sur "Unassigned" → choisir "Grandmaster" dans le nouveau menu qui apparaît
+- **Confiance** : C
+- **Statut** : procédure d'interface tactile/souris, pas de syntaxe de ligne de commande associée trouvée dans ce fil — **pertinent surtout pour signaler que cette configuration n'est probablement pas pilotable par macro/commande texte**, contrairement à la plupart des autres objets EOS déjà documentés dans le corpus. Point de vigilance pour le périmètre de ton traducteur : certaines configurations restent liées à l'interface graphique et hors de portée d'une génération par commande.
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Première couverture réelle de la thématique Sécurité/exploitation**, restée vide depuis le début du corpus (identifiée comme manquante dans le référentiel dès la vague de consolidation)
+2. **Distinction Shielded/Inhibitive/Grand Master clarifiée**, avec une source A directe
+3. **Motif "pause déjeuner" (#088)** — bon cas d'usage de test pour le traducteur NL sur cette thématique
+4. **Limite de périmètre identifiée** : la configuration de fader en Grand Master semble être une opération d'interface graphique (Tab 36), pas une commande texte — à vérifier si un équivalent en ligne de commande existe ailleurs dans la documentation avant de conclure définitivement que cette fonction est hors de portée du traducteur
+
+<!-- ===== FIN : vague15_securite_exploitation.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague16_lamp_controls.md ===== -->
+
+# Corpus — vague 16 : Lamp Control (première couverture de cette thématique)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 090 — Syntaxe exacte de macro Lamp Control (C, confirmée et corrigée en cours de fil)
+
+- **Fil source** : "recording lamp controls into macros"
+- **Contenu initial rapporté (EOS 1.8)** :
+```
+Group 301 [enter]
+Lamp_controls Lamp_control Fixture_Global_Wakeup [enter][enter]
+```
+- **Symptôme du bug initial** : la macro apprise sélectionne bien les channels mais n'exécute pas le lamp control lui-même
+- **Correction confirmée fonctionnelle par l'auteur original après suggestion d'un autre membre** : le premier `Lamp_controls` (au pluriel, en tête) est superflu et problématique — la syntaxe correcte omet ce premier terme, de même que le premier `[enter]` qui le suit
+- **Confiance** : C, mais correction confirmée explicitement comme fonctionnelle ("your suggestion worked")
+- **Piège complémentaire signalé par le même auteur** : impossible de faire apparaître les commandes Lamp Control dans la liste de l'éditeur de macro en construisant depuis zéro — les tuiles tactiles de lamp control sur l'écran n'ont aucun effet en mode édition directe. La seule méthode fonctionnelle constatée est d'apprendre (Learn) la macro en direct pour que les commandes lamp control y apparaissent.
+- **Confiance de ce second point** : C
+- **Impact architecture majeur** : ceci est un **nouveau cas confirmé, et particulièrement net**, de la règle déjà établie en vague 4 (#034, doctrine ETC "Learn d'abord, édition en correction seulement"). Pour Lamp Control spécifiquement, l'édition directe semble carrément non fonctionnelle, pas seulement déconseillée. À noter comme règle forte pour ce sous-domaine particulier.
+
+## 091 — Deuxième confirmation indépendante, avec syntaxe complète pour deux macros (Lamp On / Lamp Off) (C)
+
+- **Fil source** : "Me Again - Eos Lamp On Command Macro"
+```
+[Learn] [Macro] [1] [Enter] [Channel Select] [Lamp On] [Enter] [Learn]
+[Learn] [Macro] [2] [Enter] [Channel Select] [Lamp Off] [Enter] [Learn]
+```
+- **Contexte du besoin exprimé** : allumer les lampes de fixtures (Mac 250 Krypton/Wash) en tout début de show, avec un délai de 5 minutes pour laisser le temps de calibration, intégré à la cue 1/1
+- **Confiance** : C, réponse d'un contributeur habituel, non contestée dans le fil
+- **Piège rapporté par l'auteur original du fil, non résolu explicitement** : en éditeur de macro Blind, la softkey "Lamp On" du CID ne fait rien apparaître dans la fenêtre de contenu de macro — alors que "Fixture Reset" fonctionne correctement dans le même contexte. Question posée si c'est lié au profil du fixture, restée sans réponse claire dans l'extrait consulté.
+- **Confiance de ce point** : D (comportement incohérent, cause non identifiée)
+- **Recoupement avec #090** : ce second témoignage indépendant confirme le même phénomène général (Lamp Control capricieux en édition directe), avec un niveau de détail différent (Lamp On fonctionne différemment de Fixture Reset) — renforce la crédibilité du problème sans le résoudre complètement
+
+## 092 — Où se configurent les Lamp Controls disponibles pour un fixture (C, confirmée, structurel plutôt que syntaxe de commande)
+
+- **Fil source** : "I can't find the Lamp Controls for a Custom Fixture"
+- <cite reformulé>En éditant un profil de fixture personnalisé, il ne faut pas ajouter un paramètre de la catégorie "control" avec des plages de valeurs configurées manuellement — il faut plutôt, après avoir ajouté le paramètre, presser la softkey "LampCtrls" et y ajouter les fonctions de reset voulues (par exemple Pan/Tilt Reset, Lamp Reset, Global Fixture Reset).</cite>
+- **Confiance** : C
+- **Statut** : configuration de patch/profil, en amont de tout usage en macro — pertinent pour comprendre pourquoi certains fixtures n'ont pas de Lamp Control disponible du tout (absence de configuration côté profil, pas un bug de macro)
+- **Thématique** : à cheval entre Sélection & patch et la nouvelle sous-catégorie Lamp Controls
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Première couverture réelle de Lamp Controls**, thématique identifiée comme manquante depuis la vague 4 (où elle n'apparaissait qu'en négatif, comme alternative recommandée par ETC à une macro pour l'édition de guirlande DMX temporisée — jamais creusée pour elle-même jusqu'ici)
+2. **Confirmation redondante et cohérente (deux fils indépendants) que Lamp Control ne se construit fiablement qu'en Learn**, jamais en édition directe — cas le plus net du corpus pour la règle déjà connue "Learn d'abord"
+3. **Syntaxe de commande confirmée et corrigée** : `Group <n> [enter] Lamp_control <fonction> [enter][enter]` (sans le premier "Lamp_controls" pluriel superflu)
+4. Reste non résolu : la cause exacte de l'incohérence de comportement entre différentes softkeys de Lamp Control (`Lamp On` vs `Fixture Reset`) en édition directe — signalé mais non expliqué dans les sources consultées
+
+<!-- ===== FIN : vague16_lamp_controls.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague17_magic_sheets_github.md ===== -->
+
+# Corpus — vague 17 : Magic Sheets approfondi + découverte dépôt GitHub ETC officiel
+
+Date de collecte : 29/07/2026
+
+---
+
+## 093 — Règle de conception Magic Sheet confirmée par plusieurs contributeurs convergents (C, bonne pratique)
+
+- **Fil source** : "Commands in Magic Sheet"
+- <cite reformulé>Si une action peut être faite directement en Command, il vaut mieux utiliser Command plutôt qu'une macro ; si nécessaire, apprendre la macro puis copier son contenu directement dans le champ texte de commande du bouton.</cite>
+- **Confiance** : C, avis convergent de plusieurs contributeurs
+- **Impact architecture** : suggère une hiérarchie de préférence pour ton moteur — privilégier la génération de commande texte directe (type Command) plutôt qu'une macro dédiée, quand c'est possible. Cohérent avec la philosophie déjà retenue de séparer représentation interne et moteurs de rendu : le "rendu Magic Sheet" pourrait être un troisième mode de sortie à envisager, à côté d'ASCII et OSC/clavier.
+
+## 094 — DÉCOUVERTE MAJEURE : dépôt GitHub officiel ETC Labs listant les clés OSC (à vérifier et exploiter en priorité)
+
+- **Fil source** : "Magic Sheet Target: Command"
+- **URL mentionnée dans le fil** : `github.com/ElectronicTheatreControlsLabs/OSCLayouts/blob/master/Eos OSC Keys.pdf`
+- **Confirmation dans le même fil** : <cite reformulé>les commandes utilisables en Magic Sheet de type Command sont généralement celles qu'on retrouve dans les macros — en cas de doute, la méthode recommandée reste d'apprendre la commande comme macro puis de l'observer.</cite> Un second contributeur confirme que les commandes OSC et les commandes de macro sont vraisemblablement les mêmes, avec une réserve : le PDF ne permet pas de distinguer visuellement laquelle est la véritable touche (key) parmi les entrées.
+- **Confiance** : **B/C** — dépôt communautaire ETCLabs, explicitement marqué non-officiel malgré le nom (voir correction en vague18 #100). Le PDF mentionné n'a pas été retrouvé dans le dépôt actuel (vague18 #101) — piste non aboutie.
+- **Impact architecture majeur** : si ce PDF existe et est à jour, c'est potentiellement **la meilleure source de grammaire OSC/macro trouvée à ce jour**, au même niveau que le dictionnaire OSC officiel déjà consulté en début de projet (Show Control Manual en ligne). **Action prioritaire de la prochaine vague : consulter directement ce PDF.**
+
+## 095 — NUANCE IMPORTANTE sur macro-dans-macro : confirmé en théorie, mais rapporté comme non fonctionnel dans au moins un cas réel (C, contredit partiellement #070)
+
+- **Fil source** : "Can a macro be referenced in another macro or in a Command button on a magic sheet?"
+- **Syntaxe confirmée par un contributeur, cohérente avec #070** : dans l'éditeur, taper `Macro Z Enter` à la fin d'une macro pour enchaîner vers la macro Z
+- **MAIS l'auteur original du fil rapporte explicitement que cette même syntaxe, dans son cas, ne fonctionne pas** : <cite reformulé>c'est la syntaxe qu'il essayait déjà d'utiliser, mais ça ne semble pas exécuter la macro Z depuis la macro A.</cite>
+- **Confiance** : C, mais c'est un signal direct et net de non-fiabilité
+- **Statut** : fil consulté sans résolution claire de la cause (pas de suite visible dans l'extrait) — **à traiter comme un cas de risque contextuel supplémentaire**, potentiellement lié au mode Foreground/Background (cohérent avec le pattern déjà établi ailleurs dans le corpus) ou à un autre facteur non identifié
+- **Impact sur le référentiel** : le mécanisme de macro-dans-macro, bien que confirmé niveau A dans son principe syntaxique (#070, manuel officiel), **n'est visiblement pas garanti fonctionner dans toutes les configurations**. À rétrograder d'un niveau de confiance opérationnelle : la syntaxe est officiellement correcte, mais l'exécution fiable reste à valider au banc avant de baser une fonctionnalité critique de génération en masse dessus sans filet.
+
+## 096 — Piège de syntaxe non-évidente pour la navigation entre vues de Magic Sheet (C, motif de "chaîne figée")
+
+- **Fil source** : "Magic Sheet view macro"
+- **Symptôme rapporté** : une macro destinée à naviguer vers une vue/partie spécifique d'un Magic Sheet (`magic_sheet>1>part>1`), bien que syntaxiquement identique à un ancien fichier fonctionnel, ne se comporte pas de la même façon — le nombre attendu ne peut être modifié comme dans l'original, qui était stocké comme une seule chaîne non modifiable (`'10 part 1'`)
+- **Résolution finale** : erreur opérateur — un bouton et un texte étaient groupés par erreur, redirigeant le focus d'édition vers le mauvais objet
+- **Confiance** : D pour la cause du problème initial (résolu comme erreur humaine, pas un vrai piège système) mais **information utile en creux** : ceci confirme que la commande de navigation Magic Sheet peut être stockée comme une chaîne figée non-paramétrable dans certains contextes — pertinent si ton outil génère un jour ce type de navigation
+- **Thématique** : Affichage/interface
+
+## 097 — Pattern avancé : feedback visuel dynamique sur bouton Magic Sheet, deux méthodes documentées (C, motif directement transposable)
+
+- **Fil source** : "Colour Changing Buttons on Magic Sheets"
+- **Méthode 1 (changement de couleur du bouton)** : deux color palettes factices sur un channel dummy (l'une rouge, l'autre verte), copiées alternativement vers une palette "active" référencée par l'objet bouton via `Copy_to`
+- **Méthode 2 (changement de label du bouton, jugée préférée par les contributeurs)** :
+```
+Macro 101 (ON) se termine par : Copy Macro 102 to 100
+Macro 102 (OFF) se termine par : Copy Macro 101 to 100
+```
+Le bouton Magic Sheet référence toujours Macro 100, réglé pour afficher son label plutôt qu'un texte fixe — chaque pression fait basculer le label affiché
+- **Confiance** : C, plusieurs contributeurs, méthode confirmée comme fonctionnelle par l'auteur original du fil après clarification
+- **Impact majeur** : **troisième confirmation indépendante et concrète du mécanisme d'auto-modification de macro** (`Copy Macro X to Y` exécuté depuis l'intérieur d'une macro elle-même) — fait écho direct à l'entrée D peu fiable de la toute première vague (#011, "parking macro auto-modifiante", jugée alors confuse et non reproductible). Ici la même logique de fond est confirmée avec une syntaxe claire et un cas d'usage cohérent. **Reclassification recommandée** : ce motif passe de "D, non reproductible" à "C, confirmé par un cas indépendant et clair" — à mettre à jour rétroactivement dans le référentiel.
+
+## 098 — Confirmation supplémentaire de motif Query avec paramétrage relatif (C, nouvelle famille)
+
+- **Fil source** : "Magic Sheet...is this possible?"
+```
+select_last_params @ +01 Enter
+select_last_params @ + -01 Enter
+```
+- **Fonction déclarée** : sélectionne le dernier fixture/attribut travaillé et ajoute ou soustrait 1 à sa valeur — équivalent macro du raccourci clavier Shift+At
+- **Confiance** : C
+- **Intérêt** : nouvelle variante de la famille `Select_Last` déjà bien documentée, avec incrémentation relative — pertinent pour tout scénario de réglage fin généré par ton traducteur
+
+## 099 — Clear Sneak Enter en Magic Sheet : Command préféré à macro (C, confirme #093)
+
+- **Fil source** : "Magic Sheet- button or macro for clear-sneak-enter?"
+- Confirmation pratique et directe de la règle #093 : l'auteur du fil confirme avoir utilisé l'option Command (texte `Clear Sneak Enter` dans le champ commande) plutôt qu'une macro dédiée, et que "ça a marché comme un charme"
+- **Confiance** : C, confirmation directe par test réel
+- **Thématique** : Affichage/interface, Navigation/conduite
+
+---
+
+## Synthèse — apports de cette vague (riche en révisions et nuances importantes)
+
+1. **Découverte prioritaire pour la prochaine vague** : dépôt GitHub `ElectronicTheatreControlsLabs/OSCLayouts`, contenant potentiellement un PDF exhaustif des clés OSC — à consulter directement en premier lieu
+2. **Nuance majeure sur macro-dans-macro** (#095) : le mécanisme est officiellement correct en syntaxe (déjà confirmé A) mais son exécution fiable n'est pas garantie dans tous les contextes — à traiter avec la même prudence que les autres cas de risque contextuel du référentiel, malgré son statut de confiance syntaxique élevé
+3. **Reclassification recommandée** du motif d'auto-modification de macro (`Copy Macro X to Y` depuis l'intérieur d'une macro) : de D (premier témoignage confus) à C (confirmé par un second cas clair et cohérent, #097)
+4. **Règle de conception confirmée** : privilégier Command à macro quand c'est possible (#093, #099) — pertinent pour la hiérarchie de rendu de ton moteur
+
+## Actions à reporter dans le référentiel
+
+- Ajouter au tableau de risques : macro-dans-macro (`Macro <n> Enter` en fin de macro) — syntaxe correcte confirmée A, mais exécution fiable non garantie selon contexte (C, #095)
+- Reclassifier l'entrée #011 (vague 1) de D vers C, avec renvoi vers #097 comme confirmation croisée
+
+<!-- ===== FIN : vague17_magic_sheets_github.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague18_correction_etclabs.md ===== -->
+
+# Corpus — vague 18 : correction de statut ETCLabs, PDF introuvable
+
+Date de collecte : 29/07/2026
+
+---
+
+## 100 — CORRECTION DE CONFIANCE : ETCLabs/OSCLayouts est explicitement non-officiel (invalide partiellement l'optimisme de vague 17 #094)
+
+- Le dépôt GitHub `ETCLabs/OSCLayouts` (anciennement sous le nom d'organisation `ElectronicTheatreControlsLabs`, d'où l'URL trouvée dans le forum) affiche explicitement dans son README : <cite>ce n'est pas un logiciel ETC officiel. Le support ETC ne connaît pas ces outils et ne pourra pas aider en cas de problème.</cite>
+- <cite>Les layouts de ce projet sont développés par une combinaison d'utilisateurs finaux et d'employés ETC sur leur temps libre.</cite>
+- **Confiance corrigée** : **C/B**, pas A. C'est un espace communautaire officieux, avec participation d'employés ETC à titre personnel — plus fiable qu'un forum anonyme, mais pas une source normative au même titre que la documentation officielle ETC (etcconnect.com, support.etcconnect.com).
+- **Correction à appliquer** : la mention "confiance A potentielle" faite en vague 17 (#094) était trop optimiste et doit être révisée à B/C dans toute référence future.
+
+## 101 — Le PDF "Eos OSC Keys.pdf" mentionné dans le forum n'a pas été retrouvé dans le dépôt actuel
+
+- Recherche effectuée directement dans le dépôt cloné (`ETCLabs/OSCLayouts`, état au 29/07/2026) : aucun fichier nommé "Eos OSC Keys" ou équivalent
+- Le dépôt contient en revanche plusieurs layouts pour l'application tierce TouchOSC (`.touchosc`), utiles pour comprendre des mappings d'usage réel mais **pas une liste de référence de grammaire**
+- **Statut** : piste **non aboutie**. Le lien mentionné dans le fil forum (2019) semble caduc — soit le fichier a été supprimé/déplacé depuis, soit il n'a jamais été committé dans la branche principale accessible aujourd'hui.
+- **Autres dépôts ETCLabs identifiés en passant, potentiellement utiles pour plus tard** : `OSCRouter` (routage de paquets OSC/UDP, pourrait intéresser l'architecture de transport de ton outil), `sACN` (implémentation ANSI E1.31, hors périmètre macro mais pertinent si le projet s'étend un jour au DMX direct)
+
+## Discipline méthodologique à noter pour la suite
+
+Ce constat d'échec est volontairement documenté plutôt que passé sous silence, conformément à l'engagement de vigilance de Cy ("dire je ne sais pas plutôt qu'extrapoler"). Toutes les pistes ne mènent pas à une découverte exploitable — c'est une information utile en soi pour ne pas revenir sur cette voie sans raison nouvelle.
+
+---
+
+## Synthèse de cette vague
+
+1. Correction de confiance sur l'écosystème ETCLabs — à traiter comme C/B, jamais A
+2. Piste PDF "Eos OSC Keys" non aboutie — abandonnée pour l'instant, faute de fichier retrouvable
+3. Deux dépôts annexes repérés (OSCRouter, sACN) — hors périmètre immédiat, notés pour référence future
+
+<!-- ===== FIN : vague18_correction_etclabs.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague19_midi_show_control.md ===== -->
+
+# Corpus — vague 19 : MIDI Show Control (approfondissement)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 102 — Commandes MSC supportées par Eos, confirmées officiellement (source A)
+
+- Source : etcconnect.com/WebDocs, page "System > Show Control" (manuel v3.3.6) + article support dédié
+- <cite reformulé>Quand Eos reçoit une commande depuis une source MIDI, il reconnaît et prend en charge : Go (exécute une cue), Stop (met en pause une cue), Resume (reprend une cue en pause), Set (contrôle un submaster, un playback, ou le grandmaster), Fire (exécute une macro).</cite>
+- **Confiance** : A
+- **Précisions officielles complémentaires (source A, manuel v3.3.6)** :
+  - <cite>Le réglage "envoi MSC" est désactivé par défaut ; une fois activé, la console peut envoyer des messages MSC pour les actions effectuées dessus, comme les actions de cue, le déclenchement de macros, et les bumps de submaster.</cite>
+  - <cite>Les commandes MSC peuvent être envoyées à l'ID 127, l'ID de périphérique "All Call" ; bien qu'Eos ne puisse pas être réglé sur l'ID 127 lui-même, il répond aux commandes envoyées à cet ID.</cite>
+- **Thématique** : Show Control — MIDI, complète significativement cette catégorie
+
+## 103 — Nature technique du protocole MSC : SysEx hexadécimal (source A, article support dédié)
+
+- Source : support.etcconnect.com, "Understanding the MSC Commands Eos Family Receives and Transmits"
+- <cite reformulé>Les commandes MSC qu'Eos peut recevoir ou envoyer sont très spécifiques et préprogrammées dans le logiciel. L'information littérale est transmise via un langage particulier appelé "chaîne hexadécimale". MIDI Show Control est un sous-ensemble du standard MIDI connu sous le nom de "SysEx" (System Exclusive), généralement représenté en format hexadécimal.</cite>
+- <cite reformulé>La plupart du temps, les utilisateurs interagissent avec un logiciel intermédiaire qui traduit une information simple, comme "Go Cue#" ou "Macro#", vers cette chaîne hexadécimale.</cite>
+- **Confiance** : A
+- **Impact architecture** : confirme que le niveau d'abstraction pertinent pour ton outil est bien "Go Cue#" / "Macro#" (haut niveau, déjà celui de toute la grammaire collectée jusqu'ici), pas le hex SysEx bas niveau — rassurant pour la cohérence de l'approche retenue depuis le début, MSC n'introduit pas de nouvelle couche de complexité à gérer directement dans le traducteur si l'outil reste au niveau OSC/commande plutôt que MIDI brut
+
+## 104 — QLab via OSC : alternative moderne à MSC, article officiel dédié identifié mais fil communautaire obsolète signalé comme tel
+
+- **Fil source** : "A guide to triggering Qlab cues from Eos over OSC" — **fil verrouillé par un modérateur avec la mention explicite que son contenu est obsolète**, renvoi vers un article support à jour : "Triggering QLab from Eos using OSC"
+- <cite reformulé>Depuis la version 2.3, il est possible de déclencher des cues QLab via OSC. OSC fonctionne comme MIDI Show Control mais en mieux, sur des protocoles réseau modernes comme TCP ou UDP — plus besoin de matériel MIDI, juste une connexion réseau entre l'ordinateur QLab et le réseau lumière Eos.</cite>
+- **Détail technique confirmé** : Eos et QLab utilisent des adresses OSC légèrement différentes (`/eos/out/event/cue/1/2/fire` côté Eos vs `/cue/2/start` côté QLab attendu), nécessitant un routeur de conversion (OSCRouter, déjà repéré en vague 18 comme dépôt ETCLabs)
+- **Confiance** : A pour le principe général (renvoi vers article support explicitement à jour), C pour les détails d'implémentation (fil verrouillé, donc non vérifié à la source primaire dans cette vague)
+- **Statut** : **article support "Triggering QLab from Eos using OSC" non encore consulté directement** — bonne cible pour une prochaine vague si le sujet redevient pertinent
+- **Thématique** : Show Control — interopérabilité, nouvelle sous-thématique
+
+## 105 — Piège classique de MIDI confirmé par plusieurs contributeurs : mauvais mode MIDI (C, bonne pratique de diagnostic)
+
+- **Fils sources** : "Using MIDI with Element", "Show Cue System"
+- <cite reformulé>MIDI recouvre une vingtaine de "saveurs" différentes ; pour ce type d'usage (avancer des cues depuis un ordinateur), il faut s'assurer d'utiliser spécifiquement MSC (MIDI Show Control), et vérifier que la réception MSC est bien activée dans les réglages Show Settings de la console.</cite>
+- **Confiance** : C, mais recoupé par plusieurs fils indépendants avec la même cause de dysfonctionnement
+- **Piège complémentaire signalé** : mauvais port/connecteur MIDI physique branché, erreur fréquente selon un contributeur expérimenté
+- **Thématique** : Show Control, diagnostic pratique — pertinent si ton outil doit un jour intégrer une checklist de dépannage pour les utilisateurs non-experts
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Confirmation officielle A de la liste complète des commandes MSC** reconnues par Eos : Go, Stop, Resume, Set, Fire — clôt la question ouverte depuis le début sur cette thématique
+2. **Confirmation rassurante pour l'architecture** : le niveau hexadécimal SysEx reste caché derrière une couche d'abstraction "Go Cue#"/"Macro#" — cohérent avec le niveau d'abstraction déjà retenu pour tout le projet
+3. **Piste OSC/QLab identifiée mais non approfondie** — pertinent si le périmètre du projet s'étend un jour à l'interopérabilité avec d'autres logiciels de spectacle, actuellement hors scope (le projet vise EOS spécifiquement)
+4. Thématique Show Control désormais bien couverte : Learn/timecode (vague 8), analogique/contacts secs (vague 11), et maintenant MIDI/MSC — reste OSC show-control détaillé déjà couvert en tout début de projet (dictionnaire OSC officiel)
+
+<!-- ===== FIN : vague19_midi_show_control.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague20_send_string_bugs_officiels.md ===== -->
+
+# Corpus — vague 20 : Send_String, bug officiel ETC avec ticket de suivi
+
+Date de collecte : 29/07/2026
+
+---
+
+## 106 — BUG OFFICIELLEMENT ENREGISTRÉ PAR ETC : Send_String ajoute un retour chariot parasite en macro multi-lignes (B/A, ticket de suivi confirmé)
+
+- **Fil source** : "Send String includes /r when used in a multi-line macro"
+- **Symptôme confirmé** : quand un `[Enter]` suit une commande `Send_String` dans une macro, la sortie OSC inclut un caractère `/r` parasite — problématique car ce caractère devient une partie non désirée de l'adresse OSC envoyée, cassant l'intégration avec des logiciels tiers
+- **RÈGLE DE CONTOURNEMENT CONFIRMÉE, à retenir absolument** : <cite reformulé>`Send_String` doit toujours être la toute dernière commande d'une macro multi-lignes.</cite>
+- **Suivi officiel confirmé** : un intervenant du forum (rôle technique identifiable) indique avoir créé le ticket **[EOS-55864]** "Macro Send String includes /r when part of a multi-line macro" pour suivre la correction. Un second message, plus récent dans le fil, confirme que le bug est **toujours présent dans la version courante au moment du post**, et signale qu'il affecte aussi les objets Magic Sheet de type Command utilisant une chaîne OSC sans argument.
+- **Confiance** : **B/A** — ticket de suivi ETC nommé et confirmé, c'est aussi proche d'une source officielle qu'un fil communautaire peut l'être
+- **Statut** : bug confirmé actif au moment de la dernière observation dans le fil (2022+), statut actuel (2026) non revérifié séparément — **à vérifier lors du premier accès console**, mais la règle de contournement (Send_String en dernière position) doit être appliquée par défaut par ton moteur de génération, qu'elle soit encore nécessaire ou non
+- **Impact architecture majeur** : **règle de génération non négociable pour le moteur OSC/macro** — toute macro générée par ton traducteur contenant `Send_String` doit systématiquement placer cette commande en toute dernière position de la séquence.
+
+## 107 — Second bug confirmé et documenté : Send_String multiples fusionnés en un seul paquet UDP en contexte Client (B, ticket confirmé, cause identifiée)
+
+- **Fil source** : "Send Multiple UDP Strings"
+- **Symptôme initial rapporté** : une macro contenant deux commandes `Send_String` successives n'envoie que le contenu de la première, la seconde semblant ignorée
+- **Ticket de suivi confirmé** : **[EOS-53576]**, avec sortie brute observée montrant les deux chaînes concaténées en un seul paquet UDP malformé : `pst act ShoHseFL, Global, 0 Send_Stringgrp tog WhitesMS, Global, 0`
+- **Cause identifiée précisément par un contributeur technique, après investigation approfondie avec Wireshark** : <cite reformulé>en test direct sur la console Primary, les deux messages partent bien séparément (visible en Tab 99 Diagnostics et confirmé par capture réseau, ~0.025 seconde d'écart). Le problème n'apparaît que lorsque la macro est déclenchée depuis un Client plutôt que directement sur la console Primary.</cite>
+- **Contournement suggéré** : ajouter un `Macro_Wait` (valeur suggérée : 0.1, voire 0.01) entre les deux commandes `Send_String` pour laisser le temps aux paquets de partir séparément
+- **Confiance** : B, diagnostic technique rigoureux avec preuve réseau (Wireshark), ticket nommé
+- **Statut** : confirmé sur v2.9.2.8 et v3.1.2.20 par le même contributeur — bug de longue date, pas une régression récente
+- **Impact architecture** : **second cas de fragilité confirmé spécifiquement lié au contexte Client vs Primary** (fait écho au facteur Foreground/Background déjà bien documenté, mais ici c'est un troisième facteur de risque contextuel distinct : la topologie multiconsole elle-même). Règle de génération à ajouter : si une macro contient plusieurs `Send_String` consécutifs et pourrait être déclenchée depuis un Client, insérer un `Macro_Wait` de sécurité entre chacun.
+
+## 108 — Syntaxe complète et confirmée de Send_String (C, avec exemple détaillé issu d'un blog technique tiers de qualité)
+
+- Source : blog.etcconnect.com (blog officiel ETC, mais l'article lui-même est de la plume d'un tiers expert — à traiter comme B, pas A pur)
+- **Syntaxe confirmée** :
+```
+Send_String /cue/1/start=1,3.142,"a string with spaces"
+```
+- **Fonction déclarée** : transmet un message OSC au format adresse=arguments séparés par virgules, les arguments texte devant être entre guillemets s'ils contiennent des espaces
+- **Confiance** : B
+- **Avantage de l'usage en macro (plutôt qu'en commande directe de cue) confirmé** : <cite reformulé>une macro peut servir de référence unique dans tout le showfile — reliée à une cue, ciblée depuis un objet Magic Sheet, ou déclenchée depuis un fader. Si par exemple la première cue QLab du show n'est plus la cue 1 mais devient 0.5, il suffit de mettre à jour la macro pour que le changement se répercute partout dans le showfile.</cite>
+- **Impact** : confirme et illustre concrètement, avec un cas d'usage réel, l'intérêt de l'indirection déjà identifiée comme stratégie de génération en masse (vague 2 #020, vague 10 #070 confirmé A) — ici appliquée à une problématique différente (maintenance de synchronisation cross-logiciel) mais avec la même logique de fond
+
+## 109 — Limite confirmée : pas de préfixe `local:` disponible en macro pour de l'auto-adressage OSC (C, workaround documenté)
+
+- **Fil source** : "Self Targeting Osc from local Macro"
+- **Besoin exprimé** : depuis une macro, déclencher une commande qui normalement nécessite un envoi OSC vers soi-même (la console cible ses propres entrées OSC) — l'auteur cite l'exemple du bouton Stop/Back du playback principal, `Send_String /eos/key/stop=1`
+- <cite reformulé>Le préfixe `local:` existe pour les objets Magic Sheet mais ne semble pas fonctionner depuis une macro.</cite>
+- **Contournement rapporté par l'auteur lui-même** : router le TX UDP directement vers le RX OSC de la même console, au prix d'un trafic réseau superflu qu'il aimerait éviter
+- **RÉSOLUTION APPORTÉE PAR UN AUTRE CONTRIBUTEUR, syntaxe directe et simple** : <cite reformulé>il existe une commande native `Go_0`, trouvable dans le champ de recherche de l'éditeur de macro, qui fait exactement cela sans détour OSC.</cite>
+- **Confiance** : C pour le problème, mais la solution `Go_0` est directement vérifiable et cohérente avec la liste de recherche déjà en partie capturée (vague 12) — même si `Go_0` lui-même n'apparaissait pas dans la portion F→M déjà transcrite
+- **Impact** : **confirmation supplémentaire, très concrète, que la liste de recherche de l'éditeur contient des solutions directes à des besoins que la communauté résout parfois de façon détournée** — renforce encore la priorité, déjà notée, de capturer cette liste dans son intégralité si l'occasion se présente
+
+## 110 — Bug USB OSC distinct (lighthack/#lighthack), Send_String limité au réseau (C, non résolu dans le fil, périphérique au projet)
+
+- **Fil source** : "Eos Macro Send_String function not working with USB OSC"
+- <cite reformulé>Les messages générés par Send_String ne sortent que sous forme de paquets OSC UDP réseau — rien n'est envoyé via la route USB OSC vers un périphérique comme un Arduino.</cite>
+- **Explication technique avancée par un contributeur** : <cite reformulé>Send_String semble par défaut toujours transmis en UDP vers l'adresse IP configurée dans les réglages de transmission OSC (osctxip) ; l'OSC sur USB est une fonctionnalité relativement récente et l'initiation de commandes depuis la console vers ce canal ne semble pas avoir été traitée. Le périphérique USB reçoit les événements auxquels il est abonné et tout ce qui répond aux transmissions du périphérique, mais pas les envois initiés côté console.</cite>
+- **Confiance** : C, non résolu explicitement comme un vrai bug confirmé par ETC dans cet extrait (contexte #lighthack = programme communautaire de hacking matériel autour d'EOS, hors périmètre直接 de ton projet actuel)
+- **Statut** : périphérique, à ne pas prioriser — pertinent seulement si ton architecture évolue un jour vers du matériel USB direct plutôt que réseau OSC pur
+
+---
+
+## Synthèse — apports de cette vague (très riche en règles de génération directement actionnables)
+
+1. **Deux bugs officiellement suivis par ETC (tickets nommés)** — la vague la plus solide en termes de confirmation officielle depuis le début du corpus, hors documentation pure
+2. **Deux règles de génération non négociables à intégrer dans le moteur** :
+   - `Send_String` toujours en dernière position d'une macro multi-lignes
+   - `Macro_Wait` de sécurité entre plusieurs `Send_String` consécutifs si déclenchement possible depuis un Client
+3. **Nouvelle commande utile découverte** : `Go_0` — équivalent direct du Stop/Back du playback principal, sans détour OSC
+4. **Confirmation supplémentaire de l'intérêt de l'indirection macro** pour la maintenabilité cross-logiciel (QLab)
+
+## Mise à jour du référentiel de risques
+
+Ajouter :
+- `Send_String` suivi d'un `[Enter]` en macro multi-lignes → génère un `/r` parasite dans l'adresse OSC (bug ETC-55864, B/A) — règle : toujours en dernière position
+- `Send_String` multiples consécutifs déclenchés depuis un Client (pas Primary) → risque de fusion en un seul paquet UDP malformé (bug ETC-53576, B) — règle : `Macro_Wait` entre chaque
+
+<!-- ===== FIN : vague20_send_string_bugs_officiels.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague21_affichage_flexi_snapshots.md ===== -->
+
+# Corpus — vague 21 : Affichage, Flexi, Snapshots (approfondissement)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 111 — Piège confirmé et contournement officieux : "Encoder Display" non capturable en macro (C, solution de contournement fonctionnelle)
+
+- **Fil source** : "Encoder Display macro"
+- **Symptôme** : naviguer vers une page d'encodeur spécifique (ex: "Shutter Page 2/2") ne génère aucune syntaxe capturable dans l'éditeur de macro
+- **Contournement confirmé par un contributeur expérimenté** : <cite reformulé>enregistrer un Snapshot qui n'inclut que les encodeurs, puis appeler ce Snapshot depuis une macro. Technique utilisée fréquemment avant l'introduction des Flexi encoders, et aussi en travaillant avec des serveurs média — dans ce cas, ajouter `[Select Last]` dans la macro après le déclenchement du Snapshot.</cite>
+- **Confiance** : C, mais méthode confirmée comme éprouvée dans le temps par son auteur
+- **Impact architecture** : **nouveau motif de contournement générique à retenir** — quand une action d'affichage/interface n'est pas directement capturable en macro (comme déjà vu pour `More_SoftKeys`/`Open_Browser` en vague 4, et pour la navigation Encoder ici), le Snapshot peut servir de pont. Ce motif ("Snapshot + Select Last comme substitut à une commande non macro-capturable") mérite d'être ajouté comme stratégie de repli générale dans le référentiel, pas seulement documenté au cas par cas.
+
+## 112 — Confirmation, par un second témoignage indépendant, que les macros contournent d'elles-mêmes le problème de changement d'onglet (C, rassurant)
+
+- **Fil source** : "Macro syntax help" (déjà en corpus, vague 14 #084)
+- **Nouvelle information tirée du même fil, non exploitée en vague 14** : après que l'utilisateur ait passé 45 minutes à essayer de comprendre comment forcer un changement d'onglet (vers la vue IP/Intensity Palette) depuis une macro, un contributeur répond : <cite reformulé>il n'est pas nécessaire d'y penser explicitement — il suffit d'enregistrer la macro normalement, et le changement d'onglet nécessaire y sera inclus automatiquement.</cite>
+- **Confiance** : C
+- **Impact** : ceci **nuance positivement** l'inquiétude soulevée par le témoignage plus large déjà noté en #084 — certains aspects de navigation d'affichage, bien que non évidents à construire depuis l'éditeur à froid, se capturent correctement via Learn. Cohérent avec la doctrine déjà bien établie "Learn d'abord" — encore un cas qui la confirme.
+
+## 113 — Confirmation officielle du terminateur de chaîne en Show Control String Input (source A, complète #076)
+
+- Source : supplément manuel v2.5.0/v2.6.x
+- <cite reformulé>Pour une entrée de type String Input (incluant OSC et chaînes ASCII/UDP), l'appareil émetteur doit ajouter "SC" (sensible à la casse) au début de la chaîne. La chaîne doit être terminée par un retour chariot (hex 0D), \r, ou #.</cite>
+- **Confiance** : A
+- **Impact** : précise et complète l'information déjà notée en vague 11 (#076, retour chariot systématique en sortie Eos) — ici côté réception (String Input), avec la précision supplémentaire du préfixe `SC` obligatoire et des trois terminateurs acceptés (hex 0D, `\r`, ou `#`). Cohérent avec le terminateur `#` déjà vu dans la syntaxe `/eos/cmd="Chan 1 At 75#"` du dictionnaire OSC officiel consulté en tout début de projet.
+
+## 114 — Confirmation officielle : contrôle du contenu d'un Snapshot affiné en v2.6 (source A)
+
+- Même supplément manuel
+- <cite reformulé>Depuis la version 2.6, un contrôle plus fin est disponible sur ce qui est inclus dans un Snapshot. Lors de l'enregistrement, un aperçu de tous les displays tels qu'ils seront enregistrés est visible, avec possibilité de sélectionner/désélectionner divers composants, moniteurs, cadres, etc.</cite>
+- **Confiance** : A
+- **Impact direct sur #111** : ceci confirme et enrichit la faisabilité technique du motif "Snapshot encodeurs uniquement" décrit plus haut — la sélectivité fine du contenu de Snapshot est une fonctionnalité officiellement documentée, pas une astuce fragile
+
+## 115 — Confirmation officielle : {Flexi}/{Select}/{Expand} comme famille de softkeys d'affichage cohérente (source A)
+
+- Même supplément manuel
+- <cite>Use Select affiche le bouton {Select}. Use Flexi affiche le bouton {Flexi}. Use Expand affiche le bouton {Expand}. Use Arrows affiche les flèches de pagination haut/bas.</cite>
+- **Confiance** : A
+- **Thématique** : Affichage/interface — précise le fonctionnement de configuration de ces boutons, cohérent avec les mentions déjà éparses de `{Flexi}` (vague grammaire initiale, `{View Chans}`) et `[Select]` (vague 10, sortie d'édition de macro)
+
+## 116 — Recommandation officielle pour les templates de showfile : snapshots organisés par Flexi state usuel (B, blog ETC, bonne pratique)
+
+- Source : blog.etcconnect.com, "Eos Template Show File Creation: Settings and Snapshots"
+- <cite reformulé>Il est recommandé de préparer des snapshots avec les displays de channels dans le format et l'état Flexi le plus utilisé — par exemple format résumé avec Flexi Active, et/ou format tableau avec Flexi Patched.</cite>
+- **Confiance** : B (article officiel du blog ETC, signé par un auteur identifié, bonne pratique plutôt que fait technique strict)
+- **Impact** : renforce indirectement la pertinence du motif Snapshot pour ton outil — si ETC recommande officiellement de préparer des snapshots comme brique de base réutilisable de showfile, ça légitime encore davantage l'usage de ce mécanisme comme solution générique de contournement pour l'affichage en macro (#111)
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Nouveau motif de contournement générique identifié et à formaliser** : Snapshot + `[Select Last]` comme pont pour toute action d'affichage non capturable directement en macro — à ajouter comme stratégie standard dans le référentiel, au même titre que les trois stratégies de génération en masse déjà identifiées
+2. **Précision officielle sur le terminateur de String Input Show Control** (`SC` en préfixe, `\r`/hex 0D/`#` en terminateur) — complète le protocole bas niveau déjà entamé en vague 11
+3. **Confirmation supplémentaire, redondante, de la doctrine "Learn d'abord"** — le changement d'onglet s'auto-résout en Learn, cohérent avec tout ce qui a été établi jusqu'ici sur ce point
+
+## Mise à jour à faire dans le référentiel
+
+Ajouter aux stratégies de contournement génériques (à côté des 3 stratégies de génération en masse déjà listées en vague 7) :
+- **Snapshot + `[Select Last]`** comme pont pour toute action d'affichage/interface non capturable directement en macro (encodeurs, pages spécifiques, etc.)
+
+<!-- ===== FIN : vague21_affichage_flexi_snapshots.md ===== -->
+
+---
+
+<!-- ===== DEBUT : vague22_mark_automark.md ===== -->
+
+# Corpus — vague 22 : Mark / AutoMark (approfondissement)
+
+Date de collecte : 29/07/2026
+
+---
+
+## 117 — Mécanique complète d'AutoMark, confirmée en détail (C, réponse très complète et pédagogique d'un contributeur expérimenté)
+
+- **Fil source** : "Auto Mark"
+- **Principe confirmé** : <cite reformulé>quand une cue fait passer l'intensité d'un projecteur de zéro/éteint vers un niveau actif, et qu'il y a en même temps une transition de paramètre non-intensité (couleur, position...), la console exécute ce mouvement non-intensité dans la cue immédiatement précédente. Si la cue précédente contient elle-même une extinction vers zéro pour ces mêmes channels, la console attend que les lumières atteignent zéro avant de déplacer focus/couleur/gobo.</cite>
+- **Indicateur visuel confirmé** : un "M" apparaît dans le champ flags de la cue list pour toute cue dont les mouvements seront effectivement exécutés en avance dans la cue précédente
+- **Mécanisme de désactivation ponctuelle confirmé** : `[Cue]` ou `[Record]` avec AutoMark activé fait apparaître "S6 = Automark Off" — sélectionner cette option désactive l'auto-mark pour cette cue/part précise, indiqué par un "D" dans les flags
+- **Confiance** : C, mais cohérence totale avec la doc et usage détaillé pédagogique
+- **Syntaxe directe confirmée pour un mark avec décimale** : `[Mark] [6] [.] [9] [9] [Enter]` déclenche un prompt "Create Mark Cue?" ; valider crée automatiquement la cue 6.99 et y effectue le marking, évitant de passer par Blind manuellement
+
+## 118 — BUG CONFIRMÉ ET NON RÉSOLU : {Enable}/{Disable} pour le marking ne fonctionne pas comme prévu en macro (C, contredit directement la doctrine officielle déjà en corpus)
+
+- **Fil source** : "Marking"
+- **Question posée dans le fil** : <cite reformulé>est-il possible d'utiliser l'option enable/disable dans les macros pour le marking ? Je n'arrive pas à le faire fonctionner.</cite>
+- **Réponse d'un autre contributeur, non résolutive** : <cite reformulé>ça continue à se comporter comme un toggle, ou du moins c'est le cas sur l'OLE (Offline Editor).</cite>
