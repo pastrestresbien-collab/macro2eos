@@ -17,6 +17,7 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 | Comparaison eosKeys.ts ↔ table officielle « Eos OSC Keys » du manuel v3.2.0 | [`reference/eosKeys_vs_manual_comparison.md`](reference/eosKeys_vs_manual_comparison.md) | ✅ 1152/1155 entrées identiques ; écarts documentés (résout corpus #148) |
 | Journal d'observations terrain nomad réel (projet xtouch2Eos, source de la vague 28) | [`reference/JOURNAL_observations_nomad.md`](reference/JOURNAL_observations_nomad.md) | ✅ Reçu, intégré tel quel (source S) |
 | Compléments du journal utiles à macro2eos (au-delà de la vague 28) | [`reference/JOURNAL_nomad_complements.md`](reference/JOURNAL_nomad_complements.md) | ✅ `/eos/macro/.../fire` confirmé, Assert sans mot-clé cmd, syntaxe wheel coarse/fine/home |
+| EOS OSC Support — Supported OSC Commands (ETCLabs/EosSyncLib, 2017) | [`reference/Supported_OSC_Commands.md`](reference/Supported_OSC_Commands.md) | ✅ Converti intégralement (PDF source inclus) — colonne « Min Eos Version » par commande, absente du manuel v3.2.0 |
 
 ## Manuels convertis en Markdown
 
