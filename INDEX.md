@@ -3,6 +3,10 @@
 Corpus de référence sur la syntaxe et la grammaire des consoles ETC Eos,
 destiné à un outil de traduction langage naturel → macros Eos (injection OSC / ASCII).
 
+**Point d'entrée** : [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md)
+pour la syntaxe Eos de référence · [`PLANNING.md`](PLANNING.md) pour l'état d'avancement
+et le backlog de travail.
+
 ## Corpus de collecte (grammaire, macros, risques)
 
 | Document | Emplacement | Statut |
@@ -52,6 +56,9 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
   et avéré (voir `CLAUDE.md`, règle n°2).
 - `SOURCES.md` — URLs officielles vérifiées de chaque document + miroirs.
 - `VERIFICATION.md` — rapport d'intégrité (couverture texte source ↔ Markdown).
+- `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
+  valider au banc réel.
+- `CLAUDE.md` — règles de travail pour toute session sur ce dépôt.
 
 ## Règle de fidélité
 

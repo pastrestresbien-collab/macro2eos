@@ -17,6 +17,13 @@ Dernière mise à jour : 29/07/2026 — eosKeys.ts intégré (1155 touches offic
 
 ## Point d'entrée recommandé
 
+> **⚠️ Note de session (2026-08-01) — ce pointeur est périmé.** Le point d'entrée
+> actuel est **[`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](../reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md)**,
+> écrit après l'import du manuel officiel complet (32 chapitres) et qui résout
+> plusieurs incertitudes de la grammaire ci-dessous. La section
+> « GRAMMAIRE CONSOLIDÉE » de ce fichier reste comme trace d'audit historique.
+> Le backlog de travail vivant est dans [`PLANNING.md`](../PLANNING.md).
+
 **`GRAMMAIRE_CONSOLIDEE.md`** — vue par thématique. **`vague29_eoskeys_integration.md`** — corrections les plus importantes du corpus, à lire avant toute utilisation de la grammaire pour la conception.
 
 ## Fichiers du corpus
@@ -107,6 +114,14 @@ Palettes : `[Record] [Color Palette] [n] [Label] <nom> [Enter]`, `{By Type}`, `{
 Divers : `[At][Enter]` (release), `Copy To`, `Move_To`, `CueOnlyTrack`, `Effect_Edit` (non confirmé fonctionnel — D)
 
 ## Prochaines thématiques à couvrir (non encore traitées en profondeur)
+
+> **✅ Note de session (2026-08-01) — liste caduque.** Ces cinq thématiques sont
+> désormais **toutes couvertes** par le manuel officiel importé depuis :
+> Show Control → `manuals/operations-manual/31-show-control.md` (MIDI Show Control,
+> OSC, timecode) ; navigation/conduite → `16-cue-playback.md` ; multiconsole/User ID →
+> `29-multi-console.md` ; sécurité/exploitation (grandmaster, inhibitive) →
+> `05-setup.md` et `20-submasters.md` ; Magic Sheets → `25-magic-sheets.md`.
+> Aucune vague de collecte web supplémentaire n'est nécessaire sur ces sujets.
 
 - Show Control (MIDI, OSC, timecode) — abordé indirectement (Learn/timecode), pas en détail
 - Navigation/conduite pure (Go, Back, sauts de cue)
@@ -291,6 +306,10 @@ Foreground = posté sur ligne de commande, tous appareils de l'utilisateur. Back
 
 ## PRIORITÉS BANC (consolidé, mis à jour vague29)
 
+> **Note de session (2026-08-01)** : cette liste et « ZONES ENCORE OUVERTES » ci-dessous
+> sont figées à la vague 29. Le backlog vivant, fusionné avec les questions ouvertes
+> issues du manuel officiel et des tests simulateur, est dans [`PLANNING.md`](../PLANNING.md).
+
 1. `SubDown`/`SubUp` — survie export/import ASCII [027] (touche confirmée A, reste à tester la survie ASCII spécifiquement)
 2. `Go_To_Cue_<décimale>` concaténé — troncature [060]
 3. `{Enable}/{Disable}` sur le marking — toggle vs absolu [118]
@@ -405,6 +424,11 @@ Ne plus dupliquer une section "risque contextuel" par vague — ajouter directem
 11. Métadonnées de macro (Label, Icon, Color, Target, SC Learn — distinctes du contenu exécutable)
 
 ## Ce qui reste non couvert (prioriser les prochaines vagues là-dessus)
+
+> **✅ Note de session (2026-08-01) — liste caduque**, même raison que ci-dessus :
+> les quatre points sont couverts par le manuel officiel importé depuis
+> (grandmaster/inhibitive, MIDI/timecode, Magic Sheets, Lamp Control). Le backlog
+> réel est maintenant dans [`PLANNING.md`](../PLANNING.md).
 
 - Sécurité / exploitation (grand master, inhibitions, dim de salle) — zéro entrée à ce stade
 - Show control MIDI/timecode en détail (seulement effleuré via #064)
