@@ -18,6 +18,7 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 | Journal d'observations terrain nomad réel (projet xtouch2Eos, source de la vague 28) | [`reference/JOURNAL_observations_nomad.md`](reference/JOURNAL_observations_nomad.md) | ✅ Reçu, intégré tel quel (source S) |
 | Compléments du journal utiles à macro2eos (au-delà de la vague 28) | [`reference/JOURNAL_nomad_complements.md`](reference/JOURNAL_nomad_complements.md) | ✅ `/eos/macro/.../fire` confirmé, Assert sans mot-clé cmd, syntaxe wheel coarse/fine/home |
 | EOS OSC Support — Supported OSC Commands (ETCLabs/EosSyncLib, 2017) | [`reference/Supported_OSC_Commands.md`](reference/Supported_OSC_Commands.md) | ✅ Converti intégralement (PDF source inclus) — colonne « Min Eos Version » par commande, absente du manuel v3.2.0 |
+| `fakeeos.ts` — simulateur ETCnomad minimal (transport OSC/TCP, projet xtouch2Eos) + client de test | [`reference/tools/`](reference/tools/) | ✅ Reçu et testé bout en bout (voir `reference/tools/README.md`) — valide le transport, pas la grammaire Eos |
 
 ## Manuels convertis en Markdown
 
