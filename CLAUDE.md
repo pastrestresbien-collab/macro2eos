@@ -26,6 +26,18 @@ tous les coups dans cette session :
 d'échecs répétés (limite de taille, upload qui n'aboutit pas visible côté serveur).
 Le chat est le seul canal de transfert de fichier fiable observé jusqu'ici.
 
+## Règle n°2 — PDF/DOCX sources = archive, pas de consultation systématique
+
+Les fichiers PDF/DOCX dans `manuals/<document>/source/` et `reference/source/` sont
+conservés **uniquement** pour re-vérification future (règle de fidélité ci-dessous),
+pas pour être relus à chaque tâche. Ils sont volumineux (jusqu'à 15 Mo) et ralentissent
+le travail sans raison si on les rouvre systématiquement.
+
+**Travailler à partir des `.md` déjà convertis.** Ne lire/consulter un PDF/DOCX source
+que si un besoin précis et avéré l'exige (ex. : doute sur une fidélité de conversion à
+vérifier, contenu manquant suspecté dans le `.md`). Dans ce cas, ne lire que la portion
+nécessaire, pas le fichier entier.
+
 ## Contexte du projet
 
 Voir `INDEX.md` (racine) pour l'état complet du corpus et des manuels convertis, et
