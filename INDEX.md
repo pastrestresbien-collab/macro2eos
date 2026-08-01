@@ -45,8 +45,11 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
   (`operations-manual/`) est découpé en un fichier par chapitre
   (`00-INDEX.md` + `NN-<chapitre>.md`) ; les autres documents sont un
   fichier unique par manuel, texte intégral (pas de résumé).
-- `manuals/<document>/source/` — PDF/DOCX officiel correspondant, pour
-  re-vérification ou re-conversion future.
+- `manuals/<document>/source/` — PDF/DOCX officiel correspondant, conservé **en
+  archive uniquement** pour re-vérification ou re-conversion future. Ne pas
+  consulter systématiquement (fichiers volumineux, jusqu'à 15 Mo) : travailler
+  à partir des `.md` déjà convertis, n'ouvrir la source que sur besoin précis
+  et avéré (voir `CLAUDE.md`, règle n°2).
 - `SOURCES.md` — URLs officielles vérifiées de chaque document + miroirs.
 - `VERIFICATION.md` — rapport d'intégrité (couverture texte source ↔ Markdown).
 

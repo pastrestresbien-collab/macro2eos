@@ -52,7 +52,9 @@ dans le Markdown converti.
 | Eos Integration via OSC | 304 | complet (vérif. manuelle — reformatage des paragraphes, texte intégral) |
 
 Les PDF sources sont committés dans `manuals/<document>/source/` — toute re-vérification
-future peut être refaite à partir d'eux.
+future peut être refaite à partir d'eux. **Statut archive uniquement** (règle n°2 de
+`CLAUDE.md`, ajoutée après cette vérification) : ces PDF ne sont plus à rouvrir pour le
+travail courant, seulement en cas de doute précis sur une conversion.
 
 ## Documents de référence (`reference/`)
 
@@ -84,3 +86,7 @@ intégralement**, sources incluses dans `manuals/<document>/source/`. La section
 canonique » de `INDEX.md` ajoute 5 documents complémentaires (`eosKeys.ts` et sa comparaison,
 le journal terrain et ses compléments, `Supported_OSC_Commands.md`), également vérifiés.
 Aucun document en attente à ce jour.
+
+Toutes les sources PDF/DOCX (manuels et `reference/source/`) ont désormais un **statut
+d'archive** : conservées pour re-vérification future uniquement, plus consultées de façon
+routinière (règle n°2, `CLAUDE.md`). Le travail courant se fait exclusivement sur les `.md`.
