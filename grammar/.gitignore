@@ -1,0 +1,2 @@
+# artefacts compilés — régénérables par `python3 grammar/build.py`
+dist/

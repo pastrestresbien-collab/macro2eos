@@ -25,6 +25,12 @@ et le backlog de travail.
 | `fakeeos.ts` — simulateur ETCnomad minimal (transport OSC/TCP, projet xtouch2Eos) + client de test | [`reference/tools/`](reference/tools/) | ✅ Reçu et testé bout en bout (voir `reference/tools/README.md`) — valide le transport, pas la grammaire Eos |
 | **Grammaire ETC Eos consolidée** — synthèse de référence (corpus 174 entrées + manuel v3.2.0 32 chapitres + workbooks + eosKeys.ts + OSC docs), 15 sections, remplace la grammaire consolidée historique du corpus | [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md) | ✅ Rédigée à partir de l'ensemble du corpus disponible |
 
+## Grammaire exploitable par le code
+
+| Document | Emplacement | Statut |
+|---|---|---|
+| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande | [`grammar/`](grammar/README.md) | 🚧 v0.1 — périmètre sélection + couleur + record palette |
+
 ## Manuels convertis en Markdown
 
 | # | Document | Dossier | Statut |

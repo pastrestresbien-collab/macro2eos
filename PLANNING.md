@@ -37,7 +37,7 @@ consommable par un programme, sauf `eosKeys.ts`.
 
 Trois axes, indépendants entre eux. À prioriser par l'utilisateur.
 
-### A. Structurer la grammaire en données exploitables
+### A. Structurer la grammaire en données exploitables — **démarré**
 
 Transformer `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` en un jeu de données
 interrogeable (JSON/YAML) : vocabulaire des touches, règles de syntaxe, patrons de
@@ -45,6 +45,20 @@ commande, niveau de confiance par règle, risques associés.
 
 Sans cette étape, tout parser à écrire devra ré-encoder la grammaire à la main et
 divergera de la doc dès la première correction.
+
+**Approche retenue** (2026-08-01) : modèle typé Objet → Action → Cible + matrice de
+légalité, plutôt qu'une grammaire formelle (EBNF). La ligne de commande Eos est modale
+et dépendante de l'état console ; une EBNF forcerait à trancher des points non validés
+au banc. Ici, `inconnu` est une valeur de première classe et renvoie au backlog ci-dessous.
+
+**Fait — v0.1**, voir [`grammar/`](grammar/README.md) : modèle, patrons, compilateur
+YAML→JSON avec garde-fous de cohérence, générateur IR→commande avec avertissements, et
+test de non-régression. Périmètre : sélection channels/groupes + couleur de nuancier +
+record de palette. Les deux macros déjà éprouvées en transport sont régénérées à
+l'identique, avec signalement automatique des points 4 et 5 du backlog.
+
+**Reste à faire** : étendre le modèle au reste de la grammaire (Query, Fan, effets,
+cues, submasters, macros, OSC), puis brancher la couche NL (axe B).
 
 ### B. Écrire le traducteur NL → macro
 

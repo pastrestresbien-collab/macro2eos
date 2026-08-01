@@ -1,0 +1,38 @@
+# Patrons — recettes éprouvées, couche haute
+#
+# Raccourcis pour les demandes courantes. Chaque patron se ramène à une suite
+# d'instructions du modèle (`modele.yaml`) : un patron n'invente jamais de
+# syntaxe, il pré-remplit une intention connue.
+#
+# `origine` trace d'où vient la recette (corpus, manuel, test simulateur).
+
+meta:
+  version: "0.1"
+  maj: "2026-08-01"
+
+patrons:
+  - id: selection_plage_couleur
+    intention: "mettre une plage de circuits dans une couleur de nuancier"
+    exemple_nl: "circuits 10 à 20 en Lee 195"
+    ir:
+      - selection: { objet: Chan, de: "{debut}", a: "{fin}" }
+        action:    { type: couleur_gel, nuancier: "{nuancier}", teinte: "{teinte}" }
+    rend: "Chan {debut} Thru {fin} Color {nuancier}/{teinte} Enter"
+    confiance: A
+    origine: "manuel §10 ; transport validé test-client.ts"
+
+  - id: selection_mixte_couleur_puis_palette
+    intention: "sélectionner groupe + circuits, colorer, enregistrer en palette"
+    exemple_nl: >
+      groupe 5 et circuits 1 à 6 en Lee 195, enregistrer dans la palette
+      couleur 5 appelée "195-Par LED"
+    ir:
+      - selection: { objet: Group, numero: "{groupe}", plus_plage: ["{debut}", "{fin}"] }
+        action:    { type: couleur_gel, nuancier: "{nuancier}", teinte: "{teinte}" }
+      - action:    { type: record_palette_couleur, cible: "{palette}", label: "{label}" }
+    rend: |
+      Group {groupe} + {debut} Thru {fin} Color {nuancier}/{teinte} Enter
+      Record Color Palette {palette} Label {label} Enter
+    confiance: null
+    avertissements: [4, 5]      # renvois PLANNING.md — sélection mixte + label multi-mots
+    origine: "généré session 2026-07-31 ; transport validé test-client3.ts, syntaxe NON validée"

@@ -1,0 +1,133 @@
+# Modèle Eos — objets, actions, matrice de légalité
+#
+# Source de vérité pour la construction de commandes. Écrit à la main, relisible.
+# Compilé en JSON par `grammar/compile.py` pour consommation par le code.
+#
+# Périmètre v0.1 (volontairement étroit, à étendre après validation) :
+#   sélection de channels/groupes + application de couleur + enregistrement de palette.
+#
+# Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
+#                     C (communauté, non testé) > D (signal négatif).
+# Champ `valide: inconnu` = jamais tranché. Le générateur DOIT avertir, jamais
+# injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
+
+meta:
+  version: "0.1"
+  perimetre: "selection + couleur + record palette"
+  maj: "2026-08-01"
+
+# --------------------------------------------------------------------------
+# OBJETS — ce qu'on sélectionne
+# --------------------------------------------------------------------------
+objets:
+  Chan:
+    mot_cle: "Chan"
+    numerote: true
+    plage: true
+    confiance: A
+    source: "manuel §6 Manual Control"
+  Group:
+    mot_cle: "Group"
+    numerote: true
+    plage: true
+    confiance: A
+    source: "manuel §7 Groups"
+
+# --------------------------------------------------------------------------
+# OPÉRATEURS de sélection
+# --------------------------------------------------------------------------
+operateurs:
+  plage:
+    symbole: "Thru"
+    confiance: A
+    note: "porte nativement le mécanisme Fan (manuel §8)"
+  ajout:
+    symbole: "+"
+    confiance: A
+  retrait:
+    symbole: "-"
+    confiance: A
+
+# --------------------------------------------------------------------------
+# ACTIONS — ce qu'on applique
+# --------------------------------------------------------------------------
+actions:
+  couleur_gel:
+    mot_cle: "Color"
+    attend: gel              # <nuancier>/<teinte>, ex. 3/195 = Lee 195
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 Palettes"
+  intensite:
+    mot_cle: "At"
+    attend: pourcentage
+    contextes: [Live, Blind]
+    confiance: A
+    avertissement: >
+      Polysémie confirmée : en contexte Patch, `At` désigne une adresse DMX,
+      pas une intensité. Le générateur doit connaître son contexte.
+  record_palette_couleur:
+    mot_cle: "Record Color Palette"
+    attend: cible_numerotee
+    label: optionnel         # `Label <texte>`
+    contextes: [Live]
+    confiance: A
+    source: "manuel §10 Palettes"
+
+# --------------------------------------------------------------------------
+# NUANCIERS de gel — préfixe numérique du champ `gel`
+# --------------------------------------------------------------------------
+nuanciers:
+  1: { nom: "Apollo",  confiance: A }
+  2: { nom: "GAM",     confiance: A }
+  3: { nom: "Lee",     confiance: A }
+  4: { nom: "Rosco E-Colour", confiance: A }
+
+# --------------------------------------------------------------------------
+# MATRICE DE LÉGALITÉ
+# Une entrée par combinaison. `inconnu` est une valeur de première classe.
+# --------------------------------------------------------------------------
+legalite:
+  - objet: Chan
+    action: couleur_gel
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: couleur_gel
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: intensite
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: intensite
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_palette_couleur
+    valide: oui
+    confiance: A
+    note: "s'applique à ce qui est sélectionné, pas d'objet explicite"
+
+  # --- zones non tranchées ---
+  - combinaison: "Group <n> + <a> Thru <b>"
+    valide: inconnu
+    confiance: null
+    backlog: 4
+    note: >
+      Mélanger un groupe et une plage de channels dans une même sélection.
+      Transporté sans erreur par le simulateur (test-client3.ts), ce qui ne
+      prouve rien syntaxiquement. Aucun exemple exact dans le corpus ni le manuel.
+
+  - combinaison: "Record Color Palette <n> Label <texte multi-mots>"
+    valide: inconnu
+    confiance: null
+    backlog: 5
+    note: >
+      Comportement réel du clavier virtuel avec espaces et tirets dans le
+      libellé — non observé.
