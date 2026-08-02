@@ -1,10 +1,11 @@
 # Modèle Eos — objets, actions, matrice de légalité
 #
 # Source de vérité pour la construction de commandes. Écrit à la main, relisible.
-# Compilé en JSON par `grammar/compile.py` pour consommation par le code.
+# Compilé en JSON par `grammar/build.py` pour consommation par le code.
 #
-# Périmètre v0.1 (volontairement étroit, à étendre après validation) :
-#   sélection de channels/groupes + application de couleur + enregistrement de palette.
+# Périmètre v0.2 :
+#   v0.1  sélection channels/groupes + couleur de nuancier + record de palette
+#   v0.2  + Fan (§4 de la grammaire consolidée) + cues + macros + submasters
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -12,12 +13,12 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.1"
-  perimetre: "selection + couleur + record palette"
-  maj: "2026-08-01"
+  version: "0.2"
+  perimetre: "selection + couleur + record palette + fan + cues + macros + submasters"
+  maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
-# OBJETS — ce qu'on sélectionne
+# OBJETS — ce qu'on sélectionne / ce qu'on cible
 # --------------------------------------------------------------------------
 objets:
   Chan:
@@ -32,9 +33,43 @@ objets:
     plage: true
     confiance: A
     source: "manuel §7 Groups"
+    note: >
+      Un Group ne contient que des références de channels, jamais de niveaux
+      (corpus #058). Les sous-groupes d'un Group comptent pour un seul channel
+      lors d'un Fan (manuel §8, « Using Subgroups with Fan »).
+  Cue:
+    mot_cle: "Cue"
+    numerote: true
+    decimal: true
+    plage: true
+    liste: true              # `Cue <liste>/<numero>`, ex. Cue 2/5
+    confiance: A
+    source: "manuel §12 Cues & the Cue List"
+    note: "numérotation 0.001 à 9999.999, 10 000 cues maximum"
+  Part:
+    mot_cle: "Part"
+    numerote: true
+    plage: true
+    qualifie: Cue           # ne s'emploie jamais seul
+    confiance: A
+    source: "manuel §17 Multipart Cues, exemples de Fan de temps §8"
+  Sub:
+    mot_cle: "Sub"
+    numerote: true
+    plage: true
+    confiance: A
+    source: "manuel §20 Submasters"
+    note: "1000 submasters maximum"
+  Macro:
+    mot_cle: "Macro"
+    numerote: true
+    plage: false
+    confiance: A
+    source: "manuel §24 Macros"
+    note: "numérotation 1 à 99 999"
 
 # --------------------------------------------------------------------------
-# OPÉRATEURS de sélection
+# OPÉRATEURS de sélection et de composition
 # --------------------------------------------------------------------------
 operateurs:
   plage:
@@ -47,6 +82,170 @@ operateurs:
   retrait:
     symbole: "-"
     confiance: A
+  liste:
+    symbole: "/"
+    confiance: A
+    source: "manuel §12 et §16"
+    note: >
+      Polysémique selon la position : préfixe de cue list (`Cue 2/5`), séparateur
+      montée/descente d'un temps (`Time 4/3`), ou pourcentage de temps de cue en
+      timing discret (`Time /50` = 50 % du temps de cue). Le générateur doit
+      connaître le contexte, comme pour `At`.
+  creation_plage:
+    symbole: "Thru Thru"
+    confiance: A
+    source: "manuel §20 : [Sub][1][Thru][Thru][1][0][Enter] crée les subs 1 à 10"
+    note: "création en série depuis Blind — ce n'est pas une sélection"
+
+# --------------------------------------------------------------------------
+# FAN — répartition automatique de valeurs (grammaire consolidée §4, manuel §8)
+#
+# Fan n'est PAS une commande séparée : c'est le comportement implicite de toute
+# commande de niveau ou de temps qui emploie `Thru` ou une liste de références.
+# La touche `Fan` ne sert qu'à changer de style de répartition.
+# --------------------------------------------------------------------------
+fan:
+  mot_cle: "Fan"
+  confiance: A
+  source: "manuel §8 Fan"
+
+  implicite:
+    description: >
+      `Chan 1 Thru 5 At 10 Thru 50 Enter` répartit sans invoquer `Fan` :
+      1=10 %, 2=20 %, 3=30 %, 4=40 %, 5=50 %. C'est la stratégie de génération
+      en masse la plus fiable du projet (grammaire consolidée §13, stratégie 1).
+    confiance: A
+    source: "manuel §8, « Fan From the Command Line »"
+  ordre_application:
+    description: "Fan s'applique dans l'ordre de sélection des channels, ou dans l'ordre du groupe."
+    confiance: A
+  variante_console:
+    description: >
+      `[Fan]` est une hardkey sur Eos/Ion/Gio ; Ion Classic et Element Classic
+      n'ont que le softkey `{Fan}`. Le mot posé sur la ligne de commande est le
+      même — la différence est matérielle, pas syntaxique.
+    confiance: A
+    source: "manuel §8, notes répétées en tête de chaque section"
+
+  # Ce que Fan accepte de répartir
+  portees:
+    intensite:  { exemple: "Chan 1 Thru 5 At 10 Thru 50 Enter",        confiance: A }
+    temps:      { exemple: "Chan 1 Thru 5 Time 6 Thru 10 Enter",        confiance: A }
+    delai:      { exemple: "Chan 1 Thru 5 Delay 6 Thru 8 Enter",        confiance: A }
+    temps_cue:  { exemple: "Cue 1 Thru 5 Time 6 Thru 10 Enter",         confiance: A }
+    temps_part: { exemple: "Cue 1 Part 1 Thru 3 Time 6 Thru 8 Enter",   confiance: A }
+    references: { exemple: "Chan 1 Thru 5 Int Palette 1 Thru 3 Enter",  confiance: A }
+
+  # Règle propre au fan de références (manuel §8, « Fanning References »)
+  regle_references:
+    trois_ou_plus: >
+      3 références ou plus → les channels reçoivent de la donnée RÉFÉRENCÉE, et
+      le motif se répète s'il y a plus de channels que de références
+      (1..5 sur IP 1 Thru 3 → IP1, IP2, IP3, IP1, IP2).
+    deux_ou_moins: >
+      2 références ou moins → interpolation en donnée ABSOLUE entre les deux
+      références, la référence est perdue (1..5 sur IP1=0 % / IP2=100 % →
+      0, 25, 50, 75, 100 % en absolu).
+    confiance: A
+    consequence_generateur: >
+      Un fan de palettes sur 2 références casse la référence sans le dire. Le
+      générateur doit avertir quand l'intention exprimée était « appliquer des
+      palettes » et que la liste n'en contient que deux.
+
+  # Styles — le style change la répartition, jamais la commande qui la porte
+  styles:
+    Center:
+      mot_cle: "{Center}"
+      argument: aucun
+      comportement: "le channel du milieu reste inchangé ; les extrêmes varient en sens opposés"
+      confiance: A
+      source: "manuel §8 (liste des softkeys)"
+      osc: center
+    Reverse:
+      mot_cle: "{Reverse}"
+      argument: aucun
+      comportement: "inverse l'ordre de sélection avant d'appliquer le fan"
+      confiance: A
+      source: "manuel §8 (liste des softkeys)"
+      osc: reverse
+    Mirror Out:
+      mot_cle: "{Mirror Out}"
+      argument: aucun
+      comportement: "le milieu est le point de départ, les extrémités les points d'arrivée"
+      confiance: A
+      source: "manuel §8, exemple chiffré : 1 Thru 10 At 10 Thru 30 Fan {Mirror Out}"
+      osc: mirror_out
+    Mirror In:
+      mot_cle: "{Mirror In}"
+      argument: aucun
+      comportement: "inverse de Mirror Out"
+      confiance: A
+      source: "eosKeys.ts `mirror_in`→FAN_MIRROR_IN ; cité §4 grammaire consolidée"
+      osc: mirror_in
+      note: "existence confirmée A ; aucun exemple chiffré au manuel, contrairement à Mirror Out"
+    Repeat:
+      mot_cle: "{Repeat}"
+      argument: entier
+      comportement: "motif répété toutes les N channels"
+      confiance: A
+      source: "manuel §8, exemple chiffré : 1 Thru 12 At 50 Thru 70 Fan {Repeat} 3"
+      osc: repeat
+    Cluster:
+      mot_cle: "{Cluster}"
+      argument: entier
+      comportement: "channels regroupés en paquets de valeur identique"
+      confiance: A
+      source: "manuel §8, exemple chiffré : 1 Thru 12 At 50 Thru 80 Fan {Cluster} 4"
+      osc: cluster
+    Random:
+      mot_cle: "{Random}"
+      argument: aucun
+      comportement: "ordre randomisé avant application du fan"
+      confiance: A
+      source: "manuel §8 (liste des softkeys)"
+      osc: random
+    # --- existence confirmée A (eosKeys.ts), comportement jamais observé ---
+    Interleave:
+      mot_cle: "{Interleave}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A            # porte sur l'existence de la touche, pas sur l'effet
+      source: "eosKeys.ts `interleave`→FAN_INTERLEAVE"
+      osc: interleave
+      backlog: 9
+    Jump:
+      mot_cle: "{Jump}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `jump`→FAN_JUMP"
+      osc: jump
+      backlog: 9
+    Num Groups:
+      mot_cle: "{Num Groups}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `num_groups`→FAN_NUM_GROUPS"
+      osc: num_groups
+      backlog: 9
+    Channels Per Group:
+      mot_cle: "{Channels Per Group}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `chan_per_group`→FAN_CHANNELS_PER_GROUP"
+      osc: chan_per_group
+      backlog: 9
+    Curve:
+      mot_cle: "{Curve}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `fan_curve`→FAN_CURVE"
+      osc: fan_curve
+      backlog: 9
+      note: "à ne pas confondre avec {Curve} des attributs de cue (manuel §12), homonyme"
 
 # --------------------------------------------------------------------------
 # ACTIONS — ce qu'on applique
@@ -61,6 +260,7 @@ actions:
   intensite:
     mot_cle: "At"
     attend: pourcentage
+    fanable: true
     contextes: [Live, Blind]
     confiance: A
     avertissement: >
@@ -73,6 +273,360 @@ actions:
     contextes: [Live]
     confiance: A
     source: "manuel §10 Palettes"
+  palette_intensite:
+    mot_cle: "Int Palette"
+    attend: cible_numerotee
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §8 « Fanning References », manuel §10"
+    avertissement: "voir fan.regle_references : 2 références ou moins cassent la référence"
+  palette_couleur:
+    mot_cle: "Color Palette"
+    attend: cible_numerotee
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 Palettes ; fan de références par analogie avec Int Palette (§8)"
+    note: >
+      Le manuel illustre le fan de références sur `Int Palette` uniquement, mais
+      énonce la règle pour « les références, telles que les palettes » en général.
+
+  # -- temps et délais ------------------------------------------------------
+  temps:
+    mot_cle: "Time"
+    attend: duree
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12 « Timing »"
+    note: >
+      Positionnel : le 1er `Time` = montée d'intensité, le 2e = descente, puis
+      focus, couleur, beam. `Time 4/3` sépare montée et descente sur une seule
+      frappe. `Time` seul, sans valeur, remet au défaut du Setup.
+  delai:
+    mot_cle: "Delay"
+    attend: duree
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12 « Delay Time »"
+
+  # -- cues -----------------------------------------------------------------
+  record_cue:
+    mot_cle: "Record Cue"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §12 « Using Record in Live »"
+    note: >
+      Le manuel note `[Record] <Cue> [5]` : `Cue` est facultatif, le clavier
+      passe en mode cue par défaut après `Record`. Le générateur l'écrit
+      toujours explicitement — une macro se relit et se réimporte, l'implicite
+      y coûte plus cher qu'il ne rapporte.
+  record_only_cue:
+    mot_cle: "Record Only Cue"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §12 « Using Record Only in Live »"
+    note: >
+      Ne stocke que les valeurs manuelles — exclut les apports des submasters et
+      des autres cue lists. Sur Element Classic, s'obtient par `Record Record`.
+  update_cue:
+    mot_cle: "Update Cue"
+    attend: cible_numerotee
+    contextes: [Live]
+    confiance: A
+    source: "manuel §12 « [Update] »"
+    avertissement: >
+      Cible ambiguë et préférences persistantes entre sessions ({Make Absolute},
+      {Break Nested}) — risque référencé A/C au référentiel. Ne jamais générer
+      un `Update` nu sans expliciter la cible.
+  go_to_cue:
+    mot_cle: "Go To Cue"
+    attend: cible_numerotee   # ou Out / Next / Last / Home
+    objet_implicite: Cue      # la cible est dans le mot-clé, pas dans une sélection
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §16 « Go To Cue »"
+    avertissement: >
+      Exécution non déterministe en macro selon Foreground/Background et le
+      timing (corpus #060, #061) — voir PLANNING #7 et #14. Et jamais de
+      concaténation : `Go_To_Cue_5` tronque la décimale, il faut des tokens
+      séparés.
+  cue_link:
+    mot_cle: "Link/Loop"
+    attend: cible_numerotee
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12 « Link / Loop »"
+    note: >
+      Même softkey pour le lien et la boucle : `Cue 2 {Link/Loop} 1 {Link/Loop} 3`
+      = lien de 2 vers 1, répété 3 fois. `0` boucle indéfiniment. Toutes les cues
+      d'une boucle doivent porter un Follow ou un Hang.
+
+  # -- submasters -----------------------------------------------------------
+  record_sub:
+    mot_cle: "Record Sub"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Recording a Submaster »"
+    note: >
+      Sur un sub déjà rempli, un enregistrement sélectif FUSIONNE au lieu de
+      remplacer. Pour remplacer, `Rem Dim` ou suppression préalable.
+  record_only_sub:
+    mot_cle: "Record Only Sub"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Recording a Submaster »"
+  update_sub:
+    mot_cle: "Update Sub"
+    attend: cible_numerotee
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Updating a Submaster »"
+  sub_bump_bas:
+    mot_cle: "SubDown"
+    attend: cible_numerotee
+    objet_implicite: Sub
+    contextes: [Live]
+    confiance: B
+    source: "eosKeys.ts `subdown`→SUB_BUMP_DOWN (A) ; ordre `SubDown <n> Enter` corpus #026 (C)"
+    avertissement: >
+      La touche est confirmée A, l'ordre des tokens seulement C/B (un membre
+      expérimenté corrigeant une macro cassée). Et surtout : survie à l'aller-
+      retour ASCII non confirmée — PLANNING #1, priorité haute.
+  sub_bump_haut:
+    mot_cle: "SubUp"
+    attend: cible_numerotee
+    objet_implicite: Sub
+    contextes: [Live]
+    confiance: B
+    source: "eosKeys.ts `subup`→SUB_BUMP_UP (A) ; ordre `SubUp <n> Enter` corpus #026 (C)"
+    avertissement: "mêmes réserves que SubDown — PLANNING #1"
+  temps_bump_sub:
+    mot_cle: "Time"
+    attend: triplet_duree     # montée / dwell / descente
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Using Bump Button Timing With Submasters »"
+    note: >
+      `Sub 8 Time 3 Time 4 Time 3 Enter` = 3 s de montée, 4 s de dwell, 3 s de
+      descente. Le dwell accepte {Manual} (défaut) et {Hold} à la place d'une
+      durée. `Sub 3 Time Enter` remet tout au défaut.
+
+  # -- macros ---------------------------------------------------------------
+  appel_macro:
+    mot_cle: "Macro"
+    attend: cible_numerotee
+    contextes: [Live, contenu_macro]
+    confiance: A
+    source: "manuel §24 « Play a Macro » et « Creating Macros »"
+    avertissement: >
+      En fin de contenu d'une autre macro, c'est le chaînage macro-dans-macro :
+      syntaxe A, fiabilité d'exécution C (corpus #070 vs #095) — PLANNING #2.
+  label:
+    mot_cle: "Label"
+    attend: texte
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12, §20, §24"
+    note: >
+      `Label Label` retire le libellé. `||` ou CTRL+J insère un retour à la ligne.
+      Comportement du clavier virtuel avec espaces et tirets non observé —
+      PLANNING #5.
+
+# --------------------------------------------------------------------------
+# MODIFICATEURS — softkeys qui qualifient une action, jamais autonomes
+# --------------------------------------------------------------------------
+modificateurs:
+  Q Only:
+    mot_cle: "Q Only"
+    porte_sur: [record_cue, record_only_cue, update_cue]
+    confiance: A
+    source: "manuel §12 « Cue Only / Track »"
+    osc: cueonly
+    note: >
+      `Q Only` et `Track` sont la MÊME touche physique : elle prend le sens
+      inverse du réglage système. Le générateur doit connaître le mode de la
+      console pour poser le bon mot — sinon il inverse le comportement voulu.
+  Track:
+    mot_cle: "Track"
+    porte_sur: [record_cue, record_only_cue, update_cue]
+    confiance: A
+    source: "manuel §12 « Cue Only / Track »"
+    osc: track
+  Trace:
+    mot_cle: "Trace"
+    porte_sur: [update_cue]
+    confiance: A
+    source: "manuel §12 « Update Using Trace »"
+    osc: trace
+    note: "`Trace Trace` force au-delà du premier obstacle (channel inactif dans la cue)"
+  Rem Dim:
+    mot_cle: "Rem Dim"
+    porte_sur: [record_cue, record_sub]
+    confiance: A
+    source: "manuel §12 et §20"
+    osc: rem_dim
+  Complete:
+    mot_cle: "Complete"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16 « Other Go To Cue Options »"
+    osc: complete
+  MovesOnly:
+    mot_cle: "MovesOnly"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: moves_only
+  MinusLinks:
+    mot_cle: "MinusLinks"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: minus_links
+  SingleParam:
+    mot_cle: "SingleParam"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: single_param
+  MultiParam:
+    mot_cle: "MultiParam"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: multi_param
+  Manual:
+    mot_cle: "Manual"
+    porte_sur: [go_to_cue, temps, temps_bump_sub]
+    confiance: A
+    source: "manuel §12, §16, §20"
+    osc: manual
+
+# Règle d'ordre confirmée A (manuel §16) : sur un Go To Cue, `Time` se pose
+# TOUJOURS après les autres modificateurs. Seule exception : {Manual}.
+ordre_modificateurs:
+  go_to_cue:
+    regle: "modificateurs d'abord, `Time` en dernier ; {Manual} exempté"
+    confiance: A
+    source: "manuel §16, note en fin de « Other Go To Cue Options »"
+
+# --------------------------------------------------------------------------
+# CONTRÔLE DE MACRO — tokens valides seulement DANS un contenu de macro
+# --------------------------------------------------------------------------
+macro:
+  creation:
+    learn:
+      forme: "Learn <n> Enter <contenu> Learn"
+      confiance: A
+      source: "manuel §24 « Using the [Learn] Key »"
+      note: >
+        Voie primaire recommandée par ETC. Tout est enregistré, y compris un
+        `Clear` de rattrapage — la frappe fautive pollue le contenu.
+      touches_exclues: ["Macro", "flèches", "Escape", "Select", "Learn"]
+    editeur:
+      forme: "Macro <n> Enter {Edit} <contenu> Select"
+      confiance: A
+      source: "manuel §24 « Creating Macros »"
+      note: "voie secondaire/corrective selon la doctrine ETC ; `Select` valide, `Escape` annule"
+
+  modes:
+    defaut_projet: Foreground
+    justification: >
+      Règle de génération retenue par le projet : Foreground sauf raison
+      explicite. Couvre {Target} vers un User (ne fonctionne qu'en Foreground,
+      corpus #068) et limite le non-déterminisme de Go To Cue (corpus #061).
+    Foreground: { osc: foreground_mode, interne: MACRO_USER,           confiance: A }
+    Background: { osc: background_mode, interne: MACRO_BACKGROUND,     confiance: A }
+    Default:    { osc: default_mode,    interne: MACRO_DEFAULT_MODE,   confiance: A }
+    selecteur:  { osc: macro_mode,      interne: MACRO_MODE,           confiance: A }
+    note: >
+      Trois touches OSC distinctes, pas trois positions d'un même softkey
+      (correction corpus vague 29 via eosKeys.ts).
+
+  controle:
+    Loop Begin:
+      mot_cle: "{Loop Begin}"
+      variante_commande: "Macro_Loop_Begin"
+      argument: entier
+      confiance: A
+      source: "manuel §24 « Macro-Specific Softkeys »"
+      osc: macro_loop_begin
+      note: "0 itération = boucle infinie"
+    Loop End:
+      mot_cle: "{Loop End}"
+      variante_commande: "Macro_Loop_End"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      osc: macro_loop_end
+    Wait:
+      mot_cle: "{Wait}"
+      variante_commande: "Macro_Wait"
+      argument: entier_obligatoire
+      confiance: A
+      source: "manuel §24 : « needs to be followed with a whole number of seconds »"
+      osc: macro_wait
+    Wait for Entr:
+      mot_cle: "{Wait for Entr}"
+      variante_commande: "Wait_For_Enter"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      osc: wait_for_enter
+      note: "orthographe abrégée du manuel — `{Wait for Enter}` en toutes lettres n'est pas la forme officielle"
+    Wait for Input:
+      mot_cle: "{Wait for Input}"
+      variante_commande: "Wait_For_Input"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      osc: wait_for_input
+      note: "la pause dure jusqu'à un nouvel appui sur [Macro], pas sur [Enter]"
+    Delete:
+      mot_cle: "{Delete}"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      note: "softkey d'édition — JAMAIS la hardkey [Delete], qui supprimerait la macro"
+
+  regles_generation:
+    - id: send_string_dernier
+      regle: "`Send_String` doit être en dernière position d'une macro multi-lignes"
+      motif: "sinon `/r` parasite dans l'adresse OSC générée — ticket EOS-55864"
+      confiance: B
+    - id: send_string_espaces
+      regle: "insérer un `Macro_Wait` entre deux `Send_String` consécutifs"
+      motif: "fusion en un paquet UDP malformé si la macro part d'un Client — ticket EOS-53576"
+      confiance: B
+      backlog: 3
+    - id: jamais_concatener
+      regle: "toujours produire des tokens séparés, jamais une chaîne assemblée"
+      motif: >
+        `Go_To_Cue_5.5` concaténé tronque la décimale (corpus #060). Argument
+        structurel : le générateur manipule des tokens typés, pas du texte.
+      confiance: C
+      backlog: 7
+    - id: blind_toujours_qualifie
+      regle: "ne jamais écrire `Blind Enter` nu — toujours `Blind Cue` ou `Blind Sub`"
+      motif: "ambigu en macro (corpus #119)"
+      confiance: C
+    - id: pas_edition_concurrente
+      regle: "ne pas déclencher de macro pendant qu'une édition de macro est ouverte (Tab 18)"
+      motif: >
+        Les commandes de la macro background s'insèrent dans l'édition en cours.
+        Corruption silencieuse, confirmée S.
+      confiance: S
 
 # --------------------------------------------------------------------------
 # NUANCIERS de gel — préfixe numérique du champ `gel`
@@ -88,6 +642,7 @@ nuanciers:
 # Une entrée par combinaison. `inconnu` est une valeur de première classe.
 # --------------------------------------------------------------------------
 legalite:
+  # --- v0.1, inchangé (non-régression) ---
   - objet: Chan
     action: couleur_gel
     valide: oui
@@ -114,6 +669,206 @@ legalite:
     confiance: A
     note: "s'applique à ce qui est sélectionné, pas d'objet explicite"
 
+  # --- Fan ---
+  - objet: Chan
+    action: temps
+    valide: oui
+    confiance: A
+    note: "temps discret par channel ; fanable par `Thru` (manuel §8)"
+
+  - objet: Group
+    action: temps
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: delai
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: delai
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: temps
+    valide: oui
+    confiance: A
+    note: "`Cue 1 Thru 5 Time 6 Thru 10` fane les temps de cue (manuel §8)"
+
+  - objet: Part
+    action: temps
+    valide: oui
+    confiance: A
+    note: "`Cue 1 Part 1 Thru 3 Time 6 Thru 8` (manuel §8)"
+
+  # --- Cues ---
+  - objet: selection_courante
+    action: record_cue
+    valide: oui
+    confiance: A
+    note: "sans sélection préalable, enregistre tous les channels non-défaut"
+
+  - objet: Chan
+    action: record_cue
+    valide: oui
+    confiance: A
+    note: "enregistrement sélectif : `Chan 1 Thru 5 Record Cue 4` (manuel §12)"
+
+  - objet: Group
+    action: record_cue
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_cue
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_cue
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: record_only_cue
+    valide: oui
+    confiance: A
+    note: "`Group 2 Record Only Cue 5` (manuel §12)"
+
+  - objet: selection_courante
+    action: update_cue
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_cue
+    valide: oui
+    confiance: A
+    note: "`5 Thru 9 Update Make Absolute` restreint la mise à jour (manuel §12)"
+
+  - objet: Cue
+    action: go_to_cue
+    valide: oui
+    confiance: A
+    note: "objet implicite : la cible est portée par le mot-clé, sans sélection préalable"
+
+  - objet: Chan
+    action: palette_intensite
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: palette_intensite
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: palette_couleur
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: palette_couleur
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: cue_link
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: label
+    valide: oui
+    confiance: A
+
+  # --- Submasters ---
+  - objet: selection_courante
+    action: record_sub
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_sub
+    valide: oui
+    confiance: A
+    note: "`6 Thru 10 Record Sub 3` (manuel §20)"
+
+  - objet: Group
+    action: record_sub
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_sub
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_sub
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_sub
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: update_sub
+    valide: oui
+    confiance: A
+
+  - objet: Sub
+    action: label
+    valide: oui
+    confiance: A
+
+  - objet: Sub
+    action: temps_bump_sub
+    valide: oui
+    confiance: A
+
+  - objet: Sub
+    action: sub_bump_bas
+    valide: oui
+    confiance: B
+    note: >
+      Touche confirmée A (eosKeys.ts), ordre `SubDown <n> Enter` confirmé C
+      (corpus #026, membre expérimenté corrigeant une macro cassée). La survie
+      à l'export ASCII reste ouverte — PLANNING #1.
+
+  - objet: Sub
+    action: sub_bump_haut
+    valide: oui
+    confiance: B
+    note: "mêmes réserves que sub_bump_bas"
+
+  - objet: Sub
+    action: intensite
+    valide: non
+    confiance: S
+    note: >
+      Assert n'a pas de mot-clé de ligne de commande : `Sub n Assert#` échoue en
+      erreur de syntaxe (journal terrain, confiance S). Plus généralement, le
+      pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At`.
+      Entrée conservée pour que le générateur refuse explicitement au lieu de
+      tomber dans le trou « combinaison absente du modèle ».
+
+  # --- Macros ---
+  - objet: Macro
+    action: label
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: appel_macro
+    valide: oui
+    confiance: A
+    note: "`Macro 5 Enter` depuis la ligne de commande (manuel §24)"
+
   # --- zones non tranchées ---
   - combinaison: "Group <n> + <a> Thru <b>"
     valide: inconnu
@@ -131,3 +886,76 @@ legalite:
     note: >
       Comportement réel du clavier virtuel avec espaces et tirets dans le
       libellé — non observé.
+
+  - combinaison: "Fan {Interleave} | {Jump} | {Num Groups} | {Channels Per Group} | {Curve}"
+    valide: inconnu
+    confiance: null
+    backlog: 9
+    note: >
+      Cinq styles de Fan dont l'existence est confirmée A par eosKeys.ts mais
+      dont ni le manuel ni le corpus ne décrit le comportement, ni même le
+      nombre d'arguments attendus. Générer l'un d'eux serait produire une
+      commande dont le projet ne sait pas prédire l'effet.
+
+  - combinaison: "Fan {Mirror}"
+    valide: inconnu
+    confiance: null
+    backlog: 13
+    note: >
+      Le manuel §8 emploie `{Mirror}` dans trois exemples (« Fanning Parameter
+      Data », « Fan From the Command Line », fan de délais) alors que sa propre
+      liste de softkeys ne documente que `{Mirror Out}` et `{Mirror In}` —
+      et eosKeys.ts ne connaît que `mirror_in` / `mirror_out` (plus
+      `mirror_mode`→MIRROR, dont le rapport au Fan n'est pas établi).
+      L'exemple `1 Thru 5 At 10 Thru 30 Fan {Mirror}` donne le même résultat
+      chiffré que l'exemple `{Mirror Out}` : abréviation rédactionnelle
+      probable, jamais confirmée. Le générateur écrit `{Mirror Out}` en clair
+      et n'émet jamais `{Mirror}`.
+
+  - combinaison: "macro contenant SubDown/SubUp → export/import ASCII"
+    valide: inconnu
+    confiance: null
+    backlog: 1
+    note: >
+      Corpus #027 : une macro apprise sur un bump de submaster ne se relit pas
+      correctement après un aller-retour ASCII. Si confirmé, contrainte dure sur
+      le format d'export du traducteur, pas seulement sur la syntaxe générée.
+
+  - combinaison: "Macro <n> Enter en fin de contenu de macro"
+    valide: inconnu
+    confiance: null
+    backlog: 2
+    note: >
+      Chaînage macro-dans-macro : syntaxe confirmée A par le manuel §24, mais
+      corpus #070 et #095 se contredisent sur la fiabilité d'exécution réelle.
+      La syntaxe est sûre, l'exécution ne l'est pas — distinction que le modèle
+      doit garder visible.
+
+  - combinaison: "Go To Cue <décimale> depuis une macro"
+    valide: inconnu
+    confiance: null
+    backlog: 7
+    note: >
+      Deux problèmes distincts sous le même nom. (a) Troncature de la décimale
+      si la commande est concaténée en une chaîne unique (corpus #060) — évitée
+      par construction ici, le générateur produit des tokens séparés. (b)
+      Exécution non déterministe selon Foreground/Background et le timing
+      (corpus #061) — non évitable par construction, voir PLANNING #14.
+
+  - combinaison: "Go To Cue en macro Background"
+    valide: inconnu
+    confiance: null
+    backlog: 14
+    note: >
+      Corpus #061, témoignage technique dense avec logs : le Go To Cue n'est pas
+      toujours exécuté en Background, ou l'est sur la mauvaise cue list. Le
+      projet force Foreground par défaut, ce qui limite le risque sans le lever.
+
+  - combinaison: "Fan de références sur exactement 2 palettes"
+    valide: non
+    confiance: A
+    note: >
+      Syntaxiquement accepté, mais casse l'intention : avec 2 références ou
+      moins, Eos interpole en données ABSOLUES et perd la référence (manuel §8,
+      « Fanning References »). Marqué `non` parce que le résultat contredit ce
+      que l'utilisateur a demandé — c'est un piège, pas une erreur de syntaxe.

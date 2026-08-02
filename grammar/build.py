@@ -10,6 +10,7 @@ Produit `grammar/dist/modele.json` et `grammar/dist/patrons.json`.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -17,11 +18,24 @@ import yaml
 
 RACINE = Path(__file__).parent
 DIST = RACINE / "dist"
+PLANNING = RACINE.parent / "PLANNING.md"
 CONFIANCES = {"S", "A", "B", "C", "D", None}
+ARGUMENTS_FAN = {"aucun", "entier", "inconnu"}
 
 
 def charger(nom: str) -> dict:
     return yaml.safe_load((RACINE / f"{nom}.yaml").read_text(encoding="utf-8"))
+
+
+def numeros_backlog() -> set[int]:
+    """Numéros effectivement listés dans le backlog de PLANNING.md.
+
+    Un renvoi vers un numéro qui n'existe pas est pire qu'un renvoi absent :
+    il donne l'illusion qu'une zone d'ombre est suivie quelque part."""
+    if not PLANNING.exists():
+        return set()
+    texte = PLANNING.read_text(encoding="utf-8")
+    return {int(n) for n in re.findall(r"^(\d{1,3})\. ", texte, re.MULTILINE)}
 
 
 def verifier_refus_non_reportes(modele: dict, refus_terrain: dict) -> list[str]:
@@ -46,7 +60,72 @@ def verifier_refus_non_reportes(modele: dict, refus_terrain: dict) -> list[str]:
     return avertissements
 
 
-def verifier(modele: dict, patrons: dict) -> list[str]:
+def verifier_vocabulaire(modele: dict, backlog: set[int]) -> list[str]:
+    """Objets, actions, styles de Fan, contrôle de macro : tout terme du modèle
+    porte une confiance, et tout terme dont le comportement est inconnu renvoie
+    au backlog. Même exigence que pour la matrice de légalité — sans quoi une
+    zone d'ombre resterait invisible dans le vocabulaire."""
+    erreurs: list[str] = []
+    actions = set(modele["actions"])
+
+    for section in ("objets", "actions"):
+        for nom, spec in modele[section].items():
+            if spec.get("confiance") not in CONFIANCES or spec.get("confiance") is None:
+                erreurs.append(f"{section}.{nom} : confiance manquante ou invalide")
+
+    for nom, style in modele["fan"]["styles"].items():
+        if style.get("confiance") not in CONFIANCES or style.get("confiance") is None:
+            erreurs.append(f"fan.styles.{nom} : confiance manquante ou invalide")
+        if style.get("argument") not in ARGUMENTS_FAN:
+            erreurs.append(
+                f"fan.styles.{nom} : `argument` doit valoir "
+                f"{'/'.join(sorted(ARGUMENTS_FAN))}, pas `{style.get('argument')}`"
+            )
+        # un style dont l'effet n'est pas connu ne doit jamais être générable en
+        # silence : il porte un renvoi backlog, comme une case `inconnu`
+        if "inconnu" in (style.get("comportement"), style.get("argument")):
+            if "backlog" not in style:
+                erreurs.append(
+                    f"fan.styles.{nom} : comportement/argument inconnu mais sans "
+                    f"renvoi PLANNING.md"
+                )
+
+    for nom, tok in modele["macro"]["controle"].items():
+        if tok.get("confiance") not in CONFIANCES or tok.get("confiance") is None:
+            erreurs.append(f"macro.controle.{nom} : confiance manquante ou invalide")
+
+    for nom, mod in modele["modificateurs"].items():
+        if mod.get("confiance") not in CONFIANCES or mod.get("confiance") is None:
+            erreurs.append(f"modificateurs.{nom} : confiance manquante ou invalide")
+        for cible in mod.get("porte_sur", []):
+            if cible not in actions:
+                erreurs.append(f"modificateurs.{nom} : porte sur une action inconnue `{cible}`")
+
+    # tout renvoi backlog, d'où qu'il vienne, doit exister dans PLANNING.md
+    if backlog:
+        for ref, numero in renvois_backlog(modele):
+            if numero not in backlog:
+                erreurs.append(f"{ref} : renvoi PLANNING #{numero} absent du backlog")
+
+    return erreurs
+
+
+def renvois_backlog(modele: dict) -> list[tuple[str, int]]:
+    """Tous les renvois `backlog` du modèle, avec leur emplacement."""
+    renvois: list[tuple[str, int]] = []
+    for i, regle in enumerate(modele["legalite"]):
+        if "backlog" in regle:
+            renvois.append((f"legalite[{i}]", regle["backlog"]))
+    for nom, style in modele["fan"]["styles"].items():
+        if "backlog" in style:
+            renvois.append((f"fan.styles.{nom}", style["backlog"]))
+    for regle in modele["macro"]["regles_generation"]:
+        if "backlog" in regle:
+            renvois.append((f"macro.regles_generation.{regle['id']}", regle["backlog"]))
+    return renvois
+
+
+def verifier(modele: dict, patrons: dict, backlog: set[int] | None = None) -> list[str]:
     """Contrôles de cohérence interne. Retourne la liste des erreurs."""
     erreurs: list[str] = []
     objets = set(modele["objets"])
@@ -84,6 +163,11 @@ def verifier(modele: dict, patrons: dict) -> list[str]:
                 f"patron `{p['id']}` : sans confiance établie, il doit lister "
                 f"ses avertissements (renvois PLANNING.md)"
             )
+        for numero in p.get("avertissements", []):
+            if backlog and numero not in backlog:
+                erreurs.append(
+                    f"patron `{p['id']}` : renvoi PLANNING #{numero} absent du backlog"
+                )
 
     return erreurs
 
@@ -93,7 +177,9 @@ def main() -> int:
     patrons = charger("patrons")
     refus_terrain = charger("refus_terrain")
 
-    erreurs = verifier(modele, patrons)
+    backlog = numeros_backlog()
+
+    erreurs = verifier(modele, patrons, backlog) + verifier_vocabulaire(modele, backlog)
     if erreurs:
         print("Incohérences détectées :", file=sys.stderr)
         for e in erreurs:
@@ -101,9 +187,14 @@ def main() -> int:
         return 1
 
     inconnues = [r for r in modele["legalite"] if r["valide"] == "inconnu"]
+    styles_ouverts = [n for n, s in modele["fan"]["styles"].items() if "backlog" in s]
     print(f"Modèle v{modele['meta']['version']} — cohérent.")
     print(f"  {len(modele['objets'])} objets, {len(modele['actions'])} actions, "
+          f"{len(modele['modificateurs'])} modificateurs, "
           f"{len(modele['legalite'])} règles de légalité")
+    print(f"  {len(modele['fan']['styles'])} styles de Fan "
+          f"(dont {len(styles_ouverts)} au comportement non observé), "
+          f"{len(modele['macro']['controle'])} tokens de contrôle de macro")
     print(f"  {len(inconnues)} zone(s) non tranchée(s) → banc réel : "
           f"{', '.join('PLANNING#%s' % r['backlog'] for r in inconnues)}")
     print(f"  {len(patrons['patrons'])} patron(s)")

@@ -7,8 +7,8 @@
 # `origine` trace d'où vient la recette (corpus, manuel, test simulateur).
 
 meta:
-  version: "0.1"
-  maj: "2026-08-01"
+  version: "0.2"
+  maj: "2026-08-02"
 
 patrons:
   - id: selection_plage_couleur
@@ -36,3 +36,123 @@ patrons:
     confiance: null
     avertissements: [4, 5]      # renvois PLANNING.md — sélection mixte + label multi-mots
     origine: "généré session 2026-07-31 ; transport validé test-client3.ts, syntaxe NON validée"
+
+  # ------------------------------------------------------------------ Fan
+  - id: degrade_intensite
+    intention: "répartir une intensité en dégradé régulier sur une plage de circuits"
+    exemple_nl: "circuits 1 à 5 de 10 à 50 %"
+    ir:
+      - selection: { objet: Chan, de: "{debut}", a: "{fin}" }
+        action:    { type: intensite, de: "{bas}", a: "{haut}" }
+    rend: "Chan {debut} Thru {fin} At {bas} Thru {haut} Enter"
+    confiance: A
+    origine: "manuel §8 « Fan From the Command Line », exemple chiffré"
+    note: >
+      Fan implicite : aucune touche `Fan` n'est nécessaire. C'est la stratégie
+      de génération en masse la plus fiable du projet.
+
+  - id: motif_repete
+    intention: "répéter un motif de niveaux toutes les N unités"
+    exemple_nl: "circuits 1 à 12 entre 50 et 70 %, motif répété tous les 3"
+    ir:
+      - selection: { objet: Chan, de: "{debut}", a: "{fin}" }
+        action:    { type: intensite, de: "{bas}", a: "{haut}",
+                     fan: { style: Repeat, argument: "{pas}" } }
+    rend: "Chan {debut} Thru {fin} At {bas} Thru {haut} Fan {{Repeat}} {pas} Enter"
+    confiance: A
+    origine: "manuel §8, exemple chiffré : 1 Thru 12 At 50 Thru 70 Fan {Repeat} 3"
+
+  - id: symetrie_depuis_centre
+    intention: "faire diverger les valeurs depuis le centre de la sélection"
+    exemple_nl: "circuits 1 à 10, symétrique, de 10 à 30 %"
+    ir:
+      - selection: { objet: Chan, de: "{debut}", a: "{fin}" }
+        action:    { type: intensite, de: "{bas}", a: "{haut}",
+                     fan: { style: Mirror Out } }
+    rend: "Chan {debut} Thru {fin} At {bas} Thru {haut} Fan {{Mirror Out}} Enter"
+    confiance: A
+    origine: "manuel §8, exemple chiffré : 1 Thru 10 At 10 Thru 30 Fan {Mirror Out}"
+    note: >
+      Toujours `{Mirror Out}` en toutes lettres, jamais l'abréviation `{Mirror}`
+      que le manuel emploie ailleurs sans la documenter — PLANNING #13.
+
+  # ----------------------------------------------------------------- Cues
+  - id: temps_echelonnes_cues
+    intention: "échelonner les temps d'une série de cues"
+    exemple_nl: "cues 1 à 5, temps de 6 à 10 secondes"
+    ir:
+      - selection: { objet: Cue, de: "{debut}", a: "{fin}" }
+        action:    { type: temps, de: "{court}", a: "{long}" }
+    rend: "Cue {debut} Thru {fin} Time {court} Thru {long} Enter"
+    confiance: A
+    origine: "manuel §8 « Fanning Timing and Delays », exemple chiffré"
+
+  - id: record_cue_selectif
+    intention: "n'enregistrer qu'une partie des circuits dans une cue"
+    exemple_nl: "enregistrer les circuits 1 à 5 dans la cue 4"
+    ir:
+      - selection: { objet: Chan, de: "{debut}", a: "{fin}" }
+        action:    { type: record_cue, cible: "{cue}" }
+    rend: "Chan {debut} Thru {fin} Record Cue {cue} Enter"
+    confiance: A
+    origine: "manuel §12 « Using a Positive Selective Store », exemple chiffré"
+    note: >
+      Sur une cue existante, l'enregistrement sélectif MODIFIE les données
+      visées sans écraser le reste. Ce n'est pas un remplacement.
+
+  # --------------------------------------------------------------- Macros
+  - id: macro_retour_a_zero
+    intention: "macro qui ramène toute la conduite à zéro instantanément"
+    exemple_nl: "une macro noir sec"
+    ir:
+      - action: { type: go_to_cue, mot: Out, temps: { valeur: 0 } }
+    rend: |
+      Learn {macro} Enter
+      Go To Cue Out Time 0 Enter
+      Learn
+    confiance: A
+    avertissements: [14]        # exécution non déterministe en macro
+    origine: "manuel §24, exemple officiel de macro record — recopié verbatim"
+
+  # ---------------------------------------------------------- Submasters
+  - id: macro_bump_submaster
+    intention: "piloter le bump d'un submaster depuis une macro"
+    exemple_nl: "une macro qui flashe le submaster 5"
+    ir:
+      - action: { type: sub_bump_bas, numero: "{sub}" }
+      - action: { type: sub_bump_haut, numero: "{sub}" }
+    rend: |
+      Learn {macro} Enter
+      SubDown {sub} Enter
+      SubUp {sub} Enter
+      Learn
+    confiance: null
+    avertissements: [1]         # survie à l'export/import ASCII non confirmée
+    origine: "corpus #026 (syntaxe, C) ; touches confirmées A dans eosKeys.ts"
+    note: >
+      Patron délibérément conservé malgré le risque : c'est exactement la macro
+      que le banc réel doit produire pour trancher PLANNING #1. La générer, la
+      passer en ASCII aller-retour et la relire est le test.
+
+  # ---------------------------------------------------- Chaînage de macros
+  - id: chainage_macro
+    intention: "enchaîner une macro vers une autre en fin de contenu"
+    exemple_nl: "macro 3 : tout à 50 %, puis enchaîne sur la macro 5"
+    ir:
+      - selection: { objet: Chan, numero: "{circuit}" }
+        action:    { type: intensite, valeur: "{niveau}" }
+      - action:    { type: appel_macro, numero: "{suivante}" }
+    rend: |
+      Macro {macro} Enter
+      {{Edit}}
+      Chan {circuit} At {niveau} Enter
+      Macro {suivante} Enter
+      Select
+    voie: editeur
+    confiance: null
+    avertissements: [2]         # fiabilité d'exécution non garantie
+    origine: "manuel §24 « Creating Macros », exemple officiel"
+    note: >
+      Obligatoirement écrit à l'éditeur : `[Macro]` fait partie des touches que
+      le mode Learn n'enregistre pas (manuel §24). C'est pour cela que l'exemple
+      officiel de chaînage passe par `{Edit}` et non par `Learn`.

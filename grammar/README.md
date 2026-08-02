@@ -21,7 +21,7 @@ aveugle. Chaque validation au banc réel remplit une case.
 
 | Fichier | Rôle |
 |---|---|
-| `modele.yaml` | Objets, actions, opérateurs, nuanciers, **matrice de légalité**. Écrit à la main, relisible. Source de vérité. |
+| `modele.yaml` | Objets, actions, opérateurs, modificateurs, styles de Fan, contrôle de macro, nuanciers, **matrice de légalité**. Écrit à la main, relisible. Source de vérité. |
 | `patrons.yaml` | Recettes éprouvées (couche haute). Un patron n'invente jamais de syntaxe, il pré-remplit une intention connue. |
 | `build.py` | Compile le YAML en JSON (`dist/`) et vérifie la cohérence interne. |
 | `generateur.py` | IR → chaîne de commande Eos, avec avertissements sur les zones non validées. |
@@ -58,17 +58,64 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 
 ## Garde-fous appliqués par `build.py`
 
-- Toute règle marquée valide **doit** porter un niveau de confiance (S/A/B/C/D).
-- Toute règle `inconnu` **doit** renvoyer à un numéro de `PLANNING.md` — sans quoi une
-  zone d'ombre pourrait devenir invisible.
+- Tout terme du vocabulaire — objet, action, modificateur, style de Fan, token de
+  contrôle de macro — **doit** porter un niveau de confiance (S/A/B/C/D).
+- Toute règle `inconnu` **doit** renvoyer à un numéro de `PLANNING.md`, et **ce numéro
+  doit exister** : un renvoi vers un point inexistant donne l'illusion qu'une zone
+  d'ombre est suivie quelque part.
+- Un style de Fan dont le comportement ou l'arité est `inconnu` **doit** renvoyer au
+  backlog, comme une case de la matrice.
 - Tout patron sans confiance établie **doit** lister ses avertissements.
+- Un refus terrain qui tranche un point encore `inconnu` déclenche un avertissement.
 
-## Portée actuelle (v0.1)
+## Portée actuelle (v0.2)
 
-Volontairement étroite : sélection de channels/groupes, application de couleur de
-nuancier, enregistrement de palette couleur. C'est le périmètre des deux traductions
-déjà éprouvées en transport — le but de cette première tranche est de vérifier que le
-modèle les régénère à l'identique avant d'y verser le reste de la grammaire.
+| Tranche | Contenu |
+|---|---|
+| v0.1 | sélection channels/groupes, couleur de nuancier, enregistrement de palette |
+| v0.2 | **Fan** (§4 de la grammaire consolidée), **cues**, **macros**, **submasters** |
 
-**Rappel** : régénérer une macro déjà transportée ne la valide pas syntaxiquement.
-Seul un Eos/ETCnomad réel tranche (voir `../PLANNING.md`).
+Ce que v0.2 ajoute concrètement :
+
+- **Fan** — 12 styles, dont 7 au comportement documenté (A, exemples chiffrés du manuel
+  §8) et 5 dont seule la touche est confirmée. La règle du fan de références est encodée :
+  3 références ou plus restent référencées, 2 ou moins sont interpolées en **absolu** et
+  perdent la référence. Le générateur avertit — c'est un piège, pas une erreur de syntaxe.
+- **Cues** — enregistrement sélectif, Record Only, Update, Go To Cue et ses modificateurs,
+  liens et boucles, temps et délais. L'ordre documenté est appliqué : sur un Go To Cue,
+  `Time` se pose toujours en dernier.
+- **Macros** — les deux voies de création (Learn, éditeur), les tokens de contrôle
+  (`{Loop Begin}`, `{Wait}`…), les trois modes, et les règles de génération du projet
+  (Foreground par défaut, `Send_String` en dernier, jamais de concaténation).
+- **Submasters** — enregistrement, timing de bump montée/dwell/descente, libellé, et les
+  bumps `SubDown`/`SubUp` avec leur double réserve : ordre des tokens de confiance C,
+  survie ASCII non confirmée.
+
+Le générateur distingue deux sorties, qui n'obéissent pas aux mêmes règles :
+`rendre()` produit des lignes de commande injectables par `/eos/newcmd` ;
+`rendre_macro()` produit un **contenu de macro**, enveloppé et soumis à ses contraintes
+propres (chaînage en fin de contenu, mode, non-déterminisme de `Go To Cue`).
+
+## Ce que les tests prouvent — et ce qu'ils ne prouvent pas
+
+`test_generateur.py` couvre deux familles :
+
+1. **Transport** — les deux macros déjà passées au banc `reference/tools/`. Une
+   évolution du modèle qui les modifie est une régression.
+2. **Manuel** — les exemples chiffrés du manuel officiel v3.2.0, recopiés verbatim
+   (§8 Fan, §12 Cues, §16 Playback, §20 Submasters, §24 Macros). Ce sont les seuls cas
+   où l'on sait ce que la console fait vraiment.
+
+Le nombre d'avertissements fait partie de l'attendu : un silence sur une zone d'ombre
+serait le vrai bug.
+
+**Rappel** : régénérer une macro déjà transportée ne la valide pas syntaxiquement, et
+reproduire un exemple du manuel ne prouve pas que la console l'accepte dans le contexte
+généré. Seul un Eos/ETCnomad réel tranche (voir `../PLANNING.md`).
+
+## Différence de forme assumée avec le manuel
+
+Le manuel s'appuie sur les modes implicites du clavier : `[1][Thru][5]` désigne des
+channels, `[Record][5]` une cue. Le générateur écrit toujours `Chan` et `Cue` en clair.
+Une macro se relit, se réimporte et s'exporte en ASCII — l'implicite y coûte plus cher
+qu'il ne rapporte.

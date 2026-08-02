@@ -5,7 +5,7 @@ qui coexistaient et divergeaient (corpus « PRIORITÉS BANC », corpus « ZONES 
 OUVERTES », grammaire consolidée §15) — celles-ci restent en place comme trace d'audit
 mais ne sont plus à mettre à jour.
 
-Dernière mise à jour : 2026-08-01.
+Dernière mise à jour : 2026-08-02.
 
 ---
 
@@ -57,8 +57,20 @@ test de non-régression. Périmètre : sélection channels/groupes + couleur de 
 record de palette. Les deux macros déjà éprouvées en transport sont régénérées à
 l'identique, avec signalement automatique des points 4 et 5 du backlog.
 
-**Reste à faire** : étendre le modèle au reste de la grammaire (Query, Fan, effets,
-cues, submasters, macros, OSC), puis brancher la couche NL (axe B).
+**Fait — v0.2 (2026-08-02)** : extension au Fan (§4 de la grammaire consolidée), aux
+cues, aux macros et aux submasters. 20 actions, 10 modificateurs, 12 styles de Fan, 6
+tokens de contrôle de macro, 49 règles de légalité. Le générateur distingue désormais
+une **ligne de commande** d'un **contenu de macro**, qui n'obéissent pas aux mêmes
+règles. Les 28 cas de non-régression comprennent les exemples chiffrés du manuel
+officiel recopiés verbatim (§8, §12, §16, §20, §24) — la seule référence disponible sur
+ce que la console fait réellement, à défaut de banc.
+
+Deux zones d'ombre nouvelles sont sorties de cette tranche et rejoignent le backlog :
+le nom réel de la softkey `{Mirror}` (#13) et le non-déterminisme de `Go To Cue` en
+macro (#14). `build.py` vérifie maintenant que tout renvoi au backlog désigne un point
+qui existe vraiment.
+
+**Reste à faire** : Query, effets, patch, OSC. Puis brancher la couche NL (axe B).
 
 ### B. Écrire le traducteur NL → macro
 
@@ -85,6 +97,11 @@ ainsi cumulatif plutôt qu'une session isolée à programmer.
 Rien ci-dessous ne peut être tranché depuis le dépôt : il faut un Eos ou un ETCnomad.
 Le simulateur `reference/tools/fakeeos.ts` ne valide que le transport, jamais la syntaxe.
 
+**Les numéros sont des identifiants stables**, attribués dans l'ordre de découverte et
+cités tels quels par `grammar/modele.yaml` et `grammar/refus_terrain.yaml`. Ils ne sont
+donc jamais renumérotés : un point ajouté tardivement en priorité haute porte un grand
+numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros.
+
 ### Priorité haute — bloquent des décisions d'architecture
 
 1. **`SubDown` / `SubUp` — survie à l'export/import ASCII.** Corpus #027 signale que les
@@ -95,6 +112,13 @@ Le simulateur `reference/tools/fakeeos.ts` ne valide que le transport, jamais la
    traducteur peut décomposer une intention en macros chaînées.
 3. **`Send_String` multiples depuis un Client — bug EOS-53576.** Corpus #107. Toujours
    présent en v3.2+ ? Conditionne la stratégie d'injection multi-commandes.
+14. **`Go To Cue` en macro Background — exécution non déterministe.** Corpus #061,
+    témoignage technique avec logs : le Go To Cue n'est pas toujours exécuté, ou l'est
+    sur la mauvaise cue list assertée, avec une possible dépendance au timing. Le projet
+    force Foreground par défaut, ce qui limite le risque sans le lever. Si le
+    non-déterminisme se confirme même en Foreground, le traducteur ne peut pas produire
+    de macro de conduite sans validation post-envoi (`/eos/out/cmd`, §11.6 de la
+    grammaire consolidée). Distinct de #7, qui ne porte que sur la troncature décimale.
 
 ### Priorité moyenne — affectent la génération de macros
 
@@ -118,6 +142,12 @@ Le simulateur `reference/tools/fakeeos.ts` ne valide que le transport, jamais la
     RTC/Astro (déclenchement horaire), Pixel Mapping complet, édition de courbes,
     `startup_macro` / `shutdown_macro`. Corpus #152.
 12. **Lamp Control** — incohérence de softkeys en édition directe. Corpus #091.
+13. **`{Mirror}` — nom réel de la softkey de Fan.** Le manuel §8 emploie `{Mirror}` dans
+    trois exemples alors que sa propre liste de softkeys ne documente que `{Mirror Out}`
+    et `{Mirror In}`, et `eosKeys.ts` ne connaît que `mirror_in` / `mirror_out`.
+    L'exemple `{Mirror}` donne le même résultat chiffré que l'exemple `{Mirror Out}` :
+    abréviation rédactionnelle probable, jamais confirmée. En attendant, le générateur
+    écrit `{Mirror Out}` en clair et n'émet jamais `{Mirror}`.
 
 ### Contradiction connue, non résolue
 
