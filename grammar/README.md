@@ -82,8 +82,19 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.2 | **Fan** (§4 de la grammaire consolidée), **cues**, **macros**, **submasters** |
 | v0.3 | **Query**, **effets**, **couche d'injection OSC** |
 | v0.4 | **contexte d'écran** (modalité) et **auto-terminaison** |
+| v0.5 | **Patch** — où `At` s'inverse une seconde fois |
 
-Ce que v0.4 ajoute concrètement :
+Ce que v0.5 ajoute concrètement :
+
+- **Patch** — patch par channel et par adresse, univers, dépatch, suppression, courbe,
+  preheat, proportion. Plus les règles du patch en masse : `Thru` ne patche en plage que
+  des channels (sur des adresses, il crée silencieusement des parts), et le pas d'adresse
+  est l'empreinte DMX du fixture, pas +1 — le générateur ne peut donc pas annoncer les
+  adresses résultantes.
+- **Le piège du mode Format** (voir plus bas) — encodé, signalé, et contourné par la
+  seule forme documentée qui y échappe.
+
+Ce que v0.4 avait ajouté :
 
 - **Contexte d'écran** — la table officielle des 37 onglets, `Tab <n> Enter` pour forcer
   le focus, et la polysémie encodée mot par mot. `rendre()` prend maintenant un
@@ -150,6 +161,30 @@ ces commandes en `/eos/key/<nom>` séparés : c'est la stratégie d'injection qu
 pas seulement la syntaxe.
 
 Les deux sont le genre de point qu'une grammaire d'apparence rigoureuse aurait masqué.
+
+## v0.5 — `At` s'inverse une seconde fois, et cette fois on ne peut pas le voir
+
+v0.4 avait encodé que `At` vaut un niveau en Live et une adresse en Patch. Le chapitre
+§4 en révèle une seconde couche, **à l'intérieur même de Patch** :
+
+```
+5 At 100     en mode « by channel »  → patche le CHANNEL 5 à l'ADRESSE 100
+5 At 100     en mode « by address »  → patche l'ADRESSE 5 au CHANNEL 100
+```
+
+Deux patchs opposés pour une chaîne identique. Et contrairement au contexte d'écran, ce
+mode-ci est **hors de portée** : `Format` bascule sans régler, et aucune adresse
+`/eos/out/…` ne publie le mode courant — le sous-arbre `/eos/out/get/patch/…` renvoie la
+base de patch, pas l'état de l'affichage. Le générateur ne peut donc ni lire ni fixer
+l'état dont dépend le sens de ce qu'il écrit.
+
+Une seule parade est documentée : le préfixe `Address <n> At <channel>`, non ambigu quel
+que soit le mode. Le générateur l'émet dès qu'il patche par adresse, et signale
+systématiquement toute commande de patch par channel — PLANNING #20.
+
+Symétriquement, #21 note que le chapitre §4 n'écrit **jamais** `[Chan]` : notre convention
+d'écrire `Chan` partout n'y est pas vérifiée. Si elle tient, c'est la parade symétrique et
+elle lève #20 pour de bon.
 
 ## Ce que v0.4 corrige, et ce qu'elle ouvre
 

@@ -102,9 +102,24 @@ les commandes, alors que `Out`, `Level`, `+%` et `-%` s'auto-terminent, et qu'un
 de trop risque de valider la ligne suivante. Corrigé — mais la liste d'ETC est incomplète
 de son propre aveu, d'où le nouveau point #19.
 
-**Reste à faire** : Patch §4, Groups §7, Palettes §10 / Presets §11, Mark §9, cues
-multipart §17 et cue lists multiples §14, Park §19, Filtres §13, Courbes §22,
-Snapshots §23, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
+**Fait — v0.5 (2026-08-02)** : Patch §4. 44 actions, 90 règles de légalité, 60 cas de
+non-régression.
+
+La tranche a mis au jour une **seconde inversion de `At`**, à l'intérieur même de Patch :
+`5 At 100` patche le channel 5 à l'adresse 100 en mode par channel, et l'adresse 5 au
+channel 100 en mode par adresse. Contrairement au contexte d'écran, ce mode est hors de
+portée du générateur — `Format` bascule sans régler, et rien ne publie l'état courant
+(#20). La seule parade documentée est le préfixe `Address <n> At <channel>`, que le
+générateur émet désormais pour tout patch par adresse.
+
+Deux règles de patch en masse valent aussi d'être retenues : `Thru` ne patche en plage
+que des channels — sur des adresses il crée silencieusement des **parts** au lieu
+d'échouer — et le pas d'adresse est l'empreinte DMX du fixture, pas +1, donc le
+générateur ne peut pas annoncer les adresses résultantes sans connaître le patch.
+
+**Reste à faire** : Groups §7, Palettes §10 / Presets §11, Mark §9, cues multipart §17,
+cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
+§25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 
 ### B. Écrire le traducteur NL → macro
 
@@ -154,6 +169,16 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     de macro de conduite sans validation post-envoi (`/eos/out/cmd`, §11.6 de la
     grammaire consolidée). Distinct de #7, qui ne porte que sur la troncature décimale.
 
+20. **Mode de patch By Channel / By Address — toggle non observable.** `5 At 100` patche
+    le channel 5 à l'adresse 100 en mode par channel, et l'**adresse 5 au channel 100**
+    en mode par adresse : la même chaîne produit deux patchs opposés. La bascule `Format`
+    est un toggle (pas un réglage absolu), et aucune adresse `/eos/out/…` ne publie le
+    mode courant — le sous-arbre `/eos/out/get/patch/…` renvoie la base de patch, pas
+    l'état de l'affichage. Le générateur ne peut donc ni lire ni régler ce mode. Seule
+    parade documentée : le préfixe `Address <n> At <channel>`, non ambigu quel que soit
+    le mode. À vérifier au banc : le préfixe tient-il vraiment dans les deux modes ?
+    Ce point valide directement la stratégie « validation utilisateur avant envoi ».
+
 ### Priorité moyenne — affectent la génération de macros
 
 4. **`Group 5 + 1 Thru 6`** — combiner un groupe et une plage de channels. Aucun exemple
@@ -192,6 +217,13 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     changent aussi la donne (`Full Full`, `Sneak Sneak` auto-terminent, pas leur forme
     simple). Un `Enter` de trop sur une commande déjà terminée risque de valider la
     ligne suivante. À établir au banc, commande par commande.
+21. **Le mot-clé `Chan` est-il accepté en contexte Patch ?** Le chapitre §4 du manuel
+    n'écrit jamais `[Chan]` — uniquement des numéros nus (interprétés selon le mode) et
+    le préfixe `[Address]`. Or le générateur écrit `Chan` partout, par convention
+    d'explicitation adoptée dès v0.1. Que `Chan 5 At 100` soit accepté en Patch — et
+    surtout qu'il force l'interprétation channel quel que soit le mode Format — est une
+    extrapolation, jamais vérifiée. Si elle tient, c'est la parade symétrique de
+    `Address` et elle lève #20 pour de bon.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

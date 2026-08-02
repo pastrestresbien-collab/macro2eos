@@ -8,6 +8,7 @@
 #   v0.2  + Fan (§4 de la grammaire consolidée) + cues + macros + submasters
 #   v0.3  + Query + effets + couche d'injection OSC
 #   v0.4  + contexte d'écran (modalité) + auto-terminaison
+#   v0.5  + Patch (§4) — où `At` s'inverse une seconde fois
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -15,10 +16,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.4"
+  version: "0.5"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran
+    + query + effets + injection OSC + contexte d'écran + patch
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -90,6 +91,37 @@ contexte:
     99: { nom: "Diagnostics",         confiance: A }
     100: { nom: "User Manual",        confiance: A }
 
+  # Dans Patch, `At` s'inverse une SECONDE fois — selon un mode interne à
+  # l'écran, invisible dans la commande et non observable en OSC.
+  modes_patch:
+    confiance: A
+    source: "manuel §4 « Patching By Channel » / « Patching By Address »"
+    bascule:
+      mot_cle: "Format"
+      osc: format
+      type: toggle
+      confiance: A
+      backlog: 20
+      note: >
+        `Format` bascule, il ne règle pas. Aucune adresse `/eos/out/…` ne
+        publie le mode courant — le sous-arbre `/eos/out/get/patch/…` renvoie
+        la base de patch, pas l'état de l'affichage. Le mode est donc à la fois
+        non réglable et non lisible depuis OSC.
+    par_channel:
+      defaut: true
+      sens: "`5 At 100` patche le CHANNEL 5 à l'ADRESSE 100"
+      confiance: A
+    par_adresse:
+      defaut: false
+      sens: "`5 At 100` patche l'ADRESSE 5 au CHANNEL 100 — exactement l'inverse"
+      confiance: A
+    consequence_generateur: >
+      La même chaîne de caractères produit deux patchs opposés selon un état
+      que le générateur ne peut ni lire ni régler de façon fiable. Seule
+      parade documentée : le préfixe explicite `Address <n> At <channel>`, qui
+      lève l'ambiguïté quel que soit le mode (manuel §4). Le générateur émet
+      cette forme dès qu'il patche par adresse.
+
   # Les mots dont le sens dépend de l'écran actif
   polysemie:
     At:
@@ -124,6 +156,59 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# PATCH EN MASSE — le Fan s'applique ici aussi, avec un pas non prévisible
+# --------------------------------------------------------------------------
+patch:
+  confiance: A
+  source: "manuel §4 « Range Patching » ; corpus #164 (A)"
+
+  plage:
+    forme: "`Chan <a> Thru <b> At <adresse>` patche la plage à partir de l'adresse"
+    exemple: "`1 Thru 20 At 10` patche les channels 1 à 20 aux adresses 10 à 29"
+    confiance: A
+  liste:
+    forme: "`<a> + <b> + <c> At <adresse>` attribue les adresses dans l'ordre de la liste"
+    exemple: "`1 + 4 + 8 At 1` patche le channel 1 à l'adresse 1, le 4 à 2, le 8 à 3"
+    confiance: A
+    note: "les adresses se suivent, pas les channels"
+
+  pas_non_previsible:
+    regle: >
+      Le pas d'adresse entre deux channels est l'empreinte DMX (footprint) du
+      fixture, pas systématiquement +1.
+    confiance: A
+    source: "corpus #164, confirmation officielle"
+    consequence_generateur: >
+      Le générateur ne peut PAS annoncer les adresses résultantes sans
+      connaître le type de fixture patché. Il ne doit donc jamais les afficher
+      comme un fait dans une prévisualisation — seulement l'adresse de départ.
+
+  plage_channels_seulement:
+    regle: "`Thru` ne patche en plage QUE des channels"
+    confiance: A
+    source: 'manuel §4 : "Range patching only works with channels"'
+    piege: >
+      Tenter une plage d'ADRESSES ne produit pas d'erreur : Eos crée des PARTS
+      sur le channel au lieu de patcher une plage. Le résultat est silencieux
+      et faux.
+
+  part_automatique:
+    regle: >
+      Patcher une adresse sur un channel déjà adressé crée une part
+      supplémentaire au lieu de remplacer.
+    confiance: A
+    source: "manuel §4 « Creating Multipart and Compound Channels »"
+
+  dimmer_doubling:
+    softkeys: ["{A}", "{B}", "{NoDimDbl}"]
+    confiance: A
+    source: "manuel §4 « Dimmer Doubling »"
+    note: >
+      `{NoDimDbl}` ne s'emploie qu'en mode ADRESSE — il faut basculer avec
+      `Format` d'abord. Décalage réseau par défaut de 20000 (256 sur Sensor
+      Classic), réglable dans le Setup.
 
 # --------------------------------------------------------------------------
 # TERMINAISON — toutes les commandes ne prennent pas `Enter`
@@ -861,6 +946,100 @@ actions:
     note: >
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
+
+  # -- patch ----------------------------------------------------------------
+  patcher:
+    mot_cle: "At"
+    attend: adresse
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 « Patching By Channel »"
+    avertissement: >
+      Même mot-clé que l'intensité, sens opposé — et à l'intérieur même de
+      Patch, le sens s'inverse encore selon le mode Format. Voir
+      contexte.modes_patch. Le générateur ne l'émet qu'en mode par channel.
+    mode_requis: par_channel
+  patcher_par_adresse:
+    mot_cle: "Address"
+    attend: adresse_puis_channel
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [Address] [5][1][3] [At] [8] [Enter] »"
+    note: >
+      Forme NON ambiguë : le préfixe `Address` force l'interprétation quel que
+      soit le mode Format. C'est la seule parade documentée au piège du mode,
+      donc la forme que le générateur privilégie pour patcher par adresse.
+    osc: address
+  patch_univers:
+    mot_cle: "At"
+    attend: univers_adresse       # `At 2 / 146`
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "grammaire consolidée §3 : `603 At 2 / 146` — 2e univers, adresse 146"
+  retirer_adresse:
+    mot_cle: "At"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "grammaire consolidée §3 : `[601] [At] [Enter]` retire l'adresse, garde le type"
+  depatcher:
+    mot_cle: "Unpatch"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 ; grammaire consolidée §3"
+    note: "restaure les propriétés par défaut — retire adresse, type, label"
+  patch_hors_sortie:
+    mot_cle: "At 0"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [n] [At] [0] [Enter] »"
+    note: >
+      Le channel reste manipulable et enregistrable mais ne sort rien. À ne pas
+      confondre avec la suppression, qui interdit toute donnée.
+  supprimer:
+    mot_cle: "Delete"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch, Live, Blind]
+    confiance: A
+    source: "manuel §4 : « [6] [Thru] [1][0] [Delete] [Enter] [Enter] »"
+    avertissement: >
+      Double `Enter` de confirmation. Les données programmées d'un channel
+      supprimé sont perdues — le manuel le signale en CAUTION.
+    confirmation: true
+  patch_courbe:
+    mot_cle: "Curve"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [1] {Curve} [4] [Enter] »"
+    osc: curve
+  patch_preheat:
+    mot_cle: "Preheat"
+    attend: pourcentage
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [1] {Preheat} [0][3] [Enter] »"
+    osc: preheat
+  patch_proportion:
+    mot_cle: "Proportion"
+    attend: pourcentage
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [1] {Attributes} {Proportion} [1][2][5] [Enter] »"
+    osc: proportion
+    note: "`Proportion Enter` sans valeur retire la proportion appliquée"
 
   # -- sélection ------------------------------------------------------------
   selection_active:
@@ -1621,7 +1800,86 @@ legalite:
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
 
+  # --- Patch ---
+  - objet: Chan
+    action: patcher
+    valide: oui
+    confiance: A
+    note: "n'a de sens qu'en mode par channel — voir contexte.modes_patch"
+
+  - objet: Chan
+    action: patch_univers
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: patcher_par_adresse
+    valide: oui
+    confiance: A
+    note: "`Address 513 At 8` — forme non ambiguë, sans sélection préalable"
+
+  - objet: Chan
+    action: retirer_adresse
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: depatcher
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: patch_hors_sortie
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: supprimer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: patch_courbe
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: patch_preheat
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: patch_proportion
+    valide: oui
+    confiance: A
+
+  - objet: Part
+    action: patcher
+    valide: oui
+    confiance: A
+    note: "`Chan 8 Part 2 At 513` — crée et adresse la part 2"
+
   # --- zones non tranchées ---
+  - combinaison: "mode de patch By Channel / By Address"
+    valide: inconnu
+    confiance: null
+    backlog: 20
+    note: >
+      `5 At 100` patche le channel 5 à l'adresse 100 en mode par channel, et
+      l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
+      un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
+      peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "mot-clé Chan explicite en contexte Patch"
+    valide: inconnu
+    confiance: null
+    backlog: 21
+    note: >
+      Le chapitre Patch du manuel n'écrit JAMAIS `[Chan]` — que des numéros nus
+      et le préfixe `[Address]`. Or le générateur écrit `Chan` partout par
+      convention. Que `Chan 5 At 100` soit accepté en Patch, et force bien
+      l'interprétation channel quel que soit le mode, est une extrapolation.
+
   - combinaison: "commande auto-terminante hors liste officielle"
     valide: inconnu
     confiance: null

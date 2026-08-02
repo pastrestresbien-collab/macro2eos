@@ -385,6 +385,25 @@ class Generateur:
                 avert.append(f"valeur DMX {valeur} hors bornes 0-255")
             return f"{mot} {valeur}"
 
+        if t in ("patcher", "patch_courbe", "patch_preheat", "patch_proportion"):
+            if t == "patcher":
+                self._verifier_mode_patch(act, avert)
+            return f"{mot} {act['adresse' if t == 'patcher' else 'valeur']}"
+
+        if t == "patch_univers":
+            self._verifier_mode_patch(act, avert)
+            return f"{mot} {act['univers']} / {act['adresse']}"
+
+        if t == "patcher_par_adresse":
+            # seule forme documentée qui lève l'ambiguïté du mode Format
+            return f"{mot} {act['adresse']} At {act['channel']}"
+
+        if t in ("retirer_adresse", "depatcher", "patch_hors_sortie"):
+            return mot
+
+        if t == "supprimer":
+            return mot
+
         if t == "focus_onglet":
             numero = act["numero"]
             ecrans = self.modele["contexte"]["ecrans"]
@@ -406,6 +425,17 @@ class Generateur:
             return f"{{{mot}}} {act['valeur']}"
 
         raise ValueError(f"action non gérée : {t}")
+
+    def _verifier_mode_patch(self, act: dict, avert: list[str]) -> None:
+        """`5 At 100` patche le channel 5 à l'adresse 100 en mode par channel,
+        et l'adresse 5 au channel 100 en mode par adresse. Le générateur ne peut
+        ni lire ni régler ce mode : il ne peut que le signaler."""
+        modes = self.modele["contexte"]["modes_patch"]
+        avert.append(
+            f"patch : le sens de `At` dépend du mode Format, que le générateur "
+            f"ne peut ni lire ni régler (PLANNING #{modes['bascule']['backlog']}) — "
+            f"`Address <n> At <channel>` lève l'ambiguïté"
+        )
 
     def _verifier_fan_references(self, act: dict, avert: list[str]) -> None:
         """Fan sur 2 références ou moins interpole en absolu et perd la
@@ -459,20 +489,20 @@ class Generateur:
         t = action["type"]
         spec = self.modele["actions"][t]
 
-        polysemie = self.modele["contexte"]["polysemie"]
-        signale = False
-        if spec["mot_cle"] in polysemie:
-            sens = polysemie[spec["mot_cle"]]["sens"]
-            if contexte in sens and contexte not in ("Live", "Blind"):
-                avert.append(
-                    f"`{spec['mot_cle']}` en contexte {contexte} signifie "
-                    f"« {sens[contexte]} » — pas ce que l'action `{t}` demande"
-                )
-                signale = True
-
-        # inutile de redire en générique ce que la polysémie vient de dire en précis
         attendus = spec.get("contextes")
-        if not signale and attendus and contexte not in attendus:
+        if not attendus or contexte in attendus:
+            return          # l'action est documentée pour cet écran : rien à dire
+
+        # hors contexte. Si le mot-clé est polysémique, dire ce qu'il voudra
+        # dire ICI est plus utile que de dire qu'on est hors contexte.
+        polysemie = self.modele["contexte"]["polysemie"]
+        sens = polysemie.get(spec["mot_cle"], {}).get("sens", {})
+        if contexte in sens:
+            avert.append(
+                f"`{spec['mot_cle']}` en contexte {contexte} signifie "
+                f"« {sens[contexte]} » — pas ce que l'action `{t}` demande"
+            )
+        else:
             avert.append(
                 f"action `{t}` documentée en {'/'.join(attendus)} seulement, "
                 f"pas en {contexte}"

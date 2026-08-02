@@ -433,6 +433,71 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # ------------------------------------------------------- Patch (§4)
+    {
+        "nom": "manuel §4 — patch d'un channel, le sens de `At` dépend du mode",
+        # [5] [At] [1][0][0] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 5},
+             "action": {"type": "patcher", "adresse": 100}},
+        ],
+        "kwargs": {"contexte": "Patch"},
+        "attendu": "Chan 5 At 100 Enter",
+        "avertissements": 1,      # PLANNING #20
+    },
+    {
+        "nom": "manuel §4 — `Address` lève l'ambiguïté du mode Format",
+        # [Address] [5][1][3] [At] [8] [Enter]
+        "ir": [
+            {"action": {"type": "patcher_par_adresse", "adresse": 513,
+                        "channel": 8}},
+        ],
+        "kwargs": {"contexte": "Patch"},
+        "attendu": "Address 513 At 8 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "grammaire consolidée §3 — patch sur un second univers",
+        # 603 At 2 / 146
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 603},
+             "action": {"type": "patch_univers", "univers": 2, "adresse": 146}},
+        ],
+        "kwargs": {"contexte": "Patch"},
+        "attendu": "Chan 603 At 2 / 146 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §4 — suppression de channels, double confirmation",
+        # [6] [Thru] [1][0] [Delete] [Enter] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 6, "a": 10},
+             "action": {"type": "supprimer"}},
+        ],
+        "kwargs": {"contexte": "Patch"},
+        "attendu": "Chan 6 Thru 10 Delete Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §4 — preheat patché",
+        # [1] {Preheat} [0][3] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "patch_preheat", "valeur": 3}},
+        ],
+        "kwargs": {"contexte": "Patch"},
+        "attendu": "Chan 1 Preheat 3 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "patch depuis Live — le contexte ne colle pas",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 5},
+             "action": {"type": "patcher", "adresse": 100}},
+        ],
+        "attendu": "Chan 5 At 100 Enter",
+        "avertissements": 2,      # mode Format + action hors contexte
+    },
     {
         "nom": "manuel §18 — BPM d'un effet",
         # [Effect] [1] {BPM} [1][9][0] [Enter]
