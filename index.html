@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Work out your daily macro targets, then track what you eat against them." />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0f1117" />
+    <title>macro2eos — macro planner &amp; day tracker</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%237aa2ff' stroke-width='5' stroke-dasharray='61 82' stroke-linecap='round' transform='rotate(-90 16 16)'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --surface-2: #f0f2f8;
+        --border: #dfe3ee;
+        --text: #171a21;
+        --text-dim: #626a7d;
+        --accent: #4361ee;
+        --accent-text: #ffffff;
+        --danger: #c8354a;
+        --c-protein: #4361ee;
+        --c-carbs: #d8830f;
+        --c-fat: #0f9b7a;
+        --c-cal: #e05c48;
+        --radius: 14px;
+        --shadow: 0 1px 2px rgb(16 20 32 / 6%), 0 8px 24px rgb(16 20 32 / 6%);
+        --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+        color-scheme: light;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1117;
+          --surface: #171a23;
+          --surface-2: #1f2430;
+          --border: #2a3040;
+          --text: #eef1f8;
+          --text-dim: #98a1b5;
+          --accent: #7aa2ff;
+          --accent-text: #0f1117;
+          --danger: #ff7a8a;
+          --c-protein: #7aa2ff;
+          --c-carbs: #ffb45c;
+          --c-fat: #5fd8b4;
+          --c-cal: #ff8f6b;
+          --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 24%);
+          color-scheme: dark;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.5;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <m2-app></m2-app>
+    <noscript>macro2eos needs JavaScript enabled.</noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

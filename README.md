@@ -1,0 +1,68 @@
+# macro2eos
+
+A macro planner and daily food tracker. Work out your calorie and macro targets
+from your body stats, activity level, and goal — then log what you eat and watch
+the rings fill up.
+
+Built with [Lit](https://lit.dev), TypeScript, and Vite. No backend: everything
+lives in `localStorage`, so nothing leaves the browser.
+
+## Running it
+
+```sh
+npm install
+npm run dev      # dev server with hot reload
+npm test         # unit tests (vitest)
+npm run build    # typecheck, then bundle to dist/
+npm run preview  # serve the production build
+```
+
+## What it does
+
+**Plan tab.** Sex, age, weight, height, activity, and goal go in; daily targets
+come out. Resting burn uses Mifflin–St Jeor, scaled by an activity multiplier.
+Protein is set per kilogram of bodyweight (higher when cutting), fat takes a
+quarter of the calorie budget with a per-kg floor, and carbs absorb the rest.
+Metric and imperial units convert in place rather than resetting the profile.
+
+**Day tab.** Four rings — calories, protein, carbs, fat — show today against the
+plan, and turn red once a target is passed. Foods come from a small built-in
+list (a forgiving lookup, so "rice" finds White rice) or you can type macros in
+by hand. Servings step in quarters, and the arrows move between days; each day
+is stored separately.
+
+## Layout
+
+```
+index.html            design tokens, light/dark theming
+src/
+  main.ts             registers the app element
+  components/
+    m2-app.ts         shell: header, hash-routed tabs
+    m2-plan.ts        profile form and target summary
+    m2-today.ts       rings, day navigation, logged entries
+    m2-add-food.ts    picker and custom-food form
+    m2-ring.ts        one SVG progress ring
+  lib/
+    macros.ts         BMR, TDEE, targets, totals, unit conversion
+    dates.ts          local-time ISO dates and day arithmetic
+    foods.ts          starter food list and lookup
+    store.ts          app state, persistence, Lit reactive controller
+    types.ts
+  styles/shared.ts    styles shared across components
+```
+
+State lives in a single `Store`. Components subscribe through
+`StoreController`, a Lit reactive controller that re-renders its host on every
+change; nothing mutates state in place. Anything read back from storage is
+re-validated field by field, so a stale or corrupt blob degrades to defaults
+instead of breaking the app.
+
+The calculation and state modules are covered by unit tests (`src/lib/*.test.ts`);
+the components are plain rendering on top of them.
+
+## Caveats
+
+The food list holds rounded label figures, not a real nutrition database, and
+the targets are population-average estimates — useful as a starting point, not
+as medical advice.
