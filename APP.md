@@ -17,6 +17,11 @@ Dernière mise à jour : 2026-08-01.
 | 2026-08-01 | **Saisie texte d'abord.** La saisie vocale reste au programme, mais après. | Entrée utilisateur |
 | 2026-08-01 | **Trois écrans parallèles** : saisie/traduction/envoi, favoris, paramètres. | Structure |
 | 2026-08-01 | **La programmation complexe ne se fait pas en jeu.** Envois confirmés et sauvegardés. | Usage |
+| 2026-08-01 | Perte de connexion : **l'app tente de se reconnecter** automatiquement. | Réseau |
+| 2026-08-01 | Console qui refuse : **proposer une correction bien visible** avant renvoi. | Écran 1 |
+| 2026-08-01 | Favoris : **option en paramètres** — envoi immédiat ou après confirmation. | Écrans 2 et 3 |
+| 2026-08-01 | Favoris **organisables par onglets** (thématique ou par spectacle). | Écran 2 |
+| 2026-08-01 | **Sauvegarde partageable** + export des favoris par mail ou message. | Données |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -54,7 +59,9 @@ se permettre d'être bavard et prudent.
   avertissements s'il y en a.
 - Envoi **toujours confirmé**. Si la macro porte un ⚠ (syntaxe non validée au banc),
   la confirmation passe en plein écran — impossible de l'envoyer distraitement.
-- Retour console affiché : acceptée, ou refusée avec le message d'erreur.
+- Retour console affiché : acceptée, ou refusée. **En cas de refus, la correction
+  proposée est mise bien en évidence** — l'utilisateur la valide avant renvoi, jamais
+  de renvoi automatique.
 - Bouton **Sauvegarder en favori**, actif seulement après un envoi accepté.
 
 ### 2. Favoris — le seul écran de jeu
@@ -62,20 +69,51 @@ se permettre d'être bavard et prudent.
 Le seul écran utilisé en représentation. Donc : grandes cibles tactiles, une main,
 lisible dans le noir, aucun texte superflu.
 
+- **Onglets** en haut : regroupement thématique ou par spectacle, au choix de
+  l'utilisateur.
 - Grille de tuiles, une par macro favorite, avec son libellé en clair.
-- Un appui = envoi. Confirmation légère (l'appui long, ou une confirmation immédiate
-  annulable), pas de dialogue bloquant.
+- Un appui = envoi. Comportement réglé en paramètres : **envoi immédiat** ou **après
+  confirmation**.
 - **Aucun ⚠ ne peut apparaître ici** : une macro n'entre dans les favoris qu'après
   avoir été acceptée par la console depuis l'écran 1. Les favoris sont propres par
   construction.
-- Réorganisation des tuiles hors jeu uniquement.
+- Réorganisation des tuiles et des onglets hors jeu uniquement.
 
 ### 3. Paramètres
 
 - Connexion : adresse IP de la console, port (3032 par défaut), état de la connexion.
 - **User# dédié** de l'app (voir contraintes ci-dessous).
-- Gestion des favoris : renommer, supprimer, réordonner.
+- **Comportement des favoris** : envoi immédiat, ou après confirmation.
+- Gestion des favoris et des onglets : renommer, supprimer, réordonner.
+- **Sauvegarde / partage** : export et import (voir ci-dessous).
 - Plus tard : activation de la saisie vocale.
+
+---
+
+## Reconnexion
+
+L'app tente de se reconnecter automatiquement en cas de perte de connexion, et affiche
+son état en permanence.
+
+**Une commande envoyée mais non acquittée n'est jamais rejouée automatiquement.** Si la
+connexion tombe entre l'envoi et l'accusé de réception, l'app ne peut pas savoir si la
+console a exécuté la commande — la rejouer risquerait un double déclenchement en pleine
+représentation. Elle est représentée à l'utilisateur, qui décide.
+
+---
+
+## Sauvegarde et partage
+
+- **Sauvegarde partageable** de la configuration favoris (tuiles + onglets).
+- **Export par mail ou message.**
+
+Deux garde-fous à concevoir :
+
+- L'export **ne contient pas les paramètres de connexion** (IP console, User#) — ils
+  sont propres à chaque installation et n'ont aucun sens ailleurs.
+- Les macros favorites référencent des **numéros propres à une conduite** (palette 5,
+  groupe 12, cue 47). Importées sur un autre spectacle, elles restent syntaxiquement
+  valides mais pointent vers autre chose. L'import doit le signaler.
 
 ---
 
@@ -97,8 +135,9 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
 
 ## Ouvert — à trancher avec l'usage réel
 
-- Gestion de la connexion perdue en pleine représentation.
-- Que faire quand la console refuse la syntaxe : proposer une correction, ou rendre la
-  main ?
-- Confirmation sur l'écran Favoris : appui long, ou envoi immédiat annulable ?
-- Les favoris doivent-ils être organisables par spectacle / conduite ?
+- Format de l'export : texte lisible dans le corps du message, fichier ré-importable,
+  ou les deux ?
+- Un favori importé d'un autre spectacle doit-il être bloqué, ou seulement signalé ?
+- **Dépendance banc réel** : la correction proposée en cas de refus suppose que le
+  message d'erreur de la console soit assez précis pour être exploité. À vérifier —
+  le simulateur ne renvoie pas d'erreur réaliste.
