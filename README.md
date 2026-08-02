@@ -28,8 +28,15 @@ Metric and imperial units convert in place rather than resetting the profile.
 **Day tab.** Four rings — calories, protein, carbs, fat — show today against the
 plan, and turn red once a target is passed. Foods come from a small built-in
 list (a forgiving lookup, so "rice" finds White rice) or you can type macros in
-by hand. Servings step in quarters, and the arrows move between days; each day
-is stored separately.
+by hand. Whatever you logged most recently comes back as one-tap chips, custom
+entries included. Servings step in quarters, and the arrows move between days;
+each day is stored separately.
+
+**Your data.** At the bottom of the Plan tab: download a JSON backup, restore
+one, or reset everything. The log only lives in this browser, so a backup file
+is the only thing standing between you and a cleared cache. Restoring over
+existing data asks first, and a restored file goes through the same validation
+as anything else loaded from storage.
 
 ## Layout
 
@@ -41,12 +48,15 @@ src/
     m2-app.ts         shell: header, hash-routed tabs
     m2-plan.ts        profile form and target summary
     m2-today.ts       rings, day navigation, logged entries
-    m2-add-food.ts    picker and custom-food form
+    m2-add-food.ts    picker, recent chips, custom-food form
+    m2-data.ts        backup, restore, reset
     m2-ring.ts        one SVG progress ring
   lib/
     macros.ts         BMR, TDEE, targets, totals, unit conversion
     dates.ts          local-time ISO dates and day arithmetic
     foods.ts          starter food list and lookup
+    history.ts        recently logged foods
+    backup.ts         export and import, with validation
     store.ts          app state, persistence, Lit reactive controller
     types.ts
   styles/shared.ts    styles shared across components
@@ -59,7 +69,8 @@ re-validated field by field, so a stale or corrupt blob degrades to defaults
 instead of breaking the app.
 
 The calculation and state modules are covered by unit tests (`src/lib/*.test.ts`);
-the components are plain rendering on top of them.
+the components are plain rendering on top of them. GitHub Actions runs the
+typecheck, the tests, and the build on every push.
 
 ## Caveats
 

@@ -1,13 +1,15 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { FOODS, findFood } from '../lib/foods.js';
+import { recentFoods } from '../lib/history.js';
 import { caloriesOf } from '../lib/macros.js';
-import { store } from '../lib/store.js';
+import { StoreController, store } from '../lib/store.js';
 import { shared } from '../styles/shared.js';
 
 /** Adds an entry to the selected day, either from the starter list or by hand. */
 @customElement('m2-add-food')
 export class M2AddFood extends LitElement {
+  private store = new StoreController(this);
   @state() private custom = false;
   @state() private error = '';
   @query('#food') private foodInput!: HTMLInputElement;
@@ -47,6 +49,27 @@ export class M2AddFood extends LitElement {
         border: none;
         background: none;
         font-size: 0.85rem;
+      }
+
+      .recent {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 0.85rem;
+      }
+
+      .recent .chip {
+        border-radius: 999px;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .recent-label {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        margin-right: 0.15rem;
       }
 
       @media (max-width: 520px) {
@@ -177,9 +200,40 @@ export class M2AddFood extends LitElement {
     `;
   }
 
+  private renderRecent() {
+    const recent = recentFoods(this.store.state.days);
+    if (!recent.length) return null;
+
+    return html`
+      <div class="recent">
+        <span class="recent-label">Again:</span>
+        ${recent.map(
+          (food) => html`
+            <button
+              class="chip"
+              title=${`Add one serving of ${food.name}`}
+              @click=${() => {
+                store.addEntry({
+                  name: food.name,
+                  serving: food.serving,
+                  servings: 1,
+                  perServing: food.perServing,
+                });
+                this.error = '';
+              }}
+            >
+              ${food.name}
+            </button>
+          `,
+        )}
+      </div>
+    `;
+  }
+
   override render() {
     return html`
       ${this.custom ? this.renderCustom() : this.renderPicker()}
+      ${this.custom ? null : this.renderRecent()}
       ${this.error ? html`<p class="error" role="alert">${this.error}</p>` : null}
       <button
         class="toggle"

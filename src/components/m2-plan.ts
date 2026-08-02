@@ -12,6 +12,7 @@ import {
 import { StoreController, store } from '../lib/store.js';
 import type { ActivityLevel, Goal, Sex, Units } from '../lib/types.js';
 import { shared } from '../styles/shared.js';
+import './m2-data.js';
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -345,6 +346,8 @@ export class M2Plan extends LitElement {
           medical advice.
         </p>
       </section>
+
+      <m2-data></m2-data>
     `;
   }
 }

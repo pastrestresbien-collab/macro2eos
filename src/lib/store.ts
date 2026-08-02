@@ -177,6 +177,16 @@ export class Store {
     delete days[this.#state.selectedDate];
     this.#commit({ ...this.#state, days });
   }
+
+  /** Swaps in a whole state, e.g. a restored backup. */
+  replaceState(next: State): void {
+    this.#commit(next);
+  }
+
+  /** Wipes everything back to a fresh install. */
+  reset(): void {
+    this.#commit(defaultState());
+  }
 }
 
 export const store = new Store();
