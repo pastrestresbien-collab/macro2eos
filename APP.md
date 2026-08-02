@@ -22,6 +22,9 @@ Dernière mise à jour : 2026-08-01.
 | 2026-08-01 | Favoris : **option en paramètres** — envoi immédiat ou après confirmation. | Écrans 2 et 3 |
 | 2026-08-01 | Favoris **organisables par onglets** (thématique ou par spectacle). | Écran 2 |
 | 2026-08-01 | **Sauvegarde partageable** + export des favoris par mail ou message. | Données |
+| 2026-08-01 | Commande envoyée non acquittée : **jamais rejouée automatiquement**. | Réseau |
+| 2026-08-01 | Favori importé d'un autre spectacle : **signalé, jamais bloqué**. | Données |
+| 2026-08-01 | Export : **les deux formats** — texte lisible et fichier ré-importable. | Données |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -105,15 +108,19 @@ représentation. Elle est représentée à l'utilisateur, qui décide.
 ## Sauvegarde et partage
 
 - **Sauvegarde partageable** de la configuration favoris (tuiles + onglets).
-- **Export par mail ou message.**
+- **Export par mail ou message, sous deux formes simultanées** :
+  - *texte lisible* dans le corps du message — pour discuter avec un collègue, relire,
+    copier une ligne à la main ;
+  - *fichier ré-importable* en pièce jointe — pour installer tel quel.
 
-Deux garde-fous à concevoir :
+Deux garde-fous :
 
 - L'export **ne contient pas les paramètres de connexion** (IP console, User#) — ils
   sont propres à chaque installation et n'ont aucun sens ailleurs.
 - Les macros favorites référencent des **numéros propres à une conduite** (palette 5,
   groupe 12, cue 47). Importées sur un autre spectacle, elles restent syntaxiquement
-  valides mais pointent vers autre chose. L'import doit le signaler.
+  valides mais pointent vers autre chose. L'import le **signale sans bloquer** : c'est
+  l'utilisateur qui sait si la numérotation correspond.
 
 ---
 
@@ -133,11 +140,10 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
 
 ---
 
-## Ouvert — à trancher avec l'usage réel
+## Ouvert
 
-- Format de l'export : texte lisible dans le corps du message, fichier ré-importable,
-  ou les deux ?
-- Un favori importé d'un autre spectacle doit-il être bloqué, ou seulement signalé ?
+- Apparence concrète des trois écrans (maquette à produire).
 - **Dépendance banc réel** : la correction proposée en cas de refus suppose que le
   message d'erreur de la console soit assez précis pour être exploité. À vérifier —
-  le simulateur ne renvoie pas d'erreur réaliste.
+  le simulateur ne renvoie pas d'erreur réaliste. Si le message s'avère trop pauvre,
+  l'app signalera le refus sans pouvoir proposer de correction.
