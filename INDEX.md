@@ -64,6 +64,7 @@ et le backlog de travail.
 - `VERIFICATION.md` — rapport d'intégrité (couverture texte source ↔ Markdown).
 - `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
   valider au banc réel.
+- `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
 - `CLAUDE.md` — règles de travail pour toute session sur ce dépôt.
 
 ## Règle de fidélité
