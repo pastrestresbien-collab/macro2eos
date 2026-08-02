@@ -15,6 +15,8 @@ Dernière mise à jour : 2026-08-01.
 | Date | Décision | Portée |
 |---|---|---|
 | 2026-08-01 | **Saisie texte d'abord.** La saisie vocale reste au programme, mais après. | Entrée utilisateur |
+| 2026-08-01 | **Trois écrans parallèles** : saisie/traduction/envoi, favoris, paramètres. | Structure |
+| 2026-08-01 | **La programmation complexe ne se fait pas en jeu.** Envois confirmés et sauvegardés. | Usage |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -38,6 +40,45 @@ jamais l'avaler.
 
 ---
 
+## Les trois écrans
+
+Thème sombre obligatoire sur les trois (salle noire, aucun aplat clair).
+
+### 1. Saisie — atelier de préparation
+
+Pas un écran de jeu : la programmation complexe se fait hors représentation. Peut donc
+se permettre d'être bavard et prudent.
+
+- Champ de saisie en langage naturel.
+- La macro générée s'affiche en grand, **toujours au même endroit**, avec ses
+  avertissements s'il y en a.
+- Envoi **toujours confirmé**. Si la macro porte un ⚠ (syntaxe non validée au banc),
+  la confirmation passe en plein écran — impossible de l'envoyer distraitement.
+- Retour console affiché : acceptée, ou refusée avec le message d'erreur.
+- Bouton **Sauvegarder en favori**, actif seulement après un envoi accepté.
+
+### 2. Favoris — le seul écran de jeu
+
+Le seul écran utilisé en représentation. Donc : grandes cibles tactiles, une main,
+lisible dans le noir, aucun texte superflu.
+
+- Grille de tuiles, une par macro favorite, avec son libellé en clair.
+- Un appui = envoi. Confirmation légère (l'appui long, ou une confirmation immédiate
+  annulable), pas de dialogue bloquant.
+- **Aucun ⚠ ne peut apparaître ici** : une macro n'entre dans les favoris qu'après
+  avoir été acceptée par la console depuis l'écran 1. Les favoris sont propres par
+  construction.
+- Réorganisation des tuiles hors jeu uniquement.
+
+### 3. Paramètres
+
+- Connexion : adresse IP de la console, port (3032 par défaut), état de la connexion.
+- **User# dédié** de l'app (voir contraintes ci-dessous).
+- Gestion des favoris : renommer, supprimer, réordonner.
+- Plus tard : activation de la saisie vocale.
+
+---
+
 ## Contraintes techniques établies
 
 Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
@@ -56,9 +97,8 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
 
 ## Ouvert — à trancher avec l'usage réel
 
-- Apparence et ergonomie de l'écran principal.
-- Comportement en situation de conduite (urgence, obscurité, une seule main).
 - Gestion de la connexion perdue en pleine représentation.
-- Historique des commandes envoyées, rejeu, favoris.
 - Que faire quand la console refuse la syntaxe : proposer une correction, ou rendre la
   main ?
+- Confirmation sur l'écran Favoris : appui long, ou envoi immédiat annulable ?
+- Les favoris doivent-ils être organisables par spectacle / conduite ?
