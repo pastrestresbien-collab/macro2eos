@@ -48,6 +48,29 @@ class Resultat:
         return not self.avertissements
 
 
+@dataclass
+class Message:
+    """Un paquet OSC prêt à partir."""
+    adresse: str
+    arguments: list = field(default_factory=list)
+
+    def __str__(self) -> str:
+        if not self.arguments:
+            return self.adresse
+        return f"{self.adresse} {self.arguments!r}"
+
+
+@dataclass
+class ResultatOSC:
+    messages: list[Message] = field(default_factory=list)
+    avertissements: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
+
+    @property
+    def sur(self) -> bool:
+        return not self.avertissements
+
+
 class Generateur:
     def __init__(self) -> None:
         self.modele = yaml.safe_load((RACINE / "modele.yaml").read_text(encoding="utf-8"))
@@ -126,6 +149,73 @@ class Generateur:
                 morceaux += [str(part[0]), thru, str(part[1])]
             else:
                 morceaux.append(str(part))
+
+        return " ".join(morceaux)
+
+    # -- rendu : Query ------------------------------------------------------
+    def _rendre_cible(self, cible: dict, avert: list[str]) -> str:
+        """Une cible référencée : `Color Palette 2`, `Cue 4 Thru 9`…"""
+        nom = cible["type"]
+        spec = self.modele["cibles"].get(nom)
+        if spec is None:
+            avert.append(f"cible `{nom}` absente du modèle — non vérifiable")
+            mot = nom
+        else:
+            mot = spec["mot_cle"]
+        if "de" in cible:
+            return f"{mot} {cible['de']} {self._thru} {cible['a']}"
+        if "numero" in cible:
+            return f"{mot} {cible['numero']}"
+        return mot                      # `Query Effect` — toutes les cibles
+
+    def _rendre_query(self, conditions: list[dict], avert: list[str]) -> str:
+        """Query est le seul endroit du langage Eos où existe une négation.
+        Toute logique conditionnelle du traducteur passe par ici, ou nulle part."""
+        specs = self.modele["query"]["conditions"]
+        morceaux = [self.modele["query"]["mot_cle"]]
+
+        for critere in conditions:
+            # `Query Effect 1` — une cible sans softkey de condition (manuel §18)
+            if "condition" not in critere:
+                morceaux.append(self._rendre_cible(critere["cible"], avert))
+                continue
+
+            nom = critere["condition"]
+            spec = specs.get(nom)
+            if spec is None:
+                avert.append(f"condition Query `{nom}` absente du modèle — non vérifiable")
+                morceaux.append(f"{{{nom}}}")
+                continue
+
+            morceaux.append(spec["mot_cle"])
+
+            # une condition sans touche OSC ne s'atteint qu'au doigt : pour une
+            # app qui injecte en OSC, c'est une impasse, pas un détail
+            if spec["osc"] is None:
+                avert.append(
+                    f"condition Query `{nom}` : aucune touche OSC (manuel §31) — "
+                    f"atteignable au doigt seulement (PLANNING #{spec['backlog']})"
+                )
+
+            attendu = spec["attend"]
+            if attendu == "cible":
+                if "cible" not in critere:
+                    avert.append(f"condition Query `{nom}` attend une cible — absente de l'IR")
+                else:
+                    morceaux.append(self._rendre_cible(critere["cible"], avert))
+            elif attendu == "valeur":
+                if "valeur" not in critere:
+                    avert.append(f"condition Query `{nom}` attend une valeur — absente de l'IR")
+                else:
+                    morceaux.append(str(critere["valeur"]))
+            elif attendu == "aucun" and ("cible" in critere or "valeur" in critere):
+                avert.append(f"condition Query `{nom}` n'attend aucun argument — ignoré")
+
+            if "contextes" in spec:
+                avert.append(
+                    f"condition Query `{nom}` : valable uniquement en "
+                    f"{'/'.join(spec['contextes'])}"
+                )
 
         return " ".join(morceaux)
 
@@ -281,6 +371,22 @@ class Generateur:
         if t == "appel_macro":
             return f"{mot} {act['numero']}"
 
+        if t in ("selection_active", "selection_derniere", "retirer_effet"):
+            return mot
+
+        if t == "appliquer_effet":
+            return f"{mot} {act['numero']}"
+
+        if t == "arreter_effet":
+            if act.get("tout"):                  # double appui = stop all
+                return f"{mot} {mot}"
+            if "numero" in act:
+                return f"{mot} {act['numero']}"
+            return mot
+
+        if t == "effet_bpm":
+            return f"{{{mot}}} {act['valeur']}"
+
         raise ValueError(f"action non gérée : {t}")
 
     def _verifier_fan_references(self, act: dict, avert: list[str]) -> None:
@@ -332,6 +438,14 @@ class Generateur:
             if "controle" in etape:
                 lignes.append(self._rendre_controle(etape, avert))
                 continue
+
+            if "query" in etape:
+                morceaux.append(self._rendre_query(etape["query"], avert))
+                if "selection" in etape:
+                    avert.append(
+                        "une Query construit elle-même sa sélection — la sélection "
+                        "explicite fournie en plus n'a pas de sens documenté"
+                    )
 
             if "selection" in etape:
                 objet = etape["selection"]["objet"]
@@ -474,6 +588,102 @@ class Generateur:
         return Resultat("\n".join(lignes), avert, notes)
 
 
+    # -- injection OSC ------------------------------------------------------
+    def _adresse(self, chemin: str, utilisateur: int | None) -> str:
+        """`/eos/newcmd` ou `/eos/user/3/newcmd`."""
+        if utilisateur is None:
+            return f"{self.modele['osc']['prefixe']}{chemin}"
+        return f"{self.modele['osc']['prefixe']}user/{utilisateur}/{chemin}"
+
+    def rendre_osc(self, source: Resultat | str, *, adresse: str = "newcmd",
+                   utilisateur: int | None = None) -> ResultatOSC:
+        """Transforme une commande rendue en paquets OSC injectables.
+
+        Une ligne de commande correctement engendrée mais mal injectée ne vaut
+        rien : c'est ici que se vérifient les règles propres au transport.
+        """
+        spec = self.modele["osc"]["ligne_commande"].get(adresse)
+        if spec is None:
+            raise ValueError(f"adresse de ligne de commande inconnue : {adresse}")
+
+        commande = source.commande if isinstance(source, Resultat) else source
+        avert = list(source.avertissements) if isinstance(source, Resultat) else []
+        notes: list[str] = []
+        messages: list[Message] = []
+
+        regles = {r["id"]: r for r in self.modele["osc"]["regles"]}
+
+        for ligne in commande.splitlines():
+            if not ligne.strip():
+                continue
+
+            # les accolades n'ont jamais été vues dans une chaîne de ligne de
+            # commande OSC — ni au manuel, ni au corpus, ni au banc
+            if "{" in ligne:
+                regle = regles["accolades_non_confirmees"]
+                avert.append(
+                    f"« {ligne} » contient un token entre accolades : jamais "
+                    f"observé dans une chaîne `{spec['adresse']}` "
+                    f"(PLANNING #{regle['backlog']})"
+                )
+
+            if "Assert" in ligne:
+                avert.append(
+                    f"« {ligne} » : `Assert` n'a pas de mot-clé de ligne de "
+                    f"commande — erreur de syntaxe confirmée au banc (confiance S)"
+                )
+
+            if not ligne.endswith("Enter") and not ligne.endswith("#"):
+                avert.append(
+                    f"« {ligne} » sans terminaison : la console la laissera en "
+                    f"attente sur la ligne de commande"
+                )
+
+            messages.append(Message(self._adresse(adresse, utilisateur), [ligne]))
+
+        if utilisateur is None:
+            notes.append(
+                "aucun User# précisé : le client hérite de l'utilisateur de la "
+                "console primaire. Recommandation B (corpus #066) — en réserver un."
+            )
+
+        notes.append(
+            f"terminaison par le mot `Enter` littéral — forme employée au banc "
+            f"de transport (`reference/tools/`)"
+        )
+        if spec.get("reinitialise"):
+            notes.append(f"`{spec['adresse']}` réinitialise la ligne de commande avant d'écrire")
+
+        return ResultatOSC(messages, avert, notes)
+
+    def rendre_osc_macro(self, numero: int, *,
+                         utilisateur: int | None = None) -> ResultatOSC:
+        """Déclenche une macro déjà enregistrée — adresse normative du projet."""
+        adresse = self.modele["osc"]["macro"]["execution"]["adresse"]
+        chemin = adresse[len(self.modele["osc"]["prefixe"]):]
+        return ResultatOSC(
+            [Message(self._adresse(chemin, utilisateur), [numero])],
+            [],
+            ["déclencher une macro enregistrée ne rejoue pas sa syntaxe : "
+             "la console l'a déjà acceptée à l'enregistrement"],
+        )
+
+    def rendre_osc_touche(self, nom: str, *, front: float | None = None,
+                          utilisateur: int | None = None) -> ResultatOSC:
+        """Simule un appui de touche. Seule voie pour ce que la ligne de
+        commande ne sait pas exprimer (Assert, conditions Query sans mot)."""
+        avert: list[str] = []
+        nommage = self.modele["osc"]["touche"]["nommage"]
+        if " " in nom:
+            avert.append(
+                f"nom de touche `{nom}` avec espace : le générateur n'émet que la "
+                f"forme underscore de eosKeys.ts (PLANNING #{nommage['backlog']})"
+            )
+            nom = nom.replace(" ", "_")
+        args = [front] if front is not None else []
+        return ResultatOSC([Message(self._adresse(f"key/{nom}", utilisateur), args)], avert)
+
+
 if __name__ == "__main__":
     g = Generateur()
     exemples = [
@@ -504,6 +714,15 @@ if __name__ == "__main__":
             {"selection": {"objet": "Chan", "de": 6, "a": 10},
              "action": {"type": "record_sub", "cible": 3}},
         ]),
+        ("tout ce qui est dans la palette couleur 2, à 50 %", [
+            {"query": [{"condition": "Is In",
+                        "cible": {"type": "Color Palette", "numero": 2}}],
+             "action": {"type": "intensite", "valeur": 50}},
+        ]),
+        ("tout ce qui n'est PAS dans la palette beam 25", [
+            {"query": [{"condition": "Isn't In",
+                        "cible": {"type": "Beam Palette", "numero": 25}}]},
+        ]),
     ]
     for nl, ir in exemples:
         r = g.rendre(ir)
@@ -526,3 +745,26 @@ if __name__ == "__main__":
         print(f"      ⚠ {a}")
     for n in r.notes:
         print(f"      · {n}")
+
+    print("\n--- injection OSC ---")
+    rendu = g.rendre([
+        {"selection": {"objet": "Chan", "de": 10, "a": 20},
+         "action": {"type": "couleur_gel", "nuancier": 3, "teinte": 195}},
+    ])
+    osc = g.rendre_osc(rendu, utilisateur=3)
+    for m in osc.messages:
+        print(f"OSC : {m}")
+    for n in osc.notes:
+        print(f"      · {n}")
+
+    print()
+    avec_fan = g.rendre([
+        {"selection": {"objet": "Chan", "de": 1, "a": 10},
+         "action": {"type": "intensite", "de": 10, "a": 30,
+                    "fan": {"style": "Mirror Out"}}},
+    ])
+    osc = g.rendre_osc(avec_fan, utilisateur=3)
+    for m in osc.messages:
+        print(f"OSC : {m}")
+    for a in osc.avertissements:
+        print(f"      ⚠ {a}")

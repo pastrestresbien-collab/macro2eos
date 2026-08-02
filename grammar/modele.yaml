@@ -3,9 +3,10 @@
 # Source de vérité pour la construction de commandes. Écrit à la main, relisible.
 # Compilé en JSON par `grammar/build.py` pour consommation par le code.
 #
-# Périmètre v0.2 :
+# Périmètre v0.3 :
 #   v0.1  sélection channels/groupes + couleur de nuancier + record de palette
 #   v0.2  + Fan (§4 de la grammaire consolidée) + cues + macros + submasters
+#   v0.3  + Query + effets + couche d'injection OSC
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -13,8 +14,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.2"
-  perimetre: "selection + couleur + record palette + fan + cues + macros + submasters"
+  version: "0.3"
+  perimetre: >
+    selection + couleur + record palette + fan + cues + macros + submasters
+    + query + effets + injection OSC
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -67,6 +70,33 @@ objets:
     confiance: A
     source: "manuel §24 Macros"
     note: "numérotation 1 à 99 999"
+  Effect:
+    mot_cle: "Effect"
+    numerote: true
+    plage: true
+    confiance: A
+    source: "manuel §18 Effects"
+    note: >
+      917 et 918 sont préprogrammés (arc-en-ciel RGB / CMY). Un effet
+      step-based porte sa propre liste de channels ; un effet absolu non.
+
+# --------------------------------------------------------------------------
+# CIBLES RÉFÉRENCÉES — record targets citables en critère de Query
+#
+# Un même mot-clé désigne tantôt un objet (« sélectionne ce qui est dans la
+# palette 2 »), tantôt une action (« applique la palette 2 »). Les deux emplois
+# doivent écrire la MÊME chaîne : `build.py` le vérifie contre `actions`.
+# --------------------------------------------------------------------------
+cibles:
+  Int Palette:   { mot_cle: "Int Palette",   action_associee: palette_intensite, confiance: A }
+  Color Palette: { mot_cle: "Color Palette", action_associee: palette_couleur,   confiance: A }
+  Focus Palette: { mot_cle: "Focus Palette", confiance: A }
+  Beam Palette:  { mot_cle: "Beam Palette",  confiance: A }
+  Preset:        { mot_cle: "Preset",        confiance: A }
+  Cue:           { mot_cle: "Cue",           confiance: A }
+  Effect:        { mot_cle: "Effect",        confiance: A }
+  Group:         { mot_cle: "Group",         confiance: A }
+  Sub:           { mot_cle: "Sub",           confiance: A }
 
 # --------------------------------------------------------------------------
 # OPÉRATEURS de sélection et de composition
@@ -246,6 +276,201 @@ fan:
       osc: fan_curve
       backlog: 9
       note: "à ne pas confondre avec {Curve} des attributs de cue (manuel §12), homonyme"
+
+# --------------------------------------------------------------------------
+# QUERY — sélection conditionnelle
+#
+# Le SEUL endroit du langage Eos où existe une logique conditionnelle et une
+# négation : ETC a confirmé par réponse directe qu'il n'y a pas de `Not`
+# générique ailleurs (corpus #155, B). Toute logique conditionnelle du
+# traducteur doit donc passer par ici, ou nulle part.
+# --------------------------------------------------------------------------
+query:
+  mot_cle: "Query"
+  confiance: A
+  source: "manuel §15 « Advanced Manual Control », section Query"
+  osc: query
+  fin:
+    description: "`Enter` clôt la requête et sélectionne le résultat"
+    osc: end_query
+    confiance: A
+  parcours:
+    description: "`Next` / `Last` parcourent le résultat un channel à la fois"
+    confiance: A
+  defaut:
+    description: >
+      Sans précision, Eos suppose que la requête porte sur la sortie courante :
+      `{Is In}` est donc facultatif (manuel §15). Le générateur l'écrit quand
+      même — une macro se relit, l'implicite y coûte plus cher qu'il ne rapporte.
+    confiance: A
+  mots_cles_patch:
+    description: >
+      Jusqu'à 10 mots-clés définis par channel en Patch peuvent servir de
+      critère : `Query {mon mot-clé} {Can't Be} Beam Palette 5 Enter`. Propres
+      au show file — le traducteur ne peut pas les connaître à l'avance.
+    confiance: A
+
+  # Chaque condition porte son nom OSC, ou `osc: null` si elle n'en a pas.
+  # `osc: null` n'est pas un détail : sans touche OSC, la condition n'est
+  # atteignable qu'au doigt — voir PLANNING #15.
+  conditions:
+    Is In:
+      mot_cle: "{Is In}"
+      attend: cible
+      osc: is_in
+      confiance: A
+      optionnel: true
+    Isn't In:
+      mot_cle: "{Isn't In}"
+      attend: cible
+      osc: "isn't_in"
+      confiance: A
+      source: "manuel §31, liste officielle des touches OSC — absent de eosKeys.ts"
+      note: >
+        L'apostrophe a probablement fait échouer l'extraction de `eosKeys.ts`
+        (corpus #148, résolu dans eosKeys_vs_manual_comparison.md). La touche
+        existe bien : `isn't_in` → ISNT_IN.
+    Can Be:
+      mot_cle: "{Can Be}"
+      attend: cible
+      osc: can_be
+      confiance: A
+    Can't Be:
+      mot_cle: "{Can't Be}"
+      attend: cible
+      osc: "can't_be"
+      confiance: A
+      source: "manuel §31, liste officielle des touches OSC — absent de eosKeys.ts"
+    Or:
+      mot_cle: "{Or}"
+      attend: aucun
+      osc: or
+      confiance: A
+    Moves Only:
+      mot_cle: "{Moves Only}"
+      attend: aucun
+      osc: moves_only
+      confiance: A
+    Unpatched:
+      mot_cle: "{Unpatched}"
+      attend: aucun
+      osc: unpatched
+      confiance: A
+      contextes: [Patch]
+      note: "`Query {Unpatched} Delete Enter Enter` ne fonctionne QU'en Patch (manuel §15)"
+    Mark:
+      mot_cle: "{Mark}"
+      attend: aucun
+      osc: mark
+      confiance: A
+      element_classic: false
+      note: "cue où l'intensité est active"
+    Less Than:
+      mot_cle: "{Less Than}"
+      attend: valeur
+      osc: less_than
+      confiance: A
+      note: "inclut l'égalité"
+    Greater Than:
+      mot_cle: "{Greater Than}"
+      attend: valeur
+      osc: greater_than
+      confiance: A
+      note: "inclut l'égalité"
+    Track:
+      mot_cle: "{Track}"
+      attend: aucun
+      osc: track
+      confiance: A
+      note: >
+        Réutilise la hardkey `Track` : « Hardkeys on the face panel, such as
+        [Time], can also be used to construct a query » (manuel §15).
+    Block:
+      mot_cle: "{Block}"
+      attend: aucun
+      osc: block
+      confiance: A
+    Assert:
+      mot_cle: "{Assert}"
+      attend: aucun
+      osc: assert
+      confiance: A
+      element_classic: false
+    Part:
+      mot_cle: "{Part}"
+      attend: aucun
+      osc: part
+      confiance: A
+    Park:
+      mot_cle: "{Park}"
+      attend: aucun
+      osc: park
+      confiance: A
+    Time:
+      mot_cle: "{Time}"
+      attend: valeur
+      osc: time
+      confiance: A
+    Delay:
+      mot_cle: "{Delay}"
+      attend: valeur
+      osc: delay
+      confiance: A
+    Capture:
+      mot_cle: "{Capture}"
+      attend: aucun
+      osc: capture
+      confiance: A
+      element_classic: false
+    # --- conditions sans touche OSC : atteignables au doigt seulement ---
+    Broken Mark:
+      mot_cle: "{Broken Mark}"
+      attend: aucun
+      osc: null
+      confiance: A
+      element_classic: false
+      backlog: 15
+    Marking:
+      mot_cle: "{Marking}"
+      attend: aucun
+      osc: null
+      confiance: A
+      element_classic: false
+      backlog: 15
+      note: "cue future"
+    Up Moves:
+      mot_cle: "{Up Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Down Moves:
+      mot_cle: "{Down Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Live Moves:
+      mot_cle: "{Live Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Dark Moves:
+      mot_cle: "{Dark Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Autoblock:
+      mot_cle: "{Autoblock}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+      note: >
+        `autoblock_clean` → AUTOBLOCK_CLEANUP existe en OSC, mais c'est le
+        nettoyage des auto-blocks, pas la condition de requête. Ne pas confondre.
 
 # --------------------------------------------------------------------------
 # ACTIONS — ce qu'on applique
@@ -432,6 +657,71 @@ actions:
     avertissement: >
       En fin de contenu d'une autre macro, c'est le chaînage macro-dans-macro :
       syntaxe A, fiabilité d'exécution C (corpus #070 vs #095) — PLANNING #2.
+  # -- sélection ------------------------------------------------------------
+  selection_active:
+    mot_cle: "Select Active"
+    attend: aucun
+    contextes: [Live]
+    confiance: A
+    source: "eosKeys.ts `select_active`→SELECT_ACTIVE ; manuel §24 (exemple de macro)"
+    note: "sélectionne tous les channels actifs — intensité > 0 ou en mouvement"
+  selection_derniere:
+    mot_cle: "Select Last"
+    attend: aucun
+    contextes: [Live]
+    confiance: A
+    source: "eosKeys.ts `select_last`→SELECT_LAST"
+    avertissement: >
+      Après une Query composée, rapporté comme relançant la syntaxe de la
+      requête au lieu de renvoyer la sélection (corpus #083) — PLANNING #17.
+      C'est exactement la combinaison qu'exige la stratégie de génération en
+      masse n° 2 appliquée à une sélection conditionnelle.
+
+  # -- effets ---------------------------------------------------------------
+  appliquer_effet:
+    mot_cle: "Effect"
+    attend: cible_numerotee
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18 « Apply an Existing Effect »"
+    note: >
+      Un effet step-based porte une liste de channels embarquée : il se rappelle
+      par `Recall From Effect <n> Enter` sans sélection préalable.
+  retirer_effet:
+    mot_cle: "Effect At"
+    attend: aucun
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18 « Stopping Effects »"
+    note: >
+      `<sélection> Effect At Enter` retire l'instruction d'effet des channels
+      sélectionnés. Le manuel documente aussi `Effect <n> At Enter` pour arrêter
+      l'effet entier, mais le générateur ne l'émet pas : `At` y change de sens
+      selon ce qui précède, et `Stop Effect <n> Enter` dit la même chose sans
+      ambiguïté.
+  arreter_effet:
+    mot_cle: "Stop Effect"
+    attend: cible_optionnelle
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18 « Assigning a Stop Effect Command »"
+    note: >
+      Trois portées distinctes, à ne pas confondre : `Stop Effect Enter` arrête
+      TOUS les effets en cours ; `Stop Effect <n> Enter` un effet précis ;
+      `<sélection> Stop Effect Enter` pose une instruction d'arrêt sur les
+      channels. Le double appui (`Stop Effect Stop Effect`) est un « stop all »
+      qui pose des drapeaux même là où aucun effet ne tourne.
+  effet_bpm:
+    mot_cle: "BPM"
+    attend: valeur
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18, exemple : Effect 1 {BPM} 190 Enter"
+    note: >
+      Ajuste les temps de step (effet step-based) ou le time/dwell (effet
+      absolu). Sur un effet qui tourne, le changement est immédiat mais les
+      temps stockés ne bougent pas — c'est un override, à enregistrer ensuite.
+
   label:
     mot_cle: "Label"
     attend: texte
@@ -629,6 +919,133 @@ macro:
       confiance: S
 
 # --------------------------------------------------------------------------
+# OSC — couche d'injection
+#
+# C'est par ici que tout ce qui précède atteint la console. Une commande
+# correctement engendrée mais mal injectée ne vaut rien.
+# --------------------------------------------------------------------------
+osc:
+  prefixe: "/eos/"
+  prefixe_utilisateur: "/eos/user/<n>/"
+  confiance: A
+  source: "manuel §31 « Show Control » ; recoupé S par reference/JOURNAL_observations_nomad.md"
+  note: >
+    Toute commande OSC commence par `/eos/…` ou `/eos/user/<n>/…` (manuel §31).
+    Chaque adresse ci-dessous accepte la variante utilisateur.
+
+  ligne_commande:
+    cmd:
+      adresse: "/eos/cmd"
+      arguments: "chaîne de ligne de commande, arguments de substitution optionnels"
+      confiance: A
+    newcmd:
+      adresse: "/eos/newcmd"
+      reinitialise: true
+      confiance: A
+      note: "identique à cmd, mais réinitialise la ligne de commande d'abord"
+      usage_projet: >
+        Adresse retenue par défaut : deux macros y ont déjà transité au banc de
+        transport (reference/tools/test-client.ts et test-client3.ts).
+    event:
+      adresse: "/eos/event"
+      confiance: A
+      note: "identique à cmd, mais traité comme un évènement console"
+    newevent:
+      adresse: "/eos/newevent"
+      reinitialise: true
+      confiance: A
+    forme_chemin:
+      adresse: "/eos/cmd/<mot>/<mot>/…"
+      confiance: A
+      note: "les tokens deviennent des segments d'adresse — `/eos/cmd/Chan/1/At/75`"
+
+    terminaison:
+      confiance: A
+      formes:
+        - { forme: "mot `Enter` littéral en fin de chaîne", retenue: true,
+            note: "forme employée au banc de transport — celle que le générateur produit" }
+        - { forme: "`#` en fin de chaîne", retenue: false }
+        - { forme: "aucune", resultat: "ligne de commande non terminée, laissée en attente" }
+    substitution:
+      forme: "%1, %2, … remplacés par les arguments OSC dans l'ordre"
+      confiance: A
+      exemple: '/eos/cmd="Chan %1 At %2#", 1, 75'
+
+  touche:
+    adresse: "/eos/key/<nom>"
+    arguments: "front de bouton optionnel : 1.0 = appui, 0.0 = relâchement"
+    confiance: A
+    nommage:
+      retenu: underscore
+      note: >
+        Deux sources ETC se contredisent : la liste canonique du manuel §31
+        écrit `select_active`, l'exemple d'usage du même chapitre écrit
+        `select active`. Le générateur n'émet que la forme underscore de
+        `reference/eosKeys.ts` — PLANNING #16.
+      backlog: 16
+    exception_slash: "pour la touche slash, utiliser un antislash : `/eos/key/\\`"
+
+  macro:
+    selection: { adresse: "/eos/macro", arguments: "numéro", confiance: A }
+    execution: { adresse: "/eos/macro/fire", arguments: "numéro", confiance: A }
+    front:
+      adresse: "/eos/macro/<n>/fire"
+      arguments: "1.0 = appui, 0.0 = relâchement"
+      confiance: A
+    usage_projet: >
+      `/eos/macro/fire` est l'adresse normative du moteur d'injection de macro
+      de macro2eos (grammaire consolidée §11.1).
+
+  utilisateur:
+    adresse: "/eos/user"
+    arguments: "numéro d'utilisateur ; 0 = utilisateur d'arrière-plan"
+    confiance: A
+    recommandation: >
+      Réserver un User# dédié au client OSC dès la connexion plutôt que
+      d'hériter de celui de la console primaire (corpus #066, B).
+
+  retour:
+    ligne_commande:
+      adresses: ["/eos/out/cmd", "/eos/out/user/<n>/cmd"]
+      arguments: "(texte, flag_erreur) — 1 = erreur de syntaxe, 0 = ok"
+      confiance: S
+      source: "journal terrain nomad 3.3.5.69 ; manuel §31 ; Eos 2.6.0+"
+      usage_projet: >
+        Mécanisme de validation en temps réel : envoyer, lire le flag, alerter
+        avant de graver la macro. Complète la validation statique, ne la
+        remplace pas.
+    prefixe_sortie:
+      regle: "toute sortie Eos non-banque est préfixée `/eos/out/`"
+      confiance: S
+      source: "journal terrain"
+
+  regles:
+    - id: pas_de_republication_sub
+      regle: "ne jamais attendre de retour de niveau sur `/eos/sub/<n>`"
+      motif: >
+        Silence total confirmé au banc après changement de niveau — le feedback
+        passe exclusivement par les banques de faders `/eos/fader/<bank>/<n>`.
+      confiance: S
+    - id: assert_hors_ligne_de_commande
+      regle: "ne jamais générer `Sub <n> Assert` en `cmd`/`newcmd`"
+      motif: >
+        `/eos/newcmd \"Sub n Assert#\"` renvoie une erreur de syntaxe — constat
+        de banc. Assert n'a pas de mot-clé de ligne de commande ; le
+        contournement OSC est `/eos/user/1/fader/1/<n>/stop`.
+      confiance: S
+    - id: accolades_non_confirmees
+      regle: >
+        signaler toute commande contenant un token `{…}` avant de l'injecter en
+        chaîne `cmd`/`newcmd`
+      motif: >
+        Aucun exemple, nulle part, ne montre d'accolades dans une chaîne de
+        ligne de commande OSC. Le seul softkey documenté en `cmd` est écrit en
+        mots sans accolades. Si elles ne passent pas, il faut décomposer en
+        `/eos/key/<nom>` séparés.
+      confiance: null
+      backlog: 18
+
+# --------------------------------------------------------------------------
 # NUANCIERS de gel — préfixe numérique du champ `gel`
 # --------------------------------------------------------------------------
 nuanciers:
@@ -668,6 +1085,20 @@ legalite:
     valide: oui
     confiance: A
     note: "s'applique à ce qui est sélectionné, pas d'objet explicite"
+
+  - objet: selection_courante
+    action: intensite
+    valide: oui
+    confiance: A
+    note: >
+      Une sélection déjà posée — par Query, Select Active, Select Last ou une
+      étape précédente — accepte directement `At`. Exemple A : la requête
+      `Query {Is In} Color Palette 2 At 50 Enter` du manuel §15.
+
+  - objet: selection_courante
+    action: couleur_gel
+    valide: oui
+    confiance: A
 
   # --- Fan ---
   - objet: Chan
@@ -869,7 +1300,95 @@ legalite:
     confiance: A
     note: "`Macro 5 Enter` depuis la ligne de commande (manuel §24)"
 
+  # --- Effets ---
+  - objet: Chan
+    action: appliquer_effet
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: appliquer_effet
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: appliquer_effet
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: retirer_effet
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: retirer_effet
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: arreter_effet
+    valide: oui
+    confiance: A
+    note: "sans sélection ni numéro, `Stop Effect Enter` arrête TOUS les effets"
+
+  - objet: Chan
+    action: arreter_effet
+    valide: oui
+    confiance: A
+
+  - objet: Effect
+    action: effet_bpm
+    valide: oui
+    confiance: A
+
+  - objet: Effect
+    action: label
+    valide: oui
+    confiance: A
+
+  # --- Sélection ---
+  - objet: selection_courante
+    action: selection_active
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: selection_derniere
+    valide: oui
+    confiance: A
+
   # --- zones non tranchées ---
+  - combinaison: "Select Last après une Query composée"
+    valide: inconnu
+    confiance: null
+    backlog: 17
+    note: >
+      Corpus #083 : la touche relancerait la syntaxe de la requête au lieu de
+      renvoyer la sélection résultante. Si confirmé, la stratégie de génération
+      en masse n° 2 (boucle SelectLast/Next) devient inapplicable à une
+      sélection conditionnelle — c'est-à-dire au seul cas où Query sert.
+
+  - combinaison: "condition Query sans touche OSC"
+    valide: inconnu
+    confiance: null
+    backlog: 15
+    note: >
+      Sept conditions ({Broken Mark}, {Marking}, {Up Moves}, {Down Moves},
+      {Live Moves}, {Dark Moves}, {Autoblock}) figurent au manuel §15 mais pas
+      dans la liste officielle des touches OSC du §31. Atteignables au doigt,
+      pas par `/eos/key/`. Reste à savoir si leur nom passe dans une chaîne
+      `/eos/cmd`.
+
+  - combinaison: "token {…} dans une chaîne /eos/cmd"
+    valide: inconnu
+    confiance: null
+    backlog: 18
+    note: >
+      Concerne toute commande générée portant un style de Fan ou un
+      modificateur. Aucun exemple d'accolades dans une chaîne de ligne de
+      commande OSC nulle part dans le corpus ni le manuel.
+
   - combinaison: "Group <n> + <a> Thru <b>"
     valide: inconnu
     confiance: null

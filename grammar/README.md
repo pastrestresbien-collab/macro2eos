@@ -65,17 +65,38 @@ l'app existe, elle journalisera ses propres refus dans le même format.
   d'ombre est suivie quelque part.
 - Un style de Fan dont le comportement ou l'arité est `inconnu` **doit** renvoyer au
   backlog, comme une case de la matrice.
+- Toute condition Query **doit** porter un champ `osc` explicite — `osc: null` si elle
+  n'a pas de touche, jamais l'omission. Et une condition sans touche OSC **doit** renvoyer
+  au backlog : elle est hors de portée d'une injection par `/eos/key/`.
+- Un mot-clé employé à la fois comme cible de Query et comme action (`Color Palette`)
+  **doit** s'écrire pareil des deux côtés — sinon le générateur produirait deux syntaxes
+  pour la même chose.
 - Tout patron sans confiance établie **doit** lister ses avertissements.
 - Un refus terrain qui tranche un point encore `inconnu` déclenche un avertissement.
 
-## Portée actuelle (v0.2)
+## Portée actuelle (v0.3)
 
 | Tranche | Contenu |
 |---|---|
 | v0.1 | sélection channels/groupes, couleur de nuancier, enregistrement de palette |
 | v0.2 | **Fan** (§4 de la grammaire consolidée), **cues**, **macros**, **submasters** |
+| v0.3 | **Query**, **effets**, **couche d'injection OSC** |
 
-Ce que v0.2 ajoute concrètement :
+Ce que v0.3 ajoute concrètement :
+
+- **Query** — 25 conditions, la totalité de la liste du manuel §15. C'est le seul endroit
+  du langage Eos où existe une négation : ETC a confirmé par réponse directe qu'il n'y a
+  pas de `Not` générique ailleurs. Toute intention de la forme « tout sauf… » passe par
+  ici, ou n'a pas de traduction.
+- **Effets** — application, retrait, arrêt sélectif ou global, BPM, et la sélection des
+  channels d'un effet par Query.
+- **Injection OSC** — `rendre_osc()` transforme une commande rendue en paquets prêts à
+  partir, `rendre_osc_macro()` déclenche une macro enregistrée, `rendre_osc_touche()`
+  couvre ce que la ligne de commande ne sait pas exprimer. Les règles de transport
+  confirmées au banc y sont appliquées : `Assert` refusé en ligne de commande, terminaison
+  vérifiée, User# dédié recommandé.
+
+Ce que v0.2 avait ajouté :
 
 - **Fan** — 12 styles, dont 7 au comportement documenté (A, exemples chiffrés du manuel
   §8) et 5 dont seule la touche est confirmée. La règle du fan de références est encodée :
@@ -91,10 +112,32 @@ Ce que v0.2 ajoute concrètement :
   bumps `SubDown`/`SubUp` avec leur double réserve : ordre des tokens de confiance C,
   survie ASCII non confirmée.
 
-Le générateur distingue deux sorties, qui n'obéissent pas aux mêmes règles :
-`rendre()` produit des lignes de commande injectables par `/eos/newcmd` ;
-`rendre_macro()` produit un **contenu de macro**, enveloppé et soumis à ses contraintes
-propres (chaînage en fin de contenu, mode, non-déterminisme de `Go To Cue`).
+Le générateur distingue trois sorties, qui n'obéissent pas aux mêmes règles :
+
+| Méthode | Produit | Règles propres |
+|---|---|---|
+| `rendre()` | lignes de ligne de commande | matrice de légalité, Fan, modificateurs |
+| `rendre_macro()` | contenu de macro enveloppé | chaînage en fin, mode, touches non enregistrables en Learn |
+| `rendre_osc()` | paquets OSC injectables | terminaison, accolades, `Assert`, User# |
+
+## Deux découvertes de v0.3 qui touchent l'architecture, pas la syntaxe
+
+**Sept conditions Query n'ont pas de touche OSC.** `{Broken Mark}`, `{Marking}`,
+`{Up Moves}`, `{Down Moves}`, `{Live Moves}`, `{Dark Moves}` et `{Autoblock}` figurent
+dans la liste des softkeys du manuel §15 mais pas dans la liste officielle des touches
+OSC du §31, ni dans `eosKeys.ts`. Elles sont atteignables au doigt, pas par
+`/eos/key/<nom>`. Reste à savoir si leur nom passe dans une chaîne `/eos/cmd` —
+PLANNING #15. Si non, ces sept conditions sont hors de portée de l'app.
+
+**Les accolades ne sont jamais apparues dans une chaîne `/eos/cmd`.** Aucun exemple,
+nulle part dans le corpus ni le manuel, ne montre un token softkey entre accolades à
+l'intérieur d'une chaîne de ligne de commande OSC. Or **toute** commande générée
+portant un style de Fan ou un modificateur en contient. `rendre_osc()` le signale
+systématiquement — PLANNING #18. Si les accolades ne passent pas, il faudra décomposer
+ces commandes en `/eos/key/<nom>` séparés : c'est la stratégie d'injection qui change,
+pas seulement la syntaxe.
+
+Les deux sont le genre de point qu'une grammaire d'apparence rigoureuse aurait masqué.
 
 ## Ce que les tests prouvent — et ce qu'ils ne prouvent pas
 
@@ -103,8 +146,10 @@ propres (chaînage en fin de contenu, mode, non-déterminisme de `Go To Cue`).
 1. **Transport** — les deux macros déjà passées au banc `reference/tools/`. Une
    évolution du modèle qui les modifie est une régression.
 2. **Manuel** — les exemples chiffrés du manuel officiel v3.2.0, recopiés verbatim
-   (§8 Fan, §12 Cues, §16 Playback, §20 Submasters, §24 Macros). Ce sont les seuls cas
-   où l'on sait ce que la console fait vraiment.
+   (§8 Fan, §12 Cues, §15 Query, §16 Playback, §18 Effets, §20 Submasters, §24 Macros).
+   Ce sont les seuls cas où l'on sait ce que la console fait vraiment.
+3. **OSC** — la forme des paquets injectés, et les règles de transport confirmées au
+   banc (`reference/JOURNAL_observations_nomad.md`, confiance S).
 
 Le nombre d'avertissements fait partie de l'attendu : un silence sur une zone d'ombre
 serait le vrai bug.

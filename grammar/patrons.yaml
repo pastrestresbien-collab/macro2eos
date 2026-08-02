@@ -7,7 +7,7 @@
 # `origine` trace d'où vient la recette (corpus, manuel, test simulateur).
 
 meta:
-  version: "0.2"
+  version: "0.3"
   maj: "2026-08-02"
 
 patrons:
@@ -133,6 +133,63 @@ patrons:
       Patron délibérément conservé malgré le risque : c'est exactement la macro
       que le banc réel doit produire pour trancher PLANNING #1. La générer, la
       passer en ASCII aller-retour et la relire est le test.
+
+  # ---------------------------------------------------------------- Query
+  - id: query_exclusion
+    intention: "sélectionner tout ce qui n'est PAS dans une cible"
+    exemple_nl: "tous les projecteurs qui ne sont pas dans la palette beam 25"
+    ir:
+      - query:
+          - condition: "Isn't In"
+            cible: { type: "{famille}", numero: "{numero}" }
+    rend: "Query {{Isn't In}} {famille} {numero} Enter"
+    confiance: A
+    origine: "manuel §15 « Using Query », exemple officiel"
+    note: >
+      Query est le SEUL endroit du langage Eos où une négation existe : ETC a
+      confirmé par réponse directe qu'il n'y a pas de `Not` générique ailleurs
+      (corpus #155). Toute intention de la forme « tout sauf … » doit passer
+      par ici, ou n'a pas de traduction.
+
+  - id: query_puis_niveau
+    intention: "trouver des circuits par critère, puis leur donner un niveau"
+    exemple_nl: "tout ce qui est dans la palette couleur 2, à 50 %"
+    ir:
+      - query:
+          - condition: "Is In"
+            cible: { type: Color Palette, numero: "{palette}" }
+        action: { type: intensite, valeur: "{niveau}" }
+    rend: "Query {{Is In}} Color Palette {palette} At {niveau} Enter"
+    confiance: A
+    origine: "manuel §15, exemple officiel"
+    note: >
+      `{Is In}` est facultatif — Eos suppose la sortie courante par défaut. Le
+      générateur l'écrit quand même : une macro se relit.
+
+  # --------------------------------------------------------------- Effets
+  - id: effet_sur_plage
+    intention: "appliquer un effet existant à une plage de circuits"
+    exemple_nl: "faire tourner l'effet 1 sur les circuits 1 à 10"
+    ir:
+      - selection: { objet: Chan, de: "{debut}", a: "{fin}" }
+        action:    { type: appliquer_effet, numero: "{effet}" }
+    rend: "Chan {debut} Thru {fin} Effect {effet} Enter"
+    confiance: A
+    origine: "manuel §18 « Apply an Existing Effect »"
+
+  - id: arret_effet_selectif
+    intention: "arrêter les effets sur des circuits précis"
+    exemple_nl: "arrêter tout effet sur le circuit 1"
+    ir:
+      - selection: { objet: Chan, numero: "{circuit}" }
+        action:    { type: arreter_effet, tout: true }
+    rend: "Chan {circuit} Stop Effect Stop Effect Enter"
+    confiance: A
+    origine: "manuel §18 « Stop All »"
+    note: >
+      Le double appui pose des drapeaux d'arrêt même là où aucun effet ne
+      tourne — c'est ce qui permet à une cue ou un sub d'arrêter l'effet d'une
+      autre source. Le simple appui ne le fait pas.
 
   # ---------------------------------------------------- Chaînage de macros
   - id: chainage_macro

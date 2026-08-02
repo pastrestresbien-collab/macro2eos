@@ -70,7 +70,29 @@ le nom réel de la softkey `{Mirror}` (#13) et le non-déterminisme de `Go To Cu
 macro (#14). `build.py` vérifie maintenant que tout renvoi au backlog désigne un point
 qui existe vraiment.
 
-**Reste à faire** : Query, effets, patch, OSC. Puis brancher la couche NL (axe B).
+**Fait — v0.3 (2026-08-02)** : Query, effets, et la couche d'injection OSC. 26 actions,
+25 conditions Query, 65 règles de légalité, 46 cas de non-régression. Le générateur
+produit maintenant trois sorties distinctes — ligne de commande, contenu de macro,
+paquets OSC — chacune avec ses règles propres.
+
+Cette tranche a fait remonter deux points qui touchent l'architecture, pas la syntaxe :
+
+- **Sept conditions Query n'ont pas de touche OSC** (#15). Atteignables au doigt, pas
+  par `/eos/key/`. Si leur nom ne passe pas non plus dans une chaîne `/eos/cmd`, elles
+  sont hors de portée de l'app — et le traducteur doit le dire au lieu de produire une
+  commande muette.
+- **Les accolades n'ont jamais été vues dans une chaîne `/eos/cmd`** (#18). Or toute
+  commande portant un style de Fan ou un modificateur en contient. Si elles ne passent
+  pas, il faut décomposer en `/eos/key/<nom>` séparés : c'est la stratégie d'injection
+  qui change.
+
+Plus deux points de nommage : la contradiction `select_active` / `select active` entre
+deux sources ETC (#16), et `{Select Last}` après une Query composée (#17), qui
+conditionne la stratégie de génération en masse n° 2 appliquée à une sélection
+conditionnelle.
+
+**Reste à faire** : patch (polysémie de `At` selon l'écran actif), presets, snapshots,
+et le sous-système de courbes. Puis brancher la couche NL (axe B).
 
 ### B. Écrire le traducteur NL → macro
 
@@ -131,6 +153,21 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
 7. **`Go_To_Cue_<décimale>` concaténé** — troncature observée. Corpus #060.
 8. **`Isn't In` / `Could Be` / `Group Cells` / `From Absolute`** — confirmés textuellement
    ailleurs mais absents de `eosKeys.ts`. Syntaxe exacte à vérifier. Corpus #148/#149.
+15. **Sept conditions Query sans touche OSC.** `Up Moves`, `Down Moves`, `Live Moves`,
+    `Dark Moves`, `Broken Mark`, `Marking`, `Autoblock` figurent dans la liste des
+    softkeys Query du manuel §15 (A) mais **pas** dans la liste officielle des touches
+    OSC du manuel §31, ni dans `eosKeys.ts`. Elles sont donc atteignables au doigt mais
+    pas par `/eos/key/<nom>`. Restent-elles atteignables en écrivant leur nom dans une
+    chaîne `/eos/cmd` ? Si non, ces sept conditions sont hors de portée de l'app, et le
+    traducteur doit le dire au lieu de produire une commande muette.
+18. **Les accolades `{...}` passent-elles dans une chaîne `/eos/cmd` ?** Aucun exemple,
+    nulle part dans le corpus ni le manuel, ne montre un token softkey entre accolades
+    à l'intérieur d'une chaîne de ligne de commande OSC. Le seul exemple officiel de
+    softkey en `cmd` l'écrit en mots sans accolades (`/eos/cmd=Chan 1 XYZ_Format Enable#`,
+    manuel §31). Enjeu direct : toute commande générée contenant un style de Fan ou un
+    modificateur (`{Mirror Out}`, `{Q Only}`, `{Complete}`…) est concernée. Si les
+    accolades ne passent pas, ces commandes doivent être décomposées en `/eos/key/<nom>`
+    séparés — ce qui change la stratégie d'injection, pas seulement la syntaxe.
 
 ### Priorité basse — complètent la couverture
 
@@ -148,6 +185,16 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     L'exemple `{Mirror}` donne le même résultat chiffré que l'exemple `{Mirror Out}` :
     abréviation rédactionnelle probable, jamais confirmée. En attendant, le générateur
     écrit `{Mirror Out}` en clair et n'émet jamais `{Mirror}`.
+16. **`/eos/key/<nom>` — espace ou underscore ?** Deux sources ETC se contredisent :
+    la liste canonique du manuel §31 écrit `select_active`, tandis que l'exemple d'usage
+    du même chapitre — et le PDF *Supported OSC Commands* de 2017 — écrivent
+    `/eos/key/select active` avec un espace. Le manuel se contredit même à deux lignes
+    d'intervalle sur `XYZ_Format` / `XYZ Format`. Un alias est probable, jamais confirmé.
+    En attendant, n'émettre que la forme underscore de `reference/eosKeys.ts`.
+17. **`{Select Last}` après une Query composée.** Corpus #083 (C) : au lieu de renvoyer
+    la sélection résultante, la touche relance la syntaxe de la requête. Si confirmé,
+    cela interdit la combinaison Query + boucle `SelectLast`/`Next` — c'est-à-dire la
+    stratégie de génération en masse n° 2 appliquée à une sélection conditionnelle.
 
 ### Contradiction connue, non résolue
 

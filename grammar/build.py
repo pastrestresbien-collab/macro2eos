@@ -94,6 +94,37 @@ def verifier_vocabulaire(modele: dict, backlog: set[int]) -> list[str]:
         if tok.get("confiance") not in CONFIANCES or tok.get("confiance") is None:
             erreurs.append(f"macro.controle.{nom} : confiance manquante ou invalide")
 
+    for nom, cond in modele["query"]["conditions"].items():
+        if cond.get("confiance") not in CONFIANCES or cond.get("confiance") is None:
+            erreurs.append(f"query.conditions.{nom} : confiance manquante ou invalide")
+        # une condition sans touche OSC est hors de portée d'une injection par
+        # `/eos/key/` : la zone d'ombre doit renvoyer au backlog, pas dormir
+        if "osc" not in cond:
+            erreurs.append(
+                f"query.conditions.{nom} : champ `osc` absent — écrire `osc: null` "
+                f"si la condition n'a pas de touche OSC, jamais l'omettre"
+            )
+        elif cond["osc"] is None and "backlog" not in cond:
+            erreurs.append(
+                f"query.conditions.{nom} : sans touche OSC et sans renvoi PLANNING.md"
+            )
+
+    # un mot-clé employé à la fois comme cible et comme action doit s'écrire
+    # pareil des deux côtés — sinon le générateur produirait deux syntaxes
+    for nom, cible in modele["cibles"].items():
+        if cible.get("confiance") not in CONFIANCES or cible.get("confiance") is None:
+            erreurs.append(f"cibles.{nom} : confiance manquante ou invalide")
+        assoc = cible.get("action_associee")
+        if assoc is None:
+            continue
+        if assoc not in modele["actions"]:
+            erreurs.append(f"cibles.{nom} : action associée inconnue `{assoc}`")
+        elif modele["actions"][assoc]["mot_cle"] != cible["mot_cle"]:
+            erreurs.append(
+                f"cibles.{nom} : mot-clé `{cible['mot_cle']}` incohérent avec "
+                f"actions.{assoc} (`{modele['actions'][assoc]['mot_cle']}`)"
+            )
+
     for nom, mod in modele["modificateurs"].items():
         if mod.get("confiance") not in CONFIANCES or mod.get("confiance") is None:
             erreurs.append(f"modificateurs.{nom} : confiance manquante ou invalide")
@@ -119,9 +150,17 @@ def renvois_backlog(modele: dict) -> list[tuple[str, int]]:
     for nom, style in modele["fan"]["styles"].items():
         if "backlog" in style:
             renvois.append((f"fan.styles.{nom}", style["backlog"]))
+    for nom, cond in modele["query"]["conditions"].items():
+        if "backlog" in cond:
+            renvois.append((f"query.conditions.{nom}", cond["backlog"]))
     for regle in modele["macro"]["regles_generation"]:
         if "backlog" in regle:
             renvois.append((f"macro.regles_generation.{regle['id']}", regle["backlog"]))
+    for regle in modele["osc"]["regles"]:
+        if "backlog" in regle:
+            renvois.append((f"osc.regles.{regle['id']}", regle["backlog"]))
+    if "backlog" in modele["osc"]["touche"]["nommage"]:
+        renvois.append(("osc.touche.nommage", modele["osc"]["touche"]["nommage"]["backlog"]))
     return renvois
 
 
@@ -192,9 +231,13 @@ def main() -> int:
     print(f"  {len(modele['objets'])} objets, {len(modele['actions'])} actions, "
           f"{len(modele['modificateurs'])} modificateurs, "
           f"{len(modele['legalite'])} règles de légalité")
+    conditions = modele["query"]["conditions"]
+    sans_osc = [n for n, c in conditions.items() if c["osc"] is None]
     print(f"  {len(modele['fan']['styles'])} styles de Fan "
           f"(dont {len(styles_ouverts)} au comportement non observé), "
           f"{len(modele['macro']['controle'])} tokens de contrôle de macro")
+    print(f"  {len(conditions)} conditions Query "
+          f"(dont {len(sans_osc)} sans touche OSC : {', '.join(sans_osc)})")
     print(f"  {len(inconnues)} zone(s) non tranchée(s) → banc réel : "
           f"{', '.join('PLANNING#%s' % r['backlog'] for r in inconnues)}")
     print(f"  {len(patrons['patrons'])} patron(s)")

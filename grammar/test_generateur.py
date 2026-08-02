@@ -260,6 +260,110 @@ CAS = [
         "attendu": "Sub 4 At 50 Enter",
         "avertissements": 1,
     },
+
+    # --------------------------------------------------------- Query (§15)
+    {
+        "nom": "manuel §15 — Query dans une palette couleur, à 50 %",
+        # [Query] <Is In> [Color Palette] [2] [At] [5] [0] [Enter]
+        "ir": [
+            {"query": [{"condition": "Is In",
+                        "cible": {"type": "Color Palette", "numero": 2}}],
+             "action": {"type": "intensite", "valeur": 50}},
+        ],
+        "attendu": "Query {Is In} Color Palette 2 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §15 — négation, le seul endroit du langage qui en offre",
+        # [Query] {Isn't In} [Beam Palette] [2][5] [Enter]
+        "ir": [
+            {"query": [{"condition": "Isn't In",
+                        "cible": {"type": "Beam Palette", "numero": 25}}]},
+        ],
+        "attendu": "Query {Isn't In} Beam Palette 25 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §15 — Query composée sur une plage de cues",
+        # extrait de [Query] … {Can Be} [Focus Palette] [6] {Isn't In} [Cue] [4] [Thru] [9]
+        "ir": [
+            {"query": [
+                {"condition": "Can Be",
+                 "cible": {"type": "Focus Palette", "numero": 6}},
+                {"condition": "Isn't In",
+                 "cible": {"type": "Cue", "de": 4, "a": 9}},
+            ]},
+        ],
+        "attendu": "Query {Can Be} Focus Palette 6 {Isn't In} Cue 4 Thru 9 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §15 — {Unpatched} ne vaut qu'en Patch",
+        "ir": [
+            {"query": [{"condition": "Unpatched"}]},
+        ],
+        "attendu": "Query {Unpatched} Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "condition Query sans touche OSC — hors de portée de l'injection",
+        "ir": [
+            {"query": [{"condition": "Dark Moves"}]},
+        ],
+        "attendu": "Query {Dark Moves} Enter",
+        "avertissements": 1,      # PLANNING #15
+    },
+    {
+        "nom": "manuel §18 — Query sur les channels d'un effet",
+        # [Query] [Effect] [1]
+        "ir": [
+            {"query": [{"cible": {"type": "Effect", "numero": 1}}]},
+        ],
+        "attendu": "Query Effect 1 Enter",
+        "avertissements": 0,
+    },
+
+    # -------------------------------------------------------- Effets (§18)
+    {
+        "nom": "manuel §18 — appliquer un effet à une sélection",
+        # [Select Channels] [Effect] [x] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 10},
+             "action": {"type": "appliquer_effet", "numero": 1}},
+        ],
+        "attendu": "Chan 1 Thru 10 Effect 1 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §18 — retirer l'instruction d'effet de channels",
+        # [selecting channels] [Effect] [At] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "retirer_effet"}},
+        ],
+        "attendu": "Chan 1 Effect At Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §18 — stop all par double appui",
+        # <channel> [1] [Stop Effect] [Stop Effect] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "arreter_effet", "tout": True}},
+        ],
+        "attendu": "Chan 1 Stop Effect Stop Effect Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §18 — BPM d'un effet",
+        # [Effect] [1] {BPM} [1][9][0] [Enter]
+        "ir": [
+            {"selection": {"objet": "Effect", "numero": 1},
+             "action": {"type": "effet_bpm", "valeur": 190}},
+        ],
+        "attendu": "Effect 1 {BPM} 190 Enter",
+        "avertissements": 0,
+    },
 ]
 
 CAS_MACRO = [
@@ -357,6 +461,66 @@ CAS_MACRO = [
 ]
 
 
+CAS_OSC = [
+    {
+        "nom": "injection d'une commande simple, User# dédié",
+        "appel": lambda g: g.rendre_osc(
+            g.rendre([{"selection": {"objet": "Chan", "de": 10, "a": 20},
+                       "action": {"type": "couleur_gel", "nuancier": 3,
+                                  "teinte": 195}}]),
+            utilisateur=3),
+        "attendu": ["/eos/user/3/newcmd ['Chan 10 Thru 20 Color 3/195 Enter']"],
+        "avertissements": 0,
+    },
+    {
+        "nom": "un token entre accolades n'a jamais été vu dans une chaîne cmd",
+        "appel": lambda g: g.rendre_osc(
+            g.rendre([{"selection": {"objet": "Chan", "de": 1, "a": 10},
+                       "action": {"type": "intensite", "de": 10, "a": 30,
+                                  "fan": {"style": "Mirror Out"}}}])),
+        "attendu": ["/eos/newcmd "
+                    "['Chan 1 Thru 10 At 10 Thru 30 Fan {Mirror Out} Enter']"],
+        "avertissements": 1,      # PLANNING #18
+    },
+    {
+        "nom": "Assert en ligne de commande — erreur de syntaxe confirmée au banc",
+        "appel": lambda g: g.rendre_osc("Sub 4 Assert Enter"),
+        "attendu": ["/eos/newcmd ['Sub 4 Assert Enter']"],
+        "avertissements": 1,
+    },
+    {
+        "nom": "commande non terminée — la console la laisse en attente",
+        "appel": lambda g: g.rendre_osc("Chan 1 At 75"),
+        "attendu": ["/eos/newcmd ['Chan 1 At 75']"],
+        "avertissements": 1,
+    },
+    {
+        "nom": "déclenchement d'une macro — adresse normative du projet",
+        "appel": lambda g: g.rendre_osc_macro(5, utilisateur=3),
+        "attendu": ["/eos/user/3/macro/fire [5]"],
+        "avertissements": 0,
+    },
+    {
+        "nom": "nom de touche avec espace — deux sources ETC se contredisent",
+        "appel": lambda g: g.rendre_osc_touche("select active", front=1.0),
+        "attendu": ["/eos/key/select_active [1.0]"],
+        "avertissements": 1,      # PLANNING #16
+    },
+    {
+        "nom": "macro multi-lignes — un paquet par ligne",
+        "appel": lambda g: g.rendre_osc(
+            g.rendre([
+                {"selection": {"objet": "Group", "numero": 5},
+                 "action": {"type": "couleur_gel", "nuancier": 3, "teinte": 195}},
+                {"action": {"type": "record_palette_couleur", "cible": 5}},
+            ])),
+        "attendu": ["/eos/newcmd ['Group 5 Color 3/195 Enter']",
+                    "/eos/newcmd ['Record Color Palette 5 Enter']"],
+        "avertissements": 0,
+    },
+]
+
+
 def controler(nom: str, resultat, attendu: str, nb_avert: int) -> bool:
     if resultat.commande != attendu:
         print(f"ÉCHEC — {nom}")
@@ -373,9 +537,26 @@ def controler(nom: str, resultat, attendu: str, nb_avert: int) -> bool:
     return True
 
 
+def controler_osc(nom: str, resultat, attendu: list[str], nb_avert: int) -> bool:
+    obtenu = [str(m) for m in resultat.messages]
+    if obtenu != attendu:
+        print(f"ÉCHEC — {nom}")
+        print(f"  attendu : {attendu!r}")
+        print(f"  obtenu  : {obtenu!r}")
+        return False
+    if len(resultat.avertissements) != nb_avert:
+        print(f"ÉCHEC — {nom} : {nb_avert} avertissement(s) attendu(s), "
+              f"{len(resultat.avertissements)} obtenu(s)")
+        for a in resultat.avertissements:
+            print(f"    - {a}")
+        return False
+    print(f"OK — {nom}")
+    return True
+
+
 def main() -> int:
     g = Generateur()
-    total = len(CAS) + len(CAS_MACRO)
+    total = len(CAS) + len(CAS_MACRO) + len(CAS_OSC)
     reussis = 0
 
     for cas in CAS:
@@ -386,6 +567,11 @@ def main() -> int:
     for cas in CAS_MACRO:
         if controler(cas["nom"], g.rendre_macro(**cas["appel"]),
                      cas["attendu"], cas["avertissements"]):
+            reussis += 1
+
+    for cas in CAS_OSC:
+        if controler_osc(cas["nom"], cas["appel"](g),
+                         cas["attendu"], cas["avertissements"]):
             reussis += 1
 
     print(f"\n{reussis}/{total} cas conformes.")
