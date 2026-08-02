@@ -24,6 +24,28 @@ def charger(nom: str) -> dict:
     return yaml.safe_load((RACINE / f"{nom}.yaml").read_text(encoding="utf-8"))
 
 
+def verifier_refus_non_reportes(modele: dict, refus_terrain: dict) -> list[str]:
+    """Un refus terrain qui tranche un point encore `inconnu` dans le modèle
+    signale que `modele.yaml` a pris du retard sur le banc réel — à corriger
+    avant de compiler, pas après."""
+    avertissements: list[str] = []
+    backlogs_inconnus = {
+        r["backlog"] for r in modele["legalite"]
+        if r["valide"] == "inconnu" and "backlog" in r
+    }
+    for refus in refus_terrain.get("refus", []):
+        if refus.get("tranche") not in ("oui", "non"):
+            continue
+        for b in refus.get("backlog", []):
+            if b in backlogs_inconnus:
+                avertissements.append(
+                    f"refus du {refus['date']} tranche PLANNING #{b} "
+                    f"(« {refus['diagnostic'].strip().splitlines()[0]} » ...) "
+                    f"mais modele.yaml le porte toujours `inconnu` — à mettre à jour"
+                )
+    return avertissements
+
+
 def verifier(modele: dict, patrons: dict) -> list[str]:
     """Contrôles de cohérence interne. Retourne la liste des erreurs."""
     erreurs: list[str] = []
@@ -69,6 +91,7 @@ def verifier(modele: dict, patrons: dict) -> list[str]:
 def main() -> int:
     modele = charger("modele")
     patrons = charger("patrons")
+    refus_terrain = charger("refus_terrain")
 
     erreurs = verifier(modele, patrons)
     if erreurs:
@@ -84,12 +107,19 @@ def main() -> int:
     print(f"  {len(inconnues)} zone(s) non tranchée(s) → banc réel : "
           f"{', '.join('PLANNING#%s' % r['backlog'] for r in inconnues)}")
     print(f"  {len(patrons['patrons'])} patron(s)")
+    print(f"  {len(refus_terrain.get('refus', []))} refus terrain enregistré(s)")
+
+    retard = verifier_refus_non_reportes(modele, refus_terrain)
+    if retard:
+        print("\nRefus terrain non encore reportés dans modele.yaml :")
+        for a in retard:
+            print(f"  ⚠ {a}")
 
     if "--check" in sys.argv:
         return 0
 
     DIST.mkdir(exist_ok=True)
-    for nom, data in (("modele", modele), ("patrons", patrons)):
+    for nom, data in (("modele", modele), ("patrons", patrons), ("refus_terrain", refus_terrain)):
         cible = DIST / f"{nom}.json"
         cible.write_text(
             json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

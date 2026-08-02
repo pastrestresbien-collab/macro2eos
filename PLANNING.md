@@ -71,6 +71,13 @@ référentiel de risques, banc de transport OSC pour tester l'injection.
 Une session sur console/nomad réel lèverait d'un coup la majorité des incertitudes
 listées plus bas. C'est le seul axe qui ne peut pas être fait depuis ce dépôt.
 
+**Mécanisme d'accumulation (2026-08-02)** : chaque refus de la console en usage réel est
+une preuve de niveau S (voir `APP.md`, « La console fait autorité »). Au lieu de se
+perdre, ces refus s'enregistrent dans `grammar/refus_terrain.yaml`, reliés à un numéro
+de backlog ci-dessous. `grammar/build.py` signale si un refus tranche un point encore
+marqué `inconnu` dans `grammar/modele.yaml` mais pas encore reporté. Le banc réel devient
+ainsi cumulatif plutôt qu'une session isolée à programmer.
+
 ---
 
 ## Backlog technique — à valider au banc réel

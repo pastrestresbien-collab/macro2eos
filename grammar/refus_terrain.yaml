@@ -1,0 +1,36 @@
+# Refus terrain — journal des rejets réels observés sur console/nomad.
+#
+# Chaque refus de la console est une preuve de niveau S (banc réel, la plus haute
+# confiance du projet) — voir APP.md « La console fait autorité ». Ce fichier les
+# accumule au lieu de les jeter : ils alimentent directement les cases `inconnu`
+# de la matrice de légalité (`modele.yaml`) et le backlog (`PLANNING.md`).
+#
+# Alimentation : manuelle pour l'instant (retour verbal → ajouté ici en session).
+# Le jour où l'app existe, elle pourra journaliser ses refus dans le même format
+# pour import automatique.
+#
+# Champs :
+#   date            - AAAA-MM-JJ
+#   demande_nl      - ce que l'utilisateur a demandé en langage naturel
+#   commande        - la macro générée et envoyée
+#   erreur_console  - message de refus renvoyé par Eos (verbatim si possible)
+#   diagnostic      - analyse : pourquoi refusée, ce que ça tranche
+#   backlog         - numéro(s) PLANNING.md concerné(s), si applicable
+#   tranche         - "oui" | "non" | "partiel" : le refus résout-il une case inconnue ?
+
+meta:
+  version: "0.1"
+  maj: "2026-08-02"
+
+refus: []
+  # Exemple de forme attendue (à dupliquer, jamais laissé actif) :
+  # - date: 2026-08-15
+  #   demande_nl: "groupe 5 et circuits 1 à 6 en Lee 195"
+  #   commande: "Group 5 + 1 Thru 6 Color 3/195 Enter"
+  #   erreur_console: "Syntax Error : unexpected '+' after Group"
+  #   diagnostic: >
+  #     Confirme que Group et Chan ne se combinent pas avec `+` dans une même
+  #     sélection. Tranche PLANNING #4 côté "non" — reformulation nécessaire :
+  #     sélectionner Chan et Group séparément puis appliquer l'action deux fois.
+  #   backlog: [4]
+  #   tranche: "non"

@@ -26,6 +26,7 @@ aveugle. Chaque validation au banc réel remplit une case.
 | `build.py` | Compile le YAML en JSON (`dist/`) et vérifie la cohérence interne. |
 | `generateur.py` | IR → chaîne de commande Eos, avec avertissements sur les zones non validées. |
 | `test_generateur.py` | Non-régression contre les macros déjà passées au banc de transport. |
+| `refus_terrain.yaml` | Journal des rejets réels observés sur console/nomad — preuve de niveau S. |
 
 Le YAML est la source (commentaires possibles, diffs Git lisibles) ; `dist/*.json` est
 l'artefact consommé par le code. Le vocabulaire (1155 touches OSC) reste dans
@@ -41,6 +42,19 @@ cd grammar && python3 test_generateur.py
 ```
 
 Dépendance unique : `pyyaml`.
+
+## Refus terrain → matrice de légalité
+
+Un refus de la console est une preuve de niveau S — la plus haute confiance du projet
+(voir `../APP.md`, « La console fait autorité »). `refus_terrain.yaml` les accumule au
+lieu de les jeter, chacun daté et relié à un numéro `PLANNING.md`.
+
+`build.py` recoupe automatiquement ce journal avec `modele.yaml` : si un refus tranche
+un point encore marqué `inconnu`, la compilation affiche un avertissement — le modèle a
+pris du retard sur le banc réel, à corriger avant de committer.
+
+Alimentation manuelle pour l'instant (retour verbal en session → ajouté ici). Le jour où
+l'app existe, elle journalisera ses propres refus dans le même format.
 
 ## Garde-fous appliqués par `build.py`
 
