@@ -91,8 +91,20 @@ deux sources ETC (#16), et `{Select Last}` après une Query composée (#17), qui
 conditionne la stratégie de génération en masse n° 2 appliquée à une sélection
 conditionnelle.
 
-**Reste à faire** : patch (polysémie de `At` selon l'écran actif), presets, snapshots,
-et le sous-système de courbes. Puis brancher la couche NL (axe B).
+**Fait — v0.4 (2026-08-02)** : contexte d'écran et terminaison. La modalité entre dans
+le modèle au lieu de rester une note d'avertissement : table officielle des 37 onglets,
+`Tab <n> Enter` pour forcer le focus, polysémie encodée mot par mot (`At` vaut un niveau
+en Live et une adresse DMX en Patch — cinq sens documentés pour `/`). `rendre()` prend un
+`contexte` et le vérifie.
+
+Cette tranche a corrigé **un défaut réel du générateur** : il ajoutait `Enter` à toutes
+les commandes, alors que `Out`, `Level`, `+%` et `-%` s'auto-terminent, et qu'un `Enter`
+de trop risque de valider la ligne suivante. Corrigé — mais la liste d'ETC est incomplète
+de son propre aveu, d'où le nouveau point #19.
+
+**Reste à faire** : Patch §4, Groups §7, Palettes §10 / Presets §11, Mark §9, cues
+multipart §17 et cue lists multiples §14, Park §19, Filtres §13, Courbes §22,
+Snapshots §23, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 
 ### B. Écrire le traducteur NL → macro
 
@@ -173,6 +185,13 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
 
 9. **Styles de Fan non testés** : `{Interleave}`, `{Jump}`, `{Num Groups}`,
    `{Channels Per Group}`, `{Curve}`. Noms confirmés (A), comportements jamais observés.
+19. **Liste des commandes auto-terminantes — incomplète de l'aveu d'ETC.** Le manuel
+    énonce `Out`, `+%`, `-%`, `Level` et les actions de direct select, puis ajoute
+    explicitement « Some (but **not all**) of these commands are ». Toute autre commande
+    est donc présumée avoir besoin d'`Enter` sans preuve. Deux doubles appuis connus
+    changent aussi la donne (`Full Full`, `Sneak Sneak` auto-terminent, pas leur forme
+    simple). Un `Enter` de trop sur une commande déjà terminée risque de valider la
+    ligne suivante. À établir au banc, commande par commande.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

@@ -354,6 +354,85 @@ CAS = [
         "attendu": "Chan 1 Stop Effect Stop Effect Enter",
         "avertissements": 0,
     },
+    # ------------------------------------------- Contexte et terminaison
+    {
+        "nom": "manuel §6 — `Out` s'auto-termine, pas d'Enter",
+        # [Group] [9] [Out]
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 9},
+             "action": {"type": "hors_scene"}},
+        ],
+        "attendu": "Group 9 Out",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 — `Full Full` s'auto-termine, `Full` seul non",
+        # [1] [Full] [Full]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "plein_feu", "double": True}},
+        ],
+        "attendu": "Chan 1 Full Full",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 — `Full` simple demande son Enter",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "plein_feu"}},
+        ],
+        "attendu": "Chan 1 Full Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 — `Level` prend sa valeur du Setup et s'auto-termine",
+        # [1] [Level]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "niveau_setup"}},
+        ],
+        "attendu": "Chan 1 Level",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 — valeur DMX brute, troisième sens du `/`",
+        # [1] [At] [/] [/] [2][3][9] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "valeur_dmx", "valeur": 239}},
+        ],
+        "attendu": "Chan 1 At / / 239 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "valeur DMX hors bornes",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "valeur_dmx", "valeur": 300}},
+        ],
+        "attendu": "Chan 1 At / / 300 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "corpus #168 — forcer le focus avant une commande contextuelle",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "valeur_dmx", "valeur": 100}},
+        ],
+        "kwargs": {"forcer_focus": True},
+        "attendu": "Tab 1 Enter\nChan 1 At / / 100 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "`At` pendant que Patch a le focus — ce n'est plus un niveau",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "intensite", "valeur": 50}},
+        ],
+        "kwargs": {"contexte": "Patch"},
+        "attendu": "Chan 1 At 50 Enter",
+        "avertissements": 1,
+    },
     {
         "nom": "manuel §18 — BPM d'un effet",
         # [Effect] [1] {BPM} [1][9][0] [Enter]
@@ -560,7 +639,7 @@ def main() -> int:
     reussis = 0
 
     for cas in CAS:
-        if controler(cas["nom"], g.rendre(cas["ir"]),
+        if controler(cas["nom"], g.rendre(cas["ir"], **cas.get("kwargs", {})),
                      cas["attendu"], cas["avertissements"]):
             reussis += 1
 

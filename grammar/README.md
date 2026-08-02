@@ -81,8 +81,20 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.1 | sélection channels/groupes, couleur de nuancier, enregistrement de palette |
 | v0.2 | **Fan** (§4 de la grammaire consolidée), **cues**, **macros**, **submasters** |
 | v0.3 | **Query**, **effets**, **couche d'injection OSC** |
+| v0.4 | **contexte d'écran** (modalité) et **auto-terminaison** |
 
-Ce que v0.3 ajoute concrètement :
+Ce que v0.4 ajoute concrètement :
+
+- **Contexte d'écran** — la table officielle des 37 onglets, `Tab <n> Enter` pour forcer
+  le focus, et la polysémie encodée mot par mot. `rendre()` prend maintenant un
+  `contexte` (défaut `Live`) et refuse de faire semblant : une commande d'intensité
+  générée pendant que Patch a le focus repatche, et le générateur le dit.
+- **Auto-terminaison** — `Out`, `Level`, `+%`, `-%` ne prennent pas d'`Enter`. Le
+  générateur en ajoutait un systématiquement : c'était un défaut, corrigé. Deux doubles
+  appuis changent aussi la commande (`Full Full` et `Sneak Sneak` s'auto-terminent, leur
+  forme simple non).
+
+Ce que v0.3 avait ajouté :
 
 - **Query** — 25 conditions, la totalité de la liste du manuel §15. C'est le seul endroit
   du langage Eos où existe une négation : ETC a confirmé par réponse directe qu'il n'y a
@@ -138,6 +150,26 @@ ces commandes en `/eos/key/<nom>` séparés : c'est la stratégie d'injection qu
 pas seulement la syntaxe.
 
 Les deux sont le genre de point qu'une grammaire d'apparence rigoureuse aurait masqué.
+
+## Ce que v0.4 corrige, et ce qu'elle ouvre
+
+**Un défaut réel du générateur.** Il ajoutait `Enter` à toutes les commandes. Le manuel
+liste explicitement des commandes auto-terminantes — `Out`, `+%`, `-%`, `Level`, actions
+de direct select. Un `Enter` de trop sur une commande déjà terminée risque de valider la
+ligne suivante. Corrigé, avec les cas du manuel en non-régression.
+
+**Mais la liste d'ETC est incomplète de son propre aveu** : « Some (but **not all**) of
+these commands are ». Toute action que le modèle ne marque pas `auto_termine` est donc
+*présumée* avoir besoin d'`Enter` — présomption, pas fait établi. C'est PLANNING #19,
+à établir commande par commande au banc.
+
+**La modalité est enfin dans le modèle, pas seulement dans la note d'avertissement.**
+`At` vaut un niveau en Live et une adresse DMX en Patch — c'est la découverte terrain qui
+a justifié d'écarter une grammaire formelle dès le départ. Une EBNF ne peut pas exprimer
+qu'un token dépend d'un état extérieur à la phrase. Ici, `rendre(ir, contexte="Patch")`
+le vérifie, et `forcer_focus=True` préfixe un `Tab <n> Enter` pour ne plus rien supposer —
+au prix de déplacer ce que voit l'opérateur, puisque focus visuel et focus logique sont
+le même mécanisme.
 
 ## Ce que les tests prouvent — et ce qu'ils ne prouvent pas
 

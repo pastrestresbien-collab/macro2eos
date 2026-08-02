@@ -371,8 +371,26 @@ class Generateur:
         if t == "appel_macro":
             return f"{mot} {act['numero']}"
 
-        if t in ("selection_active", "selection_derniere", "retirer_effet"):
+        if t in ("selection_active", "selection_derniere", "retirer_effet",
+                 "hors_scene", "niveau_setup", "incrementer", "decrementer"):
             return mot
+
+        if t in ("plein_feu", "sneak"):
+            # le double appui est une AUTRE commande, pas une insistance
+            return f"{mot} {mot}" if act.get("double") else mot
+
+        if t == "valeur_dmx":
+            valeur = int(act["valeur"])
+            if not 0 <= valeur <= 255:
+                avert.append(f"valeur DMX {valeur} hors bornes 0-255")
+            return f"{mot} {valeur}"
+
+        if t == "focus_onglet":
+            numero = act["numero"]
+            ecrans = self.modele["contexte"]["ecrans"]
+            if numero not in ecrans:
+                avert.append(f"écran {numero} absent de la table officielle des Tabs")
+            return f"{mot} {numero}"
 
         if t == "appliquer_effet":
             return f"{mot} {act['numero']}"
@@ -425,11 +443,61 @@ class Generateur:
                 )
         return morceaux
 
+    # -- contexte d'écran ---------------------------------------------------
+    def _numero_ecran(self, nom: str) -> int | None:
+        """Un onglet peut héberger plusieurs modes : le Tab 1 est « Live/Blind »
+        et `Live` comme `Blind` y mènent."""
+        for numero, spec in self.modele["contexte"]["ecrans"].items():
+            if nom == spec["nom"] or nom in spec["nom"].split("/"):
+                return numero
+        return None
+
+    def _verifier_contexte(self, action: dict, contexte: str,
+                           avert: list[str]) -> None:
+        """La ligne de commande Eos est modale : le même mot ne dit pas la même
+        chose selon l'écran actif. C'est vérifié ici, pas supposé."""
+        t = action["type"]
+        spec = self.modele["actions"][t]
+
+        polysemie = self.modele["contexte"]["polysemie"]
+        signale = False
+        if spec["mot_cle"] in polysemie:
+            sens = polysemie[spec["mot_cle"]]["sens"]
+            if contexte in sens and contexte not in ("Live", "Blind"):
+                avert.append(
+                    f"`{spec['mot_cle']}` en contexte {contexte} signifie "
+                    f"« {sens[contexte]} » — pas ce que l'action `{t}` demande"
+                )
+                signale = True
+
+        # inutile de redire en générique ce que la polysémie vient de dire en précis
+        attendus = spec.get("contextes")
+        if not signale and attendus and contexte not in attendus:
+            avert.append(
+                f"action `{t}` documentée en {'/'.join(attendus)} seulement, "
+                f"pas en {contexte}"
+            )
+
     # -- rendu : ligne de commande -----------------------------------------
-    def rendre(self, ir: list[dict]) -> Resultat:
-        """Transforme une IR (liste d'étapes) en commande Eos multi-lignes."""
+    def rendre(self, ir: list[dict], *, contexte: str = "Live",
+               forcer_focus: bool = False) -> Resultat:
+        """Transforme une IR (liste d'étapes) en commande Eos multi-lignes.
+
+        `contexte` est l'écran supposé actif. `forcer_focus` préfixe la sortie
+        d'un `Tab <n> Enter` pour ne plus rien supposer — au prix de déplacer
+        ce que voit l'opérateur : le focus visuel et le focus logique sont le
+        même mécanisme (corpus #168).
+        """
         lignes: list[str] = []
         avert: list[str] = []
+
+        if forcer_focus:
+            numero = self._numero_ecran(contexte)
+            if numero is None:
+                avert.append(f"écran `{contexte}` absent de la table officielle des Tabs")
+            else:
+                mot = self.modele["actions"]["focus_onglet"]["mot_cle"]
+                lignes.append(f"{mot} {numero} Enter")
 
         for etape in ir:
             morceaux: list[str] = []
@@ -451,6 +519,8 @@ class Generateur:
                 objet = etape["selection"]["objet"]
                 morceaux.append(self._rendre_selection(etape["selection"], avert))
 
+            auto_termine = False
+
             if "action" in etape:
                 action = etape["action"]
                 spec = self.modele["actions"][action["type"]]
@@ -459,7 +529,13 @@ class Generateur:
                 # action sur la sélection courante
                 cible = objet or spec.get("objet_implicite") or "selection_courante"
                 self._verifier(cible, action["type"], avert)
+                self._verifier_contexte(action, contexte, avert)
                 morceaux.append(self._rendre_action(action, avert))
+
+                auto_termine = spec.get("auto_termine", False)
+                # `Full Full` et `Sneak Sneak` auto-terminent, pas leur forme simple
+                if action.get("double") and action["type"] in ("plein_feu", "sneak"):
+                    auto_termine = True
 
                 mods = etape.get("modificateurs", [])
                 if mods:
@@ -472,7 +548,10 @@ class Generateur:
                         self._rendre_action(
                             {"type": "temps", **action["temps"]}, avert))
 
-            morceaux.append("Enter")
+            # un `Enter` de trop sur une commande déjà terminée peut valider la
+            # ligne suivante — la terminaison n'est pas une formalité
+            if not auto_termine:
+                morceaux.append(self.modele["terminaison"]["defaut"]["mot_cle"])
             lignes.append(" ".join(morceaux))
 
         return Resultat("\n".join(lignes), avert)

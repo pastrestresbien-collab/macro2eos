@@ -7,6 +7,7 @@
 #   v0.1  sélection channels/groupes + couleur de nuancier + record de palette
 #   v0.2  + Fan (§4 de la grammaire consolidée) + cues + macros + submasters
 #   v0.3  + Query + effets + couche d'injection OSC
+#   v0.4  + contexte d'écran (modalité) + auto-terminaison
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -14,11 +15,136 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.3"
+  version: "0.4"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC
+    + query + effets + injection OSC + contexte d'écran
   maj: "2026-08-02"
+
+# --------------------------------------------------------------------------
+# CONTEXTE D'ÉCRAN — la modalité, préalable à tout le reste
+#
+# La ligne de commande Eos est modale : le MÊME mot ne veut pas dire la même
+# chose selon l'écran actif. C'est la raison pour laquelle ce projet a écarté
+# une grammaire formelle (voir README) — une EBNF ne peut pas exprimer qu'un
+# token dépend d'un état extérieur à la phrase.
+# --------------------------------------------------------------------------
+contexte:
+  confiance: A
+  source: "manuel §2 System Basics ; corpus #167-168 (Operations Manual, A)"
+
+  focus:
+    regle: "`Tab <n> Enter` amène le focus sur l'écran n"
+    confiance: A
+    source: "corpus #168, réponse officielle"
+    doctrine: >
+      Le focus visuel et le focus logique sont le MÊME mécanisme — « draw
+      focus » dans le vocabulaire du manuel. Rien n'indique qu'il existe un
+      préfixe de commande qui changerait le contexte sans changer l'affichage.
+      Conséquence directe : pour générer une commande dépendante du contexte,
+      il faut forcer le Tab, et cela déplace ce que voit l'opérateur.
+    raccourci_liste:
+      regle: "double appui sur la touche d'un record target ouvre sa liste"
+      exemple: "`Cue Cue` ouvre l'index de cue list ; `Macro Macro` l'éditeur de macros"
+      confiance: A
+      source: "corpus #169"
+
+  # Table officielle Tab → Display (corpus #168, la plus complète du corpus)
+  ecrans:
+    1:  { nom: "Live/Blind",          confiance: A }
+    2:  { nom: "Playback Status",     confiance: A }
+    3:  { nom: "Magic Sheet",         confiance: A }
+    4:  { nom: "Direct Selects",      confiance: A }
+    5:  { nom: "ML Controls",         confiance: A }
+    6:  { nom: "Effect Status",       confiance: A }
+    7:  { nom: "Keys",                confiance: A }
+    8:  { nom: "Effect Channels",     confiance: A }
+    9:  { nom: "Pixel Maps",          confiance: A }
+    10: { nom: "Pixel Preview",       confiance: A }
+    11: { nom: "Show Control",        confiance: A }
+    12: { nom: "Patch",               confiance: A }
+    13: { nom: "Effects",             confiance: A }
+    14: { nom: "Magic Sheet List",    confiance: A }
+    15: { nom: "Submaster List",      confiance: A }
+    16: { nom: "Cue List",            confiance: A }
+    17: { nom: "Groups",              confiance: A }
+    18: { nom: "Macros",              confiance: A }
+    19: { nom: "Snapshots",           confiance: A }
+    20: { nom: "Park",                confiance: A }
+    21: { nom: "Curves",              confiance: A }
+    22: { nom: "Intensity Palettes",  confiance: A }
+    23: { nom: "Focus Palettes",      confiance: A }
+    24: { nom: "Color Palettes",      confiance: A }
+    25: { nom: "Beam Palettes",       confiance: A }
+    26: { nom: "Presets",             confiance: A }
+    27: { nom: "Color Picker",        confiance: A }
+    28: { nom: "Virtual Faders",      confiance: A }
+    29: { nom: "About",               confiance: A }
+    30: { nom: "Command History",     confiance: A }
+    31: { nom: "Lamp Controls",       confiance: A }
+    32: { nom: "Channels In Use",     confiance: A }
+    33: { nom: "Color Path",          confiance: A }
+    35: { nom: "Fader List",          confiance: A }
+    36: { nom: "Fader Configuration", confiance: A }
+    37: { nom: "sACN Output View",    confiance: A }
+    99: { nom: "Diagnostics",         confiance: A }
+    100: { nom: "User Manual",        confiance: A }
+
+  # Les mots dont le sens dépend de l'écran actif
+  polysemie:
+    At:
+      sens:
+        Live:  "niveau d'intensité — `Chan 1 At 50` = 50 %"
+        Blind: "niveau d'intensité"
+        Patch: "adresse DMX de départ — `601 At 250` patche l'adresse 250"
+      confiance: S
+      source: >
+        Découverte terrain (corpus #161-162, S), reconfirmée indépendamment par
+        une source communautaire (corpus vague 33) et par le manuel §4.
+      consequence_generateur: >
+        Le générateur DOIT connaître son écran avant d'émettre `At`. Une
+        commande d'intensité envoyée pendant que Patch a le focus repatche.
+    "@":
+      sens:
+        Live:  "identique à At — niveau"
+        Patch: "adresse"
+      confiance: B
+      source: "corpus vague 33, confirmation indépendante"
+      note: "la polysémie ne se limite pas au mot `At` : le symbole la partage"
+    "/":
+      sens:
+        cue:      "préfixe de cue list — `Cue 2/5`"
+        temps:    "séparateur montée/descente — `Time 4/3`"
+        pourcent: "pourcentage du temps de cue en timing discret — `Time /50`"
+        dmx:      "valeur DMX brute en double — `Chan 1 At / / 239` met le channel 1 à 239"
+        patch:    "séparateur univers/adresse — `603 At 2 / 146`"
+      confiance: A
+      source: "manuel §4, §6, §12"
+      note: >
+        Cinq sens documentés pour un seul symbole, tous distingués par la
+        position et non par l'écran. À ne pas confondre avec la polysémie de
+        `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# TERMINAISON — toutes les commandes ne prennent pas `Enter`
+#
+# Le manuel est explicite ET incomplet sur ce point : « There are some commands
+# which are self-terminating […] Some (but not all) of these commands are: ».
+# On connaît donc une partie de la liste, jamais sa totalité — voir PLANNING #19.
+# --------------------------------------------------------------------------
+terminaison:
+  defaut:
+    mot_cle: "Enter"
+    confiance: A
+    source: "manuel §00 « Enter »"
+  liste_officielle_incomplete:
+    confiance: A
+    source: 'manuel §00 : "Some (but not all) of these commands are"'
+    backlog: 19
+    note: >
+      ETC dit explicitement que sa propre liste est partielle. Toute action que
+      le modèle ne marque pas `auto_termine` est donc PRÉSUMÉE avoir besoin
+      d'`Enter`, sans preuve. C'est une présomption, pas un fait établi.
 
 # --------------------------------------------------------------------------
 # OBJETS — ce qu'on sélectionne / ce qu'on cible
@@ -657,6 +783,85 @@ actions:
     avertissement: >
       En fin de contenu d'une autre macro, c'est le chaînage macro-dans-macro :
       syntaxe A, fiabilité d'exécution C (corpus #070 vs #095) — PLANNING #2.
+  # -- intensité : formes courtes, souvent auto-terminantes -----------------
+  hors_scene:
+    mot_cle: "Out"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 (liste des commandes auto-terminantes) ; §6 exemple `Group 9 Out`"
+    osc: out
+  plein_feu:
+    mot_cle: "Full"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §6 « [1] [Full] [Full] »"
+    osc: full
+    note: >
+      `Full` seul demande `Enter` ; le DOUBLE appui `Full Full` auto-termine
+      (manuel §6). Deux commandes différentes sous un même mot.
+  niveau_setup:
+    mot_cle: "Level"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 et §6 : « [1] [Level] »"
+    osc: level
+    note: "valeur réglée dans le Setup — 80 % par défaut, pas une constante"
+  incrementer:
+    mot_cle: "+%"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 et §6"
+    osc: "+%"
+    note: >
+      Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut
+      de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.
+  decrementer:
+    mot_cle: "-%"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »"
+    osc: "-%"
+  valeur_dmx:
+    mot_cle: "At / /"
+    attend: valeur
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §6 : « [1] [At] [/] [/] [2][3][9] [Enter] »"
+    note: "valeur DMX brute 0-255, pas un pourcentage — troisième sens du `/`"
+  sneak:
+    mot_cle: "Sneak"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §6 ; manuel §24 (exemple de macro `Sneak Time 10 Enter`)"
+    osc: sneak
+    note: >
+      `Sneak Sneak` pose `{AllNPs} Sneak` et auto-termine (manuel §6) — encore
+      un double appui qui change la commande.
+  focus_onglet:
+    mot_cle: "Tab"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind, Patch]
+    confiance: A
+    source: "corpus #168, réponse officielle ETC"
+    osc: tab
+    note: >
+      `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
+      toute commande dont le sens dépend de l'écran — `At` au premier chef.
+
   # -- sélection ------------------------------------------------------------
   selection_active:
     mot_cle: "Select Active"
@@ -1358,7 +1563,76 @@ legalite:
     valide: oui
     confiance: A
 
+  # --- Contexte d'écran et formes courtes ---
+  - objet: Chan
+    action: hors_scene
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: hors_scene
+    valide: oui
+    confiance: A
+    note: "`Group 9 Out` — exemple chiffré du manuel §6"
+
+  - objet: selection_courante
+    action: hors_scene
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: plein_feu
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: plein_feu
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: niveau_setup
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: incrementer
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: decrementer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: valeur_dmx
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: sneak
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: focus_onglet
+    valide: oui
+    confiance: A
+    note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
+
   # --- zones non tranchées ---
+  - combinaison: "commande auto-terminante hors liste officielle"
+    valide: inconnu
+    confiance: null
+    backlog: 19
+    note: >
+      Le manuel énonce sa liste de commandes auto-terminantes en la déclarant
+      partielle : « Some (but not all) of these commands are ». Toute action
+      que le modèle ne marque pas `auto_termine` est donc présumée avoir besoin
+      d'`Enter` — présomption, pas fait établi. Un `Enter` de trop sur une
+      commande déjà terminée peut ré-exécuter la ligne suivante.
+
   - combinaison: "Select Last après une Query composée"
     valide: inconnu
     confiance: null
