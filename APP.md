@@ -25,6 +25,7 @@ Dernière mise à jour : 2026-08-01.
 | 2026-08-01 | Commande envoyée non acquittée : **jamais rejouée automatiquement**. | Réseau |
 | 2026-08-01 | Favori importé d'un autre spectacle : **signalé, jamais bloqué**. | Données |
 | 2026-08-01 | Export : **les deux formats** — texte lisible et fichier ré-importable. | Données |
+| 2026-08-01 | **La console fait autorité sur sa propre syntaxe.** Un refus n'est jamais contesté. | Principe |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -65,6 +66,11 @@ se permettre d'être bavard et prudent.
 - Retour console affiché : acceptée, ou refusée. **En cas de refus, la correction
   proposée est mise bien en évidence** — l'utilisateur la valide avant renvoi, jamais
   de renvoi automatique.
+- **Aucune option de renvoyer la commande refusée telle quelle.** La console fait
+  autorité sur sa propre syntaxe : la renvoyer à l'identique la ferait refuser à
+  l'identique. Les deux issues possibles sont *corriger et renvoyer*, ou *reformuler
+  la demande* — si la correction proposée ne convient pas, c'est que l'intention a été
+  mal comprise en amont.
 - Bouton **Sauvegarder en favori**, actif seulement après un envoi accepté.
 
 ### 2. Favoris — le seul écran de jeu
@@ -121,6 +127,25 @@ Deux garde-fous :
   groupe 12, cue 47). Importées sur un autre spectacle, elles restent syntaxiquement
   valides mais pointent vers autre chose. L'import le **signale sans bloquer** : c'est
   l'utilisateur qui sait si la numérotation correspond.
+
+---
+
+## La console fait autorité
+
+Sur sa propre syntaxe, la console a toujours raison — c'est le même principe que la
+hiérarchie de confiance du corpus, où l'observation au banc réel (S) prime sur le manuel
+et sur toute déduction.
+
+Conséquence exploitable, et l'asymétrie compte :
+
+- **Un refus est une preuve définitive.** La syntaxe est invalide, sans appel. L'app ne
+  doit jamais offrir de passer outre.
+- **Une acceptation prouve moins.** Elle établit que la commande est *syntaxiquement*
+  valide — pas qu'elle fait ce que l'utilisateur voulait. Une commande valide peut agir
+  sur les mauvais circuits.
+
+C'est exactement pourquoi une macro n'entre dans les favoris qu'après acceptation *et*
+validation visuelle par l'utilisateur en salle.
 
 ---
 
