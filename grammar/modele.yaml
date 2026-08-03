@@ -14,6 +14,7 @@
 #   v0.8  + Mark (§9) — deux mécanismes exclusifs, et un mode global invisible
 #   v0.9  + Cues multipart (§17) — et la règle transversale de Blind
 #   v0.10 + Cue lists multiples (§14) et Assert — une contradiction résolue
+#   v0.11 + Park (§19) et Filtres (§13) — le cinquième état implicite
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -21,10 +22,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.10"
+  version: "0.11"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -179,6 +180,139 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# PARK — figer une valeur au-dessus de tout le reste
+# --------------------------------------------------------------------------
+park:
+  confiance: A
+  source: "manuel §19 Park"
+  mot_cle: "Park"
+  osc: park
+  ecran: 20
+
+  principe: >
+    Fige un channel ou un paramètre à une valeur, en interdisant toute reprise
+    par le contrôle manuel, une cue ou un submaster.
+  immunites: ["grandmaster", "blackout", "contrôle par partition"]
+  confiance_immunites: A
+  note_partition: >
+    Park échappe au contrôle par partition : n'importe quel opérateur peut
+    parquer et déparquer, quelle que soit sa partition.
+
+  record_targets:
+    regle: >
+      Les valeurs parquées sont EXCLUES de tous les record targets. On peut
+      malgré tout régler et enregistrer des niveaux manuels pour un channel
+      parqué — mais ils ne sortent pas tant que le paramètre reste parqué.
+    confiance: A
+    consequence_generateur: >
+      Une macro qui règle puis enregistre un channel parqué produit une cue
+      correcte sur le papier et un plateau inchangé. Aucune erreur ne remonte.
+
+  modalite:
+    regle: >
+      Dans l'écran Park, la touche `Park` n'est PAS nécessaire pour parquer —
+      c'est supposé — mais elle sert à DÉPARQUER. `At Enter` déparque aussi.
+    confiance: A
+    source: "manuel §19 « Park Values from the Park Display »"
+    consequence_generateur: >
+      Même touche, sens inversé selon l'écran. `3 At 45 Enter` parque depuis
+      l'écran Park et règle une intensité depuis Live. C'est la polysémie de
+      `At` sous une forme de plus.
+
+  toggle:
+    forme: "`<chan> At Park Enter`"
+    regle: "parque si non parqué, déparque si parqué — c'est un BASCULE"
+    confiance: A
+    source: "manuel §19 : exemple explicite sur le channel 2"
+    consequence_generateur: >
+      Cette forme ne permet pas d'exprimer « parque » de façon absolue. Pour un
+      résultat déterministe il faut passer une valeur : `<chan> At <n> Park`.
+      Même famille de piège que `{Enable}`/`{Disable}` sur le marquage (#6).
+
+  echelle:
+    forme: "`<chan> At / <pourcentage> Park Enter`"
+    exemples:
+      - "`3 At / 125 Park` — le channel 3 sortira 25 % plus haut que son réglage"
+      - "`3 At / 85 Park` — il sortira 15 % plus bas"
+    confiance: A
+    osc: scale
+    note: "septième sens documenté du symbole `/`"
+
+  adresses:
+    forme: "`Address <n> At <niveau> Park Enter`"
+    deparquer: "`Address <n> Park Enter`"
+    tout_deparquer: "`Address Park Enter`"
+    confiance: A
+
+  tout_deparquer:
+    forme: "`Park Enter`"
+    effet: "efface TOUS les channels parqués et toutes les instructions d'échelle"
+    confirmation: true
+    confiance: A
+    note: >
+      Un channel déparqué revient au niveau que la console fournit à cet
+      instant, ou à sa valeur par défaut s'il n'y a pas d'instruction.
+
+# --------------------------------------------------------------------------
+# FILTRES — ce qui décide, en silence, de ce qui sera enregistré
+# --------------------------------------------------------------------------
+filtres:
+  confiance: A
+  source: "manuel §13 Filters"
+  mot_cle: "Filter"
+  osc: filter
+  effacer: { mot_cle: "Clear Filters", osc: clear_filters, confiance: A }
+
+  portee:
+    regle: "déterminent quels paramètres peuvent être stockés dans une cue, une palette ou un preset"
+    confiance: A
+    par_cible:
+      Palettes: "déjà filtrées par nature ; les filtres couleur et beam peuvent affiner"
+      Presets: "les filtres actifs décident du contenu"
+      Cues: "les filtres actifs décident du contenu, MÊME avec `Record Only`"
+      "Recall From": "N'EST PAS affecté par les filtres"
+    note_faders: >
+      Les filtres de channel et de paramètre applicables aux faders et aux
+      submasters sont autre chose : ils agissent à la LECTURE, pas à
+      l'enregistrement. Deux mécanismes homonymes à ne pas confondre.
+
+  tout_ou_rien:
+    regle: >
+      Tous les filtres sélectionnés et aucun filtre sélectionné produisent le
+      MÊME résultat : tous les paramètres sont enregistrables.
+    confiance: A
+    source: 'manuel §13 : "There is no difference between having all filters selected and having no filters selected"'
+    note: >
+      Subtilité logique réelle : l'état « filtré » n'est signifiant qu'entre
+      les deux extrêmes. Un générateur qui compterait les filtres actifs pour
+      décider s'il y a filtrage se tromperait aux deux bouts.
+
+  application:
+    forme: "accord maintenu — tenir `{Filter}`, presser les touches de paramètre, relâcher"
+    confiance: A
+    source: "manuel §13, procédure en trois temps répétée pour chaque cas"
+    toggle: "réappliquer un filtre le retire — c'est un état bascule"
+    backlog: 27
+    note_osc: >
+      `filter`→FILTER et `clear_filters`→CLEAR_FILTER_COMMAND existent bien
+      comme touches OSC, et `/eos/key/<nom>` accepte un front (1.0 appui, 0.0
+      relâchement). Reproduire l'accord maintenu serait donc théoriquement
+      possible. Jamais documenté ni observé.
+
+  etat_invisible:
+    regle: >
+      Aucune adresse `/eos/out/…` ne publie l'état des filtres — vérifié sur
+      le manuel §31 et sur Supported_OSC_Commands.
+    confiance: A
+    backlog: 28
+    consequence_generateur: >
+      La MÊME commande `Record Cue 5 Enter` enregistre un contenu différent
+      selon un état que le générateur ne peut ni lire ni, probablement, régler.
+      C'est le cinquième état implicite du modèle, et le plus lourd : les
+      autres changent le sens d'une commande, celui-ci change silencieusement
+      ce qu'elle enregistre, sans rien changer à son texte.
 
 # --------------------------------------------------------------------------
 # CUE LISTS MULTIPLES ET ASSERT
@@ -1535,6 +1669,54 @@ actions:
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
 
+  # -- park -----------------------------------------------------------------
+  parquer:
+    mot_cle: "Park"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Park]
+    confiance: A
+    source: "manuel §19 « Parked Values in Live »"
+    osc: park
+    avertissement: >
+      Sans valeur explicite, `<chan> At Park` est un BASCULE : parque si non
+      parqué, déparque sinon. Pour un résultat déterministe, toujours passer
+      une valeur.
+  parquer_echelle:
+    mot_cle: "At /"
+    attend: pourcentage
+    auto_termine: false
+    contextes: [Live, Park]
+    confiance: A
+    source: "manuel §19 « Scaled Parked Values in Live »"
+    osc: scale
+    note: "125 = 25 % au-dessus du réglage courant ; 85 = 15 % en dessous"
+  tout_deparquer:
+    mot_cle: "Park"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Park]
+    confiance: A
+    source: "manuel §19 : « [Park] [Enter] » sans sélection"
+    confirmation: true
+    avertissement: >
+      Efface TOUS les channels parqués et toutes les échelles du show.
+      Confirmation requise par la console.
+
+  # -- filtres --------------------------------------------------------------
+  effacer_filtres:
+    mot_cle: "Clear Filters"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §13 « Clearing Filters »"
+    osc: clear_filters
+    note: >
+      Seul geste de filtrage qui dispose d'une touche OSC propre et ne dépend
+      pas de l'accord maintenu. Reste à confirmer qu'il fonctionne seul —
+      PLANNING #27.
+
   # -- assert ---------------------------------------------------------------
   asserter:
     mot_cle: "Assert"
@@ -2622,6 +2804,33 @@ legalite:
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
 
+  # --- Park et filtres ---
+  - objet: Chan
+    action: parquer
+    valide: oui
+    confiance: A
+    note: "`2 At 50 Park Enter` — avec valeur, le résultat est déterministe"
+
+  - objet: Group
+    action: parquer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: parquer_echelle
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: tout_deparquer
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: effacer_filtres
+    valide: oui
+    confiance: A
+
   # --- Assert et cue lists multiples ---
   - objet: Cue
     action: asserter
@@ -2944,6 +3153,27 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "pose de filtres par accord maintenu"
+    valide: inconnu
+    confiance: null
+    backlog: 27
+    note: >
+      Le manuel décrit la pose d'un filtre comme un accord : tenir `{Filter}`,
+      presser les touches de paramètre, relâcher. `/eos/key/filter` accepte un
+      front (1.0/0.0), donc la reproduction est plausible — jamais documentée
+      ni observée. Sans elle, l'app hérite d'un état de filtrage qu'elle ne
+      choisit pas.
+
+  - combinaison: "état des filtres — invisible et déterminant"
+    valide: inconnu
+    confiance: null
+    backlog: 28
+    note: >
+      Aucune adresse `/eos/out/…` ne publie l'état des filtres. La même
+      commande `Record Cue 5 Enter` enregistre donc un contenu différent selon
+      un état non lisible, sans que son texte change. Cinquième état implicite,
+      et le seul qui altère le RÉSULTAT plutôt que le SENS d'une commande.
 
   - combinaison: "cue list courante — état implicite"
     valide: inconnu

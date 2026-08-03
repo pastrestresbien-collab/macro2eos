@@ -204,6 +204,22 @@ Deux autres apports : un **sixième sens du `/`** (`Cue 2/ Assert` asserte la li
 d'enregistrement dépend de la « cue sélectionnée », que le générateur ne peut pas lire ;
 il nomme donc désormais la liste explicitement, même la liste 1.
 
+**Fait — v0.11 (2026-08-03)** : Park §19 et Filtres §13. 71 actions, 149 règles de
+légalité, 94 cas de non-régression, 21 zones non tranchées suivies.
+
+Le point majeur est le **cinquième état implicite**, et il diffère des quatre premiers.
+Le mode de patch (#20), le mode de marquage (#24), la cue list courante (#25) et le couple
+Q Only/Track changent le *sens* d'une commande. L'état des filtres, lui, change ce qu'elle
+*produit* : `Record Cue 5 Enter` enregistre un contenu différent selon un état que rien ne
+publie, sans que son texte change d'un caractère (#28). Et poser un filtre passe par un
+accord maintenu dont la reproduction en OSC est plausible mais jamais observée (#27).
+
+Park apporte deux pièges de plus : la touche `Park` s'inverse dans l'écran Park (elle sert
+à déparquer, le parquage y étant implicite), et `<chan> At Park` sans valeur est un
+bascule — le générateur exige donc une valeur. Enfin, une valeur parquée est exclue de
+tous les record targets : une macro qui règle puis enregistre un channel parqué produit
+une cue correcte sur le papier et un plateau inchangé, sans erreur remontée.
+
 **Reste à faire** :
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
@@ -275,6 +291,15 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     bien — c'est la généralisation qui est fautive, pas l'observation. À trancher au banc :
     `Cue 2/5 Assert Enter` passe-t-il en `newcmd` ? Si oui, corriger le §9 de la grammaire
     consolidée, qui induit en erreur depuis sa rédaction.
+
+28. **L'état des filtres est invisible — et il décide de ce qui s'enregistre.** Aucune
+    adresse `/eos/out/…` ne publie l'état des filtres (vérifié sur le manuel §31 et sur
+    `Supported_OSC_Commands.md`). La **même** commande `Record Cue 5 Enter` enregistre donc
+    un contenu différent selon un état que le générateur ne peut pas lire, sans que son
+    texte change d'un caractère. C'est le cinquième état implicite du modèle, et le seul
+    qui altère le *résultat* d'une commande plutôt que son *sens* — les autres (#20, #24,
+    #25, Q Only/Track) changent ce que la commande veut dire, celui-ci change ce qu'elle
+    produit. À trancher : existe-t-il un retour, même indirect, sur l'état de filtrage ?
 
 ### Priorité moyenne — affectent la génération de macros
 
@@ -349,6 +374,14 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     nomme désormais la liste explicitement, même la liste 1, plutôt que d'hériter d'un
     état qu'il ne peut pas lire — reste à vérifier qu'un préfixe explicite l'emporte bien
     dans tous les cas de figure.
+27. **Poser un filtre est un accord maintenu — reproductible en OSC ?** Le manuel §13
+    décrit la pose en trois temps : tenir `{Filter}`, presser les touches de paramètre,
+    relâcher. `filter`→`FILTER` et `clear_filters`→`CLEAR_FILTER_COMMAND` existent bien
+    comme touches OSC, et `/eos/key/<nom>` accepte un front (1.0 appui, 0.0 relâchement) —
+    la reproduction de l'accord est donc *plausible*, mais nulle part documentée ni
+    observée. Si elle ne marche pas, l'app ne peut pas choisir son état de filtrage : elle
+    hérite de celui de la console, avec les conséquences décrites en #28. Tester d'abord
+    `{Clear Filters}` seul, qui a sa propre touche et devrait être le cas le plus simple.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

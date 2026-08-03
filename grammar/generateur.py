@@ -462,10 +462,26 @@ class Generateur:
 
         if t in ("retirer_adresse", "depatcher", "patch_hors_sortie",
                  "reordonner", "inverser_ordre", "ordre_aleatoire",
-                 "marquer", "marquer_au_plus_tot", "asserter"):
+                 "marquer", "marquer_au_plus_tot", "asserter",
+                 "tout_deparquer", "effacer_filtres"):
             if t == "marquer":
                 self._verifier_combinaison("AutoMark ou marques référencées", avert)
+            if t == "effacer_filtres":
+                self._verifier_combinaison("pose de filtres par accord maintenu", avert)
             return mot
+
+        if t == "parquer":
+            if "valeur" not in act:
+                avert.append(
+                    "`At Park` sans valeur est un bascule : il déparque si le "
+                    "channel est déjà parqué (manuel §19) — passer une valeur "
+                    "pour un résultat déterministe"
+                )
+                return f"At {mot}"
+            return f"At {act['valeur']} {mot}"
+
+        if t == "parquer_echelle":
+            return f"{mot} {act['valeur']} Park"
 
         if t == "affecter_part":
             return mot if "cible" not in act else f"{mot} {act['cible']}"

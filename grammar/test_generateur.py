@@ -433,6 +433,46 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # ------------------------------ Park (§19) et Filtres (§13)
+    {
+        "nom": "manuel §19 — parquer une intensité à une valeur précise",
+        # [2] [At] [5][0] [Park] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 2},
+             "action": {"type": "parquer", "valeur": 50}},
+        ],
+        "attendu": "Chan 2 At 50 Park Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §19 — `At Park` sans valeur est un bascule",
+        # [2] [At] [Park] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 2},
+             "action": {"type": "parquer"}},
+        ],
+        "attendu": "Chan 2 At Park Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §19 — park à l'échelle, septième sens du `/`",
+        # [3] [At] [/] [1][2][5] [Park] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 3},
+             "action": {"type": "parquer_echelle", "valeur": 125}},
+        ],
+        "attendu": "Chan 3 At / 125 Park Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §13 — effacer les filtres, seul geste à touche OSC propre",
+        "ir": [
+            {"action": {"type": "effacer_filtres"}},
+        ],
+        "attendu": "Clear Filters Enter",
+        "avertissements": 1,      # PLANNING #27
+    },
+
     # ------------------------ Cue lists multiples (§14) et Assert
     {
         "nom": "manuel §14 — enregistrement vers une autre cue list",

@@ -88,8 +88,31 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.8 | **Mark** — deux mécanismes exclusifs, et un mode global invisible |
 | v0.9 | **Cues multipart** — et la règle transversale de Blind |
 | v0.10 | **Cue lists multiples et Assert** — une contradiction résolue |
+| v0.11 | **Park et Filtres** — le cinquième état implicite |
 
-Ce que v0.10 ajoute concrètement :
+Ce que v0.11 ajoute concrètement :
+
+- **L'état des filtres est invisible, et il décide de ce qui s'enregistre.** Aucune adresse
+  `/eos/out/…` ne le publie — vérifié sur le manuel §31 et sur `Supported_OSC_Commands.md`.
+  La **même** commande `Record Cue 5 Enter` enregistre donc un contenu différent selon un
+  état non lisible, sans que son texte change d'un caractère. C'est le cinquième état
+  implicite, et le seul qui altère le *résultat* d'une commande plutôt que son *sens*
+  (#28).
+- **Poser un filtre est un accord maintenu** — tenir `{Filter}`, presser les paramètres,
+  relâcher. Les touches OSC existent et acceptent un front 1.0/0.0, donc la reproduction
+  est plausible ; nulle part documentée ni observée (#27).
+- **Deux subtilités logiques du §13** : tous les filtres actifs et aucun filtre actif
+  donnent le même résultat — un générateur qui compterait les filtres se tromperait aux
+  deux bouts ; et `Recall From` échappe aux filtres, contrairement à `Record Only`.
+- **Park est modal et bascule.** Dans l'écran Park, la touche `Park` n'est pas nécessaire
+  pour parquer mais sert à déparquer. Et `<chan> At Park` sans valeur *bascule* — le
+  générateur exige donc une valeur pour un résultat déterministe. Septième sens du `/` au
+  passage : `At / 125 Park` pose une échelle de 125 %.
+- Une valeur parquée est **exclue de tous les record targets** : une macro qui règle puis
+  enregistre un channel parqué produit une cue correcte sur le papier et un plateau
+  inchangé, sans qu'aucune erreur ne remonte.
+
+Ce que v0.10 avait ajouté :
 
 - **Une contradiction entre deux sources du projet, tranchée.** La grammaire consolidée
   §9 affirme, sur la foi du journal terrain (S) : « Assert n'a pas de mot-clé de ligne de
