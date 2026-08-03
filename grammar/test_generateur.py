@@ -433,6 +433,65 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # ------------------------ Cue lists multiples (§14) et Assert
+    {
+        "nom": "manuel §14 — enregistrement vers une autre cue list",
+        # [Record] <Cue> [2] [/] [5] [Enter]
+        "ir": [
+            {"action": {"type": "record_cue", "liste": 2, "cible": 5}},
+        ],
+        "attendu": "Record Cue 2/5 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §14 — assert au niveau d'une cue",
+        # [Cue] [x] [/] [y] [Assert] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "liste": 2, "numero": 5},
+             "action": {"type": "asserter"}},
+        ],
+        "attendu": "Cue 2/5 Assert Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §14 — assert de liste entière : le `/` sans numéro",
+        # [Cue] [x] [/] [Assert] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "liste": 2},
+             "action": {"type": "asserter"}},
+        ],
+        "attendu": "Cue 2/ Assert Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §14 — assert sur une portion de cue active",
+        # [Group] [6] [Assert] [Enter]
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 6},
+             "action": {"type": "asserter"}},
+        ],
+        "attendu": "Group 6 Assert Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "banc (S) — Assert sur un submaster échoue, contrairement aux cues",
+        "ir": [
+            {"selection": {"objet": "Sub", "numero": 4},
+             "action": {"type": "asserter"}},
+        ],
+        "attendu": "Sub 4 Assert Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §14 — Go To Cue 0 sur une liste précise",
+        # [Go To Cue] [2] [/] [0] [Enter]
+        "ir": [
+            {"action": {"type": "go_to_cue", "liste": 2, "cible": 0}},
+        ],
+        "attendu": "Go To Cue 2/0 Enter",
+        "avertissements": 0,
+    },
+
     # ------------------------------------------- Cues multipart (§17)
     {
         "nom": "manuel §17 — affecter des channels à une part, en Blind",

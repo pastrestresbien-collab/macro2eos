@@ -185,6 +185,25 @@ désormais deux affectations du même channel à des parts différentes. C'est l
 contrainte du modèle qui porte sur la *structure de l'IR* et non sur un couple
 objet/action — une piste à réutiliser pour d'autres règles.
 
+**Fait — v0.10 (2026-08-03)** : cue lists multiples §14 et Assert. 67 actions, 142 règles
+de légalité, 90 cas de non-régression.
+
+Cette tranche a mis au jour **une contradiction entre deux sources du projet**, et elle
+est instructive. `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` §9 affirme, sur la foi du
+journal terrain (S) : « Assert n'a pas de mot-clé de ligne de commande ». Le manuel §14
+(A) documente pourtant quatre niveaux d'assert en ligne de commande. Les deux disent vrai
+sur des objets différents : le constat de banc portait sur un assert de **submaster**, qui
+échoue bien. C'est la généralisation qui était fautive, pas l'observation — voir #26.
+
+C'est le premier cas où une source S s'est révélée **sur-généralisée** plutôt qu'erronée.
+Leçon méthodologique : une observation de banc vaut pour l'objet observé, jamais pour la
+famille entière. Les constats S futurs devraient être enregistrés avec leur portée exacte.
+
+Deux autres apports : un **sixième sens du `/`** (`Cue 2/ Assert` asserte la liste entière,
+`Cue 2/5 Assert` une seule cue), et un **quatrième état implicite** (#25) — la liste
+d'enregistrement dépend de la « cue sélectionnée », que le générateur ne peut pas lire ;
+il nomme donc désormais la liste explicitement, même la liste 1.
+
 **Reste à faire** :
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
@@ -246,6 +265,16 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     parade documentée : le préfixe `Address <n> At <channel>`, non ambigu quel que soit
     le mode. À vérifier au banc : le préfixe tient-il vraiment dans les deux modes ?
     Ce point valide directement la stratégie « validation utilisateur avant envoi ».
+
+26. **`Assert` en ligne de commande — la grammaire consolidée est trop générale.**
+    `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` §9 affirme, sur la foi du journal terrain
+    (S) : « Assert n'a pas de mot-clé de ligne de commande — fonction hardkey uniquement ».
+    Le manuel §14 (A) documente pourtant `Cue x/y Assert Enter`, `Cue x/ Assert Enter` et
+    `<channels> Assert Enter`, avec exemples. Les deux sources sont conciliables : le
+    constat de banc portait sur `Sub n Assert`, un assert de **submaster**, qui échoue
+    bien — c'est la généralisation qui est fautive, pas l'observation. À trancher au banc :
+    `Cue 2/5 Assert Enter` passe-t-il en `newcmd` ? Si oui, corriger le §9 de la grammaire
+    consolidée, qui induit en erreur depuis sa rédaction.
 
 ### Priorité moyenne — affectent la génération de macros
 
@@ -313,6 +342,13 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     problème que les sept conditions Query de #15 : atteignables au doigt, hors de portée
     de `/eos/key/`. Attention à ne pas les confondre avec `priority`→`SOURCE_PRIORITY`,
     qui existe bien mais désigne la priorité de submaster (§20), un autre mécanisme.
+25. **Cue list courante — quatrième état implicite.** La liste vers laquelle on enregistre
+    est déterminée par la « cue sélectionnée », qui change à chaque `Record`, `Update`,
+    `Go`, `Back`, `Go To Cue` ou simple modification d'attribut. Le manuel juge utile de
+    prévenir : « It is very useful to keep an eye on the selected cue ». Le générateur
+    nomme désormais la liste explicitement, même la liste 1, plutôt que d'hériter d'un
+    état qu'il ne peut pas lire — reste à vérifier qu'un préfixe explicite l'emporte bien
+    dans tous les cas de figure.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

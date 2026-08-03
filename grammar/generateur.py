@@ -153,8 +153,14 @@ class Generateur:
             morceaux = [mot, f"{prefixe}{sel['de']}", thru, str(sel["a"])]
         elif "mot" in sel:                       # Out / Next / Last / Home
             morceaux = [mot, f"{prefixe}{sel['mot']}"]
-        else:
+        elif "numero" in sel:
             morceaux = [mot, f"{prefixe}{sel['numero']}"]
+        elif prefixe:
+            # `Cue 2/` — la liste entière, sans numéro derrière le slash.
+            # C'est ce qui distingue un assert de liste d'un assert de cue.
+            morceaux = [mot, prefixe]
+        else:
+            raise ValueError(f"sélection sans cible : {sel!r}")
 
         # `Group 7 + 5` — ajouter une cible de MÊME type, forme documentée A
         # (manuel §7). À ne pas confondre avec `plus_plage`, qui mélange les
@@ -456,7 +462,7 @@ class Generateur:
 
         if t in ("retirer_adresse", "depatcher", "patch_hors_sortie",
                  "reordonner", "inverser_ordre", "ordre_aleatoire",
-                 "marquer", "marquer_au_plus_tot"):
+                 "marquer", "marquer_au_plus_tot", "asserter"):
             if t == "marquer":
                 self._verifier_combinaison("AutoMark ou marques référencées", avert)
             return mot

@@ -87,8 +87,28 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.7 | **Palettes et Presets** — la référence, et ce qui la casse |
 | v0.8 | **Mark** — deux mécanismes exclusifs, et un mode global invisible |
 | v0.9 | **Cues multipart** — et la règle transversale de Blind |
+| v0.10 | **Cue lists multiples et Assert** — une contradiction résolue |
 
-Ce que v0.9 ajoute concrètement :
+Ce que v0.10 ajoute concrètement :
+
+- **Une contradiction entre deux sources du projet, tranchée.** La grammaire consolidée
+  §9 affirme, sur la foi du journal terrain (S) : « Assert n'a pas de mot-clé de ligne de
+  commande — fonction hardkey uniquement ». Le manuel §14 (A) documente pourtant
+  `Cue x/y Assert Enter` et `<channels> Assert Enter`, avec exemples. Les deux disent vrai
+  **sur des objets différents** : le constat de banc portait sur `Sub n Assert`, un assert
+  de *submaster*, qui échoue bien. C'est la généralisation qui était fautive, pas
+  l'observation. Le modèle porte désormais les quatre niveaux d'assert documentés, plus la
+  restriction propre aux submasters — voir PLANNING #26.
+- **Un sixième sens du `/`** : `Cue 2/ Assert` (slash sans numéro derrière) asserte la
+  liste entière, là où `Cue 2/5 Assert` n'asserte qu'une cue.
+- **Quatrième état implicite** (#25) : la liste vers laquelle on enregistre dépend de la
+  « cue sélectionnée », qui change à chaque `Record`, `Go`, `Back` ou modification
+  d'attribut. Le manuel juge utile de prévenir l'opérateur humain. Le générateur nomme
+  désormais la liste explicitement, même la liste 1.
+- `Go To Cue 0` et `Go To Cue Out` sont distingués : le premier ne touche que l'intensité
+  d'une liste, le second ramène tous les paramètres de toutes les listes.
+
+Ce que v0.9 avait ajouté :
 
 - **En Blind, il n'y a pas d'étape de validation.** Les éditions prennent effet
   immédiatement, sans `Record` ni `Update`. Le manuel le répète chapitre après chapitre

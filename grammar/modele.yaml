@@ -13,6 +13,7 @@
 #   v0.7  + Palettes (§10) et Presets (§11) — la référence, et ce qui la casse
 #   v0.8  + Mark (§9) — deux mécanismes exclusifs, et un mode global invisible
 #   v0.9  + Cues multipart (§17) — et la règle transversale de Blind
+#   v0.10 + Cue lists multiples (§14) et Assert — une contradiction résolue
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -20,10 +21,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.9"
+  version: "0.10"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -178,6 +179,133 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# CUE LISTS MULTIPLES ET ASSERT
+#
+# Contient la contradiction la plus nette rencontrée jusqu'ici entre deux
+# sources du projet — voir `assert.contradiction_sources`.
+# --------------------------------------------------------------------------
+cue_lists:
+  confiance: A
+  source: "manuel §14 Multiple Cue Lists"
+  maximum: 999
+  indisponible_sur: ["Element 2", "Element Classic"]
+
+  designation:
+    forme: "`Cue <liste>/<numero>` — la liste 1 s'écrit sans préfixe ni `/`"
+    confiance: A
+    liste_seule:
+      forme: "`Cue <n>/ Enter`"
+      effet: >
+        Sélectionne la cue la plus récemment activée de cette liste, ou la
+        première de la liste s'il n'y en a aucune d'active.
+      confiance: A
+
+  liste_courante_implicite:
+    regle: >
+      La liste d'enregistrement est TOUJOURS déterminée par la cue
+      sélectionnée, sauf si une autre liste est explicitement nommée.
+    confiance: A
+    source: "manuel §14 « Recording to a New Cue List »"
+    backlog: 25
+    note: >
+      La « cue sélectionnée » est la dernière cue affectée en Live — un Record,
+      un Update, un Go, un Back, un Go To Cue, ou même un simple changement
+      d'attribut. Le manuel juge utile de prévenir : « It is very useful to
+      keep an eye on the selected cue ». C'est un quatrième état implicite,
+      après le mode de patch (#20), le couple Q Only/Track et le mode de
+      marquage (#24).
+    regle_generation: >
+      Le générateur nomme TOUJOURS la liste explicitement, même la liste 1,
+      plutôt que d'hériter d'un état qu'il ne peut pas lire.
+
+  changement_de_liste_active:
+    causes:
+      - "`Cue 3/ Enter` — rappel d'une liste en ligne de commande"
+      - "`Record Cue 3/8 Enter` — enregistrement vers une autre liste"
+      - "un `Go` sur le fader d'une autre liste"
+    confiance: A
+
+  go_to_cue_0:
+    forme: "`Go To Cue <liste>/0 Enter`"
+    effet: >
+      Remet à leur valeur par défaut toutes les intensités non possédées par
+      un autre fader, y compris les valeurs manuelles, et replace la liste en
+      tête avec la première cue en attente.
+    epargne: ["channels capturés", "valeurs à priorité", "autres faders sur une autre liste"]
+    non_intensite: "les paramètres non-intensité restent dans leur état courant"
+    confiance: A
+  go_to_cue_out:
+    forme: "`Go To Cue Out Enter`"
+    effet: >
+      Ramène TOUS les paramètres à leur état par défaut et replace toutes les
+      listes chargées sur des faders en tête.
+    epargne: ["channels tenus par un submaster", "liste en Solo Mode"]
+    confiance: A
+    note: >
+      Distinct de `Go To Cue 0`, qui ne touche que l'intensité et une seule
+      liste. Deux commandes proches de nom, de portées très différentes.
+
+assert:
+  confiance: A
+  source: "manuel §14 « Using Assert »"
+  mot_cle: "Assert"
+  osc: assert
+
+  principe: >
+    Par défaut, un paramètre ne réagit qu'aux instructions de mouvement. Assert
+    force le rejeu de données trackées ou bloquées, même si une autre cue list
+    a pris possession du channel.
+
+  niveaux:
+    cue:
+      forme: "`Cue <liste>/<numero> Assert Enter`"
+      effet: "toutes les données de la cue, moves ET tracks, sont rejouées"
+      indicateur: "A majuscule dans la colonne d'assert"
+      confiance: A
+    cue_list:
+      forme: "`Cue <liste>/ Assert Enter`"
+      effet: "toutes les valeurs de toutes les cues de la liste sont assertées"
+      confiance: A
+      note: >
+        Le `/` sans numéro derrière est ce qui distingue l'assert de liste de
+        l'assert de cue. Sixième sens documenté de ce symbole.
+    channel:
+      forme: "`<channels> Assert Enter` puis `Record Cue <n> Enter`"
+      effet: "le channel entier rejoue ses valeurs stockées"
+      indicateur: "A rouge avant enregistrement, bleu après ; `a` minuscule dans la colonne"
+      confiance: A
+    parametre:
+      forme: "`<channels> {Color} Assert Enter` puis enregistrement"
+      effet: "seuls les paramètres désignés sont assertés"
+      confiance: A
+    manuel_sur_cue_active:
+      forme: "`Group 6 Assert Enter`"
+      effet: "rejoue une portion d'une cue ACTIVE sans rejouer la cue entière"
+      confiance: A
+      restriction: "ne fonctionne que sur une cue actuellement active"
+
+  contradiction_sources:
+    description: >
+      La grammaire consolidée du projet (§9) affirme, sur la foi du journal
+      terrain : « Assert n'a pas de mot-clé de ligne de commande — fonction
+      hardkey uniquement », confiance S. Le manuel §14 la contredit
+      frontalement : `Cue x/y Assert Enter` et `<channels> Assert Enter` sont
+      des commandes de ligne, documentées avec exemples.
+    resolution: >
+      Les deux sources disent vrai sur des objets différents. Le constat de
+      banc portait sur `/eos/newcmd "Sub n Assert#"` — un assert de
+      SUBMASTER, qui échoue bien. Le manuel documente l'assert de CUE, de
+      CUE LIST, de CHANNEL et de PARAMÈTRE, qui existent en ligne de commande.
+      La généralisation « pas de mot-clé de ligne de commande » était donc
+      trop large : c'est l'assert de submaster qui n'en a pas.
+    confiance: A
+    backlog: 26
+    portee_conservee_du_banc: >
+      Le constat S reste valable et non négociable pour les submasters :
+      `Sub <n> Assert` échoue, et le contournement documenté reste
+      `/eos/user/1/fader/1/<n>/stop`.
 
 # --------------------------------------------------------------------------
 # CUES MULTIPART — découper une cue pour donner des temps différents
@@ -1407,6 +1535,23 @@ actions:
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
 
+  # -- assert ---------------------------------------------------------------
+  asserter:
+    mot_cle: "Assert"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §14 « Using Assert »"
+    osc: assert
+    note: >
+      S'applique à une cue, une cue list, un channel ou un paramètre. Sur un
+      channel ou un paramètre, il faut ensuite enregistrer (`Record` ou
+      `Update`) — l'assert seul n'est que posé, pas stocké.
+    avertissement: >
+      Ne fonctionne PAS sur un submaster : `Sub <n> Assert` échoue en erreur de
+      syntaxe (constat de banc, confiance S).
+
   # -- cues multipart -------------------------------------------------------
   affecter_part:
     mot_cle: "Part"
@@ -2334,11 +2479,20 @@ legalite:
     valide: non
     confiance: S
     note: >
-      Assert n'a pas de mot-clé de ligne de commande : `Sub n Assert#` échoue en
-      erreur de syntaxe (journal terrain, confiance S). Plus généralement, le
-      pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At`.
-      Entrée conservée pour que le générateur refuse explicitement au lieu de
-      tomber dans le trou « combinaison absente du modèle ».
+      Le pilotage de niveau d'un sub passe par le fader ou les bumps, pas par
+      `At`. Entrée conservée pour que le générateur refuse explicitement au
+      lieu de tomber dans le trou « combinaison absente du modèle ».
+
+  - objet: Sub
+    action: asserter
+    valide: non
+    confiance: S
+    note: >
+      `/eos/newcmd "Sub n Assert#"` échoue en erreur de syntaxe — constat de
+      banc. Restriction propre AUX SUBMASTERS : l'assert de cue, de cue list,
+      de channel et de paramètre existe bien en ligne de commande (manuel §14).
+      Voir `assert.contradiction_sources`. Contournement documenté :
+      `/eos/user/1/fader/1/<n>/stop`.
 
   # --- Macros ---
   - objet: Macro
@@ -2467,6 +2621,30 @@ legalite:
     valide: oui
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
+
+  # --- Assert et cue lists multiples ---
+  - objet: Cue
+    action: asserter
+    valide: oui
+    confiance: A
+    note: "`Cue 2/5 Assert Enter` sur une cue ; `Cue 2/ Assert Enter` sur toute la liste"
+
+  - objet: Chan
+    action: asserter
+    valide: oui
+    confiance: A
+    note: "à enregistrer ensuite — l'assert posé n'est pas stocké"
+
+  - objet: Group
+    action: asserter
+    valide: oui
+    confiance: A
+    note: "`Group 6 Assert Enter` rejoue une portion d'une cue ACTIVE"
+
+  - objet: selection_courante
+    action: asserter
+    valide: oui
+    confiance: A
 
   # --- Cues multipart ---
   - objet: Chan
@@ -2766,6 +2944,28 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "cue list courante — état implicite"
+    valide: inconnu
+    confiance: null
+    backlog: 25
+    note: >
+      La liste d'enregistrement est déterminée par la « cue sélectionnée », qui
+      change à chaque Record, Update, Go, Back, Go To Cue ou modification
+      d'attribut. Le générateur nomme toujours la liste explicitement pour ne
+      pas en dépendre, mais reste à vérifier qu'un préfixe explicite l'emporte
+      bien dans tous les cas.
+
+  - combinaison: "Assert en ligne de commande — portée réelle"
+    valide: inconnu
+    confiance: null
+    backlog: 26
+    note: >
+      Le manuel §14 documente `Assert` en ligne de commande sur cue, cue list,
+      channel et paramètre. Le banc a constaté l'échec de `Sub n Assert`. Les
+      deux sont compatibles — la restriction porte sur les submasters — mais la
+      généralisation inscrite dans la grammaire consolidée §9 est trop large.
+      À confirmer au banc : `Cue 2/5 Assert Enter` passe-t-il en `newcmd` ?
 
   - combinaison: "AutoMark ou marques référencées — lequel est actif ?"
     valide: inconnu
