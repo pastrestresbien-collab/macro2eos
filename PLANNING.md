@@ -117,7 +117,25 @@ que des channels — sur des adresses il crée silencieusement des **parts** au 
 d'échouer — et le pas d'adresse est l'empreinte DMX du fixture, pas +1, donc le
 générateur ne peut pas annoncer les adresses résultantes sans connaître le patch.
 
-**Reste à faire** : Groups §7, Palettes §10 / Presets §11, Mark §9, cues multipart §17,
+**Fait — v0.6 (2026-08-02)** : Groups §7 et sous-groupes. 52 actions, 104 règles de
+légalité, 67 cas de non-régression.
+
+Un groupe n'est pas seulement un ensemble : il porte un **ordre**, celui de la sélection
+au moment de l'enregistrement. `10 Thru 2` est légal et range 10, 9, 8… Cet ordre
+gouverne `Next`/`Last` et l'application des effets, et un `Update` ajoute toujours en fin
+de liste. Les sous-groupes s'écrivent `( 1 Thru 4 )` — la frappe est `Shift & /` mais ce
+sont les parenthèses qui sont des touches OSC nommées — et comptent pour un seul channel
+dans quatre cas documentés, dont le Fan.
+
+`Thru Thru` a enfin ses règles, et elles sont piégeuses : un chiffre de décimale d'écart
+entre début et fin change la nature du résultat (décimales ou entiers) sans erreur, et
+au-delà de 10 000 cibles la commande est ignorée en silence.
+
+Nouveau point #22 : le manuel §7 se contredit sur `{Insert Before}` / `{Insert After}` —
+sa liste de softkeys dit l'inverse de ses propres exemples. Le modèle retient les
+exemples, mais c'est un arbitrage.
+
+**Reste à faire** : Palettes §10 / Presets §11, Mark §9, cues multipart §17,
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 
@@ -224,6 +242,12 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     surtout qu'il force l'interprétation channel quel que soit le mode Format — est une
     extrapolation, jamais vérifiée. Si elle tient, c'est la parade symétrique de
     `Address` et elle lève #20 pour de bon.
+22. **`{Insert Before}` / `{Insert After}` — le manuel se contredit.** Sa liste de
+    softkeys (§7, « Ordered Channels ») décrit `{Insert Before}` comme insérant « after
+    the specified channel » et `{Insert After}` comme insérant « before » — l'inverse de
+    leurs noms. Ses propres exemples chiffrés, quelques pages plus loin, font l'inverse
+    de la liste et respectent les noms. Le modèle retient les exemples, cohérents entre
+    eux, mais c'est un arbitrage : une frappe sur console tranche en dix secondes.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

@@ -9,6 +9,7 @@
 #   v0.3  + Query + effets + couche d'injection OSC
 #   v0.4  + contexte d'écran (modalité) + auto-terminaison
 #   v0.5  + Patch (§4) — où `At` s'inverse une seconde fois
+#   v0.6  + Groupes (§7) — un ordre, pas seulement un ensemble
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -16,10 +17,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.5"
+  version: "0.6"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch
+    + query + effets + injection OSC + contexte d'écran + patch + groupes
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -156,6 +157,93 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# GROUPES — un ordre, pas seulement un ensemble
+#
+# Un Group ne contient que des références de channels, jamais de niveaux
+# (corpus #058). Mais il porte aussi un ORDRE, et cet ordre est signifiant.
+# --------------------------------------------------------------------------
+groupes:
+  confiance: A
+  source: "manuel §7 Groups"
+
+  ordre:
+    regle: >
+      Les channels sont rangés dans l'ordre de SÉLECTION au moment de
+      l'enregistrement, pas dans l'ordre numérique.
+    confiance: A
+    exemples:
+      - "`1 + 3 + 5 Thru 9 Record Group 1` conserve cet ordre exact"
+      - "`10 Thru 2 Record Group 1` range 10, 9, 8 … — `Thru` descendant est légal"
+    portee: >
+      L'ordre gouverne le parcours `Next`/`Last` et l'application des effets.
+      Un `Update` ajoute les nouveaux channels EN FIN de liste, jamais à leur
+      rang numérique.
+    affichage: "`Format` bascule entre vue ordonnée (défaut) et vue numérique"
+
+  reorganisation:
+    "{Insert Before}":
+      effet: "insère le channel AVANT celui désigné, dans la vue ordonnée"
+      confiance: A
+      source: "manuel §7, exemple : `2 {Insert Before} 9` place le 2 avant le 9"
+      backlog: 22
+    "{Insert After}":
+      effet: "insère le channel APRÈS celui désigné"
+      confiance: A
+      source: "manuel §7, exemple : `2 {Insert After} 5` place le 2 après le 5"
+      backlog: 22
+    "{Reverse}":  { effet: "inverse l'ordre des channels", confiance: A }
+    "{Random}":   { effet: "ordre aléatoire", confiance: A }
+    "{Reorder}":  { effet: "remet en ordre numérique", confiance: A }
+    contradiction_manuel:
+      description: >
+        La liste de softkeys du manuel §7 décrit `{Insert Before}` comme
+        insérant « after the specified channel » et `{Insert After}` comme
+        insérant « before » — l'inverse de leurs noms ET l'inverse de ses
+        propres exemples chiffrés, quelques pages plus loin. Le modèle retient
+        les exemples, qui sont cohérents entre eux et avec les noms.
+      backlog: 22
+
+  sous_groupes:
+    creation_live: "`( 1 Thru 4 ) Record Group 2 Enter`"
+    creation_liste: "`Group 2 Enter ( 1 Thru 4 ) Enter`"
+    confiance: A
+    source: "manuel §7 « Subgroups »"
+    compte_pour_un:
+      description: >
+        Un sous-groupe se comporte comme UN SEUL channel dans quatre cas
+        précis, tous documentés A.
+      cas:
+        - "effets absolus ou relatifs appliqués depuis Live"
+        - "plage de channels d'un step d'effet step-based : le sous-groupe n'est pas éclaté entre steps"
+        - "parcours `Next`/`Last` : chaque sous-groupe est traversé d'un coup"
+        - "`{Reverse}`, `{Reorder}`, `{Random}` portent sur les sous-groupes, pas sur leur contenu"
+      note: >
+        `{Reorder}` classe les sous-groupes d'après leur PREMIER channel.
+        Et c'est le même mécanisme qui fait qu'un sous-groupe compte pour un
+        seul channel dans un Fan (manuel §8).
+
+  record_contre_update:
+    record: >
+      Ré-enregistrer un groupe REMPLACE son contenu et demande une
+      confirmation (sauf désactivation en Setup).
+    update: >
+      Mettre à jour AJOUTE des channels sans confirmation. Deux verbes, deux
+      résultats opposés — à ne jamais confondre dans une traduction.
+    confiance: A
+
+  composition:
+    depuis_groupes:
+      formes:
+        - "`Group 7 + 5 Record Group 9` — deux groupes réunis"
+        - "`Group 8 Group 9 Record Group 10` — juxtaposition sans `+`"
+      confiance: A
+      note: >
+        Deux formes documentées pour la même intention. Le générateur émet la
+        forme avec `+`, seule non ambiguë à la relecture.
+    exclusion: "`- 3 Record Group 7` — tout sauf le channel 3"
+    confiance: A
 
 # --------------------------------------------------------------------------
 # PATCH EN MASSE — le Fan s'applique ici aussi, avec un pas non prévisible
@@ -335,8 +423,41 @@ operateurs:
   creation_plage:
     symbole: "Thru Thru"
     confiance: A
-    source: "manuel §20 : [Sub][1][Thru][Thru][1][0][Enter] crée les subs 1 à 10"
-    note: "création en série depuis Blind — ce n'est pas une sélection"
+    source: "manuel §7 « [Thru] and [Thru] [Thru] » ; manuel §20 pour les subs"
+    note: "création en série de record targets — ce n'est pas une sélection"
+    regles:
+      - id: fin_obligatoire
+        regle: "`Group 1 Thru Thru Enter` sans cible de fin est une erreur de syntaxe"
+        confiance: A
+      - id: decimales_identiques
+        regle: >
+          Des cibles décimales ne sont créées que si le début ET la fin ont le
+          MÊME nombre de décimales. Sinon Eos crée des cibles entières.
+        confiance: A
+        exemples:
+          - "`Group 1.001 Thru Thru 11.001` → 10 000 groupes de 1.001 à 11.001"
+          - "`Group 1.001 Thru Thru 11.002` → 10 groupes ENTIERS de 2 à 11"
+          - "`Group 1 Thru Thru 11.001` → 11 groupes : 1.001, 11.001, et les entiers 2 à 11"
+        piege: >
+          Le deuxième exemple est le piège : un chiffre de décimale d'écart
+          change complètement la nature du résultat, sans la moindre erreur.
+      - id: zeros_ignores
+        regle: "les zéros terminaux d'une partie décimale sont ignorés dans ce décompte"
+        confiance: A
+      - id: plafond_silencieux
+        regle: >
+          Une création qui dépasserait 10 000 cibles est IGNORÉE — pas refusée,
+          pas tronquée : rien ne se passe.
+        confiance: A
+  sous_groupe:
+    symbole: ["(", ")"]
+    frappe: "Shift & /"
+    confiance: A
+    source: "manuel §7 « Subgroups » ; eosKeys.ts `(`→CHAN_SUBGROUP_BEGIN, `)`→CHAN_SUBGROUP_END"
+    note: >
+      La frappe console est `Shift & /`, mais ce que porte la ligne de commande
+      est une parenthèse — et ce sont les parenthèses qui sont des touches OSC
+      nommées. C'est donc `( 1 Thru 4 )` qui s'écrit et qui s'injecte.
 
 # --------------------------------------------------------------------------
 # FAN — répartition automatique de valeurs (grammaire consolidée §4, manuel §8)
@@ -946,6 +1067,73 @@ actions:
     note: >
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
+
+  # -- groupes --------------------------------------------------------------
+  record_groupe:
+    mot_cle: "Record Group"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §7 « Recording Groups Live »"
+    avertissement: >
+      Sur un groupe existant, REMPLACE le contenu (avec confirmation), il
+      n'ajoute pas. Pour ajouter, c'est `Update Group`.
+  record_only_groupe:
+    mot_cle: "Record Only Group"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §7 : « [Record Only] [Group] [7] [Enter] »"
+  update_groupe:
+    mot_cle: "Update Group"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §7 : « [1] [Thru] [5] [Update] [Group] [n] [Enter] »"
+    note: "ajoute sans confirmation, et EN FIN de liste ordonnée"
+  inserer_avant:
+    mot_cle: "Insert Before"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7, exemple chiffré (pas la liste de softkeys — voir PLANNING #22)"
+  inserer_apres:
+    mot_cle: "Insert After"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7, exemple chiffré (pas la liste de softkeys — voir PLANNING #22)"
+  reordonner:
+    mot_cle: "Reorder"
+    attend: aucun
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7 « Ordered Channels »"
+    note: "sur un groupe à sous-groupes, classe les sous-groupes par leur premier channel"
+  inverser_ordre:
+    mot_cle: "Reverse"
+    attend: aucun
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7"
+    note: "homonyme du style de Fan {Reverse}, mécanisme distinct"
+  ordre_aleatoire:
+    mot_cle: "Random"
+    attend: aucun
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7"
+    note: "homonyme du style de Fan {Random}, mécanisme distinct"
 
   # -- patch ----------------------------------------------------------------
   patcher:
@@ -1800,6 +1988,74 @@ legalite:
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
 
+  # --- Groupes ---
+  - objet: Chan
+    action: record_groupe
+    valide: oui
+    confiance: A
+    note: "`1 Thru 5 Record Group 7` — l'ordre de sélection est conservé"
+
+  - objet: Group
+    action: record_groupe
+    valide: oui
+    confiance: A
+    note: "`Group 7 + 5 Record Group 9` — composer un groupe à partir de groupes"
+
+  - objet: selection_courante
+    action: record_groupe
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_groupe
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_groupe
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_groupe
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: label
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: supprimer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: inserer_avant
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: inserer_apres
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: reordonner
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: inverser_ordre
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: ordre_aleatoire
+    valide: oui
+    confiance: A
+
   # --- Patch ---
   - objet: Chan
     action: patcher
@@ -1869,6 +2125,17 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "{Insert Before} / {Insert After} — sens réel"
+    valide: inconnu
+    confiance: null
+    backlog: 22
+    note: >
+      Le manuel §7 se contredit à quelques pages d'écart : sa liste de softkeys
+      décrit `{Insert Before}` comme insérant « after the specified channel »,
+      ses exemples chiffrés font l'inverse. Le modèle retient les exemples —
+      cohérents entre eux et avec les noms — mais c'est un arbitrage, pas un
+      fait établi.
 
   - combinaison: "mot-clé Chan explicite en contexte Patch"
     valide: inconnu

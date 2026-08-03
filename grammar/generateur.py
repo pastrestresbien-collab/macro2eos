@@ -122,7 +122,26 @@ class Generateur:
         )
 
     # -- rendu : sélection --------------------------------------------------
+    def _rendre_sous_groupes(self, blocs: list) -> str:
+        """`( 1 Thru 4 ) ( 5 Thru 8 )` — chaque parenthèse comptera pour UN seul
+        channel dans un Fan, un effet, ou un parcours Next/Last."""
+        ouvre, ferme = self.modele["operateurs"]["sous_groupe"]["symbole"]
+        morceaux: list[str] = []
+        for bloc in blocs:
+            morceaux.append(ouvre)
+            if isinstance(bloc, (list, tuple)) and len(bloc) == 2:
+                morceaux += [str(bloc[0]), self._thru, str(bloc[1])]
+            else:
+                morceaux.append(str(bloc))
+            morceaux.append(ferme)
+        return " ".join(morceaux)
+
     def _rendre_selection(self, sel: dict, avert: list[str]) -> str:
+        # une sélection en sous-groupes ne porte pas de mot-clé d'objet :
+        # ce sont des channels, entre parenthèses (manuel §7)
+        if "sous_groupes" in sel:
+            return self._rendre_sous_groupes(sel["sous_groupes"])
+
         objet = sel["objet"]
         mot = self.modele["objets"][objet]["mot_cle"]
         thru, plus = self._thru, self._plus
@@ -136,6 +155,14 @@ class Generateur:
             morceaux = [mot, f"{prefixe}{sel['mot']}"]
         else:
             morceaux = [mot, f"{prefixe}{sel['numero']}"]
+
+        # `Group 7 + 5` — ajouter une cible de MÊME type, forme documentée A
+        # (manuel §7). À ne pas confondre avec `plus_plage`, qui mélange les
+        # types et reste non tranché.
+        if "plus" in sel:
+            ajouts = sel["plus"] if isinstance(sel["plus"], (list, tuple)) else [sel["plus"]]
+            for n in ajouts:
+                morceaux += [plus, str(n)]
 
         if "plus_plage" in sel:
             debut, fin = sel["plus_plage"]
@@ -398,8 +425,19 @@ class Generateur:
             # seule forme documentée qui lève l'ambiguïté du mode Format
             return f"{mot} {act['adresse']} At {act['channel']}"
 
-        if t in ("retirer_adresse", "depatcher", "patch_hors_sortie"):
+        if t in ("retirer_adresse", "depatcher", "patch_hors_sortie",
+                 "reordonner", "inverser_ordre", "ordre_aleatoire"):
             return mot
+
+        if t in ("record_groupe", "record_only_groupe", "update_groupe",
+                 "inserer_avant", "inserer_apres"):
+            out = f"{mot} {act['cible']}"
+            if act.get("label"):
+                out += f" Label {act['label']}"
+                self._verifier_label(act["label"], avert)
+            if t in ("inserer_avant", "inserer_apres"):
+                self._verifier_combinaison("{Insert Before} / {Insert After}", avert)
+            return out
 
         if t == "supprimer":
             return mot
@@ -546,7 +584,8 @@ class Generateur:
                     )
 
             if "selection" in etape:
-                objet = etape["selection"]["objet"]
+                # une sélection en sous-groupes désigne des channels sans le dire
+                objet = etape["selection"].get("objet", "Chan")
                 morceaux.append(self._rendre_selection(etape["selection"], avert))
 
             auto_termine = False

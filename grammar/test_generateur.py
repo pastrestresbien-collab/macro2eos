@@ -433,6 +433,78 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # ------------------------------------------------------ Groupes (§7)
+    {
+        "nom": "manuel §7 — enregistrement d'un groupe, l'ordre est conservé",
+        # [1] [Thru] [5] [Record] [Group] [7] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "record_groupe", "cible": 7}},
+        ],
+        "attendu": "Chan 1 Thru 5 Record Group 7 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 — `Thru` descendant est légal et signifiant",
+        # [1][0] [Thru] [2] [Record] [Group] [1] — Next parcourt 10, 9, 8 …
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 10, "a": 2},
+             "action": {"type": "record_groupe", "cible": 1}},
+        ],
+        "attendu": "Chan 10 Thru 2 Record Group 1 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 — composer un groupe à partir de deux groupes",
+        # [Group] [7] [+] [5] [Record] [Group] [9] [Enter]
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 7, "plus": 5},
+             "action": {"type": "record_groupe", "cible": 9}},
+        ],
+        "attendu": "Group 7 + 5 Record Group 9 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 — sous-groupe : des parenthèses, pas un mot-clé",
+        # [Shift]&[/] [1] [Thru] [4] [Shift]&[/] [Record] [Group] [2] [Enter]
+        "ir": [
+            {"selection": {"sous_groupes": [[1, 4]]},
+             "action": {"type": "record_groupe", "cible": 2}},
+        ],
+        "attendu": "( 1 Thru 4 ) Record Group 2 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "sous-groupes multiples — chacun comptera pour un channel",
+        "ir": [
+            {"selection": {"sous_groupes": [[1, 4], [5, 8]]},
+             "action": {"type": "record_groupe", "cible": 3}},
+        ],
+        "attendu": "( 1 Thru 4 ) ( 5 Thru 8 ) Record Group 3 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 — Update ajoute là où Record remplacerait",
+        # [1] [Thru] [5] [Update] [Group] [n] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "update_groupe", "cible": 4}},
+        ],
+        "attendu": "Chan 1 Thru 5 Update Group 4 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 — {Insert Before}, où le manuel se contredit",
+        # [2] {Insert Before} [9] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 2},
+             "action": {"type": "inserer_avant", "cible": 9}},
+        ],
+        "kwargs": {"contexte": "Blind"},
+        "attendu": "Chan 2 Insert Before 9 Enter",
+        "avertissements": 1,      # PLANNING #22
+    },
+
     # ------------------------------------------------------- Patch (§4)
     {
         "nom": "manuel §4 — patch d'un channel, le sens de `At` dépend du mode",

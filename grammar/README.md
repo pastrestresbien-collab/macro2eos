@@ -83,8 +83,27 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.3 | **Query**, **effets**, **couche d'injection OSC** |
 | v0.4 | **contexte d'écran** (modalité) et **auto-terminaison** |
 | v0.5 | **Patch** — où `At` s'inverse une seconde fois |
+| v0.6 | **Groupes** — un ordre, pas seulement un ensemble |
 
-Ce que v0.5 ajoute concrètement :
+Ce que v0.6 ajoute concrètement :
+
+- **L'ordre des groupes est signifiant.** Un groupe range ses channels dans l'ordre de
+  *sélection*, pas dans l'ordre numérique — `10 Thru 2` est légal et donne 10, 9, 8… Cet
+  ordre gouverne `Next`/`Last` et l'application des effets, et un `Update` ajoute toujours
+  en fin de liste. Réorganisation encodée : `{Insert Before/After}`, `{Reverse}`,
+  `{Random}`, `{Reorder}`.
+- **Sous-groupes** — `( 1 Thru 4 )`. La frappe console est `Shift & /`, mais ce que porte
+  la ligne de commande est une parenthèse, et ce sont les parenthèses qui sont des touches
+  OSC nommées. Les quatre cas où un sous-groupe compte pour **un seul channel** sont
+  documentés — c'est le même mécanisme que dans le Fan.
+- **`Thru Thru` a enfin ses règles**, et elles sont piégeuses : `Group 1.001 Thru Thru
+  11.001` crée 10 000 groupes décimaux, mais `… Thru Thru 11.002` en crée 10 **entiers**
+  — un chiffre de décimale d'écart change la nature du résultat, sans erreur. Au-delà de
+  10 000 cibles, la commande est ignorée en silence.
+- **Record ≠ Update sur un groupe** : ré-enregistrer *remplace* (avec confirmation),
+  mettre à jour *ajoute* (sans). Deux verbes, deux résultats opposés.
+
+Ce que v0.5 avait ajouté :
 
 - **Patch** — patch par channel et par adresse, univers, dépatch, suppression, courbe,
   preheat, proportion. Plus les règles du patch en masse : `Thru` ne patche en plage que
