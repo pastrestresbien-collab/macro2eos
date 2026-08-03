@@ -91,6 +91,32 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.11 | **Park et Filtres** — le cinquième état implicite |
 | v0.12 | **Courbes, Snapshots** — et la saisie des niveaux |
 | v0.13 | **Magic Sheets et show control** |
+| v0.14 | **Export ASCII** — et le constat de sa lacune |
+
+### v0.14 — la voie ASCII ne peut pas être modélisée
+
+L'objectif du dépôt mentionne « injection OSC **ou ASCII** ». Après revue complète des
+sources — manuel officiel, 174 entrées du corpus, 12 workbooks, journal terrain — le
+constat est net et négatif : **aucune ne décrit la structure du fichier `.asc`**. Ni les
+mots-clés, ni la représentation des macros, ni l'extension propriétaire ETC censée les
+porter. Le manuel §3 ne documente que le *chemin* d'import/export.
+
+Ce n'est pas une zone d'ombre de la console mais une **lacune documentaire** (#32) — le
+seul point du backlog qui ne se tranche pas au banc, mais par l'acquisition d'un document.
+En attendant, « injection OSC ou ASCII » doit se lire « injection OSC » : la voie ASCII
+reste un flux manuel que l'app peut assister, pas générer.
+
+Ce qui est tout de même encodé, parce que c'est actionnable :
+
+- **L'import ASCII écrase par défaut.** `{Merge Data?}` fusionne à la place. Toute
+  procédure proposée à l'utilisateur doit mentionner cette option explicitement — le
+  défaut est le comportement destructeur.
+- **ETC prévient nommément que les macros peuvent ne pas être importées** (CAUTION du
+  §3 : « not all data (such as effects and macros) may be imported »). C'est exactement
+  l'objet que ce projet produit, et cela confirme au niveau A ce que le corpus #027
+  rapportait en C sur un cas particulier.
+- **L'export n'est pas générable** : c'est une navigation dans le Browser, sans commande
+  ni touche OSC — comme `{Emergency Mark}`.
 
 Ce que v0.13 ajoute : le **mini-langage de préfixes** des boutons de Magic Sheet
 (`event:`, `macro:`, `udp:`, `local:`, `<U2>`, OSC brut, cumulables), qui n'existe nulle

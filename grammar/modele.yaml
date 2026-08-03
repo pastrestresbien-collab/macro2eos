@@ -17,6 +17,7 @@
 #   v0.11 + Park (§19) et Filtres (§13) — le cinquième état implicite
 #   v0.12 + Courbes (§22), Snapshots (§23) — et la saisie des niveaux
 #   v0.13 + Magic Sheets (§25) et show control (§31)
+#   v0.14 + Export ASCII (§3) — et le constat de sa lacune
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -24,10 +25,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.13"
+  version: "0.14"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control + export ascii
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -182,6 +183,76 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# EXPORT ASCII — le second format de sortie du projet, et sa lacune
+#
+# L'objectif du dépôt mentionne « injection OSC ou ASCII ». Après revue
+# complète des sources disponibles, le constat est net : la voie OSC est
+# documentée au token près, la voie ASCII ne l'est pas du tout côté FORMAT.
+# Ce qui suit décrit donc un flux de travail, pas une grammaire.
+# --------------------------------------------------------------------------
+export_ascii:
+  confiance: A
+  source: "manuel §3 « Managing Show Files » — import et export"
+  extension: ".asc"
+  format_nominal: "USITT ASCII"
+
+  chemin_export:
+    forme: "Browser > File > Export > USITT ASCII > [Select]"
+    destinations: ["Show File Archive", "serveur de fichiers", "clé USB"]
+    confiance: A
+    generable: false
+    note: >
+      Aucune commande de ligne, aucune touche OSC ne déclenche l'export : c'est
+      une navigation dans le Browser. Comme `{Emergency Mark}`, c'est hors de
+      portée du générateur — à indiquer à l'utilisateur, pas à produire.
+
+  chemin_import:
+    forme: "Browser > File > Import > USITT ASCII"
+    options:
+      "Import as Library Fixtures": "Eos tente d'apparier les fixtures à sa bibliothèque"
+      "Import as Custom Fixtures": "les fixtures entrent telles quelles — recommandé par ETC"
+    ecrasement_par_defaut: >
+      Par défaut, les données ASCII ÉCRASENT le show courant. `{Merge Data?}`
+      les fusionne à la place.
+    confiance: A
+    consequence_generateur: >
+      Un import ASCII mal paramétré détruit le show en place. Toute procédure
+      d'import proposée à l'utilisateur doit mentionner `{Merge Data?}`
+      explicitement — le défaut est le comportement destructeur.
+
+  pertes_annoncees:
+    regle: >
+      ETC prévient en CAUTION que toutes les données ne passent pas, « such as
+      effects and macros », et que le comportement varie selon le produit.
+    confiance: A
+    source: 'manuel §3 : "Not all data (such as effects and macros) may be imported. This varies by product."'
+    portee: >
+      Les MACROS sont nommément citées. C'est exactement l'objet que ce projet
+      produit. La mise en garde est officielle et générale ; le corpus #027 en
+      donne un cas concret (une macro apprise sur un bump de submaster ne se
+      relit pas après un aller-retour).
+
+  lacune_de_specification:
+    constat: >
+      Aucune source du dépôt — ni le manuel officiel, ni les 174 entrées du
+      corpus, ni les workbooks, ni le journal terrain — ne décrit la STRUCTURE
+      du fichier `.asc` : ni les mots-clés, ni la représentation des macros,
+      ni l'extension propriétaire ETC qui les porterait.
+    confiance: A
+    backlog: 32
+    consequence_architecture: >
+      Le modèle ne peut pas produire d'ASCII. Il peut produire des macros
+      correctes et les injecter en OSC ; pour l'ASCII, il ne dispose ni du
+      format cible ni des règles d'échappement. Tant que la spécification n'est
+      pas au dépôt, « injection OSC ou ASCII » doit se lire « injection OSC »,
+      l'ASCII restant une voie d'import/export manuelle assistée par l'app,
+      pas générée par elle.
+    sources_a_rapatrier:
+      - "la norme USITT ASCII Text Representation (DMX/showfile), source primaire"
+      - "la documentation ETC de son extension propriétaire pour les macros"
+    procedure: "voir CLAUDE.md règle n°1 — identifier le lien exact, l'utilisateur télécharge et dépose le fichier dans la conversation"
 
 # --------------------------------------------------------------------------
 # MAGIC SHEETS — un mini-langage de préfixes, distinct de la ligne de commande
@@ -3510,6 +3581,16 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "structure du fichier USITT ASCII"
+    valide: inconnu
+    confiance: null
+    backlog: 32
+    note: >
+      Aucune source du dépôt ne décrit le format `.asc` — ni mots-clés, ni
+      représentation des macros, ni extension propriétaire ETC. Le modèle ne
+      peut donc pas produire d'ASCII, seulement décrire le flux d'import et
+      d'export. Lacune documentaire, pas zone d'ombre de la console.
 
   - combinaison: "macro: dans un bouton de Magic Sheet — quelle forme ?"
     valide: inconnu

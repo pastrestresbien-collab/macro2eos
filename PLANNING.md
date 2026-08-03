@@ -5,7 +5,7 @@ qui coexistaient et divergeaient (corpus « PRIORITÉS BANC », corpus « ZONES 
 OUVERTES », grammaire consolidée §15) — celles-ci restent en place comme trace d'audit
 mais ne sont plus à mettre à jour.
 
-Dernière mise à jour : 2026-08-02.
+Dernière mise à jour : 2026-08-03.
 
 ---
 
@@ -258,22 +258,38 @@ Enfin, les **numéros d'évènement ne sont pas stables** (#31) : ils se renumé
 rester chronologiques. Contrairement aux cues ou aux macros, ce n'est pas un identifiant
 qu'un traducteur peut mémoriser.
 
+**Fait — v0.14 (2026-08-03)** : export ASCII §3. Tranche à **résultat négatif**, et c'est
+son intérêt.
+
+Aucune source du dépôt ne décrit la structure du fichier `.asc`. Le manuel §3 ne documente
+que le chemin d'import/export, et prévient en CAUTION que « not all data (such as effects
+and **macros**) may be imported » — confirmant au niveau A ce que le corpus #027 ne
+rapportait qu'en C sur un cas particulier. **Conséquence sur l'objectif du projet** : tant
+que la spécification n'est pas au dépôt, « injection OSC ou ASCII » doit se lire
+« injection OSC » (#32). C'est le seul point du backlog qui ne se tranche pas au banc mais
+par l'acquisition d'un document.
+
+Deux points restent actionnables et sont encodés : l'import **écrase par défaut**
+(`{Merge Data?}` fusionne — le défaut est destructeur, à signaler dans toute procédure
+proposée), et l'export n'est **pas générable**, c'est une navigation dans le Browser.
+
 ---
 
-## Bilan de la campagne d'extension (v0.1 → v0.13)
+## Bilan de la campagne d'extension (v0.1 → v0.14)
 
-Douze tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
-**8 objets, 75 actions, 10 modificateurs, 158 règles de légalité**, avec **100 cas de
+Treize tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
+**8 objets, 75 actions, 10 modificateurs, 159 règles de légalité**, avec **100 cas de
 non-régression** dont la majorité sont des exemples chiffrés du manuel officiel recopiés
-verbatim. Le backlog est passé de 12 à **31 points**, dont 23 ouverts par ce travail.
+verbatim. Le backlog est passé de 12 à **32 points**, dont 24 ouverts par ce travail.
 
 ### Ce que la couverture atteint
 
 Sélection, Fan, cues (simples, multipart, listes multiples), macros, submasters, Query,
 effets, palettes, presets, groupes, patch, mark, park, filtres, courbes, snapshots, magic
 sheets, show control, contexte d'écran, terminaison, et la couche d'injection OSC.
-**Reste hors périmètre** : l'export ASCII, Augment3d, le pixel mapping, le serveur média
-virtuel, le contrôle partitionné et le multi-console.
+L'export ASCII a été instruit et s'est révélé non modélisable faute de spécification
+(#32). **Reste hors périmètre** : Augment3d, le pixel mapping, le serveur média virtuel,
+le contrôle partitionné et le multi-console.
 
 ### Le résultat le plus important n'est pas la couverture
 
@@ -330,7 +346,8 @@ stratégie d'injection qui change, pas seulement la syntaxe.
 
 1. **Trancher #29 au banc** — le facteur dix est le seul risque de dommage direct.
 2. **Trancher #18** — il conditionne l'architecture d'injection.
-3. Finir la couverture : export ASCII, puis relecture d'ensemble du modèle.
+3. **Rapatrier la spécification USITT ASCII** (#32) — sans elle, la moitié annoncée de
+   l'architecture de sortie n'existe pas. Puis relecture d'ensemble du modèle.
 4. Brancher la couche NL (axe B), qui peut désormais s'appuyer sur un modèle qui refuse
    d'inventer.
 
@@ -369,6 +386,20 @@ donc jamais renumérotés : un point ajouté tardivement en priorité haute port
 numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros.
 
 ### Priorité haute — bloquent des décisions d'architecture
+
+32. **La spécification du format ASCII est absente du dépôt — et elle n'est pas au banc.**
+    Contrairement à tous les autres points de ce backlog, celui-ci ne se tranche pas sur
+    une console : c'est une **lacune documentaire**. Après revue complète des sources
+    disponibles — manuel officiel, 174 entrées du corpus, 12 workbooks, journal terrain —
+    aucune ne décrit la structure du fichier `.asc` : ni les mots-clés, ni la
+    représentation des macros, ni l'extension propriétaire ETC censée les porter. Le
+    manuel §3 ne documente que le *chemin* d'import/export et prévient en CAUTION que
+    « not all data (such as effects and **macros**) may be imported ».
+    **Conséquence directe sur l'objectif du projet** : tant que cette spécification n'est
+    pas au dépôt, « injection OSC ou ASCII » doit se lire « injection OSC ». La voie ASCII
+    reste un flux manuel que l'app peut assister, pas générer.
+    À rapatrier (voir `CLAUDE.md` règle n°1 pour la procédure) : la norme *USITT ASCII
+    Text Representation* et la documentation ETC de son extension macro.
 
 29. **Comment exprime-t-on un niveau inférieur à 10 % ?** Le manuel §6 établit sans
     ambiguïté, par cinq occurrences de sa notation `<0>`, qu'un chiffre unique après `At`
