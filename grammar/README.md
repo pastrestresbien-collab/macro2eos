@@ -56,6 +56,25 @@ pris du retard sur le banc réel, à corriger avant de committer.
 Alimentation manuelle pour l'instant (retour verbal en session → ajouté ici). Le jour où
 l'app existe, elle journalisera ses propres refus dans le même format.
 
+## Garde-fous contre la dérive (ajoutés en v0.15)
+
+Treize tranches écrites l'une après l'autre finissent par produire des doublons que rien
+ne signalait. La relecture d'ensemble en a trouvé un — deux actions écrivaient `Curve <n>`
+à l'identique, l'une héritée du chapitre Patch, l'autre du chapitre Courbes — et a
+transformé le constat en contrôles permanents :
+
+- **Deux actions ne peuvent pas porter le même mot-clé**, sauf homonymie explicitement
+  déclarée dans `homonymies_assumees`. Trois le sont : `At` (quatre actions — c'est le
+  cœur du problème que ce projet documente), `Park` et `Time`. Toute autre est un doublon.
+- **Une règle de légalité ne peut pas être plus confiante que l'action qu'elle valide.**
+  Exception prévue : un refus (`valide: non`) tient sa confiance de l'observation du refus,
+  pas de la documentation de l'action — c'est le cas de `Sub`/`Assert`, refus constaté au
+  banc (S) sur une action documentée (A).
+- **Toute action doit être citée par la matrice**, sinon le générateur la déclarera
+  « absente du modèle » à la première utilisation.
+- **Toute action doit citer sa `source`** — c'est ce qui rend le modèle re-vérifiable
+  contre le manuel.
+
 ## Garde-fous appliqués par `build.py`
 
 - Tout terme du vocabulaire — objet, action, modificateur, style de Fan, token de

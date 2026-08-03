@@ -21,6 +21,9 @@ DIST = RACINE / "dist"
 PLANNING = RACINE.parent / "PLANNING.md"
 CONFIANCES = {"S", "A", "B", "C", "D", None}
 ARGUMENTS_FAN = {"aucun", "entier", "inconnu"}
+# du plus fiable au moins fiable — sert à repérer une règle plus confiante que
+# l'action qu'elle valide
+ORDRE_CONFIANCE = {"S": 4, "A": 3, "B": 2, "C": 1, "D": 0}
 
 
 def charger(nom: str) -> dict:
@@ -155,6 +158,69 @@ def verifier_vocabulaire(modele: dict, backlog: set[int]) -> list[str]:
     return erreurs
 
 
+def verifier_derive(modele: dict) -> list[str]:
+    """Contrôles de dérive, ajoutés après la relecture d'ensemble de v0.15.
+
+    Treize tranches écrites l'une après l'autre finissent par produire des
+    doublons et des incohérences que rien ne signalait. Ces trois contrôles
+    les rendent visibles à la compilation plutôt qu'à la relecture suivante."""
+    erreurs: list[str] = []
+    actions = modele["actions"]
+
+    # (a) deux actions qui écrivent le même mot-clé sont un doublon, sauf si
+    #     l'homonymie est explicitement assumée — la polysémie d'Eos se déclare
+    par_mot: dict[str, list[str]] = {}
+    for nom, spec in actions.items():
+        par_mot.setdefault(spec["mot_cle"], []).append(nom)
+    assumees = modele.get("homonymies_assumees", {})
+    for mot, noms in par_mot.items():
+        if len(noms) < 2 or not mot:
+            continue
+        declaree = assumees.get(mot, {}).get("actions")
+        if declaree is None:
+            erreurs.append(
+                f"mot-clé `{mot}` porté par {len(noms)} actions "
+                f"({', '.join(sorted(noms))}) sans homonymie assumée — "
+                f"doublon, ou à déclarer dans `homonymies_assumees`"
+            )
+        elif set(declaree) != set(noms):
+            erreurs.append(
+                f"homonymies_assumees.{mot} liste {sorted(declaree)} mais le "
+                f"modèle porte {sorted(noms)}"
+            )
+
+    # (b) une règle ne peut pas être plus confiante que l'action qu'elle valide.
+    #     Exception : un refus (`valide: non`) tient sa confiance de
+    #     l'observation du refus, pas de la documentation de l'action.
+    for i, regle in enumerate(modele["legalite"]):
+        nom = regle.get("action")
+        if not nom or regle.get("confiance") is None or regle["valide"] == "non":
+            continue
+        ca = actions[nom].get("confiance")
+        if ca and ORDRE_CONFIANCE.get(regle["confiance"], -1) > ORDRE_CONFIANCE.get(ca, -1):
+            erreurs.append(
+                f"legalite[{i}] ({regle.get('objet')}/{nom}) : règle en "
+                f"{regle['confiance']} alors que l'action n'est qu'en {ca}"
+            )
+
+    # (c) une action que la matrice ne cite jamais est invisible au générateur,
+    #     qui la signalera « absente du modèle » à la première utilisation
+    citees = {r.get("action") for r in modele["legalite"] if r.get("action")}
+    for nom in sorted(set(actions) - citees):
+        erreurs.append(
+            f"action `{nom}` absente de la matrice de légalité — le générateur "
+            f"la déclarera non vérifiable"
+        )
+
+    # (d) toute action doit citer sa source : c'est ce qui rend le modèle
+    #     re-vérifiable contre le manuel
+    for nom, spec in sorted(actions.items()):
+        if "source" not in spec:
+            erreurs.append(f"actions.{nom} : pas de `source` — non re-vérifiable")
+
+    return erreurs
+
+
 def renvois_backlog(modele: dict) -> list[tuple[str, int]]:
     """Tous les renvois `backlog` du modèle, avec leur emplacement."""
     renvois: list[tuple[str, int]] = []
@@ -232,7 +298,9 @@ def main() -> int:
 
     backlog = numeros_backlog()
 
-    erreurs = verifier(modele, patrons, backlog) + verifier_vocabulaire(modele, backlog)
+    erreurs = (verifier(modele, patrons, backlog)
+               + verifier_vocabulaire(modele, backlog)
+               + verifier_derive(modele))
     if erreurs:
         print("Incohérences détectées :", file=sys.stderr)
         for e in erreurs:

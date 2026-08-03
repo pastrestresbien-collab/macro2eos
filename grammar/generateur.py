@@ -465,7 +465,7 @@ class Generateur:
                 avert.append(f"valeur DMX {valeur} hors bornes 0-255")
             return f"{mot} {valeur}"
 
-        if t in ("patcher", "patch_courbe", "patch_preheat", "patch_proportion"):
+        if t in ("patcher", "patch_preheat", "patch_proportion"):
             if t == "patcher":
                 self._verifier_mode_patch(act, avert)
             return f"{mot} {act['adresse' if t == 'patcher' else 'valeur']}"

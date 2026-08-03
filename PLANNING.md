@@ -273,12 +273,30 @@ Deux points restent actionnables et sont encodés : l'import **écrase par défa
 (`{Merge Data?}` fusionne — le défaut est destructeur, à signaler dans toute procédure
 proposée), et l'export n'est **pas générable**, c'est une navigation dans le Browser.
 
+**Fait — v0.15 (2026-08-03)** : relecture d'ensemble. Pas d'ajout de couverture, mais
+un audit du modèle après treize tranches écrites l'une après l'autre.
+
+Un vrai doublon trouvé et corrigé : `patch_courbe` (v0.5) et `appliquer_courbe` (v0.12)
+écrivaient `Curve <n>` à l'identique — le découpage en tranches avait produit deux actions
+pour un même geste documenté au §4 et au §22. Fusionnées.
+
+Trois autres constats se sont révélés **corrects et non des défauts**, et ont été
+documentés plutôt que « corrigés » : les homonymies de `At` (quatre actions), `Park` et
+`Time` sont la polysémie d'Eos elle-même, désormais déclarées dans `homonymies_assumees` ;
+et les deux règles où une confiance S dépasse celle de l'action valident un **refus**
+observé au banc, dont la confiance est indépendante de la documentation de l'action.
+
+L'audit est devenu permanent : `build.py` refuse maintenant toute homonymie non déclarée,
+toute règle plus confiante que son action (hors refus), toute action absente de la matrice
+et toute action sans `source`. Les quatre contrôles ont été vérifiés en les faisant échouer
+volontairement.
+
 ---
 
-## Bilan de la campagne d'extension (v0.1 → v0.14)
+## Bilan de la campagne d'extension (v0.1 → v0.15)
 
-Treize tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
-**8 objets, 75 actions, 10 modificateurs, 159 règles de légalité**, avec **100 cas de
+Quatorze tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
+**8 objets, 74 actions, 10 modificateurs, 158 règles de légalité**, avec **100 cas de
 non-régression** dont la majorité sont des exemples chiffrés du manuel officiel recopiés
 verbatim. Le backlog est passé de 12 à **32 points**, dont 24 ouverts par ce travail.
 

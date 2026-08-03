@@ -18,6 +18,7 @@
 #   v0.12 + Courbes (§22), Snapshots (§23) — et la saisie des niveaux
 #   v0.13 + Magic Sheets (§25) et show control (§31)
 #   v0.14 + Export ASCII (§3) — et le constat de sa lacune
+#   v0.15   Relecture d'ensemble : doublons, dérives de confiance, homonymies
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -25,7 +26,7 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.14"
+  version: "0.15"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
     + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control + export ascii
@@ -1761,6 +1762,35 @@ query:
         nettoyage des auto-blocks, pas la condition de requête. Ne pas confondre.
 
 # --------------------------------------------------------------------------
+# HOMONYMIES ASSUMÉES
+#
+# Plusieurs actions écrivent volontairement le même mot-clé : c'est la
+# polysémie d'Eos, pas une négligence du modèle. Les déclarer ici permet à
+# `build.py` de refuser toute AUTRE homonymie, qui serait un doublon.
+# --------------------------------------------------------------------------
+homonymies_assumees:
+  At:
+    actions: [intensite, patcher, patch_univers, retirer_adresse]
+    justification: >
+      Le cœur du problème que ce projet documente : `At` vaut un niveau en
+      Live, une adresse en Patch, un univers/adresse avec un `/`, et un
+      retrait quand `Enter` le suit immédiatement. Quatre actions, un mot.
+    confiance: A
+  Park:
+    actions: [parquer, tout_deparquer]
+    justification: >
+      Même touche, portée différente selon qu'une sélection la précède ou non
+      (manuel §19).
+    confiance: A
+  Time:
+    actions: [temps, temps_bump_sub]
+    justification: >
+      `Time` est positionnel : répété, il parcourt montée, descente, focus,
+      couleur, beam sur une cue — et montée, dwell, descente sur un submaster.
+      Deux grammaires derrière un mot (manuel §12 et §20).
+    confiance: A
+
+# --------------------------------------------------------------------------
 # ACTIONS — ce qu'on applique
 # --------------------------------------------------------------------------
 actions:
@@ -1776,6 +1806,7 @@ actions:
     fanable: true
     contextes: [Live, Blind]
     confiance: A
+    source: "manuel §6 « Manual Control », section Setting Intensity"
     avertissement: >
       Polysémie confirmée : en contexte Patch, `At` désigne une adresse DMX,
       pas une intensité. Le générateur doit connaître son contexte.
@@ -2404,14 +2435,10 @@ actions:
       Double `Enter` de confirmation. Les données programmées d'un channel
       supprimé sont perdues — le manuel le signale en CAUTION.
     confirmation: true
-  patch_courbe:
-    mot_cle: "Curve"
-    attend: cible_numerotee
-    auto_termine: false
-    contextes: [Patch]
-    confiance: A
-    source: "manuel §4 : « [1] {Curve} [4] [Enter] »"
-    osc: curve
+  # `patch_courbe` (v0.5) a été fusionné dans `appliquer_courbe` (v0.12) lors de
+  # la relecture d'ensemble : deux actions écrivaient `Curve <n>` à l'identique,
+  # l'une restreinte à Patch, l'autre non. Le §4 et le §22 décrivent le même
+  # geste ; c'est le découpage en tranches qui avait produit le doublon.
   patch_preheat:
     mot_cle: "Preheat"
     attend: pourcentage
@@ -3550,10 +3577,6 @@ legalite:
     valide: oui
     confiance: A
 
-  - objet: Chan
-    action: patch_courbe
-    valide: oui
-    confiance: A
 
   - objet: Chan
     action: patch_preheat
