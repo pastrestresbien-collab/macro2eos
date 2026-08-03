@@ -524,6 +524,7 @@
     var el = document.getElementById("bottom-nav");
     var items = [
       { id: "saisie", ic: "✎", label: "Saisie" },
+      { id: "historique", ic: "↺", label: "Historique" },
       { id: "favoris", ic: "▦", label: "Favoris" },
       { id: "reglages", ic: "⚙", label: "Réglages" }
     ];
@@ -537,6 +538,7 @@
     var el = document.getElementById("screen");
     var html = "";
     if (state.screen === "saisie") html = screenSaisie();
+    else if (state.screen === "historique") html = screenHistorique();
     else if (state.screen === "favoris") html = screenFavoris();
     else if (state.screen === "reglages") html = screenReglages();
     el.innerHTML = html + overlayHtml() + toastHtml();
@@ -730,7 +732,6 @@
   // ---------- écran 3 : réglages ----------
   function screenReglages() {
     if (state.reglagesView === "tabs") return reglagesTabs();
-    if (state.reglagesView === "historique") return reglagesHistorique();
     if (state.reglagesView === "import") return reglagesImport();
 
     var out = "";
@@ -745,9 +746,6 @@
       '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
       "</span></div>" +
       '<div class="row click" data-action="settings:tabs:open"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + ' onglets</span></div></div>';
-
-    out += '<div class="group"><div class="label">Historique</div>' +
-      '<div class="row click" data-action="settings:history:open"><span class="k">Envois récents</span><span class="v accent">Voir l\'historique</span></div></div>';
 
     out += '<div class="group"><div class="label">Sauvegarde</div>' +
       '<div class="row click" data-action="settings:export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
@@ -776,10 +774,10 @@
     return out;
   }
 
-  function reglagesHistorique() {
+  // ---------- écran historique ----------
+  function screenHistorique() {
     var tagLabel = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
-    var out = '<div class="back-row"><button class="back-btn" data-action="settings:history:back">‹ Réglages</button></div>';
-    out += '<div class="label">Historique des envois</div>';
+    var out = '<div class="label">Historique des envois</div>';
     state.history.forEach(function (h) {
       out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + tagLabel[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
         '<div class="cmd">' + esc(h.cmd) + '</div><div class="note">' + esc(h.note) + "</div></div>";
@@ -1113,9 +1111,6 @@
         renderAll();
         break;
       }
-
-      case "settings:history:open": state.reglagesView = "historique"; renderAll(); break;
-      case "settings:history:back": state.reglagesView = "root"; renderAll(); break;
 
       case "settings:export":
         showToast("Export généré (démo) — texte + fichier.");
