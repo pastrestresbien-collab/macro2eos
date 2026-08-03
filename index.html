@@ -22,10 +22,12 @@
         --accent: #4361ee;
         --accent-text: #ffffff;
         --danger: #c8354a;
-        --c-protein: #4361ee;
-        --c-carbs: #d8830f;
-        --c-fat: #0f9b7a;
-        --c-cal: #e05c48;
+        /* Data colours, validated for CVD separation and lightness band
+           against this surface. Change them as a set, not individually. */
+        --c-protein: #2a78d6;
+        --c-carbs: #eda100;
+        --c-fat: #1baf7a;
+        --c-cal: #eb6834;
         --radius: 14px;
         --shadow: 0 1px 2px rgb(16 20 32 / 6%), 0 8px 24px rgb(16 20 32 / 6%);
         --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -44,10 +46,11 @@
           --accent: #7aa2ff;
           --accent-text: #0f1117;
           --danger: #ff7a8a;
-          --c-protein: #7aa2ff;
-          --c-carbs: #ffb45c;
-          --c-fat: #5fd8b4;
-          --c-cal: #ff8f6b;
+          /* Stepped for the dark surface, not flipped from the light values. */
+          --c-protein: #3987e5;
+          --c-carbs: #c98500;
+          --c-fat: #199e70;
+          --c-cal: #d95926;
           --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 24%);
           color-scheme: dark;
         }

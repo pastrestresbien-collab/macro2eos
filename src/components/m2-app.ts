@@ -5,16 +5,19 @@ import { StoreController, store } from '../lib/store.js';
 import { shared } from '../styles/shared.js';
 import './m2-plan.js';
 import './m2-today.js';
+import './m2-week.js';
 
-type Tab = 'today' | 'plan';
+type Tab = 'today' | 'week' | 'plan';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'today', label: 'Day' },
+  { id: 'week', label: 'Week' },
   { id: 'plan', label: 'Plan' },
 ];
 
 function tabFromHash(hash: string): Tab {
-  return hash.replace('#', '') === 'plan' ? 'plan' : 'today';
+  const id = hash.replace('#', '');
+  return TABS.some((tab) => tab.id === id) ? (id as Tab) : 'today';
 }
 
 /** App shell: header, tabs, and whichever view is active. */
@@ -157,7 +160,9 @@ export class M2App extends LitElement {
       <main>
         ${this.tab === 'plan'
           ? html`<m2-plan></m2-plan>`
-          : html`<m2-today></m2-today>`}
+          : this.tab === 'week'
+            ? html`<m2-week></m2-week>`
+            : html`<m2-today></m2-today>`}
       </main>
 
       <footer>
