@@ -1,0 +1,672 @@
+<title>macro2eos — maquette des trois écrans</title>
+
+<style>
+  :root {
+    /* chrome de la page — s'adapte au thème du lecteur */
+    --page-bg: #F2F4F7;
+    --page-surface: #FFFFFF;
+    --page-line: #D8DEE7;
+    --page-ink: #16202C;
+    --page-muted: #5C6B7D;
+    --page-accent: #1F6F9F;
+
+    /* écran de l'app — TOUJOURS sombre, quel que soit le thème du lecteur.
+       Décision produit : l'app s'utilise en salle noire. */
+    --app-bg: #0B0F14;
+    --app-surface: #141B24;
+    --app-surface-hi: #1C2632;
+    --app-line: #26313F;
+    --app-ink: #E4EAF2;
+    --app-muted: #8496AB;
+    --app-accent: #4DA3D9;
+    --app-accent-ink: #06121C;
+    --app-warn: #E0A83C;
+    --app-danger: #D9605A;
+    --app-ok: #5FBF8F;
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --r: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #0D1319;
+      --page-surface: #151D26;
+      --page-line: #26313D;
+      --page-ink: #DFE7F0;
+      --page-muted: #8595A6;
+      --page-accent: #6BB6E4;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #0D1319;
+    --page-surface: #151D26;
+    --page-line: #26313D;
+    --page-ink: #DFE7F0;
+    --page-muted: #8595A6;
+    --page-accent: #6BB6E4;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #F2F4F7;
+    --page-surface: #FFFFFF;
+    --page-line: #D8DEE7;
+    --page-ink: #16202C;
+    --page-muted: #5C6B7D;
+    --page-accent: #1F6F9F;
+  }
+
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 20px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  /* ---------- en-tête ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 10px; }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--page-muted);
+    font-weight: 600;
+  }
+  .masthead h1 {
+    margin: 0;
+    font-size: clamp(26px, 5vw, 38px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    font-weight: 650;
+  }
+  .lede {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--page-muted);
+    font-size: 16px;
+  }
+  .note-theme {
+    border-left: 2px solid var(--page-accent);
+    padding: 2px 0 2px 14px;
+    max-width: 62ch;
+    font-size: 14px;
+    color: var(--page-muted);
+  }
+
+  /* ---------- grille des écrans ---------- */
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px 32px;
+    align-items: start;
+  }
+
+  .screen { display: flex; flex-direction: column; gap: 14px; }
+  .screen-head { display: flex; flex-direction: column; gap: 3px; }
+  .screen-head h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 640;
+    letter-spacing: -0.01em;
+  }
+  .screen-head p { margin: 0; font-size: 13.5px; color: var(--page-muted); }
+
+  /* ---------- châssis téléphone ---------- */
+  .device {
+    background: #05080B;
+    border: 1px solid var(--page-line);
+    border-radius: 26px;
+    padding: 9px;
+    box-shadow: 0 14px 34px rgba(4, 10, 18, 0.28);
+  }
+  .viewport {
+    background: var(--app-bg);
+    color: var(--app-ink);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 560px;
+    font-size: 14px;
+  }
+
+  /* ---------- barre de statut app ---------- */
+  .statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--app-line);
+    background: var(--app-surface);
+  }
+  .conn { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--app-muted); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .dot-ok { background: var(--app-ok); box-shadow: 0 0 0 3px rgba(95, 191, 143, 0.16); }
+  .dot-wait { background: var(--app-warn); box-shadow: 0 0 0 3px rgba(224, 168, 60, 0.16); }
+  .user-tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--app-accent);
+    border: 1px solid var(--app-line);
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .body-app {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+
+  .label {
+    font-size: 10.5px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--app-muted);
+    font-weight: 600;
+  }
+
+  /* ---------- saisie ---------- */
+  .field {
+    background: var(--app-surface);
+    border: 1px solid var(--app-line);
+    border-radius: 10px;
+    padding: 12px 13px;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .field.focused { border-color: var(--app-accent); box-shadow: 0 0 0 3px rgba(77, 163, 217, 0.15); }
+  .caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 1.05em;
+    background: var(--app-accent);
+    vertical-align: -2px;
+    margin-left: 1px;
+  }
+
+  /* ---------- macro générée ---------- */
+  .macro {
+    background: #070B10;
+    border: 1px solid var(--app-line);
+    border-left: 2px solid var(--app-accent);
+    border-radius: 10px;
+    padding: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    overflow-x: auto;
+  }
+  .macro code {
+    font-family: var(--mono);
+    font-size: 13px;
+    white-space: pre;
+    color: var(--app-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .macro code .kw { color: var(--app-accent); }
+  .macro code .num { color: #C9E6FA; }
+
+  /* ---------- cartes d'état ---------- */
+  .card {
+    border-radius: 10px;
+    padding: 12px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 13px;
+  }
+  .card strong { font-size: 13px; font-weight: 620; }
+  .card p { margin: 0; color: var(--app-muted); line-height: 1.45; }
+  .card-warn {
+    background: rgba(224, 168, 60, 0.09);
+    border: 1px solid rgba(224, 168, 60, 0.35);
+  }
+  .card-warn strong { color: var(--app-warn); }
+  .card-danger {
+    background: rgba(217, 96, 90, 0.09);
+    border: 1px solid rgba(217, 96, 90, 0.38);
+  }
+  .card-danger strong { color: var(--app-danger); }
+  .card-ok {
+    background: rgba(95, 191, 143, 0.09);
+    border: 1px solid rgba(95, 191, 143, 0.32);
+  }
+  .card-ok strong { color: var(--app-ok); }
+
+  .fix {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: #070B10;
+    border: 1px solid var(--app-line);
+    border-radius: 8px;
+    padding: 9px 10px;
+    margin-top: 3px;
+    color: var(--app-ink);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .fix .was { color: var(--app-danger); text-decoration: line-through; }
+  .fix .now { color: var(--app-ok); }
+
+  /* ---------- boutons ---------- */
+  .actions { margin-top: auto; display: flex; flex-direction: column; gap: 9px; }
+  .btn {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    border-radius: 11px;
+    padding: 15px 12px;
+    font-size: 15px;
+    font-weight: 620;
+    font-family: inherit;
+    border: 1px solid transparent;
+    cursor: default;
+  }
+  .btn-primary { background: var(--app-accent); color: var(--app-accent-ink); }
+  .btn-warn { background: var(--app-warn); color: #1A1204; }
+  .btn-ghost { background: transparent; border-color: var(--app-line); color: var(--app-muted); }
+  .btn-disabled { background: var(--app-surface); color: #4E5D6E; border-color: var(--app-line); }
+  .btn:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 2px; }
+
+  /* ---------- onglets favoris ---------- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px 0;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--app-line);
+    background: var(--app-surface);
+  }
+  .tab {
+    flex: none;
+    padding: 8px 13px 10px;
+    font-size: 13px;
+    color: var(--app-muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tab.on { color: var(--app-ink); border-bottom-color: var(--app-accent); font-weight: 600; }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .tile {
+    background: var(--app-surface);
+    border: 1px solid var(--app-line);
+    border-radius: 12px;
+    padding: 15px 12px;
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .tile .name { font-size: 15px; font-weight: 600; line-height: 1.25; }
+  .tile .cmd {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--app-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+  .mode-strip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--app-muted);
+    padding: 10px 14px;
+    border-top: 1px solid var(--app-line);
+    background: var(--app-surface);
+  }
+
+  /* ---------- paramètres ---------- */
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-line);
+    border-radius: 10px;
+    padding: 12px 13px;
+  }
+  .row .k { font-size: 14px; }
+  .row .v {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--app-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .row .v.accent { color: var(--app-accent); }
+  .seg {
+    display: flex;
+    background: var(--app-bg);
+    border: 1px solid var(--app-line);
+    border-radius: 9px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .seg span {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--app-muted);
+    white-space: nowrap;
+  }
+  .seg span.on { background: var(--app-accent); color: var(--app-accent-ink); font-weight: 600; }
+  .soon {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--app-muted);
+    border: 1px solid var(--app-line);
+    border-radius: 5px;
+    padding: 2px 6px;
+  }
+
+  /* ---------- annotations ---------- */
+  .why {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--page-muted);
+    border-top: 1px solid var(--page-line);
+    padding-top: 12px;
+  }
+  .why b { color: var(--page-ink); font-weight: 620; }
+  .why > div { display: flex; gap: 9px; align-items: baseline; }
+  .why .mk {
+    flex: none;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--page-accent);
+    transform: translateY(-2px);
+  }
+
+  /* ---------- pied ---------- */
+  .foot {
+    border-top: 1px solid var(--page-line);
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 68ch;
+  }
+  .foot h3 { margin: 0; font-size: 14px; letter-spacing: 0.01em; }
+  .foot ul { margin: 0; padding-left: 18px; color: var(--page-muted); font-size: 13.5px; }
+  .foot li { margin-bottom: 5px; }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 26px 14px 52px; gap: 34px; }
+    .screens { gap: 34px; }
+    .device { border-radius: 22px; padding: 7px; }
+    .viewport { min-height: 520px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">macro2eos · maquette</div>
+    <h1>Les trois écrans</h1>
+    <p class="lede">
+      Traduction langage naturel → macro ETC&nbsp;Eos, injection OSC vers la console.
+      Maquette d'intention : lecture des dispositions et de la hiérarchie, pas des pixels définitifs.
+    </p>
+    <p class="note-theme">
+      L'écran de l'app reste sombre quelle que soit votre préférence système. Ce n'est pas
+      un oubli : l'app s'utilise en salle noire, un aplat clair éblouit et détruit
+      l'adaptation à l'obscurité. Seul l'habillage de cette page suit votre thème.
+    </p>
+  </header>
+
+  <div class="screens">
+
+    <!-- ===================== ÉCRAN 1 ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 1</div>
+        <h2>Saisie, traduction, envoi</h2>
+        <p>Atelier de préparation. Hors représentation — peut se permettre d'être prudent.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="label">Votre demande</div>
+            <div class="field focused">groupe 5 et circuits 1 à 6 en lee 195<span class="caret"></span></div>
+
+            <div class="label">Macro générée</div>
+            <div class="macro">
+              <code><span class="kw">Group</span> <span class="num">5</span> + <span class="num">1</span> <span class="kw">Thru</span> <span class="num">6</span> <span class="kw">Color</span> <span class="num">3/195</span> <span class="kw">Enter</span></code>
+            </div>
+
+            <div class="card card-warn">
+              <strong>Syntaxe jamais vérifiée sur console</strong>
+              <p>Mélanger un groupe et une plage de circuits dans la même sélection n'a pas été
+                 confirmé sur un Eos réel. La commande part telle quelle — vérifiez le résultat.</p>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-warn">Vérifier puis envoyer</button>
+              <button class="btn btn-ghost">Modifier la demande</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>La macro toujours au même endroit</b>, sous la demande. Rien ne bouge d'une fois sur l'autre.</span></div>
+        <div><span class="mk"></span><span><b>Le bouton change de couleur avec le risque.</b> Bleu quand c'est sûr, ambre ici — et la confirmation passera en plein écran.</span></div>
+        <div><span class="mk"></span><span><b>« Sauvegarder en favori » n'apparaît pas encore</b> : réservé aux macros que la console a acceptées.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 1 — REFUS ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 1 · variante</div>
+        <h2>La console refuse</h2>
+        <p>Correction proposée bien en évidence. Jamais de renvoi automatique.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="label">Votre demande</div>
+            <div class="field">circuits 10 a 20 en lee 195</div>
+
+            <div class="label">Envoyée</div>
+            <div class="macro">
+              <code><span class="kw">Chan</span> <span class="num">10</span> <span class="kw">Thru</span> <span class="num">20</span> <span class="kw">Colour</span> <span class="num">3/195</span> <span class="kw">Enter</span></code>
+            </div>
+
+            <div class="card card-danger">
+              <strong>Refusée par la console</strong>
+              <p>Mot-clé inconnu : <code style="font-family:var(--mono)">Colour</code>. L'orthographe attendue est américaine.</p>
+              <div class="fix"><span class="was">Colour</span>  →  <span class="now">Color</span></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary">Corriger et renvoyer</button>
+              <button class="btn btn-ghost">Reformuler ma demande</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>La correction est montrée avant, pas appliquée après.</b> Vous voyez exactement ce qui change.</span></div>
+        <div><span class="mk"></span><span><b>La console fait autorité sur sa propre syntaxe.</b> Renvoyer une commande refusée telle quelle n'existe pas — elle serait refusée à l'identique. Si la correction ne vous convient pas, c'est que la demande a été mal comprise : on repart de là.</span></div>
+        <div><span class="mk"></span><span><b>Dépend du banc réel</b> : si le message d'erreur d'Eos s'avère trop vague, l'app dira « refusée » sans pouvoir proposer mieux.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 2 ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 2</div>
+        <h2>Favoris</h2>
+        <p>Le seul écran de jeu. Une main, dans le noir, sans lire.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="tabs">
+            <span class="tab on">Cyrano</span>
+            <span class="tab">Général</span>
+            <span class="tab">Couleurs</span>
+            <span class="tab">+</span>
+          </div>
+
+          <div class="body-app">
+            <div class="tiles">
+              <div class="tile">
+                <span class="name">Noir salle</span>
+                <span class="cmd">Sub 12 At 0 Enter</span>
+              </div>
+              <div class="tile">
+                <span class="name">Plein feu</span>
+                <span class="cmd">Chan 1 Thru 96 At Full</span>
+              </div>
+              <div class="tile">
+                <span class="name">195 · Par LED</span>
+                <span class="cmd">Color Palette 5 Enter</span>
+              </div>
+              <div class="tile">
+                <span class="name">Face seule</span>
+                <span class="cmd">Group 3 At 85 Enter</span>
+              </div>
+              <div class="tile">
+                <span class="name">Contre chaud</span>
+                <span class="cmd">Group 7 Color 3/204</span>
+              </div>
+              <div class="tile">
+                <span class="name">Rappel saluts</span>
+                <span class="cmd">Macro 12 Enter</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-strip">
+            <span class="dot dot-ok"></span>Envoi immédiat — un appui suffit
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Aucun avertissement ne peut apparaître ici.</b> Une macro n'entre dans les favoris qu'après avoir été acceptée par la console. Propres par construction.</span></div>
+        <div><span class="mk"></span><span><b>Onglets par spectacle ou par thème</b>, à votre main. Réorganisation bloquée pendant le jeu.</span></div>
+        <div><span class="mk"></span><span><b>La commande sous le nom</b> en petit : elle rassure quand deux tuiles se ressemblent, sans encombrer.</span></div>
+        <div><span class="mk"></span><span><b>Le bandeau du bas rappelle le mode d'envoi</b> — vous ne découvrez jamais en plein spectacle qu'il n'était pas celui que vous croyiez.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 3 ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 3</div>
+        <h2>Paramètres</h2>
+        <p>Connexion, comportement des favoris, sauvegarde et partage.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="group">
+              <div class="label">Console</div>
+              <div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>
+              <div class="row"><span class="k">Port</span><span class="v">3032</span></div>
+              <div class="row"><span class="k">Utilisateur dédié</span><span class="v accent">User 12</span></div>
+            </div>
+
+            <div class="group">
+              <div class="label">Favoris</div>
+              <div class="row">
+                <span class="k">Appui sur une tuile</span>
+                <span class="seg"><span class="on">Immédiat</span><span>Confirmer</span></span>
+              </div>
+              <div class="row"><span class="k">Gérer les onglets</span><span class="v">3 onglets</span></div>
+            </div>
+
+            <div class="group">
+              <div class="label">Sauvegarde</div>
+              <div class="row"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>
+              <div class="row"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div>
+            </div>
+
+            <div class="group">
+              <div class="label">Saisie</div>
+              <div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>L'utilisateur dédié est mis en avant</b> : c'est ce qui garantit que vos envois n'interfèrent pas avec l'opérateur travaillant sur la console.</span></div>
+        <div><span class="mk"></span><span><b>L'export part en deux formes d'un coup</b> — le texte lisible dans le message pour discuter, le fichier joint pour installer.</span></div>
+        <div><span class="mk"></span><span><b>L'adresse de la console ne quitte jamais le téléphone.</b> Elle n'a aucun sens dans un autre théâtre.</span></div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="foot">
+    <h3>Ce que la maquette ne montre pas encore</h3>
+    <ul>
+      <li>La reconnexion en cours : bandeau ambre persistant, et la commande partie sans accusé de réception vous est représentée — jamais rejouée toute seule.</li>
+      <li>L'import d'un favori venu d'un autre spectacle : signalé, jamais bloqué. « Palette 5 » existe partout, mais pas la même.</li>
+      <li>La confirmation plein écran, quand une macro porte un avertissement.</li>
+      <li>L'écran de dictée vocale, prévu mais repoussé.</li>
+    </ul>
+  </footer>
+
+</div>

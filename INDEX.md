@@ -65,6 +65,7 @@ et le backlog de travail.
 - `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
   valider au banc réel.
 - `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
+- `app/maquette.html` — maquette visuelle des trois écrans (à ouvrir dans un navigateur).
 - `CLAUDE.md` — règles de travail pour toute session sur ce dépôt.
 
 ## Règle de fidélité
