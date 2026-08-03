@@ -168,7 +168,24 @@ mouvement NP intermédiaire dans des cues que l'utilisateur n'a pas nommées.
 Nouveau #23 : `{High Priority}` / `{Low Priority}` sont documentés au §9 mais absents de
 la liste OSC officielle — même classe de problème que les sept conditions Query de #15.
 
-**Reste à faire** : cues multipart §17,
+**Fait — v0.9 (2026-08-03)** : cues multipart §17. 66 actions, 135 règles de légalité,
+84 cas de non-régression.
+
+La trouvaille de cette tranche dépasse le chapitre : **en Blind, les éditions prennent
+effet immédiatement**, sans `Record` ni `Update`. Le manuel le répète en §17 (CAUTION),
+§20, §18 et §10. Pour l'app, cela invalide un schéma qu'on aurait pu croire acquis : « je
+prépare, l'utilisateur relit, puis j'envoie » n'existe pas en Blind — la première commande
+envoyée est déjà appliquée. Toute validation doit précéder l'envoi, jamais s'intercaler
+dans une séquence. Cela explique aussi pourquoi une palette `{Locked}` reste modifiable en
+Blind : la protection ne porte que sur Live.
+
+Deuxième apport, plus technique : **un channel ne peut recevoir qu'une seule instruction
+dans une cue multipart**, et c'est vérifiable statiquement. Le générateur détecte
+désormais deux affectations du même channel à des parts différentes. C'est la première
+contrainte du modèle qui porte sur la *structure de l'IR* et non sur un couple
+objet/action — une piste à réutiliser pour d'autres règles.
+
+**Reste à faire** :
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 

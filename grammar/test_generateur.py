@@ -433,6 +433,64 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # ------------------------------------------- Cues multipart (§17)
+    {
+        "nom": "manuel §17 — affecter des channels à une part, en Blind",
+        # [1] [Thru] [5] [Part] [2] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "affecter_part", "cible": 2}},
+        ],
+        "kwargs": {"contexte": "Blind"},
+        "attendu": "Chan 1 Thru 5 Part 2 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §17 — deux parts distinctes, channels disjoints",
+        # [1] [Thru] [5] [Part] [2] ; [6] [Thru] [10] [Part] [3]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "affecter_part", "cible": 2}},
+            {"selection": {"objet": "Chan", "de": 6, "a": 10},
+             "action": {"type": "affecter_part", "cible": 3}},
+        ],
+        "kwargs": {"contexte": "Blind"},
+        "attendu": "Chan 1 Thru 5 Part 2 Enter\nChan 6 Thru 10 Part 3 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §17 — un channel dans deux parts : erreur de construction",
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "affecter_part", "cible": 2}},
+            {"selection": {"objet": "Chan", "numero": 3},
+             "action": {"type": "affecter_part", "cible": 8}},
+        ],
+        "kwargs": {"contexte": "Blind"},
+        "attendu": "Chan 1 Thru 5 Part 2 Enter\nChan 3 Part 8 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §17 — délai propre à une part",
+        # [Record] [Cue] [2] [Part] [1] [Delay] [8] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 2, "part": 1},
+             "action": {"type": "delai", "valeur": 8}},
+        ],
+        "attendu": "Cue 2 Part 1 Delay 8 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §17 — supprimer les parts ramène à une cue simple",
+        # [Delete] [Part] [1] [Thru] [3] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 4},
+             "action": {"type": "supprimer_part", "cible": 1}},
+        ],
+        "attendu": "Cue 4 Delete Part 1 Enter",
+        "avertissements": 0,
+    },
+
     # -------------------------------------------------------- Mark (§9)
     {
         "nom": "manuel §9 — drapeau de marque sur la cue marquée",

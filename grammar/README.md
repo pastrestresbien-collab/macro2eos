@@ -86,8 +86,30 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.6 | **Groupes** — un ordre, pas seulement un ensemble |
 | v0.7 | **Palettes et Presets** — la référence, et ce qui la casse |
 | v0.8 | **Mark** — deux mécanismes exclusifs, et un mode global invisible |
+| v0.9 | **Cues multipart** — et la règle transversale de Blind |
 
-Ce que v0.8 ajoute concrètement :
+Ce que v0.9 ajoute concrètement :
+
+- **En Blind, il n'y a pas d'étape de validation.** Les éditions prennent effet
+  immédiatement, sans `Record` ni `Update`. Le manuel le répète chapitre après chapitre
+  (§17 en CAUTION, §20, §18, §10). Conséquence directe pour l'app : le schéma « je
+  prépare, l'utilisateur relit, puis j'envoie » **n'existe pas en Blind** — la première
+  commande envoyée est déjà appliquée. Toute validation doit précéder l'envoi, jamais
+  s'intercaler entre deux commandes d'une séquence. C'est aussi pourquoi une palette
+  `{Locked}` reste modifiable en Blind : la protection ne porte que sur Live.
+- **Un channel ne peut recevoir qu'une seule instruction dans une cue multipart.** C'est
+  vérifiable *statiquement* : le générateur détecte désormais deux affectations du même
+  channel à des parts différentes et le signale comme une erreur de construction, pas
+  comme un cas limite de la console. Première contrainte du modèle qui se vérifie sur la
+  structure de l'IR plutôt que sur un couple objet/action.
+- La part 1 est le contenant par défaut (désigner une autre part y déverse tous les
+  mouvements), les instructions trackées n'appartiennent à aucune part, et en Blind la
+  touche `Part` est **obligatoire** — sélectionner des channels ne les affecte pas.
+- `Thru` désigne, `Thru Thru` crée : `Cue 1 Part 1 Thru 4` ne crée que les parts 1 et 4,
+  `Thru Thru` crée les quatre. Le §17 confirme sur les parts la règle que le §7 n'énonçait
+  que pour les record targets.
+
+Ce que v0.8 avait ajouté :
 
 - **AutoMark et marques référencées s'excluent**, et le choix est un réglage de Setup
   *global et rétroactif* — désactiver AutoMark convertit toutes les AutoMarks du show en

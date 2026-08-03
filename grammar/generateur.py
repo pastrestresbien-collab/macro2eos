@@ -461,6 +461,12 @@ class Generateur:
                 self._verifier_combinaison("AutoMark ou marques référencées", avert)
             return mot
 
+        if t == "affecter_part":
+            return mot if "cible" not in act else f"{mot} {act['cible']}"
+
+        if t == "supprimer_part":
+            return f"{mot} {act['cible']}"
+
         if t in ("marquer_vers_cue", "mark_time"):
             if t == "marquer_vers_cue":
                 self._verifier_combinaison("AutoMark ou marques référencées", avert)
@@ -548,6 +554,34 @@ class Generateur:
                 )
         return morceaux
 
+    # -- cues multipart -----------------------------------------------------
+    def _verifier_instruction_unique(self, ir: list[dict], avert: list[str]) -> None:
+        """Un channel ne peut recevoir qu'UNE instruction dans une cue multipart
+        (manuel §17). C'est vérifiable statiquement : deux affectations du même
+        channel à des parts différentes sont une erreur de construction, pas un
+        cas limite de la console."""
+        vus: dict[int, object] = {}
+        for etape in ir:
+            action = etape.get("action", {})
+            if action.get("type") != "affecter_part":
+                continue
+            sel = etape.get("selection", {})
+            if "de" in sel:
+                channels = range(int(sel["de"]), int(sel["a"]) + 1)
+            elif "numero" in sel:
+                channels = [int(sel["numero"])]
+            else:
+                continue
+            part = action.get("cible")
+            for c in channels:
+                if c in vus and vus[c] != part:
+                    avert.append(
+                        f"channel {c} affecté à deux parts ({vus[c]} puis {part}) — "
+                        f"une cue multipart n'accepte qu'une instruction par channel "
+                        f"(manuel §17)"
+                    )
+                vus[c] = part
+
     # -- contexte d'écran ---------------------------------------------------
     def _numero_ecran(self, nom: str) -> int | None:
         """Un onglet peut héberger plusieurs modes : le Tab 1 est « Live/Blind »
@@ -595,6 +629,8 @@ class Generateur:
         """
         lignes: list[str] = []
         avert: list[str] = []
+
+        self._verifier_instruction_unique(ir, avert)
 
         if forcer_focus:
             numero = self._numero_ecran(contexte)

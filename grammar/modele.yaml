@@ -12,6 +12,7 @@
 #   v0.6  + Groupes (§7) — un ordre, pas seulement un ensemble
 #   v0.7  + Palettes (§10) et Presets (§11) — la référence, et ce qui la casse
 #   v0.8  + Mark (§9) — deux mécanismes exclusifs, et un mode global invisible
+#   v0.9  + Cues multipart (§17) — et la règle transversale de Blind
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -19,10 +20,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.8"
+  version: "0.9"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -125,6 +126,24 @@ contexte:
       lève l'ambiguïté quel que soit le mode (manuel §4). Le générateur émet
       cette forme dès qu'il patche par adresse.
 
+  # Une règle transversale, et la plus lourde de conséquences pour une app
+  # qui génère des commandes : en Blind, il n'y a pas d'étape de validation.
+  blind_immediat:
+    regle: >
+      En Blind, les éditions prennent effet IMMÉDIATEMENT : aucune commande
+      `Record` ni `Update` n'est nécessaire.
+    confiance: A
+    source: >
+      manuel §17 (CAUTION explicite), §20 « Editing Submasters », §18 (liste
+      d'effets), §10 ({Locked} non protégé en Blind) — la règle est répétée
+      chapitre après chapitre.
+    consequence_generateur: >
+      Le schéma « je prépare, l'utilisateur relit, puis j'envoie » n'existe pas
+      en Blind : la première commande envoyée est déjà appliquée. Toute
+      validation doit donc avoir lieu AVANT l'envoi, jamais entre deux
+      commandes d'une même séquence. C'est aussi pourquoi une palette
+      `{Locked}` reste modifiable en Blind — la protection porte sur Live.
+
   # Les mots dont le sens dépend de l'écran actif
   polysemie:
     At:
@@ -159,6 +178,84 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# CUES MULTIPART — découper une cue pour donner des temps différents
+# --------------------------------------------------------------------------
+multipart:
+  confiance: A
+  source: "manuel §17 Multipart Cues"
+  mot_cle: "Part"
+  osc: part
+  maximum: 20
+
+  usage: >
+    Appliquer des temps différents à des mouvements différents dans une même
+    cue — le focus glisse lentement, la couleur claque après un court délai.
+    Remplace avantageusement une série de cues enchaînées par des temps
+    d'attente.
+
+  instruction_unique:
+    regle: >
+      Un channel ou un paramètre ne peut recevoir qu'UNE seule instruction
+      dans une cue multipart.
+    confiance: A
+    source: "manuel §17 « About Multipart Cues »"
+    exemple_interdit: >
+      Régler la couleur du channel 1 en part 1 puis lui en donner une autre en
+      part 8 est impossible.
+    consequence_generateur: >
+      Contrainte vérifiable statiquement : si l'IR affecte deux fois le même
+      couple channel/paramètre à des parts différentes, c'est une erreur de
+      construction, pas un cas limite de la console.
+
+  part_1_par_defaut:
+    regle: >
+      Désigner une part autre que la 1 place TOUTES les instructions de
+      mouvement de la cue dans la part 1.
+    confiance: A
+    note: "la part 1 est le contenant par défaut, jamais une part comme les autres"
+
+  tracks_sans_part:
+    regle: "les instructions trackées n'appartiennent à aucune part"
+    confiance: A
+
+  part_obligatoire_en_blind:
+    regle: >
+      En Blind, la touche `Part` est une instruction REQUISE : sélectionner
+      des channels ne les affecte pas à une part.
+    confiance: A
+    source: "manuel §17, note explicite"
+    exemple: "`5 Thru 9 Color Part Enter` n'affecte que la couleur à la part sélectionnée"
+
+  creation_en_plage:
+    thru_thru: "`Cue 1 Part 1 Thru Thru 4` crée les parts 1 à 4"
+    thru: "`Cue 1 Part 1 Thru 4` ne crée QUE les parts 1 et 4"
+    confiance: A
+    source: "manuel §17 « Creating Multiple Cue Parts in a Range »"
+    note: >
+      Le contraste est net et documenté ici, là où le §7 ne donnait les règles
+      de `Thru Thru` que pour les record targets. Même symbole, même logique :
+      `Thru` désigne, `Thru Thru` crée.
+
+  attributs:
+    regle: "les attributs et drapeaux de part sont ceux d'une cue, à l'identique"
+    confiance: A
+    par_part:
+      - "`Cue 2 Part 1 Delay 8` — délai propre à la part"
+      - "`Cue 4 Part 3 Color Time 6` — temps de couleur propre à la part"
+      - "`Cue 8 Part 9 AutoMark Off` — AutoMark désactivé pour cette part seule"
+      - "`Record Only Cue 5 Part 2 Assert` — drapeau Assert sur la part"
+    note_automark: >
+      `{AutoMark Off}` par part nuance le mode global de #24 : le MÉCANISME
+      (AutoMark ou marques référencées) se choisit dans le Setup, mais une
+      cue ou une part peut désactiver l'AutoMark localement — un `D` apparaît
+      alors dans les drapeaux (manuel §12).
+
+  suppression:
+    parts: "`Delete Cue 1 Part 1 Enter Enter`"
+    retour_simple: "supprimer TOUTES les parts ramène la cue à une cue simple"
+    confiance: A
 
 # --------------------------------------------------------------------------
 # MARK — préparer un mouvement pendant que le projecteur est noir
@@ -1310,6 +1407,28 @@ actions:
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
 
+  # -- cues multipart -------------------------------------------------------
+  affecter_part:
+    mot_cle: "Part"
+    attend: cible_optionnelle
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §17 « Changing a Single Part Cue to a Multipart Cue »"
+    osc: part
+    avertissement: >
+      En Blind, l'édition est appliquée immédiatement — pas de Record, pas de
+      relecture possible entre la commande et son effet.
+  supprimer_part:
+    mot_cle: "Delete Part"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §17 « Deleting Parts from Multipart Cues »"
+    confirmation: true
+    note: "supprimer toutes les parts ramène la cue à une cue simple"
+
   # -- mark -----------------------------------------------------------------
   marquer:
     mot_cle: "Mark"
@@ -2348,6 +2467,35 @@ legalite:
     valide: oui
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
+
+  # --- Cues multipart ---
+  - objet: Chan
+    action: affecter_part
+    valide: oui
+    confiance: A
+    note: "`1 Thru 5 Part 2 Enter` en Blind — la touche Part est obligatoire"
+
+  - objet: Part
+    action: record_cue
+    valide: oui
+    confiance: A
+    note: "`Record Cue 2 Part 1 Delay 8` — attributs propres à la part"
+
+  - objet: Cue
+    action: delai
+    valide: oui
+    confiance: A
+    note: "`Record Cue 2 Delay 5` (manuel §12) ; qualifiable par une part (§17)"
+
+  - objet: Part
+    action: delai
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: supprimer_part
+    valide: oui
+    confiance: A
 
   # --- Mark ---
   - objet: Cue
