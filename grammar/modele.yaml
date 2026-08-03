@@ -16,6 +16,7 @@
 #   v0.10 + Cue lists multiples (§14) et Assert — une contradiction résolue
 #   v0.11 + Park (§19) et Filtres (§13) — le cinquième état implicite
 #   v0.12 + Courbes (§22), Snapshots (§23) — et la saisie des niveaux
+#   v0.13 + Magic Sheets (§25) et show control (§31)
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -23,10 +24,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.12"
+  version: "0.13"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -181,6 +182,139 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# MAGIC SHEETS — un mini-langage de préfixes, distinct de la ligne de commande
+# --------------------------------------------------------------------------
+magic_sheets:
+  confiance: A
+  source: "manuel §25, champ « Command » — contenu de l'infobulle reproduit"
+  ecrans: { navigateur: 3, liste: 14 }
+
+  commandes_objet:
+    principe: >
+      Un objet de Magic Sheet peut porter une commande exécutée à
+      l'interaction. Le champ accepte plusieurs commandes, et un jeu de
+      PRÉFIXES qui n'existe nulle part ailleurs dans la grammaire.
+    confiance: A
+    prefixes:
+      aucun:    { forme: "Chan 1",                     effet: "texte de ligne de commande" }
+      "event:": { forme: "event: Go 0",                effet: "évènement console plutôt que ligne de commande" }
+      "<U2>":   { forme: "<U2>Chan 1",                 effet: "cible l'utilisateur 2" }
+      "macro:": { forme: "macro:Tab_Down 2 7 Tab_Up",  effet: "suite de commandes de macro" }
+      "udp:":   { forme: "udp:$Chan 1#",               effet: "chaîne UDP" }
+      osc:      { forme: "/device/slider=1.0",         effet: "sortie OSC ; fronts insérés automatiquement si absents" }
+      "local:": { forme: "local:/eos/wheel/coars/pan=3.0", effet: "OSC vers la console locale" }
+      combine:  { forme: "udp:local:<U2>$Chan 1#",     effet: "les préfixes se cumulent" }
+
+  nuance_corpus:
+    description: >
+      Le corpus #063 (C, d'après l'infobulle native) décrit `macro:` comme le
+      moyen « d'appeler une macro depuis un bouton », ce qui suggère
+      `macro:<numéro>`. Le seul exemple du manuel, `macro:Tab_Down 2 7 Tab_Up`,
+      montre autre chose : une SUITE DE COMMANDES de macro écrites en noms
+      internes, sans numéro de macro.
+    resolution: >
+      Les deux formes peuvent coexister — rien ne les oppose logiquement — mais
+      seule la seconde est attestée. Le modèle ne retient que celle du manuel.
+    backlog: 30
+
+# --------------------------------------------------------------------------
+# SHOW CONTROL — déclencher depuis l'extérieur
+# --------------------------------------------------------------------------
+show_control:
+  confiance: A
+  source: "manuel §31 « About Eos Family Show Control »"
+  ecran: 11
+
+  actions_possibles:
+    regle: "Eos ne supporte que TROIS actions d'évènement, plus le niveau par adresse"
+    liste:
+      - "exécuter une cue"
+      - "piloter un submaster : bump, fondu (analogique seulement), on et off"
+      - "exécuter une macro"
+      - "{Level By Address} — règle le paramètre d'une adresse au niveau entrant"
+    confiance: A
+    consequence_generateur: >
+      Tout déclenchement programmé passe donc par une macro, ou n'existe pas.
+      C'est un argument de plus pour que le traducteur produise des macros
+      plutôt que des lignes de commande isolées : la macro est le seul objet
+      qu'un évènement sait exécuter.
+
+  une_action_par_evenement:
+    regle: "un évènement ne porte qu'UNE action ; plusieurs évènements peuvent tirer au même instant"
+    confiance: A
+
+  serialisation_des_macros:
+    regle: >
+      Si une macro est déclenchée avant la fin de la précédente, la première
+      TERMINE son action avant que la seconde ne démarre.
+    confiance: A
+    source: "manuel §31, note explicite"
+    portee: >
+      Garantie de sérialisation utile : elle atténue une partie des craintes du
+      corpus sur le chaînage de macros (#070/#095, PLANNING #2) et sur les
+      `Send_String` multiples (#107, PLANNING #3). Attention cependant : elle
+      est énoncée pour les macros déclenchées PAR ÉVÈNEMENT de show control,
+      pas pour un déclenchement OSC direct — ne pas la généraliser au-delà.
+
+  mode_macro:
+    regle: >
+      Une macro déclenchée par évènement s'exécute SANS interagir avec la ligne
+      de commande, sauf si elle est en mode Foreground.
+    confiance: A
+    tension_avec_la_doctrine: >
+      Le projet impose Foreground par défaut (règle héritée du corpus #068 sur
+      `{Target}`). Or c'est précisément le mode qui fait qu'une macro
+      déclenchée par show control écrit sur la ligne de commande de
+      l'opérateur. Les deux règles ne se contredisent pas — elles arbitrent
+      différemment — mais le choix doit être conscient et expliqué à
+      l'utilisateur.
+
+  numeros_instables:
+    regle: >
+      Le numéro d'évènement n'est PAS fixe : c'est un moyen de sélection, et
+      les évènements se renumérotent pour rester chronologiques.
+    confiance: A
+    source: 'manuel §31 : "The event number is not fixed" ; et pour le RTC, "Event 3 is now listed as Event 1"'
+    backlog: 31
+    consequence_generateur: >
+      Une commande générée qui désigne `Event 3` peut viser un autre évènement
+      après une insertion. Contrairement aux cues, palettes ou macros, ce n'est
+      pas un identifiant stable — le traducteur ne peut pas le mémoriser d'une
+      session à l'autre.
+
+  rtc:
+    format_heure: "24 h sans séparateur — `Event 1 Time 1500` règle 15:00"
+    jours: "lundi = 1 ; softkeys ou clavier avec `+`, `-`, `Thru`"
+    quotidien: "il faut ajouter CHAQUE jour de la semaine — aucun raccourci « tous les jours »"
+    astronomique:
+      - "`Event 2 Time Before Sunset 30` — 30 minutes avant le coucher"
+      - "`Event 3 Time After Sunrise 60` — une heure après le lever"
+    date_obligatoire: "une date doit être saisie pour qu'un évènement RTC s'exécute"
+    confiance: A
+    une_commande_par_ligne:
+      regle: "les commandes RTC ne peuvent PAS être combinées sur une même ligne de commande"
+      confiance: A
+      source: "manuel §31, note explicite"
+      consequence_generateur: >
+        Le générateur doit émettre une ligne par réglage — temps, jours, date,
+        action — jamais une ligne composée.
+
+  learn:
+    principe: "`Learn` sur une event list crée un évènement à chaque cue, bump ou macro déclenchée"
+    piege: >
+      Si `Learn` est pressé depuis un autre écran que Show Control, un
+      évènement VIDE est ajouté à toutes les listes en mode learn.
+    silent_mode: "l'horloge tourne sans déclencher les évènements"
+    execution_pendant_edition: >
+      Les évènements se déclenchent même dans l'écran d'édition, dès qu'ils
+      sont créés. Même famille de risque que l'édition de macro concurrente
+      (corpus #067).
+    confiance: A
+    softkeys:
+      "{Learn Events}": "activable en macro ; les macros qui la contiennent ne sont pas apprises"
+      "{SC Learn}": "exclut une macro donnée de l'apprentissage comme évènement"
 
 # --------------------------------------------------------------------------
 # SAISIE DES NIVEAUX — le piège le plus coûteux pour un traducteur NL
@@ -3376,6 +3510,24 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "macro: dans un bouton de Magic Sheet — quelle forme ?"
+    valide: inconnu
+    confiance: null
+    backlog: 30
+    note: >
+      Le corpus #063 décrit `macro:` comme appelant une macro par son numéro ;
+      le seul exemple du manuel montre une suite de commandes de macro sans
+      numéro. Les deux formes peuvent coexister, une seule est attestée.
+
+  - combinaison: "numéro d'évènement de show control"
+    valide: inconnu
+    confiance: null
+    backlog: 31
+    note: >
+      Les numéros d'évènement se renumérotent pour rester chronologiques. Un
+      `Event 3` généré peut désigner autre chose après une insertion — ce n'est
+      pas un identifiant stable, contrairement aux cues ou aux macros.
 
   - combinaison: "niveau à un seul chiffre"
     valide: inconnu

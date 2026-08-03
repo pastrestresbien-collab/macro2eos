@@ -90,6 +90,15 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.10 | **Cue lists multiples et Assert** — une contradiction résolue |
 | v0.11 | **Park et Filtres** — le cinquième état implicite |
 | v0.12 | **Courbes, Snapshots** — et la saisie des niveaux |
+| v0.13 | **Magic Sheets et show control** |
+
+Ce que v0.13 ajoute : le **mini-langage de préfixes** des boutons de Magic Sheet
+(`event:`, `macro:`, `udp:`, `local:`, `<U2>`, OSC brut, cumulables), qui n'existe nulle
+part ailleurs dans la grammaire ; les **trois seules actions** que le show control sait
+déclencher — cue, submaster, macro — ce qui fait de la macro le seul objet qu'un
+évènement programmé sait exécuter ; la **garantie de sérialisation** des macros
+déclenchées par évènement ; et le fait que les **numéros d'évènement ne sont pas stables**
+(#31), contrairement aux cues et aux macros.
 
 ### `At 5` vaut 50 %, pas 5 %
 

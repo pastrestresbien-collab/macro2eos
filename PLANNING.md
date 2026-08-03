@@ -237,6 +237,103 @@ d'`Enter` annule l'instruction courante. Et **supprimer une courbe préprogramm�
 supprime pas** — elle revient à son état d'origine, donc une confirmation utilisateur
 formulée « supprimer la courbe 901 ? » serait trompeuse.
 
+**Fait — v0.13 (2026-08-03)** : Magic Sheets §25 et show control §31. 158 règles de
+légalité, 100 cas de non-régression.
+
+Trois apports. Le champ « Command » d'un objet de Magic Sheet porte un **mini-langage de
+préfixes** (`event:`, `macro:`, `udp:`, `local:`, `<U2>`, OSC brut, cumulables) qui
+n'existe nulle part ailleurs dans la grammaire — confirmé A par le manuel, là où le
+corpus ne l'avait qu'en C, et avec une forme différente de celle que le corpus décrivait
+(#30).
+
+Show control n'accepte que **trois actions** : exécuter une cue, piloter un submaster,
+exécuter une macro. C'est un argument de plus pour que le traducteur produise des macros
+plutôt que des lignes isolées — la macro est le seul objet qu'un évènement sait exécuter.
+Le manuel garantit au passage une **sérialisation** : une macro déclenchée avant la fin
+d'une autre attend son tour. Cela atténue une partie des craintes de #2 et #3, mais
+l'énoncé vaut pour un déclenchement par évènement, pas par OSC direct — à ne pas
+généraliser.
+
+Enfin, les **numéros d'évènement ne sont pas stables** (#31) : ils se renumérotent pour
+rester chronologiques. Contrairement aux cues ou aux macros, ce n'est pas un identifiant
+qu'un traducteur peut mémoriser.
+
+---
+
+## Bilan de la campagne d'extension (v0.1 → v0.13)
+
+Douze tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
+**8 objets, 75 actions, 10 modificateurs, 158 règles de légalité**, avec **100 cas de
+non-régression** dont la majorité sont des exemples chiffrés du manuel officiel recopiés
+verbatim. Le backlog est passé de 12 à **31 points**, dont 23 ouverts par ce travail.
+
+### Ce que la couverture atteint
+
+Sélection, Fan, cues (simples, multipart, listes multiples), macros, submasters, Query,
+effets, palettes, presets, groupes, patch, mark, park, filtres, courbes, snapshots, magic
+sheets, show control, contexte d'écran, terminaison, et la couche d'injection OSC.
+**Reste hors périmètre** : l'export ASCII, Augment3d, le pixel mapping, le serveur média
+virtuel, le contrôle partitionné et le multi-console.
+
+### Le résultat le plus important n'est pas la couverture
+
+C'est la découverte, chapitre après chapitre, que **le sens ou le résultat d'une commande
+Eos dépend souvent d'un état que rien ne publie**. Six cas recensés :
+
+| État | Effet | Lisible ? |
+|---|---|---|
+| Mode de patch By Channel / By Address (#20) | inverse le sens de `At` | non |
+| `Q Only` / `Track` | inverse le sens de la touche | non |
+| AutoMark ou marques référencées (#24) | change la nature du marquage | non |
+| Cue list courante (#25) | change la cible d'enregistrement | partiellement |
+| **État des filtres (#28)** | **change ce qui est enregistré** | **non** |
+| Écran actif | change le sens de `At`, `Park`, `/` | oui, via `Tab` |
+
+Les cinq premiers changent ce qu'une commande *veut dire* ; celui des filtres change ce
+qu'elle *produit*, sans que son texte change d'un caractère. Pris ensemble, ils
+constituent l'argument le plus solide en faveur de la validation utilisateur avant envoi —
+qui n'était jusqu'ici justifiée que par prudence.
+
+### Le piège le plus coûteux
+
+**`At 5` vaut 50 %, pas 5 %** (#29). Établi par cinq occurrences de la notation `<0>` au
+§6 et reconfirmé au §22. C'est le seul cas rencontré où une commande parfaitement valide
+produit un résultat faux d'un **facteur dix**, en silence. Le générateur refuse désormais
+d'émettre un niveau à un chiffre — mais la forme correcte pour 5 % reste à confirmer,
+aucun exemple du manuel ne descendant sous 10 %.
+
+### Contradictions relevées plutôt que lissées
+
+- **Le manuel se contredit** sur `{Insert Before}` / `{Insert After}` (#22) : sa liste de
+  softkeys dit l'inverse de ses propres exemples.
+- **Le manuel se contredit** sur les noms de touches OSC (#16) : `select_active` dans la
+  liste canonique, `select active` dans l'exemple d'usage — à deux lignes d'intervalle
+  pour `XYZ_Format`.
+- **Le manuel abrège sans le dire** : `{Mirror}` employé dans trois exemples alors que
+  seuls `{Mirror Out}` et `{Mirror In}` sont documentés (#13).
+- **Une source S du projet s'est révélée sur-généralisée** (#26) : « Assert n'a pas de
+  mot-clé de ligne de commande » vaut pour les submasters, pas pour les cues, cue lists,
+  channels et paramètres, que le manuel documente. Leçon de méthode : *une observation de
+  banc vaut pour l'objet observé, jamais pour la famille entière*. Les futurs constats
+  terrain devraient être enregistrés avec leur portée exacte.
+- **Le corpus et le manuel décrivent `macro:` différemment** (#30).
+
+### Softkeys hors de portée de l'injection OSC
+
+Trois familles documentées au manuel mais absentes de la liste officielle des touches
+OSC : sept conditions Query (#15), les deux priorités de marquage (#23), et — question
+ouverte — les accolades dans une chaîne `/eos/cmd` (#18), qui concernent **toute** commande
+portant un style de Fan ou un modificateur. Si les accolades ne passent pas, c'est la
+stratégie d'injection qui change, pas seulement la syntaxe.
+
+### Prochaines étapes recommandées
+
+1. **Trancher #29 au banc** — le facteur dix est le seul risque de dommage direct.
+2. **Trancher #18** — il conditionne l'architecture d'injection.
+3. Finir la couverture : export ASCII, puis relecture d'ensemble du modèle.
+4. Brancher la couche NL (axe B), qui peut désormais s'appuyer sur un modèle qui refuse
+   d'inventer.
+
 **Reste à faire** :
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
@@ -409,6 +506,18 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     observée. Si elle ne marche pas, l'app ne peut pas choisir son état de filtrage : elle
     hérite de celui de la console, avec les conséquences décrites en #28. Tester d'abord
     `{Clear Filters}` seul, qui a sa propre touche et devrait être le cas le plus simple.
+30. **`macro:` dans un bouton de Magic Sheet — quelle forme exactement ?** Le corpus #063
+    (C, d'après l'infobulle native) le décrit comme le moyen d'appeler une macro depuis un
+    bouton, ce qui suggère `macro:<numéro>`. Le seul exemple du manuel §25,
+    `macro:Tab_Down 2 7 Tab_Up`, montre autre chose : une suite de commandes de macro en
+    noms internes, sans numéro. Les deux formes peuvent coexister — rien ne les oppose —
+    mais seule la seconde est attestée, et c'est celle que le modèle retient.
+31. **Les numéros d'évènement de show control ne sont pas stables.** Le manuel est
+    explicite : « The event number is not fixed », et les évènements se renumérotent pour
+    rester chronologiques (l'exemple RTC montre un « Event 3 » devenu « Event 1 » après
+    tri). Contrairement aux cues, palettes et macros, ce n'est donc pas un identifiant
+    qu'un traducteur peut mémoriser d'une session à l'autre. À vérifier : existe-t-il un
+    identifiant stable pour désigner un évènement, ou seul le couple heure/action fait foi ?
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :
