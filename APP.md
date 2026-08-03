@@ -6,7 +6,7 @@ vers la console.
 État : **conception en cours**. Ce fichier ne contient que ce qui est décidé ou imposé
 par des faits techniques établis. Le reste est marqué ouvert.
 
-Dernière mise à jour : 2026-08-01.
+Dernière mise à jour : 2026-08-03.
 
 ---
 
@@ -26,6 +26,9 @@ Dernière mise à jour : 2026-08-01.
 | 2026-08-01 | Favori importé d'un autre spectacle : **signalé, jamais bloqué**. | Données |
 | 2026-08-01 | Export : **les deux formats** — texte lisible et fichier ré-importable. | Données |
 | 2026-08-01 | **La console fait autorité sur sa propre syntaxe.** Un refus n'est jamais contesté. | Principe |
+| 2026-08-03 | Macro mal comprise (pas refusée, juste fausse) : **correction ciblée par champ** en tapant l'élément en cause, en complément — jamais en remplacement — de la reformulation complète. | Écran 1 |
+| 2026-08-03 | Commande partie sans accusé pendant une coupure : **représentée à l'utilisateur avec un rejeu manuel explicite**, jamais automatique. | Écran 1 / Réseau |
+| 2026-08-03 | Import d'un favori d'un autre spectacle : **signalement tuile par tuile** au moment de l'import, jamais un blocage global. | Écran 3 |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -72,6 +75,16 @@ se permettre d'être bavard et prudent.
   la demande* — si la correction proposée ne convient pas, c'est que l'intention a été
   mal comprise en amont.
 - Bouton **Sauvegarder en favori**, actif seulement après un envoi accepté.
+- **Correction ciblée par champ**, avant envoi. La macro générée n'est pas un bloc de
+  texte inerte : chaque élément que le parseur a reconnu (type de cible, numéro) reste
+  identifiable et corrigible individuellement — appui sur le "5" pour changer un chiffre,
+  appui sur "Group" pour choisir une autre fonction proche (circuit / groupe / palette /
+  preset...) dans un petit menu. Objectif : rattraper une mauvaise interprétation du
+  langage naturel par une retouche ciblée, sans tout retaper. Ça reste un complément au
+  bouton **Modifier la demande**, jamais un remplacement — si rien n'a été reconnu du
+  tout, ou si l'erreur est plus profonde qu'un champ, on reformule. Idée reprise du
+  corpus (`notes_produit_futures.md`) ; **dépend de l'axe A de la grammaire** pour la
+  liste des alternatives plausibles par champ — voir `Ouvert`.
 
 ### 2. Favoris — le seul écran de jeu
 
@@ -109,6 +122,13 @@ connexion tombe entre l'envoi et l'accusé de réception, l'app ne peut pas savo
 console a exécuté la commande — la rejouer risquerait un double déclenchement en pleine
 représentation. Elle est représentée à l'utilisateur, qui décide.
 
+Concrètement : tant que la reconnexion n'a pas abouti, un bandeau ambre reste affiché
+en permanence (pas une alerte ponctuelle qu'on referme). La commande en suspens reste
+visible avec ses deux issues explicites — **rejouer maintenant** (une fois la console
+reconnectée, action volontaire) ou **laisser telle quelle** (l'utilisateur a vérifié à
+l'œil sur scène que c'est fait, ou pas). Aucune des deux n'est un état par défaut : tant
+qu'aucun choix n'est fait, la commande reste affichée comme en attente.
+
 ---
 
 ## Sauvegarde et partage
@@ -127,6 +147,11 @@ Deux garde-fous :
   groupe 12, cue 47). Importées sur un autre spectacle, elles restent syntaxiquement
   valides mais pointent vers autre chose. L'import le **signale sans bloquer** : c'est
   l'utilisateur qui sait si la numérotation correspond.
+
+Concrètement, le signalement se fait **tuile par tuile** dans l'écran d'import, pas
+comme un avertissement générique en tête de liste : chaque favori importé qui référence
+un numéro affiche son badge « autre spectacle », les autres n'en portent pas. L'import
+reste **groupé** (tout ou rien pour le lot importé) — seul le signalement est individuel.
 
 ---
 
@@ -167,7 +192,16 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
 
 ## Ouvert
 
-- Apparence concrète des trois écrans (maquette à produire).
+- **Maquette** : `app/maquette.html` couvre maintenant les trois écrans et leurs
+  principales variantes (refus, reconnexion/commande en attente, confirmation plein
+  écran, correction ciblée par champ, import inter-spectacle). Reste en apparence
+  d'intention, pas des pixels définitifs — à affiner encore à l'usage.
+- **Correction ciblée par champ — dépendance axe A** : le motif d'interaction (taper un
+  élément reconnu, choisir parmi des alternatives proches) est fixé côté app. Mais la
+  liste des alternatives plausibles par champ doit venir de la grammaire structurée
+  (`grammar/`, axe A de `PLANNING.md`) — le modèle actuel ne l'expose pas encore. Tant
+  que ce n'est pas branché, la maquette montre le motif avec des alternatives d'exemple,
+  pas une liste réellement dérivée du modèle.
 - **Dépendance banc réel** : la correction proposée en cas de refus suppose que le
   message d'erreur de la console soit assez précis pour être exploité. À vérifier —
   le simulateur ne renvoie pas d'erreur réaliste. Si le message s'avère trop pauvre,

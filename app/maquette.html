@@ -423,6 +423,91 @@
   .foot ul { margin: 0; padding-left: 18px; color: var(--page-muted); font-size: 13.5px; }
   .foot li { margin-bottom: 5px; }
 
+  /* ---------- bandeau reconnexion ---------- */
+  .banner-recon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: rgba(224, 168, 60, 0.12);
+    border-bottom: 1px solid rgba(224, 168, 60, 0.32);
+    color: var(--app-warn);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  /* ---------- confirmation plein écran ---------- */
+  .confirm-full {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .confirm-full .warn-icon { font-size: 30px; line-height: 1; color: var(--app-warn); }
+  .confirm-full h3 { margin: 0; font-size: 17px; font-weight: 640; }
+  .confirm-full p { margin: 0; color: var(--app-muted); font-size: 13.5px; }
+  .confirm-full .macro { text-align: left; }
+  .confirm-full .actions { margin-top: 6px; }
+
+  /* ---------- macro éditable par champ ---------- */
+  .macro code .chip { border-bottom: 1px dashed var(--app-muted); padding-bottom: 1px; }
+  .macro code .chip.active { border-bottom: 1px dashed var(--app-accent); color: var(--app-accent); }
+  .menu {
+    background: var(--app-surface-hi);
+    border: 1px solid var(--app-line);
+    border-radius: 10px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .menu .opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 10px;
+    border-radius: 7px;
+    font-size: 13.5px;
+  }
+  .menu .opt.sel { background: rgba(77, 163, 217, 0.14); color: var(--app-accent); font-weight: 620; }
+  .menu .opt .tick { color: var(--app-accent); font-size: 12px; }
+
+  /* ---------- import de favoris ---------- */
+  .import-list { display: flex; flex-direction: column; gap: 8px; }
+  .import-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-line);
+    border-radius: 10px;
+    padding: 11px 12px;
+  }
+  .import-item .meta { display: flex; flex-direction: column; gap: 3px; }
+  .import-item .meta .name { font-size: 14px; font-weight: 600; }
+  .import-item .meta .cmd {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--app-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .badge-other {
+    flex: none;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--app-warn);
+    border: 1px solid rgba(224, 168, 60, 0.4);
+    background: rgba(224, 168, 60, 0.1);
+    border-radius: 5px;
+    padding: 3px 6px;
+    white-space: nowrap;
+  }
+
   @media (max-width: 560px) {
     .wrap { padding: 26px 14px 52px; gap: 34px; }
     .screens { gap: 34px; }
@@ -536,6 +621,133 @@
         <div><span class="mk"></span><span><b>La correction est montrée avant, pas appliquée après.</b> Vous voyez exactement ce qui change.</span></div>
         <div><span class="mk"></span><span><b>La console fait autorité sur sa propre syntaxe.</b> Renvoyer une commande refusée telle quelle n'existe pas — elle serait refusée à l'identique. Si la correction ne vous convient pas, c'est que la demande a été mal comprise : on repart de là.</span></div>
         <div><span class="mk"></span><span><b>Dépend du banc réel</b> : si le message d'erreur d'Eos s'avère trop vague, l'app dira « refusée » sans pouvoir proposer mieux.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 1 — RECONNEXION ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 1 · variante</div>
+        <h2>Coupure réseau, commande en suspens</h2>
+        <p>Bandeau ambre permanent. Aucun rejeu automatique.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-wait"></span>Reconnexion en cours…</span>
+            <span class="user-tag">User 12</span>
+          </div>
+          <div class="banner-recon">⚠ Connexion à la console perdue — nouvelle tentative automatique en cours</div>
+
+          <div class="body-app">
+            <div class="label">Envoyée à 21:14:02</div>
+            <div class="macro">
+              <code><span class="kw">Sub</span> <span class="num">12</span> <span class="kw">At</span> <span class="num">0</span> <span class="kw">Enter</span></code>
+            </div>
+
+            <div class="card card-warn">
+              <strong>Accusé de réception jamais reçu</strong>
+              <p>La connexion est tombée juste après l'envoi. Impossible de savoir si la console
+                 a exécuté cette commande avant la coupure — la rejouer risquerait un double
+                 déclenchement si elle est déjà passée.</p>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-warn">Rejouer maintenant</button>
+              <button class="btn btn-ghost">Laisser telle quelle — c'est fait</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Le bandeau reste tant que la reconnexion n'a pas abouti</b> — pas une alerte qu'on referme et qu'on oublie.</span></div>
+        <div><span class="mk"></span><span><b>Les deux issues sont également des choix actifs.</b> Aucun état par défaut : la commande reste affichée en suspens jusqu'à ce que l'utilisateur tranche, à l'œil, sur scène.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 1 — CONFIRMATION PLEIN ÉCRAN ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 1 · variante</div>
+        <h2>Confirmation plein écran</h2>
+        <p>Se déclenche uniquement si la macro porte un ⚠. Impossible de l'envoyer distraitement.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="confirm-full">
+            <div class="warn-icon">⚠</div>
+            <h3>Syntaxe jamais vérifiée sur console</h3>
+            <p>Mélanger un groupe et une plage de circuits dans la même sélection n'a pas été
+               confirmé sur un Eos réel. Vous envoyez en connaissance de cause.</p>
+
+            <div class="macro">
+              <code><span class="kw">Group</span> <span class="num">5</span> + <span class="num">1</span> <span class="kw">Thru</span> <span class="num">6</span> <span class="kw">Color</span> <span class="num">3/195</span> <span class="kw">Enter</span></code>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-warn">J'ai vérifié — envoyer</button>
+              <button class="btn btn-ghost">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Occupe tout l'écran</b>, contrairement à la carte d'avertissement de l'écran normal : on ne peut pas la balayer d'un geste distrait au milieu d'autre chose.</span></div>
+        <div><span class="mk"></span><span><b>Le bouton ne dit pas « envoyer quand même »</b> mais « j'ai vérifié » — la formulation porte la responsabilité de la vérification, pas seulement le risque.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 1 — CORRECTION CIBLÉE ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 1 · variante</div>
+        <h2>Correction ciblée par champ</h2>
+        <p>Appuyer sur l'élément mal compris, plutôt que retaper toute la demande.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="label">Votre demande</div>
+            <div class="field">circuit 5 en lee 195</div>
+
+            <div class="label">Macro générée — appuyez pour corriger un élément</div>
+            <div class="macro">
+              <code><span class="kw chip active">Group</span> <span class="num chip">5</span> <span class="kw">Color</span> <span class="num">3/195</span> <span class="kw">Enter</span></code>
+            </div>
+
+            <div class="label">Corriger « circuit 5 »</div>
+            <div class="menu">
+              <div class="opt">Circuit <span></span></div>
+              <div class="opt sel">Groupe <span class="tick">✓ reconnu</span></div>
+              <div class="opt">Palette <span></span></div>
+              <div class="opt">Preset <span></span></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-ghost">Modifier toute la demande</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Ne remplace pas « Modifier la demande »</b>, qui reste disponible : la retouche ciblée est pour une erreur d'interprétation localisée, pas pour une intention mal comprise dans l'ensemble.</span></div>
+        <div><span class="mk"></span><span><b>Idée reprise du corpus</b> (notes produit). La liste des alternatives par champ dépendra du modèle de grammaire structurée — ici, exemple illustratif, pas encore branché.</span></div>
       </div>
     </section>
 
@@ -657,15 +869,69 @@
       </div>
     </section>
 
+    <!-- ===================== ÉCRAN 3 — IMPORT INTER-SPECTACLE ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 3 · variante</div>
+        <h2>Import d'un favori d'un autre spectacle</h2>
+        <p>Signalé tuile par tuile. Jamais bloqué : la numérotation reste à votre jugement.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="label">Fichier : cyrano-favoris.eosfav</div>
+
+            <div class="card card-warn">
+              <strong>2 favoris référencent un autre spectacle</strong>
+              <p>Ils restent syntaxiquement valides mais peuvent pointer vers d'autres circuits
+                 ou palettes ici. Repérez-les au badge, vérifiez avant de vous y fier en salle.</p>
+            </div>
+
+            <div class="import-list">
+              <div class="import-item">
+                <div class="meta"><span class="name">Noir salle</span><span class="cmd">Sub 12 At 0 Enter</span></div>
+              </div>
+              <div class="import-item">
+                <div class="meta"><span class="name">195 · Par LED</span><span class="cmd">Color Palette 5 Enter</span></div>
+                <span class="badge-other">Autre spectacle</span>
+              </div>
+              <div class="import-item">
+                <div class="meta"><span class="name">Face seule</span><span class="cmd">Group 3 At 85 Enter</span></div>
+                <span class="badge-other">Autre spectacle</span>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary">Importer les 3 favoris</button>
+              <button class="btn btn-ghost">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Le badge est individuel</b>, pas un avertissement générique en tête de liste — on sait exactement lesquels vérifier.</span></div>
+        <div><span class="mk"></span><span><b>L'import reste groupé</b> : tout ou rien pour le lot. Seul le signalement est au niveau de la tuile, jamais le blocage.</span></div>
+      </div>
+    </section>
+
   </div>
 
   <footer class="foot">
     <h3>Ce que la maquette ne montre pas encore</h3>
     <ul>
-      <li>La reconnexion en cours : bandeau ambre persistant, et la commande partie sans accusé de réception vous est représentée — jamais rejouée toute seule.</li>
-      <li>L'import d'un favori venu d'un autre spectacle : signalé, jamais bloqué. « Palette 5 » existe partout, mais pas la même.</li>
-      <li>La confirmation plein écran, quand une macro porte un avertissement.</li>
-      <li>L'écran de dictée vocale, prévu mais repoussé.</li>
+      <li>L'écran de dictée vocale, prévu mais repoussé après la saisie texte.</li>
+      <li>La correction ciblée par champ n'affiche que des alternatives d'exemple : la vraie
+        liste dépend du modèle de grammaire structurée (<code style="font-family:var(--mono)">grammar/</code>),
+        pas encore branché à l'app.</li>
+      <li>Réorganisation des tuiles/onglets, renommage, suppression — gestes d'édition hors
+        jeu, pas encore maquettés en détail.</li>
     </ul>
   </footer>
 
