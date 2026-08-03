@@ -89,8 +89,39 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.9 | **Cues multipart** — et la règle transversale de Blind |
 | v0.10 | **Cue lists multiples et Assert** — une contradiction résolue |
 | v0.11 | **Park et Filtres** — le cinquième état implicite |
+| v0.12 | **Courbes, Snapshots** — et la saisie des niveaux |
 
-Ce que v0.11 ajoute concrètement :
+### `At 5` vaut 50 %, pas 5 %
+
+C'est la trouvaille la plus lourde de conséquences de tout ce travail, et elle ne vient
+pas du chapitre attendu. Le manuel §6 établit, par **cinq occurrences** de sa notation
+`<0>`, qu'un chiffre unique après `At` reçoit un zéro implicite — il est lu comme des
+dizaines. Le §22 le reconfirme sur les points de courbe (`3 At 1` = 10 %).
+
+C'est le seul piège rencontré qui transforme une commande **parfaitement valide** en
+résultat faux d'un **facteur dix**, sans erreur de syntaxe et sans rien signaler. Une
+demande « mets les circuits à 5 % » traduite naïvement donne 50 %.
+
+Le générateur refuse désormais d'émettre un niveau à un chiffre et propose la forme à deux
+chiffres. Et comment exprimer réellement 5 % reste ouvert (#29) : **aucun exemple du manuel
+ne descend sous 10 %**. `At 05` est la déduction naturelle, mais ce n'est qu'une déduction.
+
+Le reste de v0.12 :
+
+- **Courbes** — la portée diffère selon la cible : sur une cue la courbe n'affecte que
+  l'intensité, sur une *part* elle affecte tous les paramètres qui bougent. Et supprimer
+  une courbe préprogrammée ne la supprime pas : elle **revient à son état d'origine**, donc
+  une confirmation formulée « supprimer la courbe 901 ? » serait trompeuse.
+- **L'idiome `At Enter`** est enfin encodé comme tel : six occurrences dans cinq chapitres
+  où `At` immédiatement suivi d'`Enter` annule l'instruction courante (retirer une adresse,
+  une courbe, un effet, déparquer, rappeler la valeur antérieure). Ce n'était traité
+  jusqu'ici que localement, chapitre par chapitre.
+- **Snapshots** — enregistrent la *surface de contrôle*, pas l'état du plateau. Un
+  utilisateur qui demande « garde cet état » veut presque toujours une cue ou un preset :
+  la distinction doit se faire avant de traduire. Et désigner un élément dans la liste
+  **désactive tous les autres** — sémantique remplaçante, pas additive.
+
+Ce que v0.11 avait ajouté :
 
 - **L'état des filtres est invisible, et il décide de ce qui s'enregistre.** Aucune adresse
   `/eos/out/…` ne le publie — vérifié sur le manuel §31 et sur `Supported_OSC_Commands.md`.

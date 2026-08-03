@@ -220,6 +220,23 @@ bascule — le générateur exige donc une valeur. Enfin, une valeur parquée es
 tous les record targets : une macro qui règle puis enregistre un channel parqué produit
 une cue correcte sur le papier et un plateau inchangé, sans erreur remontée.
 
+**Fait — v0.12 (2026-08-03)** : Courbes §22, Snapshots §23, et la saisie des niveaux.
+75 actions, 156 règles de légalité, 100 cas de non-régression.
+
+La trouvaille majeure ne vient pas des chapitres visés mais d'une vérification faite en
+passant : **`At 5` vaut 50 %**, pas 5 %. Le manuel §6 l'établit par cinq occurrences de sa
+notation `<0>`, et le §22 le reconfirme sur les points de courbe. C'est le seul piège
+rencontré dans tout ce travail qui transforme une commande parfaitement valide en résultat
+faux d'un **facteur dix**, en silence. Le générateur refuse désormais d'émettre un niveau
+à un chiffre. Comment exprimer réellement 5 % reste ouvert (#29) — aucun exemple du manuel
+ne descend sous 10 %.
+
+Deux autres apports. L'**idiome `At Enter`** est encodé comme idiome général plutôt que
+redécouvert chapitre par chapitre : six occurrences dans cinq chapitres où `At` suivi
+d'`Enter` annule l'instruction courante. Et **supprimer une courbe préprogrammée ne la
+supprime pas** — elle revient à son état d'origine, donc une confirmation utilisateur
+formulée « supprimer la courbe 901 ? » serait trompeuse.
+
 **Reste à faire** :
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
@@ -255,6 +272,16 @@ donc jamais renumérotés : un point ajouté tardivement en priorité haute port
 numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros.
 
 ### Priorité haute — bloquent des décisions d'architecture
+
+29. **Comment exprime-t-on un niveau inférieur à 10 % ?** Le manuel §6 établit sans
+    ambiguïté, par cinq occurrences de sa notation `<0>`, qu'un chiffre unique après `At`
+    reçoit un zéro implicite : `At 5` vaut **50 %**, pas 5 %. Le §22 le reconfirme sur les
+    points de courbe. Mais **aucun exemple du manuel ne descend sous 10 %**, donc la forme
+    d'un petit pourcentage n'est montrée nulle part. `At 05` est la déduction naturelle et
+    cohérente avec la lecture littérale à deux chiffres, mais elle reste une déduction.
+    À trancher en priorité : c'est le seul piège rencontré qui transforme une commande
+    parfaitement valide en résultat faux d'un **facteur dix**, en silence. Le générateur
+    refuse désormais d'émettre un niveau à un chiffre et le signale.
 
 1. **`SubDown` / `SubUp` — survie à l'export/import ASCII.** Corpus #027 signale que les
    macros pilotant un submaster par apprentissage ne survivent pas au cycle ASCII. Si

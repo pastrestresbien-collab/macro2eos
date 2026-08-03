@@ -433,6 +433,65 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # -------------------- Courbes (§22), Snapshots (§23), niveaux
+    {
+        "nom": "manuel §6 — un niveau à un chiffre vaut des DIZAINES",
+        # [1] [+] [3] [At] [5] <0> = 50 %, donc `At 5` ne peut pas vouloir dire 5 %
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "intensite", "valeur": 5}},
+        ],
+        "attendu": "Chan 1 At 5 Enter",
+        "avertissements": 1,      # PLANNING #29 — facteur dix silencieux
+    },
+    {
+        "nom": "un niveau à deux chiffres est lu littéralement, sans avertissement",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "intensite", "valeur": 50}},
+        ],
+        "attendu": "Chan 1 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §22 — appliquer une courbe à une cue",
+        # [Cue] [5] {Attributes} {Curve} [4] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 5},
+             "action": {"type": "appliquer_courbe", "cible": 4}},
+        ],
+        "attendu": "Cue 5 Curve 4 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §22 — retirer une courbe par l'idiome `At Enter`",
+        # [Cue] [5] {Attributes} {Curve} [At] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 5},
+             "action": {"type": "retirer_courbe"}},
+        ],
+        "attendu": "Cue 5 Curve At Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §23 — enregistrer un snapshot (la surface, pas le plateau)",
+        # [Record] [Snapshot] [1]
+        "ir": [
+            {"action": {"type": "record_snapshot", "cible": 1}},
+        ],
+        "attendu": "Record Snapshot 1 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §23 — rappeler un snapshot",
+        # [Snapshot] [5] [Enter]
+        "ir": [
+            {"action": {"type": "rappeler_snapshot", "cible": 5}},
+        ],
+        "attendu": "Snapshot 5 Enter",
+        "avertissements": 0,
+    },
+
     # ------------------------------ Park (§19) et Filtres (§13)
     {
         "nom": "manuel §19 — parquer une intensité à une valeur précise",

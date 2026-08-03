@@ -294,6 +294,21 @@ class Generateur:
 
         return " ".join(morceaux)
 
+    def _verifier_niveau(self, valeur: object, avert: list[str]) -> None:
+        """`At 5` vaut 50 %, pas 5 % : un chiffre unique reçoit un zéro
+        implicite (manuel §6, notation `<0>`, cinq occurrences). C'est le seul
+        piège du modèle qui transforme une commande valide en résultat faux
+        d'un facteur dix, sans erreur de syntaxe."""
+        texte = str(valeur)
+        if len(texte) == 1 and texte.isdigit() and texte != "0":
+            backlog = self._backlog_de("niveau à un seul chiffre")
+            avert.append(
+                f"niveau `{texte}` : un chiffre unique reçoit un zéro implicite — "
+                f"la console lira {int(texte) * 10} %, pas {texte} % "
+                f"(manuel §6). Écrire `{int(texte) * 10}` pour {int(texte) * 10} %, "
+                f"ou voir PLANNING #{backlog} pour {texte} %"
+            )
+
     def _plage_ou_valeur(self, act: dict, cle: str = "valeur") -> str:
         """`10` ou `10 Thru 50` — la seconde forme est un fan implicite."""
         if "de" in act:
@@ -328,6 +343,9 @@ class Generateur:
             return f"{mot} {act['nuancier']}/{act['teinte']}"
 
         if t == "intensite":
+            for cle in ("valeur", "de", "a"):
+                if cle in act:
+                    self._verifier_niveau(act[cle], avert)
             return " ".join([mot, self._plage_ou_valeur(act)]
                             + self._suffixe_fan(act, avert))
 
@@ -470,7 +488,19 @@ class Generateur:
                 self._verifier_combinaison("pose de filtres par accord maintenu", avert)
             return mot
 
+        if t in ("appliquer_courbe", "record_snapshot", "rappeler_snapshot"):
+            out = f"{mot} {act['cible']}"
+            if act.get("label"):
+                out += f" Label {act['label']}"
+                self._verifier_label(act["label"], avert)
+            return out
+
+        if t == "retirer_courbe":
+            return mot
+
         if t == "parquer":
+            if "valeur" in act:
+                self._verifier_niveau(act["valeur"], avert)
             if "valeur" not in act:
                 avert.append(
                     "`At Park` sans valeur est un bascule : il déparque si le "

@@ -15,6 +15,7 @@
 #   v0.9  + Cues multipart (§17) — et la règle transversale de Blind
 #   v0.10 + Cue lists multiples (§14) et Assert — une contradiction résolue
 #   v0.11 + Park (§19) et Filtres (§13) — le cinquième état implicite
+#   v0.12 + Courbes (§22), Snapshots (§23) — et la saisie des niveaux
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -22,10 +23,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.11"
+  version: "0.12"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -180,6 +181,155 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# SAISIE DES NIVEAUX — le piège le plus coûteux pour un traducteur NL
+#
+# `At 5` ne vaut pas 5 %. Il vaut 50 %.
+# --------------------------------------------------------------------------
+saisie_niveau:
+  confiance: A
+  regle: >
+    Un chiffre UNIQUE après `At` reçoit un zéro implicite : il est lu comme
+    des dizaines. Deux chiffres ou plus sont lus littéralement.
+  source: >
+    manuel §6, notation `<0>` employée cinq fois : « [1] [+] [3] [At] [5] <0> »
+    = 50 %, « [At] [+] [3] <0> » = +30 %, « [At] [/] [3] <0> » = échelle 30 %,
+    « [1] [At] [6] <0> [Rem Dim] » = 60 %, « [5] [At] [5] <0> [Sneak] [8] » =
+    50 % en 8 s. Confirmé indépendamment au §22 : « [3] [At] [1] [Enter] »
+    règle le point de courbe à 10 %.
+  exemples:
+    - { saisi: "At 5",   obtenu: "50 %" }
+    - { saisi: "At 50",  obtenu: "50 %" }
+    - { saisi: "At 45",  obtenu: "45 %  (manuel §19)" }
+    - { saisi: "At 130", obtenu: "130 % (manuel §6, échelle)" }
+  portee: >
+    Vaut pour l'intensité, les incréments (`At + 3` = +30 %), les échelles
+    (`At / 3` = 30 %) et les points de courbe. Ce n'est pas propre à une
+    commande, c'est la lecture du clavier numérique.
+  consequence_generateur:
+    gravite: haute
+    description: >
+      Une demande « mets les circuits à 5 % » traduite naïvement en `At 5`
+      produit 50 % — un facteur dix, silencieux, sans erreur de syntaxe. C'est
+      le seul piège rencontré jusqu'ici qui transforme une commande valide en
+      résultat faux d'un ordre de grandeur.
+    regle: >
+      Le générateur n'émet jamais un niveau d'un seul chiffre. Il avertit et
+      propose la forme à deux chiffres.
+  forme_pourcentage_simple:
+    deduction: "`At 05` devrait donner 5 %, par symétrie avec la lecture littérale à deux chiffres"
+    confiance: null
+    backlog: 29
+    note: >
+      Aucun exemple du manuel ne montre une valeur inférieure à 10 %. La
+      déduction est solide mais reste une déduction — à confirmer au banc avant
+      de la faire produire par le traducteur.
+
+# --------------------------------------------------------------------------
+# COURBES — une relation entre le temps et le niveau
+# --------------------------------------------------------------------------
+courbes:
+  confiance: A
+  source: "manuel §22 Curves"
+  mot_cle: "Curve"
+  osc: curve
+  ecran: 21
+  preprogrammees: 11
+  points_max: 100
+
+  portee_selon_la_cible:
+    patch: "la transition d'intensité suit la rampe de la courbe"
+    cue: "n'affecte QUE les mouvements d'intensité de la cue"
+    cue_part: "affecte TOUS les paramètres qui bougent dans la part"
+    scroller_fan: "la sortie du ventilateur suit l'intensité du channel"
+    confiance: A
+    note: >
+      La différence cue / cue part est réelle et documentée deux fois (§12 et
+      §22). Annoncer « courbe appliquée » sans préciser la portée induit en
+      erreur : sur une cue simple c'est l'intensité seule, sur une part c'est
+      tout ce qui bouge.
+
+  suppression_qui_ne_supprime_pas:
+    regle: >
+      Supprimer une courbe préprogrammée ne la retire pas de la liste : elle
+      revient à son état d'origine.
+    confiance: A
+    source: "manuel §22 : « [Delete] {Curve} [9][0][1] [Enter] [Enter] »"
+    consequence_generateur: >
+      `Delete` ne veut pas dire « supprimer » ici mais « réinitialiser ». Une
+      confirmation utilisateur formulée « supprimer la courbe 901 ? » serait
+      trompeuse.
+
+  retrait: "`{Curve} At Enter` retire la courbe, en patch comme sur une cue"
+
+# --------------------------------------------------------------------------
+# `At Enter` — l'idiome de retrait, récurrent dans toute la grammaire
+# --------------------------------------------------------------------------
+idiome_retrait:
+  forme: "`<cible> <attribut> At Enter`"
+  regle: "`At` suivi immédiatement d'`Enter` RETIRE l'attribut au lieu de le régler"
+  confiance: A
+  occurrences:
+    - { source: "manuel §4",  exemple: "`601 At Enter` retire l'adresse, garde le type" }
+    - { source: "manuel §22", exemple: "`Patch Attributes 1 Curve At Enter` retire la courbe du channel 1" }
+    - { source: "manuel §22", exemple: "`Cue 5 Attributes Curve At Enter` retire la courbe de la cue 5" }
+    - { source: "manuel §12", exemple: "`Group 1 Focus At Enter` rappelle la valeur de la cue précédente" }
+    - { source: "manuel §18", exemple: "`<sélection> Effect At Enter` retire l'instruction d'effet" }
+    - { source: "manuel §19", exemple: "`<channels> At Enter` déparque, depuis l'écran Park" }
+  note: >
+    Six occurrences dans cinq chapitres : ce n'est pas une particularité locale
+    mais un idiome de la grammaire. À traiter comme tel plutôt que de le
+    redécouvrir chapitre par chapitre. Attention cependant : au §12 il ne
+    retire pas mais RAPPELLE la valeur antérieure — le sens général est
+    « annule l'instruction courante », dont le retrait n'est qu'un cas.
+
+# --------------------------------------------------------------------------
+# SNAPSHOTS — l'état de la surface de contrôle, pas celui du plateau
+# --------------------------------------------------------------------------
+snapshots:
+  confiance: A
+  source: "manuel §23 Snapshots"
+  mot_cle: "Snapshot"
+  ecran: 19
+
+  portee:
+    regle: >
+      Un snapshot enregistre l'état de la SURFACE DE CONTRÔLE et de la
+      configuration des moniteurs — pas l'état lumineux du plateau.
+    confiance: A
+    consequence_generateur: >
+      Un utilisateur qui demande « enregistre cet état » veut presque toujours
+      une cue, un preset ou une palette. Le snapshot ne conserve aucune donnée
+      de channel. Distinction à faire AVANT de traduire.
+
+  globalite:
+    regle: "les snapshots sont globaux : enregistrables et rappelables depuis n'importe quel appareil sauf les RFR Net3"
+    confiance: A
+    mappage: >
+      Rappelé sur un appareil de disposition différente, Eos mappe « au mieux
+      de ses capacités » — le résultat n'est donc pas garanti identique.
+    recommandation_multi_utilisateur: >
+      Réserver des plages de numéros par utilisateur, faute de quoi les
+      snapshots se marchent dessus (manuel §23).
+
+  faders:
+    regle: "un snapshot de faders n'inclut PAS la cue active — seulement les cues en attente et les attributs"
+    confiance: A
+
+  edition_exclusive:
+    regle: >
+      Dans la liste, désigner un élément par softkey l'active et DÉSACTIVE
+      tous les autres.
+    confiance: A
+    source: "manuel §23 : « <Snapshots> [3] {Monitors} [Enter] » active les moniteurs et désactive le reste"
+    consequence_generateur: >
+      Sémantique remplaçante, pas additive. Une intention « ajoute les
+      moniteurs au snapshot 3 » n'a pas cette traduction.
+
+  rappel:
+    formes: ["`Snapshot 5 Enter`", "depuis une cue via la liste d'exécution", "depuis une macro", "depuis les direct selects"]
+    confiance: A
 
 # --------------------------------------------------------------------------
 # PARK — figer une valeur au-dessus de tout le reste
@@ -1669,6 +1819,45 @@ actions:
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
 
+  # -- courbes et snapshots -------------------------------------------------
+  appliquer_courbe:
+    mot_cle: "Curve"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind, Patch]
+    confiance: A
+    source: "manuel §22 « Curves Applied to Cues »"
+    osc: curve
+    avertissement: >
+      Portée différente selon la cible : sur une cue, seuls les mouvements
+      d'intensité ; sur une part, TOUS les paramètres qui bougent.
+  retirer_courbe:
+    mot_cle: "Curve At"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind, Patch]
+    confiance: A
+    source: "manuel §22 : « [Cue] [5] {Attributes} {Curve} [At] [Enter] »"
+  record_snapshot:
+    mot_cle: "Record Snapshot"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §23 « Recording Snapshots »"
+    avertissement: >
+      Enregistre la surface de contrôle et les moniteurs, PAS l'état du
+      plateau. Un utilisateur qui veut « garder cet état lumineux » demande
+      autre chose.
+  rappeler_snapshot:
+    mot_cle: "Snapshot"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §23 « Recalling Snapshots »"
+
   # -- park -----------------------------------------------------------------
   parquer:
     mot_cle: "Park"
@@ -2804,6 +2993,40 @@ legalite:
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
 
+  # --- Courbes et snapshots ---
+  - objet: Cue
+    action: appliquer_courbe
+    valide: oui
+    confiance: A
+    note: "sur une cue, la courbe n'affecte que l'intensité"
+
+  - objet: Part
+    action: appliquer_courbe
+    valide: oui
+    confiance: A
+    note: "sur une part, elle affecte TOUS les paramètres qui bougent"
+
+  - objet: Chan
+    action: appliquer_courbe
+    valide: oui
+    confiance: A
+    note: "en Patch — `Patch Attributes 1 Curve 901 Enter`"
+
+  - objet: Cue
+    action: retirer_courbe
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_snapshot
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: rappeler_snapshot
+    valide: oui
+    confiance: A
+
   # --- Park et filtres ---
   - objet: Chan
     action: parquer
@@ -3153,6 +3376,16 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "niveau à un seul chiffre"
+    valide: inconnu
+    confiance: null
+    backlog: 29
+    note: >
+      `At 5` vaut 50 % (manuel §6, cinq occurrences de la notation `<0>`).
+      Comment exprimer 5 % n'est montré nulle part : aucun exemple du manuel ne
+      descend sous 10 %. `At 05` est la déduction naturelle, à confirmer avant
+      de la faire produire.
 
   - combinaison: "pose de filtres par accord maintenu"
     valide: inconnu
