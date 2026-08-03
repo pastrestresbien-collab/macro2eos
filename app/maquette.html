@@ -508,6 +508,106 @@
     white-space: nowrap;
   }
 
+  /* ---------- dot supplémentaire ---------- */
+  .dot-bad { background: var(--app-danger); box-shadow: 0 0 0 3px rgba(217, 96, 90, 0.16); }
+
+  /* ---------- favoris : mode édition ---------- */
+  .tile.editable { border-style: dashed; border-color: var(--app-muted); position: relative; }
+  .tile.editable .name { padding-right: 34px; }
+  .tile.editable.active { border-color: var(--app-accent); }
+  .tile-edit-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--app-muted);
+    border: 1px solid var(--app-line);
+    border-radius: 6px;
+    padding: 3px 6px;
+    background: var(--app-surface-hi);
+  }
+  .tab-edit {
+    flex: none;
+    margin-left: auto;
+    align-self: center;
+    font-size: 12px;
+    color: var(--app-accent);
+    padding: 6px 4px;
+  }
+  .menu .opt.danger { color: var(--app-danger); }
+  .menu .opt.sub { padding-left: 22px; font-size: 12.5px; color: var(--app-muted); }
+  .menu .opt.sub.sel { color: var(--app-accent); background: rgba(77, 163, 217, 0.14); }
+
+  /* ---------- bibliothèque de macros ---------- */
+  .lib-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-line);
+    border-radius: 10px;
+    padding: 12px 13px;
+  }
+  .lib-item .req { font-size: 14px; font-weight: 620; line-height: 1.35; }
+  .lib-item .cmd {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--app-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+  .lib-item .src { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--app-muted); }
+  .lib-conf {
+    flex: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    border-radius: 5px;
+    padding: 1px 6px;
+    border: 1px solid var(--app-line);
+  }
+  .lib-conf.a { color: var(--app-ok); border-color: rgba(95, 191, 143, 0.4); }
+  .lib-conf.c { color: var(--app-muted); }
+
+  /* ---------- historique des envois ---------- */
+  .hist-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-line);
+    border-left: 2px solid var(--app-line);
+    border-radius: 10px;
+    padding: 11px 12px;
+  }
+  .hist-item.ok { border-left-color: var(--app-ok); }
+  .hist-item.doute { border-left-color: var(--app-accent); }
+  .hist-item.bad { border-left-color: var(--app-danger); }
+  .hist-item.pending { border-left-color: var(--app-warn); }
+  .hist-item .top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .hist-item .time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--app-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .hist-tag { font-size: 10.5px; font-weight: 650; letter-spacing: 0.01em; white-space: nowrap; }
+  .hist-tag.ok { color: var(--app-ok); }
+  .hist-tag.doute { color: var(--app-accent); }
+  .hist-tag.bad { color: var(--app-danger); }
+  .hist-tag.pending { color: var(--app-warn); }
+  .hist-item .cmd {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--app-ink);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .hist-item .note { font-size: 12px; color: var(--app-muted); line-height: 1.4; }
+
   @media (max-width: 560px) {
     .wrap { padding: 26px 14px 52px; gap: 34px; }
     .screens { gap: 34px; }
@@ -751,6 +851,62 @@
       </div>
     </section>
 
+    <!-- ===================== ÉCRAN 1 — BIBLIOTHÈQUE ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 1 · variante</div>
+        <h2>Bibliothèque de macros</h2>
+        <p>Motifs tirés du corpus. Remplit la demande, ne court-circuite jamais l'aperçu.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="label">Bibliothèque — appuyez pour reprendre une formulation</div>
+
+            <div class="lib-item">
+              <span class="req">Nettoyer les mouvements invisibles du show</span>
+              <span class="cmd">Query Dark_Moves Enter · AllNPs @ Enter · Update Enter</span>
+              <span class="src"><span class="lib-conf c">C</span>corpus communautaire, non testé au banc</span>
+            </div>
+
+            <div class="lib-item">
+              <span class="req">Bump le sub 3 pour la durée de l'effet en cours</span>
+              <span class="cmd">SubDown 3 Enter · SubUp 3 Enter</span>
+              <span class="src"><span class="lib-conf c">C</span>corpus communautaire, non testé au banc</span>
+            </div>
+
+            <div class="lib-item">
+              <span class="req">Effet cercle symétrique jardin / cour</span>
+              <span class="cmd">Group 1 Effect 201.1 · Group 2 Offset Reverse Effect 201.2</span>
+              <span class="src"><span class="lib-conf c">C</span>corpus communautaire, non testé au banc</span>
+            </div>
+
+            <div class="lib-item">
+              <span class="req">Highlight de référence sur une sélection</span>
+              <span class="cmd">{Highlight RemDim} Preset 9997 Enter</span>
+              <span class="src"><span class="lib-conf a">A</span>manuel officiel, Eos L3 Workbook</span>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-ghost">Voir toute la bibliothèque</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Un appui remplit le champ de saisie</b>, pas la macro générée. La demande repasse par la compréhension et l'aperçu, comme n'importe quelle saisie manuelle — aucun raccourci d'envoi.</span></div>
+        <div><span class="mk"></span><span><b>La confiance affichée est celle du corpus</b> (A/B/C, déjà en usage dans le dépôt), distincte du ⚠ « non validé au banc » propre au générateur de l'app. Deux échelles, deux questions différentes.</span></div>
+        <div><span class="mk"></span><span><b>Les numéros cités sont des exemples</b> (sub 3, preset 9997...) à adapter à votre plateau, comme pour un favori importé d'un autre spectacle.</span></div>
+      </div>
+    </section>
+
     <!-- ===================== ÉCRAN 2 ===================== -->
     <section class="screen">
       <div class="screen-head">
@@ -771,6 +927,7 @@
             <span class="tab">Général</span>
             <span class="tab">Couleurs</span>
             <span class="tab">+</span>
+            <span class="tab-edit">Modifier</span>
           </div>
 
           <div class="body-app">
@@ -816,6 +973,77 @@
       </div>
     </section>
 
+    <!-- ===================== ÉCRAN 2 — MODE ÉDITION ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 2 · variante</div>
+        <h2>Mode édition des favoris</h2>
+        <p>Jamais accessible par un appui simple. Hors jeu uniquement.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="tabs">
+            <span class="tab on">Cyrano</span>
+            <span class="tab">Général</span>
+            <span class="tab">Couleurs</span>
+            <span class="tab">+</span>
+          </div>
+
+          <div class="body-app">
+            <div class="tiles">
+              <div class="tile editable">
+                <span class="name">Noir salle</span>
+                <span class="cmd">Sub 12 At 0 Enter</span>
+                <span class="tile-edit-btn">•••</span>
+              </div>
+              <div class="tile editable">
+                <span class="name">Plein feu</span>
+                <span class="cmd">Chan 1 Thru 96 At Full</span>
+                <span class="tile-edit-btn">•••</span>
+              </div>
+              <div class="tile editable active">
+                <span class="name">Contre chaud</span>
+                <span class="cmd">Group 7 Color 3/204</span>
+                <span class="tile-edit-btn">•••</span>
+              </div>
+              <div class="tile editable">
+                <span class="name">Rappel saluts</span>
+                <span class="cmd">Macro 12 Enter</span>
+                <span class="tile-edit-btn">•••</span>
+              </div>
+            </div>
+
+            <div class="label">« Contre chaud »</div>
+            <div class="menu">
+              <div class="opt">Modifier le libellé</div>
+              <div class="opt">Dupliquer</div>
+              <div class="opt">Déplacer vers l'onglet</div>
+              <div class="opt sub">Général</div>
+              <div class="opt sub sel">Couleurs <span class="tick">✓ ici</span></div>
+              <div class="opt danger">Supprimer</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary">Terminé</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>La bordure en tirets</b> reprend le langage visuel de la correction ciblée sur l'écran 1 : dans toute l'app, « en tirets » veut dire « appuyez pour changer ».</span></div>
+        <div><span class="mk"></span><span><b>Modifier ne touche que le libellé.</b> La macro d'une tuile favorite a déjà été acceptée par la console — la reprogrammer se fait à l'écran 1, jamais ici.</span></div>
+        <div><span class="mk"></span><span><b>Dupliquer</b> évite de repartir de zéro pour une variante proche (une couleur différente, un niveau différent).</span></div>
+        <div><span class="mk"></span><span><b>Entrée dédiée, jamais un appui normal</b> détourné : « Modifier » est son propre bouton, pour qu'aucun geste de jeu ne bascule l'écran par erreur en pleine représentation.</span></div>
+      </div>
+    </section>
+
     <!-- ===================== ÉCRAN 3 ===================== -->
     <section class="screen">
       <div class="screen-head">
@@ -849,6 +1077,11 @@
             </div>
 
             <div class="group">
+              <div class="label">Historique</div>
+              <div class="row"><span class="k">Envois récents</span><span class="v accent">Voir l'historique</span></div>
+            </div>
+
+            <div class="group">
               <div class="label">Sauvegarde</div>
               <div class="row"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>
               <div class="row"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div>
@@ -866,6 +1099,56 @@
         <div><span class="mk"></span><span><b>L'utilisateur dédié est mis en avant</b> : c'est ce qui garantit que vos envois n'interfèrent pas avec l'opérateur travaillant sur la console.</span></div>
         <div><span class="mk"></span><span><b>L'export part en deux formes d'un coup</b> — le texte lisible dans le message pour discuter, le fichier joint pour installer.</span></div>
         <div><span class="mk"></span><span><b>L'adresse de la console ne quitte jamais le téléphone.</b> Elle n'a aucun sens dans un autre théâtre.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== ÉCRAN 3 — HISTORIQUE ===================== -->
+    <section class="screen">
+      <div class="screen-head">
+        <div class="eyebrow">Écran 3 · variante</div>
+        <h2>Historique des envois</h2>
+        <p>Chaque macro générée, journalisée avec sa qualité. Consultation seule.</p>
+      </div>
+
+      <div class="device">
+        <div class="viewport">
+          <div class="statusbar">
+            <span class="conn"><span class="dot dot-ok"></span>Console connectée</span>
+            <span class="user-tag">User 12</span>
+          </div>
+
+          <div class="body-app">
+            <div class="hist-item pending">
+              <div class="top"><span class="hist-tag pending">En suspens</span><span class="time">21:14</span></div>
+              <div class="cmd">Sub 12 At 0 Enter</div>
+              <div class="note">Coupure réseau juste après l'envoi — en attente d'une décision.</div>
+            </div>
+
+            <div class="hist-item bad">
+              <div class="top"><span class="hist-tag bad">Refusée, puis corrigée</span><span class="time">20:58</span></div>
+              <div class="cmd">Chan 10 Thru 20 Color 3/195 Enter</div>
+              <div class="note">Mot-clé « Colour » refusé, renvoyée avec « Color » — acceptée à 20:59.</div>
+            </div>
+
+            <div class="hist-item doute">
+              <div class="top"><span class="hist-tag doute">Acceptée · a levé un doute</span><span class="time">20:40</span></div>
+              <div class="cmd">Group 5 + 1 Thru 6 Color 3/195 Enter</div>
+              <div class="note">Partait avec ⚠ syntaxe non testée au banc — l'acceptation en fait maintenant la preuve.</div>
+            </div>
+
+            <div class="hist-item ok">
+              <div class="top"><span class="hist-tag ok">Acceptée · déjà connue</span><span class="time">19:50</span></div>
+              <div class="cmd">SubDown 3 Enter</div>
+              <div class="note">Depuis la bibliothèque de macros. Sauvegardée en favori.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why">
+        <div><span class="mk"></span><span><b>Le vocabulaire ne réinvente rien</b> : les mêmes signaux qu'ailleurs dans l'app (⚠, refus, coupure) se retrouvent ici comme trace, pas comme nouvel état à apprendre.</span></div>
+        <div><span class="mk"></span><span><b>« A levé un doute » est distingué de « déjà connue »</b> — une acceptation qui prouve quelque chose pour la première fois n'a pas le même poids qu'une routine.</span></div>
+        <div><span class="mk"></span><span><b>Pur historique</b> : rien ne se renvoie depuis cet écran. Pour rejouer, on repart de l'écran 1 ou d'un favori.</span></div>
       </div>
     </section>
 
@@ -930,8 +1213,13 @@
       <li>La correction ciblée par champ n'affiche que des alternatives d'exemple : la vraie
         liste dépend du modèle de grammaire structurée (<code style="font-family:var(--mono)">grammar/</code>),
         pas encore branché à l'app.</li>
-      <li>Réorganisation des tuiles/onglets, renommage, suppression — gestes d'édition hors
-        jeu, pas encore maquettés en détail.</li>
+      <li>Réordonnancement des tuiles et des onglets par glisser — l'édition (modifier,
+        dupliquer, supprimer, déplacer) est maquettée, le drag ne l'est pas encore.</li>
+      <li>La bibliothèque de macros n'affiche que cinq entrées choisies à la main dans le
+        corpus : le tri par fréquence réelle ou par motif « directement réutilisable »
+        dépendra de l'avancement de l'axe A (voir <code style="font-family:var(--mono)">APP.md</code>).</li>
+      <li>L'historique est illustré avec quatre entrées de démonstration ; le
+        comportement de pagination/purge dans le temps n'est pas encore décidé.</li>
     </ul>
   </footer>
 

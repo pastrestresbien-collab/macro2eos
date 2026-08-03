@@ -29,6 +29,9 @@ Dernière mise à jour : 2026-08-03.
 | 2026-08-03 | Macro mal comprise (pas refusée, juste fausse) : **correction ciblée par champ** en tapant l'élément en cause, en complément — jamais en remplacement — de la reformulation complète. | Écran 1 |
 | 2026-08-03 | Commande partie sans accusé pendant une coupure : **représentée à l'utilisateur avec un rejeu manuel explicite**, jamais automatique. | Écran 1 / Réseau |
 | 2026-08-03 | Import d'un favori d'un autre spectacle : **signalement tuile par tuile** au moment de l'import, jamais un blocage global. | Écran 3 |
+| 2026-08-03 | Favoris : **modifiables (libellé), duplicables, supprimables, déplaçables vers un autre onglet**, via un mode édition explicite hors jeu. | Écran 2 |
+| 2026-08-03 | **Bibliothèque de macros** issue du corpus, accessible depuis l'écran 1 : remplit le champ de saisie, ne court-circuite jamais l'aperçu. | Écran 1 |
+| 2026-08-03 | **Historique des envois** journalisé en paramètres, avec une qualité par entrée (acceptée / a levé un doute / refusée / en suspens). | Écran 3 |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -85,6 +88,18 @@ se permettre d'être bavard et prudent.
   tout, ou si l'erreur est plus profonde qu'un champ, on reformule. Idée reprise du
   corpus (`notes_produit_futures.md`) ; **dépend de l'axe A de la grammaire** pour la
   liste des alternatives plausibles par champ — voir `Ouvert`.
+- **Bibliothèque de macros**, accessible depuis l'écran 1 (pas un quatrième écran).
+  Une sélection de motifs tirés du corpus communautaire et des manuels officiels — ceux
+  qui reviennent le plus souvent et qui rendent service au-delà d'un spectacle
+  particulier (nettoyage de show, bump de sub, effet symétrique, highlight/lowlight...).
+  Point important : appuyer sur une entrée **remplit le champ de saisie en langage
+  naturel**, pas la macro générée directement. La bibliothèque propose une formulation
+  et sa source (corpus communautaire ou manuel, avec le niveau de confiance déjà en
+  usage dans le dépôt), mais **repasse par le même chemin que toute demande** —
+  compréhension, génération, aperçu, avertissements. Elle ne court-circuite jamais
+  l'aperçu avant envoi : une raccourci de formulation, pas d'envoi. Les numéros qu'elle
+  cite (groupe 1, sub 3, preset 9997...) sont des exemples à adapter, comme pour un
+  favori importé d'un autre spectacle.
 
 ### 2. Favoris — le seul écran de jeu
 
@@ -99,7 +114,20 @@ lisible dans le noir, aucun texte superflu.
 - **Aucun ⚠ ne peut apparaître ici** : une macro n'entre dans les favoris qu'après
   avoir été acceptée par la console depuis l'écran 1. Les favoris sont propres par
   construction.
-- Réorganisation des tuiles et des onglets hors jeu uniquement.
+- Réorganisation des tuiles et des onglets hors jeu uniquement, via un **mode édition
+  explicite** — jamais accessible par un appui simple sur une tuile, pour ne rien risquer
+  pendant le jeu.
+- En mode édition, chaque tuile favorite est **modifiable, duplicable, supprimable, et
+  déplaçable vers un autre onglet** :
+  - *Modifier* ne touche que le libellé affiché — la macro elle-même, déjà acceptée par
+    la console, ne se réédite pas ici (retour à l'écran 1 pour changer le fond).
+  - *Dupliquer* sert à décliner une variante (ex. « Contre chaud » → « Contre froid »)
+    sans repartir de zéro à l'écran 1.
+  - *Déplacer vers un onglet* recatégorise une tuile sans la recréer.
+  - *Supprimer* retire la tuile ; la macro n'existe alors plus que dans l'historique
+    des envois (voir écran 3), pas comme favori.
+  - Signal visuel cohérent avec l'écran 1 : en mode édition, les tuiles portent une
+    bordure en tirets — le même langage visuel que les champs corrigibles par tap.
 
 ### 3. Paramètres
 
@@ -107,6 +135,19 @@ lisible dans le noir, aucun texte superflu.
 - **User# dédié** de l'app (voir contraintes ci-dessous).
 - **Comportement des favoris** : envoi immédiat, ou après confirmation.
 - Gestion des favoris et des onglets : renommer, supprimer, réordonner.
+- **Historique des envois** : chaque macro générée depuis l'écran 1 est journalisée avec
+  l'horodatage, la ligne envoyée, et une **qualité** qui reprend le vocabulaire déjà en
+  usage ailleurs dans l'app plutôt que d'en inventer un nouveau :
+  - *Acceptée · déjà connue* — syntaxe qui ne portait pas de ⚠ au moment de l'envoi.
+  - *Acceptée · a levé un doute* — partait avec un ⚠ (syntaxe non validée au banc), et
+    l'acceptation par la console vient d'en apporter la preuve pour ce cas précis.
+  - *Refusée* — avec la correction proposée si la console en a fourni une exploitable,
+    et si la commande a fini par passer après correction.
+  - *En suspens* — envoyée sans accusé de réception (coupure réseau), avec l'issue une
+    fois que l'utilisateur a tranché (rejouée / laissée telle quelle).
+  - Consultation seule : l'historique ne renvoie rien, il documente ce qui a déjà été
+    fait. Une entrée acceptée peut être sauvegardée en favori a posteriori si elle ne
+    l'a pas été sur le moment.
 - **Sauvegarde / partage** : export et import (voir ci-dessous).
 - Plus tard : activation de la saisie vocale.
 
@@ -194,8 +235,15 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
 
 - **Maquette** : `app/maquette.html` couvre maintenant les trois écrans et leurs
   principales variantes (refus, reconnexion/commande en attente, confirmation plein
-  écran, correction ciblée par champ, import inter-spectacle). Reste en apparence
-  d'intention, pas des pixels définitifs — à affiner encore à l'usage.
+  écran, correction ciblée par champ, import inter-spectacle, mode édition des favoris,
+  bibliothèque de macros, historique des envois). Reste en apparence d'intention, pas
+  des pixels définitifs — à affiner encore à l'usage.
+- **Bibliothèque de macros — sélection à revoir avec l'axe A.** Les cinq entrées de la
+  maquette sont choisies à la main dans le corpus (motifs qui reviennent, pas un vote de
+  popularité qui n'existe pas dans les sources). Une fois l'axe A avancé, la sélection
+  et le tri pourraient s'appuyer sur des critères plus systématiques (fréquence
+  d'occurrence dans le corpus, niveau de confiance, statut « motif directement
+  réutilisable » déjà relevé par endroits) plutôt que sur un choix éditorial ponctuel.
 - **Correction ciblée par champ — dépendance axe A** : le motif d'interaction (taper un
   élément reconnu, choisir parmi des alternatives proches) est fixé côté app. Mais la
   liste des alternatives plausibles par champ doit venir de la grammaire structurée
