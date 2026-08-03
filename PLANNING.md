@@ -26,10 +26,25 @@ Dernière mise à jour : 2026-08-03.
 **Aucun document en attente.** Toute la documentation officielle ETC identifiée comme
 utile est dans le dépôt.
 
-**Phase 2 — exploitation : pas commencée.** C'est là que se situe la bascule à décider.
-Le dépôt est aujourd'hui à 100 % de la prose Markdown : excellent pour un humain ou un
-LLM qui lit, inutilisable tel quel par du code. Rien dans le dépôt n'est encore
-consommable par un programme, sauf `eosKeys.ts`.
+**Phase 2 — exploitation : axe A terminé, axes B et C ouverts.**
+
+Le constat qui ouvrait cette section jusqu'au 3 août — « le dépôt est à 100 % de prose
+Markdown, rien n'y est consommable par un programme sauf `eosKeys.ts` » — n'est plus vrai.
+[`grammar/`](grammar/README.md) porte désormais un modèle typé de **74 actions et 158
+règles de légalité**, compilé en JSON, avec un générateur qui produit trois sorties
+distinctes (ligne de commande, contenu de macro, paquets OSC) et **100 cas de
+non-régression**, dont la majorité sont des exemples chiffrés du manuel officiel recopiés
+verbatim.
+
+| Axe | État |
+|---|---|
+| **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.15) |
+| **B — écrire le traducteur NL** | ⬜ non commencé — c'est la suite naturelle |
+| **C — valider au banc réel** | ⬜ non commencé — 32 points l'attendent, dont 25 encodés |
+
+Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
+virtuel, le contrôle partitionné, le multi-console — et l'export ASCII, non par oubli mais
+faute de spécification (#32).
 
 ---
 
@@ -37,7 +52,7 @@ consommable par un programme, sauf `eosKeys.ts`.
 
 Trois axes, indépendants entre eux. À prioriser par l'utilisateur.
 
-### A. Structurer la grammaire en données exploitables — **démarré**
+### A. Structurer la grammaire en données exploitables — **terminé (v0.15)**
 
 Transformer `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` en un jeu de données
 interrogeable (JSON/YAML) : vocabulaire des touches, règles de syntaxe, patrons de
@@ -293,12 +308,14 @@ volontairement.
 
 ---
 
-## Bilan de la campagne d'extension (v0.1 → v0.15)
+## Bilan de la campagne d'extension (v0.1 → v0.15) — clôturée le 3 août 2026
 
-Quatorze tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
+Quinze tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
 **8 objets, 74 actions, 10 modificateurs, 158 règles de légalité**, avec **100 cas de
 non-régression** dont la majorité sont des exemples chiffrés du manuel officiel recopiés
-verbatim. Le backlog est passé de 12 à **32 points**, dont 24 ouverts par ce travail.
+verbatim. Le backlog est passé de 12 à **32 points**, dont 20 ouverts par ce travail.
+**25 d'entre eux sont encodés dans le modèle** et déclenchent un avertissement du
+générateur — ils ne dorment pas dans un fichier, ils parlent à l'usage.
 
 ### Ce que la couverture atteint
 
