@@ -19,6 +19,7 @@
 #   v0.13 + Magic Sheets (§25) et show control (§31)
 #   v0.14 + Export ASCII (§3) — et le constat de sa lacune
 #   v0.15   Relecture d'ensemble : doublons, dérives de confiance, homonymies
+#   v0.16 + Contrôle partitionné (§28) — plusieurs programmeurs, un seul show
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -26,10 +27,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.15"
+  version: "0.16"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control + export ascii
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control + export ascii + contrôle partitionné
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -1335,6 +1336,16 @@ objets:
     note: >
       917 et 918 sont préprogrammés (arc-en-ciel RGB / CMY). Un effet
       step-based porte sa propre liste de channels ; un effet absolu non.
+  Partition:
+    mot_cle: "Partition"
+    numerote: true
+    plage: false
+    confiance: A
+    source: "manuel §28 Partitioned Control"
+    note: >
+      Quatre partitions préprogrammées, non supprimables (0, 901, 902, 903).
+      Assignation de channels par remplacement ou par `+`/`-` — aucun exemple
+      du manuel n'emploie `Thru` pour désigner une PLAGE de partitions.
 
 # --------------------------------------------------------------------------
 # CIBLES RÉFÉRENCÉES — record targets citables en critère de Query
@@ -1789,6 +1800,14 @@ homonymies_assumees:
       couleur, beam sur une cue — et montée, dwell, descente sur un submaster.
       Deux grammaires derrière un mot (manuel §12 et §20).
     confiance: A
+  Partition:
+    actions: [selectionner_partition, partition_cue_list]
+    justification: >
+      Bare (`{Partition} <n> Enter`), le mot sélectionne — et au besoin crée —
+      la partition de l'utilisateur courant. Après une sélection de cue list
+      (`Cue <n>/`), le même mot assigne ou retire une partition à CETTE liste
+      (manuel §28). Même token, deux grammaires selon ce qui précède.
+    confiance: A
 
 # --------------------------------------------------------------------------
 # ACTIONS — ce qu'on applique
@@ -2158,6 +2177,61 @@ actions:
     avertissement: >
       Ne fonctionne PAS sur un submaster : `Sub <n> Assert` échoue en erreur de
       syntaxe (constat de banc, confiance S).
+
+  # -- contrôle partitionné --------------------------------------------------
+  selectionner_partition:
+    mot_cle: "Partition"
+    attend: cible_numerotee
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Partition List », « Creating New Partitions »"
+    osc: partition
+    note: >
+      Si le numéro n'existe pas encore, cette commande CRÉE la partition en
+      plus de la sélectionner et de l'assigner à l'utilisateur courant — un
+      seul geste, là où la plupart des record targets distinguent création et
+      sélection.
+  partition_ajouter:
+    mot_cle: "+"
+    attend: plage_ou_numero
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Creating New Partitions »"
+    note: "ajoute des channels à la partition actuellement sélectionnée, sans en retirer"
+  partition_retirer:
+    mot_cle: "-"
+    attend: plage_ou_numero
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Creating New Partitions »"
+  supprimer_partition:
+    mot_cle: "Delete Partition"
+    attend: cible_numerotee
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Deleting Partitions »"
+    confirmation: true
+    avertissement: "refuse sur les quatre partitions préprogrammées (0, 901, 902, 903)"
+  partition_cue_list:
+    mot_cle: "Partition"
+    attend: cible_optionnelle
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Partitions on Cue Lists »"
+    note: >
+      Employé après une sélection de cue list (`Cue <n>/`). Une cible assigne
+      la partition à la liste ; son absence la retire — même idiome que
+      `At Enter` (v0.12), généralisé : un attribut nu suivi d'`Enter` sans
+      valeur efface l'attribut, `At` n'en est qu'un cas particulier.
 
   # -- cues multipart -------------------------------------------------------
   affecter_part:
@@ -2846,6 +2920,138 @@ osc:
       backlog: 18
 
 # --------------------------------------------------------------------------
+# CONTRÔLE PARTITIONNÉ — plusieurs programmeurs, un seul show
+#
+# Pertinent pour ce projet au premier chef : macro2eos s'ajoute comme un
+# programmeur de plus à côté d'un opérateur humain. Ce chapitre régit
+# précisément comment plusieurs sources de contrôle coexistent sans se marcher
+# dessus — et confirme, du côté console, une règle déjà déduite du côté Park.
+# --------------------------------------------------------------------------
+partitionnement:
+  confiance: A
+  source: "manuel §28 Partitioned Control"
+  mot_cle: "Partition"
+  osc: partition
+  osc_activation: partitionedcontrol
+
+  principe: >
+    Restreint l'accès en contrôle et en enregistrement d'un utilisateur à un
+    sous-ensemble de channels, pour que plusieurs programmeurs travaillent en
+    même temps sans risquer d'écraser les données de l'autre.
+  chevauchement: "un channel peut appartenir à plusieurs partitions à la fois"
+
+  activation:
+    regle: >
+      Réglage SYSTÈME, dans Setup > System > Partitions. Désactivé par défaut.
+      Ce n'est pas un réglage par utilisateur : activer ou désactiver affecte
+      tout le monde.
+    confiance: A
+    generable: false
+    note: "pas de commande de ligne documentée pour ce réglage — c'est un écran de Setup"
+
+  partitions_preprogrammees:
+    0:   { nom: "aucune",                  effet: "aucun channel, aucun contrôle de fader — défaut de tout utilisateur à l'activation" }
+    901: { nom: "tous les channels",        effet: "accès à tout" }
+    902: { nom: "channels à paramètre unique",   effet: "conventionnels" }
+    903: { nom: "channels à paramètres multiples", effet: "automated fixtures" }
+    confiance: A
+    protection: "ne peuvent pas être supprimées"
+
+  selection_et_creation:
+    forme: "`{Partition} <n> Enter`"
+    confiance: A
+    note: >
+      Si `n` n'existe pas encore, la commande CRÉE la partition en plus de la
+      sélectionner et de l'assigner à l'utilisateur courant — un seul geste
+      fait les deux, contrairement à la plupart des record targets où création
+      et sélection sont perçues comme deux étapes.
+
+  assignation_de_channels:
+    forme_directe: "`<liste de channels> Enter` — remplace intégralement le contenu de la partition"
+    forme_additive: "`+ <liste> Enter`"
+    forme_soustractive: "`- <liste> Enter`"
+    confiance: A
+    confirmation_ecrasement: true
+    contraste_avec_v0_7: >
+      Le §28 inverse, en apparence, la règle « sélection = fusion » établie en
+      v0.7 pour les record targets (Record Cue/Sub/Palette : sans sélection on
+      écrase, avec sélection on fusionne). Ici c'est l'INVERSE : une liste de
+      channels nue REMPLACE le contenu de la partition ; il faut `+` pour
+      ajouter. Ce n'est pas une contradiction du modèle — ce sont deux verbes
+      différents (« enregistrer des données » contre « définir une
+      appartenance ») qui ne partagent que la surface syntaxique. Mais un
+      traducteur NL qui généraliserait naïvement la règle de v0.7 à toute
+      commande portant une sélection se tromperait précisément ici.
+
+  suppression:
+    forme: "`Delete {Partition} <n> Enter Enter`"
+    confiance: A
+    restriction: "refuse sur les quatre partitions préprogrammées"
+
+  porte_sur_l_utilisateur:
+    regle: "une partition est assignée par UTILISATEUR (User ID), pas par appareil"
+    confiance: A
+
+  exceptions_au_controle:
+    regle: >
+      Deux opérations échappent totalement au contrôle par partition, quel que
+      soit le réglage : parquer/déparquer un paramètre, et la lecture des cues.
+    confiance: A
+    confirmation_croisee: >
+      Confirme, depuis le chapitre Partitions, ce que le chapitre Park
+      affirmait déjà de son côté (§19, encodé en v0.11) : « Park instructions
+      are not subject to partition control ». Une même règle établie par deux
+      chapitres indépendants — le niveau de confiance s'en trouve renforcé, pas
+      simplement additionné.
+
+  hors_partition:
+    regle: >
+      Contrôler un channel hors partition affiche un avertissement et exige une
+      confirmation — mais aucune donnée ne peut être stockée pour ce channel,
+      quelle que soit la confirmation donnée.
+    confiance: A
+
+  enregistrement_multi_utilisateur:
+    regle: >
+      Un Record ne stocke que les channels de la partition de son auteur. Les
+      Record d'autres utilisateurs sur la MÊME cible AJOUTENT, ils ne
+      remplacent pas — sauf channels partagés entre partitions, où la dernière
+      valeur fournie l'emporte.
+    confiance: A
+    note: >
+      Ceci est bien la règle de v0.7 (sélection = fusion), mais observée à
+      l'échelle de plusieurs utilisateurs plutôt qu'au sein d'une seule
+      session — les deux règles de cette section ne se contredisent donc pas
+      tant qu'on ne les confond pas.
+
+  playback:
+    partage: >
+      La configuration des faders et ce qui y est chargé sont PARTAGÉS entre
+      tous les appareils de contrôle — sauf la paire de faders maître, propre à
+      chaque utilisateur.
+    partition_sur_cue_list:
+      assigner: "`Cue <n>/ {Partition} <m> Enter`"
+      retirer: "`Cue <n>/ {Partition} Enter`"
+      confiance: A
+      effet: >
+        Les channels hors de la partition assignée à la cue list ne sont ni
+        stockés ni rejoués pour cette liste.
+      idiome_retrait: >
+        `{Partition} Enter` sans valeur retire l'assignation — même famille
+        que l'idiome `At Enter` documenté en v0.12, mais sans `At` : la forme
+        générale est « attribut nu suivi d'Enter, sans valeur, efface
+        l'attribut », pas seulement la forme avec `At` spécifiquement.
+
+  flexichannel_partitionne:
+    regle: >
+      Quand le contrôle partitionné est actif, un mode Flexichannel
+      « Partitioned » devient disponible, limitant l'affichage flexi aux seuls
+      channels de la partition courante.
+    confiance: A
+    backlog: 33
+    note: "mécanisme de Flexichannel non encore couvert par le modèle — hors périmètre pour l'instant"
+
+# --------------------------------------------------------------------------
 # NUANCIERS de gel — préfixe numérique du champ `gel`
 # --------------------------------------------------------------------------
 nuanciers:
@@ -3310,6 +3516,35 @@ legalite:
     valide: oui
     confiance: A
 
+  # --- Contrôle partitionné ---
+  - objet: Partition
+    action: selectionner_partition
+    valide: oui
+    confiance: A
+    note: "sélectionne, et crée si le numéro n'existe pas encore"
+
+  - objet: Partition
+    action: partition_ajouter
+    valide: oui
+    confiance: A
+
+  - objet: Partition
+    action: partition_retirer
+    valide: oui
+    confiance: A
+
+  - objet: Partition
+    action: supprimer_partition
+    valide: oui
+    confiance: A
+    note: "refusée par la console sur les partitions préprogrammées 0/901/902/903"
+
+  - objet: Cue
+    action: partition_cue_list
+    valide: oui
+    confiance: A
+    note: "`Cue 5/ Partition 902 Enter` assigne ; `Cue 5/ Partition Enter` retire"
+
   # --- Cues multipart ---
   - objet: Chan
     action: affecter_part
@@ -3632,6 +3867,16 @@ legalite:
       Les numéros d'évènement se renumérotent pour rester chronologiques. Un
       `Event 3` généré peut désigner autre chose après une insertion — ce n'est
       pas un identifiant stable, contrairement aux cues ou aux macros.
+
+  - combinaison: "Flexichannel « Partitioned » — mode non couvert"
+    valide: inconnu
+    confiance: null
+    backlog: 33
+    note: >
+      Devient disponible quand le contrôle partitionné est actif ; limite
+      l'affichage flexi aux channels de la partition courante (manuel §28).
+      Le mécanisme Flexichannel lui-même n'est pas encore dans le modèle —
+      hors périmètre pour l'instant, pas une zone d'ombre de la console.
 
   - combinaison: "niveau à un seul chiffre"
     valide: inconnu

@@ -43,8 +43,8 @@ verbatim.
 | **C — valider au banc réel** | ⬜ non commencé — 32 points l'attendent, dont 25 encodés |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
-virtuel, le contrôle partitionné, le multi-console — et l'export ASCII, non par oubli mais
-faute de spécification (#32).
+virtuel, le multi-console — et l'export ASCII, non par oubli mais faute de spécification
+(#32). Le contrôle partitionné (§28) est couvert depuis v0.16.
 
 ---
 
@@ -306,25 +306,52 @@ toute règle plus confiante que son action (hors refus), toute action absente de
 et toute action sans `source`. Les quatre contrôles ont été vérifiés en les faisant échouer
 volontairement.
 
+**Fait — v0.16 (2026-08-03)** : Contrôle partitionné §28. 79 actions, 164 règles de
+légalité, 107 cas de non-régression.
+
+Choisi pour sa pertinence directe : macro2eos s'ajoute comme un programmeur de plus à côté
+d'un opérateur humain, et c'est précisément ce que ce chapitre régit. Deux apports notables.
+
+**Une confirmation croisée entre deux chapitres indépendants.** Le §19 (Park, encodé en
+v0.11) affirmait que le parquage échappe au contrôle par partition. Le §28 le confirme de
+son côté, indépendamment : « Park instructions are not subject to partition control ». Deux
+chapitres, une même règle établie séparément — le niveau de confiance s'en trouve renforcé,
+pas simplement additionné.
+
+**Une inversion apparente de la règle « sélection = fusion » établie en v0.7.** Pour les
+record targets (Record Cue/Sub/Palette), une sélection MERGE dans une cible existante ; sans
+sélection, on écrase. Pour l'assignation de channels à une partition, c'est l'inverse : une
+liste de channels nue (`1 Thru 96 Enter`) REMPLACE le contenu de la partition, et il faut un
+`+` explicite pour ajouter. Ce n'est pas une contradiction du modèle — ce sont deux verbes
+distincts (« enregistrer des données » contre « définir une appartenance ») qui ne partagent
+que la surface syntaxique — mais un traducteur NL qui généraliserait naïvement la règle de
+v0.7 à toute commande portant une sélection se tromperait précisément ici. Documenté comme
+mise en garde explicite dans le modèle plutôt que laissé à la déduction.
+
+Au passage, l'idiome `<attribut nu> Enter` = effacer l'attribut (documenté en v0.12 pour
+`At Enter`) se généralise une fois de plus : `Cue n/ Partition Enter` retire l'assignation
+de partition d'une cue list, sans `At` cette fois. Ce n'est donc pas spécifique à `At` : la
+forme générale est « un attribut suivi d'`Enter` sans valeur efface l'attribut ».
+
 ---
 
-## Bilan de la campagne d'extension (v0.1 → v0.15) — clôturée le 3 août 2026
+## Bilan de la campagne d'extension (v0.1 → v0.16) — v0.15 clôturée le 3 août, prolongée le même jour à la demande de l'utilisateur
 
-Quinze tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
-**8 objets, 74 actions, 10 modificateurs, 158 règles de légalité**, avec **100 cas de
+Seize tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
+**9 objets, 79 actions, 10 modificateurs, 164 règles de légalité**, avec **107 cas de
 non-régression** dont la majorité sont des exemples chiffrés du manuel officiel recopiés
-verbatim. Le backlog est passé de 12 à **32 points**, dont 20 ouverts par ce travail.
-**25 d'entre eux sont encodés dans le modèle** et déclenchent un avertissement du
+verbatim. Le backlog est passé de 12 à **33 points**, dont 21 ouverts par ce travail.
+**26 d'entre eux sont encodés dans le modèle** et déclenchent un avertissement du
 générateur — ils ne dorment pas dans un fichier, ils parlent à l'usage.
 
 ### Ce que la couverture atteint
 
 Sélection, Fan, cues (simples, multipart, listes multiples), macros, submasters, Query,
 effets, palettes, presets, groupes, patch, mark, park, filtres, courbes, snapshots, magic
-sheets, show control, contexte d'écran, terminaison, et la couche d'injection OSC.
-L'export ASCII a été instruit et s'est révélé non modélisable faute de spécification
-(#32). **Reste hors périmètre** : Augment3d, le pixel mapping, le serveur média virtuel,
-le contrôle partitionné et le multi-console.
+sheets, show control, contrôle partitionné, contexte d'écran, terminaison, et la couche
+d'injection OSC. L'export ASCII a été instruit et s'est révélé non modélisable faute de
+spécification (#32). **Reste hors périmètre** : Augment3d, le pixel mapping, le serveur
+média virtuel et le multi-console.
 
 ### Le résultat le plus important n'est pas la couverture
 
@@ -584,6 +611,11 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     tri). Contrairement aux cues, palettes et macros, ce n'est donc pas un identifiant
     qu'un traducteur peut mémoriser d'une session à l'autre. À vérifier : existe-t-il un
     identifiant stable pour désigner un évènement, ou seul le couple heure/action fait foi ?
+33. **Flexichannel « Partitioned » — mode non couvert.** Devient disponible quand le
+    contrôle partitionné est actif (manuel §28) ; limite l'affichage flexi aux channels de
+    la partition courante. Le mécanisme Flexichannel lui-même (`§6`, « Using Flexichannel »)
+    n'est pas encore dans le modèle — hors périmètre pour l'instant, pas une zone d'ombre
+    de la console.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

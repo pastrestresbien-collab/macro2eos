@@ -591,6 +591,71 @@ CAS = [
         "avertissements": 0,
     },
 
+    # ------------------------------------ Contrôle partitionné (§28)
+    {
+        "nom": "manuel §28 — sélectionner une partition préprogrammée",
+        # {Partition} [9][0][2] [Enter]
+        "ir": [
+            {"action": {"type": "selectionner_partition", "cible": 902}},
+        ],
+        "attendu": "Partition 902 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §28 — remplacement : la sélection nue est le contenu de la partition",
+        # [1] [Thru] [9][6] [Enter] — REMPLACE, ne fusionne pas (inverse de v0.7)
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 96}},
+        ],
+        "attendu": "Chan 1 Thru 96 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §28 — ajouter des channels sans remplacer",
+        "ir": [
+            {"action": {"type": "partition_ajouter", "de": 97, "a": 108}},
+        ],
+        "attendu": "+ 97 Thru 108 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §28 — retirer des channels d'une partition",
+        "ir": [
+            {"action": {"type": "partition_retirer", "cible": 12}},
+        ],
+        "attendu": "- 12 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §28 — suppression d'une partition",
+        # [Delete] {Partition} [5] [Enter] [Enter]
+        "ir": [
+            {"action": {"type": "supprimer_partition", "cible": 5}},
+        ],
+        "attendu": "Delete Partition 5 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §28 — assigner une partition à une cue list",
+        # [Cue] [n] [/] {Partition} [n] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "liste": 5},
+             "action": {"type": "partition_cue_list", "cible": 902}},
+        ],
+        "attendu": "Cue 5/ Partition 902 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §28 — retirer une partition d'une cue list, idiome `nu + Enter`",
+        # [Cue] [n] [/] {Partition} [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "liste": 5},
+             "action": {"type": "partition_cue_list"}},
+        ],
+        "attendu": "Cue 5/ Partition Enter",
+        "avertissements": 0,
+    },
+
     # ------------------------------------------- Cues multipart (§17)
     {
         "nom": "manuel §17 — affecter des channels à une part, en Blind",

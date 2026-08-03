@@ -29,15 +29,15 @@ et le backlog de travail.
 
 | Document | Emplacement | Statut |
 |---|---|---|
-| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande, injection OSC | [`grammar/`](grammar/README.md) | ✅ v0.15 — 74 actions, 158 règles, 100 tests |
+| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande, injection OSC | [`grammar/`](grammar/README.md) | ✅ v0.16 — 79 actions, 164 règles, 107 tests |
 
 Le modèle couvre : sélection, Fan, cues (simples, multipart, listes multiples), macros,
 submasters, Query, effets, palettes, presets, groupes, patch, mark, park, filtres, courbes,
-snapshots, magic sheets, show control, contexte d'écran, terminaison, et l'injection OSC.
-Hors périmètre : Augment3d, pixel mapping, serveur média virtuel, contrôle partitionné,
+snapshots, magic sheets, show control, contrôle partitionné, contexte d'écran, terminaison,
+et l'injection OSC. Hors périmètre : Augment3d, pixel mapping, serveur média virtuel,
 multi-console, et l'export ASCII faute de spécification (voir `PLANNING.md` #32).
 
-**25 zones non tranchées** y sont déclarées `inconnu` et reliées au backlog : le modèle
+**26 zones non tranchées** y sont déclarées `inconnu` et reliées au backlog : le modèle
 avertit au lieu d'injecter en aveugle. Voir [`VERIFICATION.md`](VERIFICATION.md) pour la
 méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 

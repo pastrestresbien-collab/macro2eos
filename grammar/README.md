@@ -93,7 +93,7 @@ transformé le constat en contrôles permanents :
 - Tout patron sans confiance établie **doit** lister ses avertissements.
 - Un refus terrain qui tranche un point encore `inconnu` déclenche un avertissement.
 
-## Portée actuelle (v0.3)
+## Portée actuelle (v0.16)
 
 | Tranche | Contenu |
 |---|---|
@@ -111,6 +111,23 @@ transformé le constat en contrôles permanents :
 | v0.12 | **Courbes, Snapshots** — et la saisie des niveaux |
 | v0.13 | **Magic Sheets et show control** |
 | v0.14 | **Export ASCII** — et le constat de sa lacune |
+| v0.15 | **Relecture d'ensemble** — doublons, dérives, homonymies (voir plus bas) |
+| v0.16 | **Contrôle partitionné** (§28) |
+
+### v0.16 — un programmeur de plus à côté de l'opérateur humain
+
+Pertinent pour ce projet au premier chef : macro2eos s'ajoute comme un programmeur de plus
+pendant qu'un humain travaille sur la même console. Deux apports.
+
+**Confirmation croisée** : le §19 (Park) affirmait déjà que le parquage échappe au contrôle
+par partition ; le §28 le confirme indépendamment. Deux chapitres, une même règle établie
+séparément — le niveau de confiance s'en trouve renforcé.
+
+**Une exception à la règle « sélection = fusion » de v0.7.** Pour les record targets, une
+sélection fusionne dans une cible existante. Pour l'assignation de channels à une partition,
+c'est l'inverse : une liste nue REMPLACE, il faut `+` pour ajouter. Documenté explicitement
+dans le modèle (`contraste_avec_v0_7`) pour qu'un traducteur ne généralise pas la règle de
+v0.7 à toute commande portant une sélection.
 
 ### v0.14 — la voie ASCII ne peut pas être modélisée
 

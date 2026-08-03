@@ -524,6 +524,15 @@ class Generateur:
                 self._verifier_combinaison("AutoMark ou marques référencées", avert)
             return f"{mot} {act['cible' if t == 'marquer_vers_cue' else 'valeur']}"
 
+        if t in ("selectionner_partition", "supprimer_partition"):
+            return f"{mot} {act['cible']}"
+
+        if t in ("partition_ajouter", "partition_retirer"):
+            return f"{mot} {self._plage_ou_valeur(act, 'cible')}"
+
+        if t == "partition_cue_list":
+            return mot if "cible" not in act else f"{mot} {act['cible']}"
+
         if t in ("record_groupe", "record_only_groupe", "update_groupe",
                  "inserer_avant", "inserer_apres"):
             out = f"{mot} {act['cible']}"
