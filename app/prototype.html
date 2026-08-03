@@ -524,12 +524,12 @@
     var el = document.getElementById("bottom-nav");
     var items = [
       { id: "saisie", ic: "✎", label: "Saisie" },
-      { id: "historique", ic: "↺", label: "Historique" },
       { id: "favoris", ic: "▦", label: "Favoris" },
       { id: "reglages", ic: "⚙", label: "Réglages" }
     ];
     el.innerHTML = items.map(function (it) {
-      return '<button data-action="nav" data-screen="' + it.id + '" class="' + (state.screen === it.id ? "on" : "") + '">' +
+      var on = state.screen === it.id || (it.id === "saisie" && state.screen === "historique");
+      return '<button data-action="nav" data-screen="' + it.id + '" class="' + (on ? "on" : "") + '">' +
         '<span class="ic">' + it.ic + '</span>' + it.label + '</button>';
     }).join("");
   }
@@ -566,6 +566,7 @@
     out += '<div class="label">Votre demande</div>';
     out += '<textarea id="nl-input" rows="2" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195">' + esc(state.lastInputText || "") + "</textarea>";
     out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="lib:open">Bibliothèque</button>' +
+           '<button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="historique">Historique</button>' +
            '<button class="btn btn-primary" data-action="translate">Traduire</button></div>';
 
     out += '<div class="demo-toggle"><span><b>Démo</b> · simuler une coupure au prochain envoi</span>' +
@@ -777,7 +778,8 @@
   // ---------- écran historique ----------
   function screenHistorique() {
     var tagLabel = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
-    var out = '<div class="label">Historique des envois</div>';
+    var out = '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="saisie">‹ Saisie</button></div>';
+    out += '<div class="label">Historique des envois</div>';
     state.history.forEach(function (h) {
       out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + tagLabel[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
         '<div class="cmd">' + esc(h.cmd) + '</div><div class="note">' + esc(h.note) + "</div></div>";
