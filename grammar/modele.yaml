@@ -10,6 +10,7 @@
 #   v0.4  + contexte d'écran (modalité) + auto-terminaison
 #   v0.5  + Patch (§4) — où `At` s'inverse une seconde fois
 #   v0.6  + Groupes (§7) — un ordre, pas seulement un ensemble
+#   v0.7  + Palettes (§10) et Presets (§11) — la référence, et ce qui la casse
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -17,10 +18,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.6"
+  version: "0.7"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -157,6 +158,117 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# PALETTES ET PRESETS — la référence, et ce qui la casse
+#
+# Une palette ou un preset appliqué à un channel y laisse une RÉFÉRENCE, pas
+# une valeur. Presque tous les pièges de cette famille viennent de là : ce qui
+# préserve le lien, et ce qui le rompt sans le dire.
+# --------------------------------------------------------------------------
+palettes:
+  confiance: A
+  source: "manuel §10 Palettes, §11 Presets"
+
+  familles:
+    Int Palette:   { mot_cle: "Int Palette",   categorie: Intensity, confiance: A }
+    Focus Palette: { mot_cle: "Focus Palette", categorie: Focus,     confiance: A }
+    Color Palette: { mot_cle: "Color Palette", categorie: Color,     confiance: A }
+    Beam Palette:  { mot_cle: "Beam Palette",  categorie: Beam,      confiance: A }
+    Palette:
+      mot_cle: "Palette"
+      categorie: IFCB
+      confiance: A
+      note: >
+        Générique : rappelle la palette IFCB associée aux channels
+        sélectionnés, sans dire laquelle. `[selected channels] Palette n Enter`.
+
+  numerotation:
+    palettes: { plage: "0.001 à 9999.999", confiance: A }
+    presets:  { maximum: 1000, decimales: 3, plage: "jusqu'à 9999.999", confiance: A }
+
+  options:
+    "{By Type}":
+      effet: >
+        La palette contient des valeurs de channels « par défaut »,
+        applicables à tout fixture du même type. Peut aussi porter des valeurs
+        discrètes — marquées `T+` au lieu de `T`.
+      confiance: A
+    "{Absolute}":
+      effet: >
+        Au rappel, la donnée est traitée comme absolue : elle n'est JAMAIS
+        référencée. Marquée `A`.
+      confiance: A
+      note: >
+        À ne pas confondre avec `{Make Abs}`, qui casse la référence au moment
+        du rappel d'une palette ordinaire. Ici c'est la palette elle-même qui
+        est absolue par construction.
+    "{Locked}":
+      effet: "protège la palette d'une modification accidentelle. Marquée `L`."
+      confiance: A
+      piege: >
+        La protection est PARTIELLE et asymétrique : impossible de mettre à
+        jour une palette verrouillée directement en Live, mais elle s'édite
+        librement en Blind. Seule forme acceptée en Live :
+        `<liste de channels> Update <cible> Enter`.
+
+  reference:
+    rappel: >
+      Un rappel produit de la donnée MANUELLE affichée en rouge, sous forme
+      d'abréviation (IP3, FP8…) ou du libellé. `Data` maintenu montre les
+      valeurs numériques derrière la référence.
+    confiance: A
+    proportion:
+      forme: "`Int Palette <y> At <z>` rappelle à une proportion du niveau enregistré"
+      exemple: "`1 Recall From Preset 1 At 50` → un channel à 50 dans le preset ressort à 25"
+      lien: "conservé — la référence survit à la proportion"
+      confiance: A
+    rupture_du_lien:
+      regle: >
+        Enregistrer la donnée rappelée dans un AUTRE record target casse le
+        lien et fige la valeur en absolu.
+      confiance: A
+      note: >
+        C'est le piège référence/absolu déjà signalé au corpus (#042). Le
+        manuel le formule ici sans ambiguïté : pour conserver le lien après
+        une modification, il faut mettre à jour la palette elle-même.
+    make_abs:
+      forme: "`{Make Abs}` au rappel force la donnée en absolu"
+      confiance: A
+
+  record_contre_fusion:
+    remplacement: "`Record Palette 5 Enter Enter` écrase intégralement le contenu"
+    fusion: "`<liste de channels> Record Palette 5 Enter Enter` FUSIONNE au lieu d'écraser"
+    confiance: A
+    note: >
+      Même règle que pour les submasters (§20) et les cues (§12) : la présence
+      d'une sélection transforme un remplacement en fusion. Constante de la
+      grammaire Eos, pas une particularité des palettes.
+
+  selection_par_palette:
+    forme: "`Group Palette <x> Enter` sélectionne tous les channels ayant une donnée dans la palette"
+    confiance: A
+    note: "sélecteur pur — ne modifie aucune valeur"
+  rappel_integral:
+    forme: "`Recall From Palette <x> Enter` rappelle la palette entière, sans sélection préalable"
+    confiance: A
+
+  presets:
+    portee: >
+      Un preset collecte les QUATRE catégories (intensité, focus, couleur,
+      beam) là où une palette n'en couvre qu'une.
+    confiance: A
+    contenu: "données absolues et/ou mélange de palettes IFCB — donc des références imbriquées"
+    pas_de_recursion:
+      regle: "un preset ne peut PAS référencer un autre preset"
+      confiance: A
+      source: 'manuel §11 : "Presets can not refer to other presets"'
+      consequence_generateur: >
+        Contrainte structurelle dure : aucune factorisation de preset en
+        preset n'est possible. Une intention du type « le preset B, plus deux
+        changements » n'a pas de traduction référencée — il faut tout
+        réenregistrer, ou passer par les palettes qu'il contient.
+    effets: "un effet peut être stocké dans un preset (manuel §18)"
 
 # --------------------------------------------------------------------------
 # GROUPES — un ordre, pas seulement un ensemble
@@ -369,6 +481,16 @@ objets:
     confiance: A
     source: "manuel §24 Macros"
     note: "numérotation 1 à 99 999"
+  Preset:
+    mot_cle: "Preset"
+    numerote: true
+    decimal: true
+    plage: true
+    confiance: A
+    source: "manuel §11 Presets"
+    note: >
+      Collecte les quatre catégories IFCB, là où une palette n'en couvre
+      qu'une. Ne peut jamais référencer un autre preset.
   Effect:
     mot_cle: "Effect"
     numerote: true
@@ -1067,6 +1189,85 @@ actions:
     note: >
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
+
+  # -- palettes et presets --------------------------------------------------
+  record_palette:
+    mot_cle: "Record"
+    attend: famille_puis_cible     # `Record Color Palette 4`
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §10 « Storing Palettes Live »"
+    note: >
+      Forme générique, paramétrée par la famille. `record_palette_couleur` en
+      est le raccourci historique de la v0.1, conservé pour la non-régression —
+      `build.py` vérifie que les deux écrivent la même chose.
+    avertissement: >
+      Sans sélection, écrase le contenu. AVEC une sélection, fusionne. Deux
+      comportements opposés pour la même commande.
+  record_only_palette:
+    mot_cle: "Record Only"
+    attend: famille_puis_cible
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §10 « Storing Palettes with [Record Only] »"
+  update_palette:
+    mot_cle: "Update"
+    attend: famille_puis_cible
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 « {Locked} Palettes »"
+    note: >
+      Seule forme acceptée sur une palette verrouillée en Live, et seulement
+      avec une liste de channels explicite.
+  rappeler_palette:
+    mot_cle: ""                    # le mot-clé EST la famille
+    attend: famille_puis_cible
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 « Recalling Palettes »"
+    avertissement: >
+      Ne s'applique qu'aux channels SÉLECTIONNÉS — il faut sélectionner avant.
+      Un channel sans valeur stockée dans la palette reste dans son état.
+  rappeler_depuis:
+    mot_cle: "Recall From"
+    attend: famille_puis_cible
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 et §11"
+    note: >
+      Rappelle la cible ENTIÈRE et sélectionne les channels qu'elle contient —
+      pas besoin de sélection préalable, contrairement au rappel simple.
+  record_preset:
+    mot_cle: "Record Preset"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §11 « Storing Presets Using [Record] »"
+  record_only_preset:
+    mot_cle: "Record Only Preset"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §11"
+  rappeler_preset:
+    mot_cle: "Preset"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §11 « Recalling Presets »"
+    note: "`Preset Enter` sans numéro rappelle le dernier preset sélectionné"
 
   # -- groupes --------------------------------------------------------------
   record_groupe:
@@ -1987,6 +2188,105 @@ legalite:
     valide: oui
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
+
+  # --- Palettes et presets ---
+  - objet: selection_courante
+    action: record_palette
+    valide: oui
+    confiance: A
+    note: "sans sélection, écrase ; avec sélection, fusionne"
+
+  - objet: Chan
+    action: record_palette
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: record_palette
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_palette
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_palette
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_palette
+    valide: oui
+    confiance: A
+    note: "seule forme acceptée sur une palette verrouillée, en Live"
+
+  - objet: Chan
+    action: rappeler_palette
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: rappeler_palette
+    valide: oui
+    confiance: A
+    note: "`Group 11 Beam Palette 5 Enter` — exemple chiffré du manuel §10"
+
+  - objet: selection_courante
+    action: rappeler_palette
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: rappeler_depuis
+    valide: oui
+    confiance: A
+    note: "sélectionne lui-même les channels de la cible"
+
+  - objet: Chan
+    action: rappeler_depuis
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_preset
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_preset
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_preset
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_preset
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: rappeler_preset
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: rappeler_preset
+    valide: oui
+    confiance: A
+
+  - objet: Preset
+    action: rappeler_preset
+    valide: non
+    confiance: A
+    note: >
+      Un preset ne peut pas en référencer un autre (manuel §11). Entrée
+      conservée pour que le générateur refuse explicitement au lieu de tomber
+      dans le trou « combinaison absente du modèle ».
 
   # --- Groupes ---
   - objet: Chan

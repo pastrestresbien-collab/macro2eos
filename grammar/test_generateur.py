@@ -433,6 +433,88 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # ------------------------------------- Palettes (§10) et Presets (§11)
+    {
+        "nom": "manuel §10 — enregistrement d'une palette couleur avec libellé",
+        # [Record] [Color Palette] [4] [Label] <FOH Blue> [Enter]
+        "ir": [
+            {"action": {"type": "record_palette", "famille": "Color Palette",
+                        "cible": 4, "label": "FOH Blue"}},
+        ],
+        "attendu": "Record Color Palette 4 Label FOH Blue Enter",
+        "avertissements": 1,      # libellé multi-mots, PLANNING #5
+    },
+    {
+        "nom": "manuel §10 — enregistrement sélectif, qui FUSIONNE au lieu d'écraser",
+        # [1] [Thru] [3] [Record] [Intensity Palette] [2] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 3},
+             "action": {"type": "record_palette", "famille": "Int Palette",
+                        "cible": 2}},
+        ],
+        "attendu": "Chan 1 Thru 3 Record Int Palette 2 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §10 — rappel d'une palette sur un groupe",
+        # [Group] [1][1] [Beam Palette] [5] [Enter]
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 11},
+             "action": {"type": "rappeler_palette", "famille": "Beam Palette",
+                        "cible": 5}},
+        ],
+        "attendu": "Group 11 Beam Palette 5 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §10 — rappel proportionné, le lien à la palette survit",
+        # [Intensity Palette] [y] [At] [z] [Enter]
+        "ir": [
+            {"action": {"type": "rappeler_palette", "famille": "Int Palette",
+                        "cible": 7, "proportion": 50}},
+        ],
+        "attendu": "Int Palette 7 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §10 — Record Only sur une palette beam",
+        # [Record Only] [Beam Palette] [5] [Enter]
+        "ir": [
+            {"action": {"type": "record_only_palette", "famille": "Beam Palette",
+                        "cible": 5}},
+        ],
+        "attendu": "Record Only Beam Palette 5 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §11 — enregistrement d'un preset",
+        # [Record] [Preset] [5] [Enter]
+        "ir": [
+            {"action": {"type": "record_preset", "cible": 5}},
+        ],
+        "attendu": "Record Preset 5 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §11 — rappel d'un preset sur une liste de channels",
+        # [Channel List] [Preset] [2] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "rappeler_preset", "cible": 2}},
+        ],
+        "attendu": "Chan 1 Thru 5 Preset 2 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §11 — un preset ne peut pas en référencer un autre",
+        "ir": [
+            {"selection": {"objet": "Preset", "numero": 3},
+             "action": {"type": "rappeler_preset", "cible": 8}},
+        ],
+        "attendu": "Preset 3 Preset 8 Enter",
+        "avertissements": 1,
+    },
+
     # ------------------------------------------------------ Groupes (§7)
     {
         "nom": "manuel §7 — enregistrement d'un groupe, l'ordre est conservé",

@@ -135,7 +135,22 @@ Nouveau point #22 : le manuel §7 se contredit sur `{Insert Before}` / `{Insert 
 sa liste de softkeys dit l'inverse de ses propres exemples. Le modèle retient les
 exemples, mais c'est un arbitrage.
 
-**Reste à faire** : Palettes §10 / Presets §11, Mark §9, cues multipart §17,
+**Fait — v0.7 (2026-08-03)** : Palettes §10 et Presets §11. 60 actions, 122 règles de
+légalité, 75 cas de non-régression.
+
+Deux contraintes structurelles en sont sorties. **Un preset ne peut pas en référencer un
+autre** (A, énoncé tel quel par le manuel) : aucune factorisation de preset en preset
+n'est possible, donc une intention du type « le preset B, plus deux changements » n'a
+pas de traduction référencée. Et **`{Locked}` protège de façon asymétrique** : une
+palette verrouillée ne peut pas être mise à jour en Live, mais s'édite librement en
+Blind — ce que « palette verrouillée » ne laisse pas deviner en langue naturelle.
+
+La règle « sélection = fusion » se confirme comme une **constante de la grammaire** :
+déjà relevée sur les submasters (§20) et les cues (§12), elle vaut aussi pour les
+palettes. Sans sélection un `Record` écrase, avec sélection il fusionne — même mot,
+deux résultats.
+
+**Reste à faire** : Mark §9, cues multipart §17,
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 

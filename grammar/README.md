@@ -84,8 +84,26 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.4 | **contexte d'écran** (modalité) et **auto-terminaison** |
 | v0.5 | **Patch** — où `At` s'inverse une seconde fois |
 | v0.6 | **Groupes** — un ordre, pas seulement un ensemble |
+| v0.7 | **Palettes et Presets** — la référence, et ce qui la casse |
 
-Ce que v0.6 ajoute concrètement :
+Ce que v0.7 ajoute concrètement :
+
+- **Les quatre familles de palettes** plus le générique `Palette`, avec les trois options
+  d'enregistrement `{By Type}`, `{Absolute}`, `{Locked}`.
+- **`{Locked}` protège de façon asymétrique** : une palette verrouillée ne peut pas être
+  mise à jour directement en Live — seulement par `<channels> Update <cible> Enter` — mais
+  elle s'édite **librement en Blind**. La protection est partielle, et le sens de « palette
+  verrouillée » en langue naturelle ne le laisse pas deviner.
+- **Un preset ne peut pas en référencer un autre.** Contrainte structurelle dure : aucune
+  factorisation de preset en preset n'est possible. Une intention du type « le preset B,
+  plus deux changements » n'a pas de traduction référencée.
+- **Ce qui casse le lien** est encodé : un rappel proportionné (`Int Palette 7 At 50`) le
+  conserve, enregistrer la donnée rappelée ailleurs le rompt et fige la valeur en absolu.
+- **La règle « sélection = fusion »** se confirme comme une constante de la grammaire :
+  déjà vue sur les submasters (§20) et les cues (§12), elle vaut aussi ici. Sans sélection
+  un `Record` écrase, avec sélection il fusionne.
+
+Ce que v0.6 avait ajouté :
 
 - **L'ordre des groupes est signifiant.** Un groupe range ses channels dans l'ordre de
   *sélection*, pas dans l'ordre numérique — `10 Thru 2` est légal et donne 10, 9, 8… Cet

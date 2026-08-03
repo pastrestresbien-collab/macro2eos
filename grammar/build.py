@@ -109,6 +109,20 @@ def verifier_vocabulaire(modele: dict, backlog: set[int]) -> list[str]:
                 f"query.conditions.{nom} : sans touche OSC et sans renvoi PLANNING.md"
             )
 
+    # le raccourci historique `record_palette_couleur` (v0.1, sous
+    # non-régression) doit rester équivalent à la forme générique v0.7 —
+    # sinon le modèle porterait deux syntaxes pour le même geste
+    raccourci = modele["actions"]["record_palette_couleur"]["mot_cle"]
+    generique = " ".join([
+        modele["actions"]["record_palette"]["mot_cle"],
+        modele["palettes"]["familles"]["Color Palette"]["mot_cle"],
+    ])
+    if raccourci != generique:
+        erreurs.append(
+            f"actions.record_palette_couleur (`{raccourci}`) diverge de la forme "
+            f"générique (`{generique}`) — deux syntaxes pour le même geste"
+        )
+
     # un mot-clé employé à la fois comme cible et comme action doit s'écrire
     # pareil des deux côtés — sinon le générateur produirait deux syntaxes
     for nom, cible in modele["cibles"].items():

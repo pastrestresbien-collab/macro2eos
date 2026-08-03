@@ -340,6 +340,35 @@ class Generateur:
             return " ".join([mot, self._plage_ou_valeur(act, "numero")]
                             + self._suffixe_fan(act, avert))
 
+        if t in ("record_palette", "record_only_palette", "update_palette",
+                 "rappeler_palette", "rappeler_depuis"):
+            famille = self.modele["palettes"]["familles"].get(act["famille"])
+            if famille is None:
+                avert.append(f"famille de palette `{act['famille']}` absente du modèle")
+                mot_famille = act["famille"]
+            else:
+                mot_famille = famille["mot_cle"]
+            morceaux = ([mot] if mot else []) + [mot_famille]
+            if "cible" in act:
+                morceaux.append(str(act["cible"]))
+            if "proportion" in act:
+                morceaux += ["At", str(act["proportion"])]
+            for option in act.get("options", []):
+                if option not in self.modele["palettes"]["options"]:
+                    avert.append(f"option de palette `{option}` absente du modèle")
+                morceaux.append(option)
+            if act.get("label"):
+                morceaux += ["Label", str(act["label"])]
+                self._verifier_label(act["label"], avert)
+            return " ".join(morceaux)
+
+        if t in ("record_preset", "record_only_preset", "rappeler_preset"):
+            out = mot if "cible" not in act else f"{mot} {act['cible']}"
+            if act.get("label"):
+                out += f" Label {act['label']}"
+                self._verifier_label(act["label"], avert)
+            return out
+
         if t == "record_palette_couleur":
             out = f"{mot} {act['cible']}"
             if act.get("label"):
