@@ -1,0 +1,1175 @@
+<title>macro2eos — prototype interactif</title>
+
+<style>
+  :root {
+    --page-bg: #F2F4F7;
+    --page-surface: #FFFFFF;
+    --page-line: #D8DEE7;
+    --page-ink: #16202C;
+    --page-muted: #5C6B7D;
+    --page-accent: #1F6F9F;
+
+    --app-bg: #0B0F14;
+    --app-surface: #141B24;
+    --app-surface-hi: #1C2632;
+    --app-line: #26313F;
+    --app-ink: #E4EAF2;
+    --app-muted: #8496AB;
+    --app-accent: #4DA3D9;
+    --app-accent-ink: #06121C;
+    --app-warn: #E0A83C;
+    --app-danger: #D9605A;
+    --app-ok: #5FBF8F;
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #0D1319; --page-surface: #151D26; --page-line: #26313D;
+      --page-ink: #DFE7F0; --page-muted: #8595A6; --page-accent: #6BB6E4;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #0D1319; --page-surface: #151D26; --page-line: #26313D;
+    --page-ink: #DFE7F0; --page-muted: #8595A6; --page-accent: #6BB6E4;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #F2F4F7; --page-surface: #FFFFFF; --page-line: #D8DEE7;
+    --page-ink: #16202C; --page-muted: #5C6B7D; --page-accent: #1F6F9F;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; }
+  button:focus-visible, .tab:focus-visible, .tile:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--app-accent); outline-offset: 2px;
+  }
+
+  .page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 30px 18px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .eyebrow {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--page-muted); font-weight: 600; align-self: flex-start;
+  }
+  .page h1 { margin: 0; font-size: 22px; align-self: flex-start; letter-spacing: -.01em; }
+  .page p.lede {
+    margin: 0; align-self: flex-start; color: var(--page-muted); font-size: 13.5px; max-width: 52ch;
+  }
+
+  /* ---------- téléphone ---------- */
+  .device {
+    background: #05080B;
+    border: 1px solid var(--page-line);
+    border-radius: 30px;
+    padding: 10px;
+    box-shadow: 0 16px 40px rgba(4, 10, 18, 0.3);
+  }
+  .viewport {
+    width: 340px;
+    height: 660px;
+    background: var(--app-bg);
+    color: var(--app-ink);
+    border-radius: 22px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    position: relative;
+  }
+
+  .os-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 16px 2px; font-size: 11.5px; color: var(--app-ink);
+    font-variant-numeric: tabular-nums; flex: none;
+  }
+  .os-bar .sig { display: flex; gap: 3px; align-items: flex-end; }
+  .os-bar .sig i { display: block; width: 3px; background: var(--app-ink); border-radius: 1px; }
+  .os-bar .sig i:nth-child(1) { height: 4px; } .os-bar .sig i:nth-child(2) { height: 6px; }
+  .os-bar .sig i:nth-child(3) { height: 8px; } .os-bar .sig i:nth-child(4) { height: 10px; }
+  .os-bar .batt { border: 1px solid var(--app-muted); border-radius: 2px; width: 20px; height: 10px; position: relative; padding: 1px; }
+  .os-bar .batt::after { content:""; position:absolute; right:-3px; top:3px; width:2px; height:4px; background:var(--app-muted); border-radius:1px; }
+  .os-bar .batt i { display:block; height:100%; width: 78%; background: var(--app-ink); border-radius: 1px; }
+
+  .statusbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 14px; border-bottom: 1px solid var(--app-line);
+    background: var(--app-surface); flex: none;
+  }
+  .conn { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--app-muted); background: none; border: none; padding: 4px 2px; cursor: pointer; }
+  .conn:hover { color: var(--app-ink); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .dot-ok { background: var(--app-ok); box-shadow: 0 0 0 3px rgba(95,191,143,.16); }
+  .dot-wait { background: var(--app-warn); box-shadow: 0 0 0 3px rgba(224,168,60,.16); }
+  .user-tag {
+    font-family: var(--mono); font-size: 11.5px; color: var(--app-accent);
+    border: 1px solid var(--app-line); border-radius: 6px; padding: 2px 7px;
+  }
+
+  .banner-recon {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 14px; background: rgba(224,168,60,.13);
+    border-bottom: 1px solid rgba(224,168,60,.32); color: var(--app-warn);
+    font-size: 12px; font-weight: 600; flex: none;
+  }
+  .banner-recon button {
+    background: none; border: none; color: var(--app-warn); text-decoration: underline;
+    font-size: 11.5px; font-weight: 600; cursor: pointer; padding: 0; flex: none;
+  }
+
+  main#screen {
+    flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 14px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .label {
+    font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--app-muted); font-weight: 600;
+  }
+
+  textarea#nl-input {
+    background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 10px;
+    padding: 12px 13px; font-size: 15px; line-height: 1.4; color: var(--app-ink);
+    font-family: inherit; resize: none; width: 100%; min-height: 46px;
+  }
+  textarea#nl-input:focus { outline: none; border-color: var(--app-accent); box-shadow: 0 0 0 3px rgba(77,163,217,.15); }
+  textarea#nl-input::placeholder { color: var(--app-muted); }
+
+  .macro {
+    background: #070B10; border: 1px solid var(--app-line); border-left: 2px solid var(--app-accent);
+    border-radius: 10px; padding: 13px; display: flex; flex-direction: column; gap: 7px; overflow-x: auto;
+  }
+  .macro code { font-family: var(--mono); font-size: 13px; white-space: pre-wrap; word-break: break-word; color: var(--app-ink); }
+  .macro code .chip { border-bottom: 1px dashed var(--app-muted); padding-bottom: 1px; cursor: pointer; }
+  .macro code .chip:hover, .macro code .chip.active { border-bottom-color: var(--app-accent); color: var(--app-accent); }
+
+  .card { border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+  .card strong { font-size: 13px; font-weight: 620; }
+  .card p { margin: 0; color: var(--app-muted); line-height: 1.45; }
+  .card-warn { background: rgba(224,168,60,.09); border: 1px solid rgba(224,168,60,.35); }
+  .card-warn strong { color: var(--app-warn); }
+  .card-danger { background: rgba(217,96,90,.09); border: 1px solid rgba(217,96,90,.38); }
+  .card-danger strong { color: var(--app-danger); }
+  .card-ok { background: rgba(95,191,143,.09); border: 1px solid rgba(95,191,143,.32); }
+  .card-ok strong { color: var(--app-ok); }
+  .card-neutral { background: var(--app-surface); border: 1px solid var(--app-line); }
+
+  .fix { font-family: var(--mono); font-size: 12.5px; background: #070B10; border: 1px solid var(--app-line);
+    border-radius: 8px; padding: 9px 10px; margin-top: 3px; color: var(--app-ink); overflow-x: auto; white-space: pre; }
+  .fix .was { color: var(--app-danger); text-decoration: line-through; }
+  .fix .now { color: var(--app-ok); }
+
+  .actions { display: flex; flex-direction: column; gap: 9px; }
+  .btn {
+    display: block; width: 100%; box-sizing: border-box; text-align: center; border-radius: 11px;
+    padding: 13px 12px; font-size: 14.5px; font-weight: 620; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: var(--app-accent); color: var(--app-accent-ink); }
+  .btn-warn { background: var(--app-warn); color: #1A1204; }
+  .btn-danger { background: var(--app-danger); color: #200706; }
+  .btn-ghost { background: transparent; border-color: var(--app-line); color: var(--app-muted); }
+  .btn-ghost:hover { color: var(--app-ink); border-color: var(--app-muted); }
+  .btn-sm { padding: 9px 10px; font-size: 13px; border-radius: 9px; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row .btn { flex: 1; min-width: 0; }
+  .btn-row .btn-aside { flex: none; width: auto; }
+
+  .demo-toggle {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border: 1px dashed var(--app-line); border-radius: 10px; padding: 9px 11px; font-size: 11.5px; color: var(--app-muted);
+  }
+  .demo-toggle b { color: var(--app-muted); font-weight: 600; }
+  .swtch { flex: none; width: 34px; height: 20px; border-radius: 20px; background: var(--app-line); position: relative; cursor: pointer; border: none; padding: 0; }
+  .swtch::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background: var(--app-muted); transition: transform .15s; }
+  .swtch.on { background: rgba(224,168,60,.35); }
+  .swtch.on::after { transform: translateX(14px); background: var(--app-warn); }
+
+  /* ---------- onglets favoris ---------- */
+  .tabs-row { display: flex; align-items: center; border-bottom: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
+  .tabs { display: flex; align-items: center; gap: 6px; padding: 10px 6px 0 14px; overflow-x: auto; flex: 1; min-width: 0; }
+  .tab { flex: none; padding: 8px 12px 10px; font-size: 13px; color: var(--app-muted); border-bottom: 2px solid transparent; white-space: nowrap; background: none; border-left: none; border-right: none; border-top: none; cursor: pointer; }
+  .tab.on { color: var(--app-ink); border-bottom-color: var(--app-accent); font-weight: 600; }
+  .tab-edit { flex: none; font-size: 12px; color: var(--app-accent); padding: 6px 12px 8px 6px; background: none; border: none; cursor: pointer; white-space: nowrap; }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 12px; padding: 14px 12px; min-height: 84px;
+    min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; text-align: left; cursor: pointer; position: relative; color: inherit; }
+  .tile:hover { border-color: var(--app-muted); }
+  .tile .name { font-size: 14.5px; font-weight: 600; line-height: 1.25; }
+  .tile .cmd { font-family: var(--mono); font-size: 10.5px; color: var(--app-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile.editable { border-style: dashed; border-color: var(--app-muted); cursor: default; }
+  .tile.editable .name { padding-right: 34px; }
+  .tile.editable.active { border-color: var(--app-accent); }
+  .tile-edit-btn { position: absolute; top: 8px; right: 8px; font-size: 11px; line-height: 1; color: var(--app-muted);
+    border: 1px solid var(--app-line); border-radius: 6px; padding: 3px 6px; background: var(--app-surface-hi); cursor: pointer; }
+  .empty-tab { font-size: 13px; color: var(--app-muted); border: 1px dashed var(--app-line); border-radius: 10px; padding: 20px 14px; text-align: center; }
+
+  .mode-strip { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--app-muted); padding: 10px 14px;
+    border-top: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
+
+  /* ---------- menus contextuels ---------- */
+  .menu { background: var(--app-surface-hi); border: 1px solid var(--app-line); border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+  .menu .opt { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px; border-radius: 7px; font-size: 13.5px;
+    background: none; border: none; text-align: left; color: var(--app-ink); cursor: pointer; width: 100%; }
+  .menu .opt:hover { background: rgba(255,255,255,.04); }
+  .menu .opt.sel { background: rgba(77,163,217,.14); color: var(--app-accent); font-weight: 620; }
+  .menu .opt.danger { color: var(--app-danger); }
+  .menu .opt .tick { color: var(--app-accent); font-size: 12px; }
+  .menu input[type=text] {
+    background: var(--app-bg); border: 1px solid var(--app-line); border-radius: 8px; color: var(--app-ink);
+    font-size: 13.5px; padding: 8px 10px; font-family: inherit; width: 100%;
+  }
+  .menu input[type=text]:focus { outline: none; border-color: var(--app-accent); }
+
+  /* ---------- réglages ---------- */
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--app-surface);
+    border: 1px solid var(--app-line); border-radius: 10px; padding: 12px 13px; }
+  .row.click { cursor: pointer; }
+  .row.click:hover { border-color: var(--app-muted); }
+  .row .k { font-size: 13.5px; }
+  .row .v { font-family: var(--mono); font-size: 12.5px; color: var(--app-muted); text-align: right; }
+  .row .v.accent { color: var(--app-accent); font-family: var(--sans); }
+  .seg { display: flex; background: var(--app-bg); border: 1px solid var(--app-line); border-radius: 9px; padding: 3px; gap: 3px; }
+  .seg button { font-family: inherit; font-size: 12px; padding: 6px 10px; border-radius: 6px; color: var(--app-muted); background: none; border: none; cursor: pointer; }
+  .seg button.on { background: var(--app-accent); color: var(--app-accent-ink); font-weight: 600; }
+  .soon { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--app-muted); border: 1px solid var(--app-line); border-radius: 5px; padding: 2px 6px; }
+  .back-row { display: flex; align-items: center; gap: 8px; }
+  .back-btn { background: none; border: none; color: var(--app-accent); font-size: 13px; cursor: pointer; padding: 4px 0; }
+
+  /* ---------- bibliothèque / import / historique ---------- */
+  .lib-item, .hist-item, .import-item { display: flex; flex-direction: column; gap: 6px; background: var(--app-surface);
+    border: 1px solid var(--app-line); border-radius: 10px; padding: 12px 13px; text-align: left; cursor: pointer; color: inherit; width: 100%; }
+  .lib-item:hover { border-color: var(--app-muted); }
+  .lib-item .req { font-size: 13.5px; font-weight: 620; line-height: 1.3; }
+  .lib-item .cmd, .import-item .cmd { font-family: var(--mono); font-size: 10.5px; color: var(--app-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lib-item .src { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--app-muted); }
+  .lib-conf { flex: none; font-family: var(--mono); font-size: 9.5px; border-radius: 5px; padding: 1px 6px; border: 1px solid var(--app-line); }
+  .lib-conf.a { color: var(--app-ok); border-color: rgba(95,191,143,.4); }
+  .lib-conf.c { color: var(--app-muted); }
+
+  .hist-item { cursor: default; border-left: 2px solid var(--app-line); }
+  .hist-item.ok { border-left-color: var(--app-ok); }
+  .hist-item.doute { border-left-color: var(--app-accent); }
+  .hist-item.bad { border-left-color: var(--app-danger); }
+  .hist-item.pending { border-left-color: var(--app-warn); }
+  .hist-item .top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .hist-item .time { font-family: var(--mono); font-size: 10.5px; color: var(--app-muted); }
+  .hist-tag { font-size: 10.5px; font-weight: 650; }
+  .hist-tag.ok { color: var(--app-ok); } .hist-tag.doute { color: var(--app-accent); }
+  .hist-tag.bad { color: var(--app-danger); } .hist-tag.pending { color: var(--app-warn); }
+  .hist-item .cmd { font-family: var(--mono); font-size: 11.5px; color: var(--app-ink); }
+  .hist-item .note { font-size: 11.5px; color: var(--app-muted); }
+
+  .import-item { cursor: default; flex-direction: row; align-items: center; justify-content: space-between; }
+  .import-item .meta { display: flex; flex-direction: column; gap: 3px; }
+  .import-item .meta .name { font-size: 13.5px; font-weight: 600; }
+  .badge-other { flex: none; font-size: 9.5px; letter-spacing: .03em; text-transform: uppercase; color: var(--app-warn);
+    border: 1px solid rgba(224,168,60,.4); background: rgba(224,168,60,.1); border-radius: 5px; padding: 3px 6px; white-space: nowrap; }
+
+  /* ---------- overlays ---------- */
+  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; background: var(--app-bg); }
+  .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--app-line); flex: none; }
+  .drawer-head h3 { margin: 0; font-size: 14px; }
+  .drawer-close { background: none; border: 1px solid var(--app-line); color: var(--app-muted); border-radius: 8px; padding: 5px 9px; font-size: 12px; cursor: pointer; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  .confirm-full { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 24px 20px; text-align: center; }
+  .confirm-full .warn-icon { font-size: 28px; color: var(--app-warn); }
+  .confirm-full h3 { margin: 0; font-size: 16.5px; }
+  .confirm-full p { margin: 0; color: var(--app-muted); font-size: 13px; }
+  .confirm-full .macro { text-align: left; }
+
+  .toast {
+    position: absolute; left: 14px; right: 14px; bottom: 78px; z-index: 8;
+    background: var(--app-surface-hi); border: 1px solid var(--app-line); color: var(--app-ink);
+    font-size: 12.5px; padding: 10px 13px; border-radius: 10px; text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .toast { animation: toast-in .18s ease-out; }
+  }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- nav du bas ---------- */
+  nav#bottom-nav { display: flex; border-top: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
+  nav#bottom-nav button {
+    flex: 1; background: none; border: none; padding: 11px 6px 12px; display: flex; flex-direction: column;
+    align-items: center; gap: 3px; color: var(--app-muted); font-size: 11px; font-family: inherit; cursor: pointer;
+  }
+  nav#bottom-nav button .ic { font-size: 16px; line-height: 1; }
+  nav#bottom-nav button.on { color: var(--app-accent); }
+
+  .hint { max-width: 52ch; font-size: 12.5px; color: var(--page-muted); text-align: center; }
+  .hint code { font-family: var(--mono); background: var(--page-surface); border: 1px solid var(--page-line); border-radius: 4px; padding: 1px 5px; }
+</style>
+
+<div class="page">
+  <div class="eyebrow">macro2eos · prototype</div>
+  <h1>Prototype interactif</h1>
+  <p class="lede">
+    Un seul appareil, une vraie navigation entre les trois écrans. Le texte s'interprète
+    avec un petit moteur de démonstration (vocabulaire volontairement limité) — assez
+    pour naviguer les mêmes flux que la maquette d'intention, avec des états qui changent
+    réellement.
+  </p>
+
+  <div class="device">
+    <div class="viewport" id="viewport">
+      <div class="os-bar">
+        <span>21:14</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span class="sig"><i></i><i></i><i></i><i></i></span>
+          <span class="batt"><i></i></span>
+        </span>
+      </div>
+      <div id="statusbar-slot"></div>
+      <div id="banner-slot"></div>
+      <main id="screen"></main>
+      <nav id="bottom-nav"></nav>
+    </div>
+  </div>
+
+  <p class="hint">
+    Essayez : « groupe 5 et circuits 1 à 6 en lee 195 » (avertissement + correction par
+    tap), « circuits 10 a 20 en lee 195 » (refusée par la console), ou ouvrez la
+    <code>Bibliothèque</code> depuis l'écran de saisie. Le bouton d'état réseau, en haut,
+    simule une coupure.
+  </p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var LIBRARY = [
+    { req: "Nettoyer les mouvements invisibles du show",
+      cmd: "Query Dark_Moves Enter AllNPs @ Enter Update Enter Clear_Cmd",
+      confidence: "C", source: "corpus communautaire, non testé au banc" },
+    { req: "Bump le sub 3 pour la durée de l'effet en cours",
+      cmd: "SubDown 3 Enter SubUp 3 Enter",
+      confidence: "C", source: "corpus communautaire, non testé au banc" },
+    { req: "Effet cercle symétrique jardin / cour",
+      cmd: "Group 1 Effect 201.1 Group 2 Offset Reverse Effect 201.2",
+      confidence: "C", source: "corpus communautaire, non testé au banc" },
+    { req: "Highlight de référence sur une sélection",
+      cmd: "{Highlight RemDim} Preset 9997 Enter",
+      confidence: "A", source: "manuel officiel, Eos L3 Workbook" }
+  ];
+
+  var uid = 100;
+  var state = {
+    screen: "saisie",
+    connected: true,
+    pendingCommand: null,
+    overlay: null,            // null | 'confirm' | 'lib'
+    result: null,             // {cmd, warn, warnText, tokens, note}
+    lastOutcome: null,        // {status:'ok'|'bad', cmd, fix, note}
+    lastInputText: "",
+    chipMenuOpen: false,
+    saveForm: false,
+    dropArmed: false,
+    tabs: ["Cyrano", "Général", "Couleurs"],
+    activeTab: "Cyrano",
+    editMode: false,
+    editingTileId: null,
+    deletingTileId: null,
+    favoris: [
+      { id: uid++, name: "Noir salle", cmd: "Sub 12 At 0 Enter", tab: "Cyrano" },
+      { id: uid++, name: "Plein feu", cmd: "Chan 1 Thru 96 At Full Enter", tab: "Cyrano" },
+      { id: uid++, name: "195 · Par LED", cmd: "Color Palette 5 Enter", tab: "Couleurs" },
+      { id: uid++, name: "Face seule", cmd: "Group 3 At 85 Enter", tab: "Cyrano" },
+      { id: uid++, name: "Contre chaud", cmd: "Group 7 Color 3/204 Enter", tab: "Couleurs" },
+      { id: uid++, name: "Rappel saluts", cmd: "Macro 12 Enter", tab: "Général" }
+    ],
+    favMode: "immediate",     // immediate | confirm
+    tileConfirmId: null,
+    reglagesView: "root",     // root | tabs | historique | import
+    history: [
+      { time: "20:58", cmd: "Chan 10 Thru 20 Color 3/195 Enter", tag: "bad",
+        note: "Mot-clé « Colour » refusé, renvoyée avec « Color » — acceptée." },
+      { time: "19:50", cmd: "SubDown 3 Enter", tag: "ok",
+        note: "Depuis la bibliothèque de macros." }
+    ],
+    toast: null
+  };
+
+  var toastTimer = null;
+  function showToast(msg) {
+    state.toast = msg;
+    renderAll();
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { state.toast = null; renderAll(); }, 1800);
+  }
+
+  function nowTime() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; });
+  }
+
+  function normalize(s) {
+    return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  }
+
+  // ---------- moteur de traduction de démonstration ----------
+  function translate(raw) {
+    var t = normalize(raw);
+    if (!t) return null;
+
+    for (var i = 0; i < LIBRARY.length; i++) {
+      var item = LIBRARY[i];
+      if (t === normalize(item.req)) {
+        var warnLib = item.confidence !== "A";
+        return {
+          cmd: item.cmd, warn: warnLib,
+          warnText: warnLib ? "Motif issu du corpus communautaire (confiance " + item.confidence + ") — non validé sur cette console." : null,
+          tokens: [], note: "Bibliothèque · " + item.source
+        };
+      }
+    }
+
+    if (/\b(noir salle|blackout|noir)\b/.test(t)) {
+      return { cmd: "Sub 12 At 0 Enter", warn: false, warnText: null, tokens: [] };
+    }
+    if (/\b(plein feu|full)\b/.test(t)) {
+      return { cmd: "Chan 1 Thru 96 At Full Enter", warn: false, warnText: null, tokens: [] };
+    }
+
+    var groupe = t.match(/groupe\s+(\d+)/);
+    var circuits = t.match(/circuits?\s+(\d+)\s*(?:a|à|thru)\s*(\d+)/) || t.match(/circuits?\s+(\d+)/);
+    var colorMatch = t.match(/(?:en\s+)?(?:lee|couleur|gel)\s+(\d+)/);
+
+    if (!groupe && !circuits) return null;
+
+    var target, tokens = [];
+    if (groupe && circuits) {
+      target = "Group " + groupe[1] + " + " + circuits[1] + " Thru " + circuits[2] + " ";
+      tokens = [{ id: "t1", match: "Group", selected: "Groupe",
+        alternatives: ["Circuit", "Groupe", "Palette", "Preset"] }];
+    } else if (groupe) {
+      target = "Group " + groupe[1] + " ";
+    } else if (circuits[2]) {
+      target = "Chan " + circuits[1] + " Thru " + circuits[2] + " ";
+    } else {
+      target = "Chan " + circuits[1] + " ";
+    }
+
+    var color = "", colourTypo = false;
+    if (colorMatch) {
+      if (/circuits?\s+10\s*(?:a|à|thru)\s*20/.test(t) && colorMatch[1] === "195") {
+        color = "Colour 3/" + colorMatch[1] + " ";
+        colourTypo = true;
+      } else {
+        color = "Color 3/" + colorMatch[1] + " ";
+      }
+    }
+
+    var cmd = (target + color).trim() + " Enter";
+    var warn = !!(groupe && circuits);
+    var warnText = warn
+      ? "Mélanger un groupe et une plage de circuits dans la même sélection n'a pas été confirmé sur un Eos réel. La commande part telle quelle — vérifiez le résultat."
+      : null;
+
+    return { cmd: cmd, warn: warn, warnText: warnText, tokens: tokens, colourTypo: colourTypo };
+  }
+
+  // ---------- rendu ----------
+  function renderAll() {
+    renderStatusbar();
+    renderBanner();
+    renderScreen();
+    renderNav();
+  }
+
+  function renderStatusbar() {
+    var el = document.getElementById("statusbar-slot");
+    var dot = state.connected ? "dot-ok" : "dot-wait";
+    var label = state.connected ? "Console connectée" : "Reconnexion en cours…";
+    el.innerHTML =
+      '<div class="statusbar">' +
+        '<button class="conn" data-action="toggle-connection"><span class="dot ' + dot + '"></span>' + label + '</button>' +
+        '<span class="user-tag">User 12</span>' +
+      '</div>';
+  }
+
+  function renderBanner() {
+    var el = document.getElementById("banner-slot");
+    if (state.connected) { el.innerHTML = ""; return; }
+    el.innerHTML =
+      '<div class="banner-recon">' +
+        '<span>⚠ Connexion à la console perdue — nouvelle tentative en cours</span>' +
+        '<button data-action="toggle-connection">reconnecter (démo)</button>' +
+      '</div>';
+  }
+
+  function renderNav() {
+    var el = document.getElementById("bottom-nav");
+    var items = [
+      { id: "saisie", ic: "✎", label: "Saisie" },
+      { id: "favoris", ic: "▦", label: "Favoris" },
+      { id: "reglages", ic: "⚙", label: "Réglages" }
+    ];
+    el.innerHTML = items.map(function (it) {
+      return '<button data-action="nav" data-screen="' + it.id + '" class="' + (state.screen === it.id ? "on" : "") + '">' +
+        '<span class="ic">' + it.ic + '</span>' + it.label + '</button>';
+    }).join("");
+  }
+
+  function renderScreen() {
+    var el = document.getElementById("screen");
+    var html = "";
+    if (state.screen === "saisie") html = screenSaisie();
+    else if (state.screen === "favoris") html = screenFavoris();
+    else if (state.screen === "reglages") html = screenReglages();
+    el.innerHTML = html + overlayHtml() + toastHtml();
+  }
+
+  function toastHtml() {
+    if (!state.toast) return "";
+    return '<div class="toast">' + esc(state.toast) + "</div>";
+  }
+
+  // ---------- écran 1 : saisie ----------
+  function macroTokensHtml(r) {
+    if (!r.tokens.length) return esc(r.cmd);
+    var t = r.tokens[0];
+    var idx = r.cmd.indexOf(t.match);
+    var before = r.cmd.slice(0, idx);
+    var after = r.cmd.slice(idx + t.match.length);
+    var cls = "chip" + (state.chipMenuOpen ? " active" : "");
+    return esc(before) + '<span class="' + cls + '" data-action="chip:open">' + esc(t.match) + "</span>" + esc(after);
+  }
+
+  function screenSaisie() {
+    var out = "";
+
+    out += '<div class="label">Votre demande</div>';
+    out += '<textarea id="nl-input" rows="2" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195">' + esc(state.lastInputText || "") + "</textarea>";
+    out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="lib:open">Bibliothèque</button>' +
+           '<button class="btn btn-primary" data-action="translate">Traduire</button></div>';
+
+    out += '<div class="demo-toggle"><span><b>Démo</b> · simuler une coupure au prochain envoi</span>' +
+      '<button class="swtch ' + (state.dropArmed ? "on" : "") + '" data-action="drop:toggle"></button></div>';
+
+    if (state.pendingCommand) {
+      out += '<div class="label">Envoyée à ' + esc(state.pendingCommand.time) + '</div>';
+      out += '<div class="macro"><code>' + esc(state.pendingCommand.cmd) + '</code></div>';
+      out += '<div class="card card-warn"><strong>Accusé de réception jamais reçu</strong>' +
+        '<p>La connexion est tombée juste après l\'envoi. Impossible de savoir si la console a exécuté cette commande avant la coupure.</p></div>';
+      out += '<div class="actions">' +
+        '<button class="btn btn-warn" data-action="pending:replay">Rejouer maintenant</button>' +
+        '<button class="btn btn-ghost" data-action="pending:leave">Laisser telle quelle — c\'est fait</button>' +
+        '</div>';
+      return out;
+    }
+
+    if (state.result) {
+      var r = state.result;
+      out += '<div class="label">Macro générée' + (r.tokens.length ? " — appuyez pour corriger un élément" : "") + '</div>';
+      out += '<div class="macro"><code>' + macroTokensHtml(r) + "</code></div>";
+
+      if (state.chipMenuOpen && r.tokens.length) {
+        var t = r.tokens[0];
+        out += '<div class="menu">';
+        t.alternatives.forEach(function (alt) {
+          var sel = alt === t.selected;
+          out += '<div class="opt' + (sel ? " sel" : "") + '" data-action="chip:pick" data-choice="' + esc(alt) + '">' +
+            esc(alt) + (sel ? '<span class="tick">✓ reconnu</span>' : "") + "</div>";
+        });
+        out += "</div>";
+      }
+
+      if (r.note) out += '<div class="card card-neutral"><p>' + esc(r.note) + "</p></div>";
+      if (r.warnText) out += '<div class="card card-warn"><strong>Syntaxe jamais vérifiée sur console</strong><p>' + esc(r.warnText) + "</p></div>";
+
+      out += '<div class="actions">';
+      out += r.warn
+        ? '<button class="btn btn-warn" data-action="confirm:open">Vérifier puis envoyer</button>'
+        : '<button class="btn btn-primary" data-action="confirm:send">Envoyer</button>';
+      out += '<button class="btn btn-ghost" data-action="reformulate">Modifier la demande</button>';
+      out += "</div>";
+      return out;
+    }
+
+    if (state.lastOutcome) {
+      var o = state.lastOutcome;
+      if (o.status === "ok") {
+        out += '<div class="label">Envoyée</div><div class="macro"><code>' + esc(o.cmd) + "</code></div>";
+        out += '<div class="card card-ok"><strong>Acceptée par la console' + (o.doute ? " · a levé un doute" : "") + '</strong>' +
+          "<p>" + (o.doute ? "Cette syntaxe partait avec un ⚠ — l'acceptation en fait la preuve pour cette commande." : "La commande a été exécutée.") + "</p></div>";
+        out += '<div class="actions">';
+        if (!state.saveForm) {
+          out += '<button class="btn btn-primary" data-action="save-favori:open">Sauvegarder en favori</button>';
+        } else {
+          out += '<div class="menu">' +
+            '<div class="label" style="padding:4px 4px 0;">Nom du favori</div>' +
+            '<div style="padding:6px 4px;"><input type="text" id="fav-name" placeholder="ex. ' + esc(o.cmd.split(" ")[0]) + '" /></div>' +
+            '<div class="label" style="padding:6px 4px 0;">Onglet</div>' +
+            state.tabs.map(function (tb) {
+              return '<div class="opt" data-action="save-favori:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
+            }).join("") +
+            "</div>" +
+            '<button class="btn btn-ghost" data-action="save-favori:cancel">Annuler</button>';
+        }
+        out += '<button class="btn btn-ghost" data-action="newrequest">Nouvelle demande</button>';
+        out += "</div>";
+      } else {
+        out += '<div class="label">Envoyée</div><div class="macro"><code>' + esc(o.cmd) + "</code></div>";
+        out += '<div class="card card-danger"><strong>Refusée par la console</strong>' +
+          '<p>Mot-clé inconnu : <code style="font-family:var(--mono)">Colour</code>. L\'orthographe attendue est américaine.</p>' +
+          '<div class="fix"><span class="was">Colour</span> → <span class="now">Color</span></div></div>';
+        out += '<div class="actions">' +
+          '<button class="btn btn-primary" data-action="retry:fix">Corriger et renvoyer</button>' +
+          '<button class="btn btn-ghost" data-action="reformulate">Reformuler ma demande</button>' +
+          "</div>";
+      }
+      return out;
+    }
+
+    if (state.unrecognized) {
+      out += '<div class="card card-neutral"><strong style="color:var(--app-ink)">Je n\'ai pas compris cette formulation</strong>' +
+        "<p>Le vocabulaire de ce prototype est volontairement limité. Essayez la bibliothèque, ou reformulez avec « groupe », « circuit(s) », « lee/couleur ».</p></div>";
+      out += '<div class="actions"><button class="btn btn-ghost" data-action="lib:open">Ouvrir la bibliothèque</button></div>';
+    }
+
+    return out;
+  }
+
+  // ---------- écran 2 : favoris ----------
+  function screenFavoris() {
+    var out = "";
+    out += '<div class="tabs-row"><div class="tabs">';
+    state.tabs.forEach(function (tb) {
+      out += '<button class="tab' + (tb === state.activeTab ? " on" : "") + '" data-action="tab:switch" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+    });
+    out += '<button class="tab" data-action="tab:add">+</button>';
+    out += "</div>";
+    out += '<button class="tab-edit" data-action="edit:toggle">' + (state.editMode ? "Terminé" : "Modifier") + "</button>";
+    out += "</div>";
+
+    out += '<div style="padding:14px 14px 0; display:flex; flex-direction:column; gap:12px;">';
+
+    var list = state.favoris.filter(function (f) { return f.tab === state.activeTab; });
+    if (!list.length) {
+      out += '<div class="empty-tab">Aucun favori dans cet onglet.</div>';
+    } else {
+      out += '<div class="tiles">';
+      list.forEach(function (f) {
+        var isConfirming = state.tileConfirmId === f.id;
+        if (state.editMode) {
+          var active = state.editingTileId === f.id;
+          out += '<div class="tile editable' + (active ? " active" : "") + '" data-action="tile:menu:open" data-id="' + f.id + '">' +
+            '<span class="name">' + esc(f.name) + '</span><span class="cmd">' + esc(f.cmd) + '</span>' +
+            '<span class="tile-edit-btn">•••</span></div>';
+        } else {
+          out += '<button class="tile" data-action="tile:tap" data-id="' + f.id + '">' +
+            '<span class="name">' + esc(f.name) + '</span><span class="cmd">' + esc(f.cmd) + "</span></button>";
+        }
+      });
+      out += "</div>";
+    }
+
+    if (state.editMode && state.editingTileId != null) {
+      var tile = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+      if (tile) {
+        out += '<div class="label">« ' + esc(tile.name) + ' »</div>';
+        if (state.deletingTileId === tile.id) {
+          out += '<div class="menu"><div style="padding:8px 10px; font-size:13px; color:var(--app-muted);">Supprimer ce favori ?</div>' +
+            '<div class="btn-row" style="padding:4px 8px 8px;">' +
+            '<button class="btn btn-danger btn-sm" data-action="tile:delete:confirm">Confirmer</button>' +
+            '<button class="btn btn-ghost btn-sm" data-action="tile:delete:cancel">Annuler</button></div></div>';
+        } else if (state.renamingTileId === tile.id) {
+          out += '<div class="menu"><div style="padding:6px 4px;"><input type="text" id="tile-rename" value="' + esc(tile.name) + '" /></div>' +
+            '<div class="btn-row" style="padding:2px 4px 6px;">' +
+            '<button class="btn btn-primary btn-sm" data-action="tile:rename:save">Enregistrer</button>' +
+            '<button class="btn btn-ghost btn-sm" data-action="tile:menu:open" data-id="' + tile.id + '">Annuler</button></div></div>';
+        } else {
+          out += '<div class="menu">' +
+            '<div class="opt" data-action="tile:rename:ask">Modifier le libellé</div>' +
+            '<div class="opt" data-action="tile:duplicate">Dupliquer</div>' +
+            '<div class="opt" style="cursor:default; color:var(--app-muted); font-size:11.5px; padding-bottom:0;">Déplacer vers l\'onglet</div>' +
+            state.tabs.filter(function (tb) { return tb !== tile.tab; }).map(function (tb) {
+              return '<div class="opt" data-action="tile:move" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
+            }).join("") +
+            '<div class="opt danger" data-action="tile:delete:ask">Supprimer</div>' +
+            "</div>";
+        }
+      }
+    }
+
+    if (!state.editMode) {
+      out += '<div class="label">Mode d\'envoi</div>';
+      out += '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
+        '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="settings:favmode" data-mode="immediate">Immédiat</button>' +
+        '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
+        "</span></div>";
+    }
+
+    out += "</div>";
+    return out;
+  }
+
+  // ---------- écran 3 : réglages ----------
+  function screenReglages() {
+    if (state.reglagesView === "tabs") return reglagesTabs();
+    if (state.reglagesView === "historique") return reglagesHistorique();
+    if (state.reglagesView === "import") return reglagesImport();
+
+    var out = "";
+    out += '<div class="group"><div class="label">Console</div>' +
+      '<div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>' +
+      '<div class="row"><span class="k">Port</span><span class="v">3032</span></div>' +
+      '<div class="row"><span class="k">Utilisateur dédié</span><span class="v accent">User 12</span></div></div>';
+
+    out += '<div class="group"><div class="label">Favoris</div>' +
+      '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
+      '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="settings:favmode" data-mode="immediate">Immédiat</button>' +
+      '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
+      "</span></div>" +
+      '<div class="row click" data-action="settings:tabs:open"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + ' onglets</span></div></div>';
+
+    out += '<div class="group"><div class="label">Historique</div>' +
+      '<div class="row click" data-action="settings:history:open"><span class="k">Envois récents</span><span class="v accent">Voir l\'historique</span></div></div>';
+
+    out += '<div class="group"><div class="label">Sauvegarde</div>' +
+      '<div class="row click" data-action="settings:export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
+      '<div class="row click" data-action="settings:import:open"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div></div>';
+
+    out += '<div class="group"><div class="label">Saisie</div>' +
+      '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
+
+    return out;
+  }
+
+  function reglagesTabs() {
+    var out = '<div class="back-row"><button class="back-btn" data-action="settings:tabs:back">‹ Réglages</button></div>';
+    out += '<div class="label">Onglets de favoris</div>';
+    out += '<div class="menu">';
+    state.tabs.forEach(function (tb) {
+      var count = state.favoris.filter(function (f) { return f.tab === tb; }).length;
+      out += '<div class="opt" style="cursor:default;"><span>' + esc(tb) + ' <span style="color:var(--app-muted); font-size:11.5px;">(' + count + ")</span></span>" +
+        (state.tabs.length > 1 ? '<button class="btn btn-ghost btn-sm" style="width:auto; padding:4px 9px;" data-action="settings:tabs:delete" data-tab="' + esc(tb) + '">Supprimer</button>' : "") +
+        "</div>";
+    });
+    out += "</div>";
+    out += '<div style="display:flex; gap:8px;"><input type="text" id="new-tab-name" placeholder="Nouvel onglet" style="flex:1; background:var(--app-surface); border:1px solid var(--app-line); border-radius:9px; color:var(--app-ink); padding:9px 11px; font-family:inherit;" />' +
+      '<button class="btn btn-primary btn-sm" style="width:auto; flex:none; padding:9px 14px;" data-action="settings:tabs:add">Ajouter</button></div>';
+    out += '<p style="font-size:11.5px; color:var(--app-muted);">Supprimer un onglet déplace ses favoris vers le premier onglet restant.</p>';
+    return out;
+  }
+
+  function reglagesHistorique() {
+    var tagLabel = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
+    var out = '<div class="back-row"><button class="back-btn" data-action="settings:history:back">‹ Réglages</button></div>';
+    out += '<div class="label">Historique des envois</div>';
+    state.history.forEach(function (h) {
+      out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + tagLabel[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
+        '<div class="cmd">' + esc(h.cmd) + '</div><div class="note">' + esc(h.note) + "</div></div>";
+    });
+    if (!state.history.length) out += '<div class="empty-tab">Aucun envoi journalisé pour l\'instant.</div>';
+    return out;
+  }
+
+  function reglagesImport() {
+    var out = '<div class="back-row"><button class="back-btn" data-action="settings:import:cancel">‹ Réglages</button></div>';
+    out += '<div class="label">Fichier : cyrano-favoris.eosfav</div>';
+    out += '<div class="card card-warn"><strong>2 favoris référencent un autre spectacle</strong>' +
+      "<p>Ils restent syntaxiquement valides mais peuvent pointer vers d'autres circuits ou palettes ici.</p></div>";
+    out += '<div class="import-list" style="display:flex; flex-direction:column; gap:8px;">' +
+      '<div class="import-item"><div class="meta"><span class="name">Rappel entracte</span><span class="cmd">Sub 9 At 0 Enter</span></div></div>' +
+      '<div class="import-item"><div class="meta"><span class="name">195 · Par LED</span><span class="cmd">Color Palette 5 Enter</span></div><span class="badge-other">Autre spectacle</span></div>' +
+      '<div class="import-item"><div class="meta"><span class="name">Face seule</span><span class="cmd">Group 3 At 85 Enter</span></div><span class="badge-other">Autre spectacle</span></div>' +
+      "</div>";
+    out += '<div class="actions"><button class="btn btn-primary" data-action="settings:import:confirm">Importer les 3 favoris</button>' +
+      '<button class="btn btn-ghost" data-action="settings:import:cancel">Annuler</button></div>';
+    return out;
+  }
+
+  // ---------- overlay plein écran (confirmation) et tiroir (bibliothèque) ----------
+  function overlayHtml() {
+    if (state.overlay === "confirm" && state.result) {
+      var r = state.result;
+      return '<div class="overlay"><div class="confirm-full">' +
+        '<div class="warn-icon">⚠</div><h3>Syntaxe jamais vérifiée sur console</h3>' +
+        "<p>" + esc(r.warnText || "") + "</p>" +
+        '<div class="macro"><code>' + esc(r.cmd) + "</code></div>" +
+        '<div class="actions"><button class="btn btn-warn" data-action="confirm:send">J\'ai vérifié — envoyer</button>' +
+        '<button class="btn btn-ghost" data-action="confirm:cancel">Annuler</button></div>' +
+        "</div></div>";
+    }
+    if (state.overlay === "lib") {
+      var body = LIBRARY.map(function (it, i) {
+        var cls = it.confidence === "A" ? "a" : "c";
+        return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
+          '<span class="req">' + esc(it.req) + '</span>' +
+          '<span class="cmd">' + esc(it.cmd) + '</span>' +
+          '<span class="src"><span class="lib-conf ' + cls + '">' + it.confidence + "</span>" + esc(it.source) + "</span>" +
+          "</button>";
+      }).join("");
+      return '<div class="overlay"><div class="drawer-head"><h3>Bibliothèque de macros</h3>' +
+        '<button class="drawer-close" data-action="lib:close">Fermer</button></div>' +
+        '<div class="drawer-body">' + body + "</div></div>";
+    }
+    return "";
+  }
+
+  // ---------- actions ----------
+  function resetSaisie() {
+    state.result = null; state.lastOutcome = null; state.chipMenuOpen = false;
+    state.saveForm = false; state.unrecognized = false; state.pendingCommand = null;
+  }
+
+  function handleAction(action, target) {
+    var data = target.dataset;
+    switch (action) {
+      case "nav":
+        state.screen = data.screen;
+        if (data.screen !== "favoris") { state.editMode = false; state.editingTileId = null; }
+        renderAll();
+        break;
+
+      case "toggle-connection":
+        state.connected = !state.connected;
+        renderAll();
+        break;
+
+      case "drop:toggle":
+        state.dropArmed = !state.dropArmed;
+        renderAll();
+        break;
+
+      case "translate": {
+        var raw = document.getElementById("nl-input").value;
+        resetSaisie();
+        state.lastInputText = raw;
+        var r = translate(raw);
+        if (!r) { state.unrecognized = true; renderAll(); break; }
+        state.result = r;
+        renderAll();
+        break;
+      }
+
+      case "chip:open":
+        state.chipMenuOpen = !state.chipMenuOpen;
+        renderAll();
+        break;
+
+      case "chip:pick": {
+        var choice = data.choice;
+        var t = state.result.tokens[0];
+        t.selected = choice;
+        state.chipMenuOpen = false;
+        if (choice === "Circuit") {
+          state.result.cmd = state.result.cmd.replace(/^Group (\d+)/, "Chan $1");
+          state.result.warn = false;
+          state.result.warnText = null;
+          state.result.note = "Corrigé : Group → Chan (édition ciblée par champ).";
+          state.result.tokens = [];
+        }
+        renderAll();
+        break;
+      }
+
+      case "confirm:open":
+        state.overlay = "confirm";
+        renderAll();
+        break;
+
+      case "confirm:cancel":
+        state.overlay = null;
+        renderAll();
+        break;
+
+      case "confirm:send": {
+        state.overlay = null;
+        var r2 = state.result;
+        if (state.dropArmed) {
+          state.pendingCommand = { cmd: r2.cmd, time: nowTime() };
+          state.result = null;
+          state.connected = false;
+          state.dropArmed = false;
+          history_push({ time: nowTime(), cmd: r2.cmd, tag: "pending", note: "Coupure réseau simulée juste après l'envoi." });
+          renderAll();
+          break;
+        }
+        finishSend(r2);
+        break;
+      }
+
+      case "retry:fix": {
+        var fixed = state.lastOutcome.cmd.replace(/colour/i, "Color");
+        state.lastOutcome = { status: "ok", cmd: fixed, doute: false };
+        history_push({ time: nowTime(), cmd: fixed, tag: "bad", note: "Corrigée après refus (Colour → Color) — acceptée." });
+        renderAll();
+        break;
+      }
+
+      case "reformulate":
+        resetSaisie();
+        renderAll();
+        var ta = document.getElementById("nl-input");
+        if (ta) ta.focus();
+        break;
+
+      case "newrequest":
+        resetSaisie();
+        state.lastInputText = "";
+        renderAll();
+        var ta2n = document.getElementById("nl-input");
+        if (ta2n) ta2n.focus();
+        break;
+
+      case "pending:replay": {
+        var replayed = state.pendingCommand.cmd;
+        state.pendingCommand = null;
+        state.connected = true;
+        finishSend({ cmd: replayed, warn: false });
+        break;
+      }
+
+      case "pending:leave":
+        state.pendingCommand = null;
+        state.connected = true;
+        showToast("Laissée telle quelle — rien renvoyé.");
+        break;
+
+      case "save-favori:open":
+        state.saveForm = true;
+        renderAll();
+        setTimeout(function () { var el = document.getElementById("fav-name"); if (el) el.focus(); }, 0);
+        break;
+
+      case "save-favori:cancel":
+        state.saveForm = false;
+        renderAll();
+        break;
+
+      case "save-favori:tab": {
+        var nameEl = document.getElementById("fav-name");
+        var name = (nameEl && nameEl.value.trim()) || state.lastOutcome.cmd.split(" ").slice(0, 2).join(" ");
+        state.favoris.push({ id: uid++, name: name, cmd: state.lastOutcome.cmd, tab: data.tab });
+        state.saveForm = false;
+        showToast("Ajouté à Favoris → " + data.tab);
+        break;
+      }
+
+      case "lib:open":
+        state.overlay = "lib";
+        renderAll();
+        break;
+
+      case "lib:close":
+        state.overlay = null;
+        renderAll();
+        break;
+
+      case "lib:pick": {
+        var it = LIBRARY[Number(data.idx)];
+        state.overlay = null;
+        state.screen = "saisie";
+        state.lastInputText = it.req;
+        renderAll();
+        var ta2 = document.getElementById("nl-input");
+        if (ta2) ta2.focus();
+        break;
+      }
+
+      // ---- favoris ----
+      case "tab:switch":
+        state.activeTab = data.tab;
+        state.editingTileId = null;
+        renderAll();
+        break;
+
+      case "tab:add": {
+        var name2 = prompt("Nom du nouvel onglet ?");
+        if (name2 && name2.trim()) {
+          state.tabs.push(name2.trim());
+          state.activeTab = name2.trim();
+        }
+        renderAll();
+        break;
+      }
+
+      case "edit:toggle":
+        state.editMode = !state.editMode;
+        state.editingTileId = null;
+        renderAll();
+        break;
+
+      case "tile:tap": {
+        var tile2 = state.favoris.filter(function (f) { return f.id == data.id; })[0];
+        if (!tile2) break;
+        if (state.favMode === "confirm" && state.tileConfirmId !== tile2.id) {
+          state.tileConfirmId = tile2.id;
+          showToast('Confirmer l\'envoi de « ' + tile2.name + ' » ? Ré-appuyez pour envoyer.');
+          setTimeout(function () { state.tileConfirmId = null; }, 2500);
+          break;
+        }
+        state.tileConfirmId = null;
+        history_push({ time: nowTime(), cmd: tile2.cmd, tag: "ok", note: "Favori « " + tile2.name + " »." });
+        showToast("Envoyé : " + tile2.cmd);
+        break;
+      }
+
+      case "tile:menu:open":
+        state.editingTileId = (state.editingTileId == data.id) ? null : Number(data.id);
+        state.deletingTileId = null;
+        state.renamingTileId = null;
+        renderAll();
+        break;
+
+      case "tile:rename:ask":
+        state.renamingTileId = state.editingTileId;
+        renderAll();
+        setTimeout(function () { var el = document.getElementById("tile-rename"); if (el) { el.focus(); el.select(); } }, 0);
+        break;
+
+      case "tile:rename:save": {
+        var el2 = document.getElementById("tile-rename");
+        var tile3 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (tile3 && el2 && el2.value.trim()) tile3.name = el2.value.trim();
+        state.renamingTileId = null;
+        renderAll();
+        break;
+      }
+
+      case "tile:duplicate": {
+        var src = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (src) {
+          var copy = { id: uid++, name: src.name + " (copie)", cmd: src.cmd, tab: src.tab };
+          state.favoris.push(copy);
+          showToast("Dupliqué : " + copy.name);
+        }
+        state.editingTileId = null;
+        renderAll();
+        break;
+      }
+
+      case "tile:move": {
+        var tile4 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (tile4) { tile4.tab = data.tab; showToast("Déplacé vers « " + data.tab + " »"); }
+        state.editingTileId = null;
+        renderAll();
+        break;
+      }
+
+      case "tile:delete:ask":
+        state.deletingTileId = state.editingTileId;
+        renderAll();
+        break;
+
+      case "tile:delete:cancel":
+        state.deletingTileId = null;
+        renderAll();
+        break;
+
+      case "tile:delete:confirm":
+        state.favoris = state.favoris.filter(function (f) { return f.id !== state.deletingTileId; });
+        state.editingTileId = null;
+        state.deletingTileId = null;
+        showToast("Favori supprimé.");
+        break;
+
+      case "settings:favmode":
+        state.favMode = data.mode;
+        renderAll();
+        break;
+
+      case "settings:tabs:open": state.reglagesView = "tabs"; renderAll(); break;
+      case "settings:tabs:back": state.reglagesView = "root"; renderAll(); break;
+
+      case "settings:tabs:add": {
+        var el3 = document.getElementById("new-tab-name");
+        if (el3 && el3.value.trim()) { state.tabs.push(el3.value.trim()); renderAll(); }
+        break;
+      }
+
+      case "settings:tabs:delete": {
+        if (state.tabs.length <= 1) break;
+        var removed = data.tab;
+        state.tabs = state.tabs.filter(function (tb) { return tb !== removed; });
+        var fallback = state.tabs[0];
+        state.favoris.forEach(function (f) { if (f.tab === removed) f.tab = fallback; });
+        if (state.activeTab === removed) state.activeTab = fallback;
+        renderAll();
+        break;
+      }
+
+      case "settings:history:open": state.reglagesView = "historique"; renderAll(); break;
+      case "settings:history:back": state.reglagesView = "root"; renderAll(); break;
+
+      case "settings:export":
+        showToast("Export généré (démo) — texte + fichier.");
+        break;
+
+      case "settings:import:open": state.reglagesView = "import"; renderAll(); break;
+      case "settings:import:cancel": state.reglagesView = "root"; renderAll(); break;
+      case "settings:import:confirm": {
+        var tab = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
+        state.favoris.push(
+          { id: uid++, name: "Rappel entracte", cmd: "Sub 9 At 0 Enter", tab: tab },
+          { id: uid++, name: "195 · Par LED (import)", cmd: "Color Palette 5 Enter", tab: tab },
+          { id: uid++, name: "Face seule (import)", cmd: "Group 3 At 85 Enter", tab: tab }
+        );
+        state.reglagesView = "root";
+        showToast("3 favoris importés dans « Importé ».");
+        break;
+      }
+
+      default: break;
+    }
+  }
+
+  function finishSend(r) {
+    var refused = /colour/i.test(r.cmd);
+    if (refused) {
+      state.result = null;
+      state.lastOutcome = { status: "bad", cmd: r.cmd };
+      history_push({ time: nowTime(), cmd: r.cmd, tag: "bad", note: "Refusée : mot-clé « Colour » inconnu." });
+    } else {
+      state.result = null;
+      state.lastOutcome = { status: "ok", cmd: r.cmd, doute: !!r.warn };
+      history_push({ time: nowTime(), cmd: r.cmd, tag: r.warn ? "doute" : "ok", note: r.warn ? "Partait avec ⚠, acceptée." : "Acceptée directement." });
+    }
+    renderAll();
+  }
+
+  function history_push(entry) {
+    state.history.unshift(entry);
+  }
+
+  document.getElementById("viewport").addEventListener("click", function (e) {
+    var el = e.target.closest("[data-action]");
+    if (!el) return;
+    handleAction(el.dataset.action, el);
+  });
+
+  document.getElementById("viewport").addEventListener("keydown", function (e) {
+    if (e.target && e.target.id === "nl-input" && e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleAction("translate", e.target);
+    }
+  });
+
+  renderAll();
+})();
+</script>

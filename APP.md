@@ -238,6 +238,11 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
   écran, correction ciblée par champ, import inter-spectacle, mode édition des favoris,
   bibliothèque de macros, historique des envois). Reste en apparence d'intention, pas
   des pixels définitifs — à affiner encore à l'usage.
+- **Prototype** : `app/prototype.html` — un seul appareil, navigation réelle entre les
+  trois écrans, état qui change vraiment (favoris, historique, onglets...). Le moteur de
+  traduction NL → macro y est un module de démonstration à vocabulaire volontairement
+  limité (quelques motifs reconnus), pas une préfiguration du futur moteur — seuls la
+  navigation et les enchaînements d'écrans font foi.
 - **Bibliothèque de macros — sélection à revoir avec l'axe A.** Les cinq entrées de la
   maquette sont choisies à la main dans le corpus (motifs qui reviennent, pas un vote de
   popularité qui n'existe pas dans les sources). Une fois l'axe A avancé, la sélection
