@@ -85,8 +85,26 @@ l'app existe, elle journalisera ses propres refus dans le même format.
 | v0.5 | **Patch** — où `At` s'inverse une seconde fois |
 | v0.6 | **Groupes** — un ordre, pas seulement un ensemble |
 | v0.7 | **Palettes et Presets** — la référence, et ce qui la casse |
+| v0.8 | **Mark** — deux mécanismes exclusifs, et un mode global invisible |
 
-Ce que v0.7 ajoute concrètement :
+Ce que v0.8 ajoute concrètement :
+
+- **AutoMark et marques référencées s'excluent**, et le choix est un réglage de Setup
+  *global et rétroactif* — désactiver AutoMark convertit toutes les AutoMarks du show en
+  marques référencées. Aucune commande de lecture n'est documentée : une même intention
+  utilisateur se traduit différemment selon un état que le générateur ne peut pas
+  consulter. Troisième cas de ce genre après le mode de patch (#20) et le mode
+  Q Only/Track — le motif devient une caractéristique de la plateforme, pas un accident.
+- **Les channels à marquer sont obligatoires** : « Eos will not assume all automated
+  fixtures apply to any given mark ». Une intention « marque les asservis » n'a pas de
+  traduction — il faut demander la liste, pas la deviner.
+- **`Mark Cue <n>` a un effet de bord silencieux** : il supprime tout mouvement NP
+  intermédiaire de ces channels entre les deux cues, dans des cues que l'utilisateur n'a
+  pas nommées.
+- `{Earliest}`, `{Earliest M}`, marquage partiel par catégorie, et `{Emergency Mark}`
+  marqué **non générable** — c'est un réglage de Setup, pas un token de ligne de commande.
+
+Ce que v0.7 avait ajouté :
 
 - **Les quatre familles de palettes** plus le générique `Palette`, avec les trois options
   d'enregistrement `{By Type}`, `{Absolute}`, `{Locked}`.

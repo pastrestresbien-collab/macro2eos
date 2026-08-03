@@ -150,7 +150,25 @@ déjà relevée sur les submasters (§20) et les cues (§12), elle vaut aussi po
 palettes. Sans sélection un `Record` écrase, avec sélection il fusionne — même mot,
 deux résultats.
 
-**Reste à faire** : Mark §9, cues multipart §17,
+**Fait — v0.8 (2026-08-03)** : Mark §9. 64 actions, 130 règles de légalité, 79 cas de
+non-régression.
+
+AutoMark et marques référencées s'excluent mutuellement, et le choix est un réglage de
+Setup global et rétroactif, sans commande de lecture documentée (#24). C'est le
+**troisième état invisible** rencontré, après le mode de patch (#20) et le couple
+Q Only/Track : à ce stade, « le sens d'une commande dépend d'un état que le générateur ne
+peut pas lire » n'est plus un accident, c'est une caractéristique de la plateforme — et
+l'argument le plus solide en faveur de la validation utilisateur avant envoi.
+
+Deux points opérationnels : les channels à marquer sont **obligatoires** (« Eos will not
+assume all automated fixtures apply to any given mark »), donc une intention « marque les
+asservis » n'a pas de traduction ; et `Mark Cue <n>` supprime silencieusement tout
+mouvement NP intermédiaire dans des cues que l'utilisateur n'a pas nommées.
+
+Nouveau #23 : `{High Priority}` / `{Low Priority}` sont documentés au §9 mais absents de
+la liste OSC officielle — même classe de problème que les sept conditions Query de #15.
+
+**Reste à faire** : cues multipart §17,
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 
@@ -239,6 +257,15 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     accolades ne passent pas, ces commandes doivent être décomposées en `/eos/key/<nom>`
     séparés — ce qui change la stratégie d'injection, pas seulement la syntaxe.
 
+24. **AutoMark ou marques référencées — lequel est actif ?** Les deux mécanismes
+    s'excluent mutuellement, le choix est un réglage de Setup **global et rétroactif**
+    (désactiver AutoMark convertit toutes les AutoMarks du show en marques référencées),
+    et aucune commande de lecture n'est documentée. Une même intention utilisateur —
+    « prépare le mouvement pendant que le projecteur est noir » — se traduit donc
+    différemment selon un état que le générateur ne peut pas consulter. Existe-t-il une
+    sortie OSC ou une commande qui révèle ce réglage ? Sinon, la traduction doit être
+    annoncée sous condition, comme pour le mode de patch (#20).
+
 ### Priorité basse — complètent la couverture
 
 9. **Styles de Fan non testés** : `{Interleave}`, `{Jump}`, `{Num Groups}`,
@@ -263,6 +290,12 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     leurs noms. Ses propres exemples chiffrés, quelques pages plus loin, font l'inverse
     de la liste et respectent les noms. Le modèle retient les exemples, cohérents entre
     eux, mais c'est un arbitrage : une frappe sur console tranche en dix secondes.
+23. **`{High Priority}` / `{Low Priority}` sur une marque — pas de touche OSC.**
+    Documentés au manuel §9 (l'ordre de tentative est high → normale → low) mais absents
+    de la liste officielle des touches OSC du §31 comme de `eosKeys.ts`. Même classe de
+    problème que les sept conditions Query de #15 : atteignables au doigt, hors de portée
+    de `/eos/key/`. Attention à ne pas les confondre avec `priority`→`SOURCE_PRIORITY`,
+    qui existe bien mais désigne la priorité de submaster (§20), un autre mécanisme.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

@@ -455,8 +455,16 @@ class Generateur:
             return f"{mot} {act['adresse']} At {act['channel']}"
 
         if t in ("retirer_adresse", "depatcher", "patch_hors_sortie",
-                 "reordonner", "inverser_ordre", "ordre_aleatoire"):
+                 "reordonner", "inverser_ordre", "ordre_aleatoire",
+                 "marquer", "marquer_au_plus_tot"):
+            if t == "marquer":
+                self._verifier_combinaison("AutoMark ou marques référencées", avert)
             return mot
+
+        if t in ("marquer_vers_cue", "mark_time"):
+            if t == "marquer_vers_cue":
+                self._verifier_combinaison("AutoMark ou marques référencées", avert)
+            return f"{mot} {act['cible' if t == 'marquer_vers_cue' else 'valeur']}"
 
         if t in ("record_groupe", "record_only_groupe", "update_groupe",
                  "inserer_avant", "inserer_apres"):

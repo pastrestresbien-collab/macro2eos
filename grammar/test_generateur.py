@@ -433,6 +433,48 @@ CAS = [
         "attendu": "Chan 1 At 50 Enter",
         "avertissements": 1,
     },
+    # -------------------------------------------------------- Mark (§9)
+    {
+        "nom": "manuel §9 — drapeau de marque sur la cue marquée",
+        # [Cue] [10] [Mark] [Enter]
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 10},
+             "action": {"type": "marquer"}},
+        ],
+        "attendu": "Cue 10 Mark Enter",
+        "avertissements": 1,      # PLANNING #24 — quel mécanisme est actif ?
+    },
+    {
+        "nom": "manuel §9 — channels à marquer dans la cue source",
+        # [1] [Thru] [10] [Mark] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 10},
+             "action": {"type": "marquer"}},
+        ],
+        "attendu": "Chan 1 Thru 10 Mark Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §9 — marquer vers une cue antérieure",
+        # [select channels] [Mark] [Cue] [5] [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 10},
+             "action": {"type": "marquer_vers_cue", "cible": 5}},
+        ],
+        "attendu": "Chan 1 Thru 10 Mark Cue 5 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §9 — {Earliest} remonte au dernier passage à zéro",
+        # [1] [Mark] {Earliest} [Enter]
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "marquer_au_plus_tot"}},
+        ],
+        "attendu": "Chan 1 Mark Earliest Enter",
+        "avertissements": 0,
+    },
+
     # ------------------------------------- Palettes (§10) et Presets (§11)
     {
         "nom": "manuel §10 — enregistrement d'une palette couleur avec libellé",

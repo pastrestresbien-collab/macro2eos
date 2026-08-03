@@ -11,6 +11,7 @@
 #   v0.5  + Patch (§4) — où `At` s'inverse une seconde fois
 #   v0.6  + Groupes (§7) — un ordre, pas seulement un ensemble
 #   v0.7  + Palettes (§10) et Presets (§11) — la référence, et ce qui la casse
+#   v0.8  + Mark (§9) — deux mécanismes exclusifs, et un mode global invisible
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -18,10 +19,10 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.7"
+  version: "0.8"
   perimetre: >
     selection + couleur + record palette + fan + cues + macros + submasters
-    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark
   maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
@@ -158,6 +159,125 @@ contexte:
         Cinq sens documentés pour un seul symbole, tous distingués par la
         position et non par l'écran. À ne pas confondre avec la polysémie de
         `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# MARK — préparer un mouvement pendant que le projecteur est noir
+#
+# Deux mécanismes exclusifs l'un de l'autre, et un mode global qui décide
+# lequel est actif. C'est le seul endroit de la grammaire où un réglage de
+# Setup change la nature même de ce qui sera enregistré.
+# --------------------------------------------------------------------------
+mark:
+  confiance: A
+  source: "manuel §9 Mark"
+  mot_cle: "Mark"
+  osc: mark
+
+  exclusivite:
+    regle: "AutoMark et marques référencées ne peuvent PAS coexister"
+    confiance: A
+    conversion: >
+      Désactiver AutoMark convertit TOUTES les AutoMarks du show en marques
+      référencées. Le basculement est global et rétroactif, pas un choix par
+      cue.
+    consequence_generateur: >
+      Le générateur ne peut pas savoir lequel des deux mécanismes est actif :
+      c'est un réglage de Setup, sans commande de lecture. Une intention
+      « prépare le mouvement avant l'allumage » se traduit différemment selon
+      ce réglage, et la traduction doit donc être annoncée sous condition.
+    indisponible_sur: ["Element 2", "Element Classic"]
+
+  automark:
+    principe: >
+      Quand une cue fait passer un projecteur de 0 à actif avec un mouvement
+      NP simultané, la console exécute ce mouvement dans la cue PRÉCÉDENTE.
+    indicateur: "M dans les flags ; D si l'AutoMark a été désactivé pour la cue"
+    confiance: A
+
+  referencee:
+    cue_marquee:
+      role: "porte le drapeau M ; c'est là que les NP changent réellement"
+      pose: "`Cue <n> Mark Enter`"
+    cue_source:
+      role: "porte l'intensité ; c'est là que les mouvements NP sont STOCKÉS"
+      pose: "`<channels> Mark Enter` puis enregistrement de la cue"
+    confiance: A
+    recherche_arriere: >
+      Sans instruction explicite, Eos remonte la cue list jusqu'au premier
+      drapeau M rencontré — à condition que l'intensité des channels reste à
+      zéro sur toute la durée de la marque.
+    channels_obligatoires:
+      regle: >
+        Il faut désigner explicitement les channels à marquer dans la cue
+        source.
+      confiance: A
+      source: 'manuel §9 : "Eos will not assume all automated fixtures apply to any given mark"'
+      consequence_generateur: >
+        Une intention « marque les projecteurs asservis » n'a pas de
+        traduction : il faut une liste de channels. Le traducteur doit la
+        demander plutôt que la deviner.
+    marquage_partiel:
+      forme: "`1 Thru 10 Focus Mark Enter` — ne marque que le focus"
+      effet: "les autres paramètres bougent en direct pendant la montée"
+      confiance: A
+    vers_cue_anterieure:
+      forme: "`<channels> Mark Cue 5 Enter` puis `Record Cue 8 Enter`"
+      effet: >
+        Marque la cue 5 pour exécuter les mouvements NP stockés en cue 8. Tout
+        mouvement NP intermédiaire pour ces channels est SUPPRIMÉ, tant que
+        l'intensité reste à zéro dans l'intervalle.
+      confiance: A
+
+  priorite:
+    ordre_de_tentative: ["{High Priority}", "Mark (normale)", "{Low Priority}"]
+    confiance: A
+    source: "manuel §9 « Priority Mark »"
+    sans_touche_osc: ["{High Priority}", "{Low Priority}"]
+    backlog: 23
+    note: >
+      Ni `eosKeys.ts` ni la liste officielle des touches OSC du manuel §31 ne
+      contiennent ces deux softkeys. `priority`→SOURCE_PRIORITY existe mais
+      désigne la priorité de submaster (§20), mécanisme différent — à ne pas
+      confondre.
+
+  earliest:
+    "{Earliest}":
+      mot_cle: "{Earliest}"
+      osc: earliest
+      effet: >
+        Marque dans la cue qui suit le dernier passage de l'intensité d'une
+        valeur non nulle à 0.
+      confiance: A
+      note: >
+        Traverse les cues bloquées et les mouvements d'intensité bloqués à 0
+        jusqu'à trouver le plus ancien passage à 0.
+    "{Earliest M}":
+      mot_cle: "{Earliest M}"
+      osc: earliest_m
+      effet: "marque vers la plus ancienne cue portant DÉJÀ un drapeau M"
+      confiance: A
+      repli: "se comporte comme {Earliest} si aucune cue marquée n'existe"
+    "{Emergency Mark}":
+      effet: "pose automatiquement un drapeau M s'il n'y en avait pas"
+      confiance: A
+      generable: false
+      note: >
+        Réglage de Setup > Record Defaults, pas un token de ligne de commande.
+        Hors de portée du générateur, à signaler à l'utilisateur seulement.
+
+  mark_time:
+    mot_cle: "Mark Time"
+    osc: mark_time
+    confiance: A
+
+  piege_enable_disable:
+    description: >
+      `{Enable}`/`{Disable}` appliqués au marking se comportent encore comme un
+      TOGGLE en macro, malgré la doctrine officielle générale qui promet un
+      comportement absolu pour ces softkeys.
+    confiance: C
+    source: "corpus #118, contredit #074"
+    backlog: 6
 
 # --------------------------------------------------------------------------
 # PALETTES ET PRESETS — la référence, et ce qui la casse
@@ -1190,6 +1310,46 @@ actions:
       `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
       toute commande dont le sens dépend de l'écran — `At` au premier chef.
 
+  # -- mark -----------------------------------------------------------------
+  marquer:
+    mot_cle: "Mark"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §9 « Setting Referenced Mark Flags »"
+    osc: mark
+    avertissement: >
+      Ne fonctionne qu'en marques référencées, jamais avec AutoMark actif —
+      et le générateur ne peut pas savoir lequel des deux est en vigueur.
+  marquer_vers_cue:
+    mot_cle: "Mark Cue"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §9 : « [select channels] [Mark] [Cue] [5] [Enter] »"
+    avertissement: >
+      Supprime tout mouvement NP intermédiaire de ces channels entre les deux
+      cues. Effet de bord silencieux sur des cues que l'utilisateur n'a pas
+      nommées.
+  marquer_au_plus_tot:
+    mot_cle: "Mark Earliest"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §9 « Mark Earliest »"
+    osc: earliest
+  mark_time:
+    mot_cle: "Mark Time"
+    attend: duree
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "eosKeys.ts `mark_time`→MARK_TIME ; manuel §9 « Mark Time »"
+    osc: mark_time
+
   # -- palettes et presets --------------------------------------------------
   record_palette:
     mot_cle: "Record"
@@ -2189,6 +2349,39 @@ legalite:
     confiance: A
     note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
 
+  # --- Mark ---
+  - objet: Cue
+    action: marquer
+    valide: oui
+    confiance: A
+    note: "`Cue 10 Mark Enter` pose le drapeau M — c'est la cue marquée"
+
+  - objet: Chan
+    action: marquer
+    valide: oui
+    confiance: A
+    note: "`1 Thru 10 Mark Enter` dans la cue source — les channels sont obligatoires"
+
+  - objet: Group
+    action: marquer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: marquer_vers_cue
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: marquer_au_plus_tot
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: mark_time
+    valide: oui
+    confiance: A
+
   # --- Palettes et presets ---
   - objet: selection_courante
     action: record_palette
@@ -2425,6 +2618,25 @@ legalite:
       l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
       un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
       peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "AutoMark ou marques référencées — lequel est actif ?"
+    valide: inconnu
+    confiance: null
+    backlog: 24
+    note: >
+      Les deux mécanismes s'excluent, le choix est un réglage de Setup global
+      et rétroactif, et aucune commande de lecture n'est documentée. Une même
+      intention « prépare le mouvement avant l'allumage » se traduit
+      différemment selon ce réglage que le générateur ne peut pas consulter.
+
+  - combinaison: "{High Priority} / {Low Priority} sur une marque"
+    valide: inconnu
+    confiance: null
+    backlog: 23
+    note: >
+      Documentés au manuel §9 mais absents de la liste officielle des touches
+      OSC (§31) comme de eosKeys.ts. Même classe de problème que les sept
+      conditions Query de #15 : atteignables au doigt, pas par `/eos/key/`.
 
   - combinaison: "{Insert Before} / {Insert After} — sens réel"
     valide: inconnu
