@@ -24,6 +24,7 @@ et le backlog de travail.
 | EOS OSC Support — Supported OSC Commands (ETCLabs/EosSyncLib, 2017) | [`reference/Supported_OSC_Commands.md`](reference/Supported_OSC_Commands.md) | ✅ Converti intégralement (PDF source inclus) — colonne « Min Eos Version » par commande, absente du manuel v3.2.0 |
 | `fakeeos.ts` — simulateur ETCnomad minimal (transport OSC/TCP, projet xtouch2Eos) + client de test | [`reference/tools/`](reference/tools/) | ✅ Reçu et testé bout en bout (voir `reference/tools/README.md`) — valide le transport, pas la grammaire Eos |
 | **Grammaire ETC Eos consolidée** — synthèse de référence (corpus 174 entrées + manuel v3.2.0 32 chapitres + workbooks + eosKeys.ts + OSC docs), 15 sections, remplace la grammaire consolidée historique du corpus | [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md) | ✅ Rédigée à partir de l'ensemble du corpus disponible |
+| Table Lee Filters (théâtre) — numéro de gel par teinte nommée, hors ETC | [`reference/lee_filters_theatre.md`](reference/lee_filters_theatre.md) | 🚧 Partielle (6 teintes sourcées via `WebSearch`, chaud/froid ambigus) — `PLANNING.md` #34 |
 
 ## Grammaire exploitable par le code
 

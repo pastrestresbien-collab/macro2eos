@@ -3072,6 +3072,10 @@ nuanciers:
   2: { nom: "GAM",     confiance: A }
   3: { nom: "Lee",     confiance: A }
   4: { nom: "Rosco E-Colour", confiance: A }
+  # Numéro de bibliothèque ≠ numéro de teinte. Quel gel EST "rouge" ou "chaud" chez un
+  # fabricant est une donnée externe à la console, hors du périmètre de ce modèle —
+  # voir reference/lee_filters_theatre.md (partiel, PLANNING.md #34) pour Lee. Le
+  # traducteur ne doit jamais deviner un numéro de teinte non sourcé.
 
 # --------------------------------------------------------------------------
 # MATRICE DE LÉGALITÉ
