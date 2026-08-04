@@ -320,13 +320,16 @@
   .hint { max-width: 52ch; font-size: 12.5px; color: var(--page-muted); text-align: center; }
   .hint code { font-family: var(--mono); background: var(--page-surface); border: 1px solid var(--page-line); border-radius: 4px; padding: 1px 5px; }
 
+  .fs-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
   .fs-btn {
     display: inline-flex; align-items: center; gap: 7px;
     background: var(--page-surface); border: 1px solid var(--page-line); color: var(--page-ink);
     font-family: inherit; font-size: 13px; font-weight: 600; border-radius: 10px;
-    padding: 9px 16px; cursor: pointer;
+    padding: 9px 16px; cursor: pointer; text-decoration: none;
   }
   .fs-btn:hover { border-color: var(--page-accent); color: var(--page-accent); }
+  .fs-btn[disabled] { opacity: .55; cursor: default; }
+  .fs-btn[disabled]:hover { border-color: var(--page-line); color: var(--page-ink); }
 
   /* plein écran : le châssis disparaît, l'écran de l'app occupe tout l'espace */
   #viewport:fullscreen, #viewport:-webkit-full-screen {
@@ -367,10 +370,13 @@
     </div>
   </div>
 
-  <button class="fs-btn" id="fs-toggle" type="button">⛶ Tester en plein écran</button>
+  <div class="fs-actions">
+    <button class="fs-btn" id="fs-toggle" type="button">⛶ Tester en plein écran</button>
+    <a class="fs-btn" id="open-browser" href="#" target="_blank" rel="noopener noreferrer">↗ Ouvrir dans le navigateur</a>
+  </div>
   <p class="hint" id="fs-status" style="display:none;">
-    Le plein écran est bloqué ici (souvent le cas dans un aperçu intégré). Ouvrez ce lien
-    dans son propre onglet de navigateur, puis réessayez.
+    Le plein écran est bloqué ici (souvent le cas dans un aperçu intégré). Utilisez
+    « Ouvrir dans le navigateur » ci-dessus, puis réessayez depuis là.
   </p>
 
   <p class="hint">
@@ -1220,6 +1226,11 @@
     });
     document.addEventListener("fullscreenchange", updateLabel);
     document.addEventListener("webkitfullscreenchange", updateLabel);
+  })();
+
+  (function setupOpenInBrowser() {
+    var link = document.getElementById("open-browser");
+    link.href = window.location.href;
   })();
 
   renderAll();
