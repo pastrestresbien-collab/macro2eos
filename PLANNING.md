@@ -627,6 +627,21 @@ que de disparaître — le numéro reste citable dans l'historique de `grammar/m
     la partition courante. Le mécanisme Flexichannel lui-même (`§6`, « Using Flexichannel »)
     n'est pas encore dans le modèle — hors périmètre pour l'instant, pas une zone d'ombre
     de la console.
+34. **Table de référence des couleurs Lee — absente du dépôt.** Trouvé le 2026-08-03 en
+    testant une traduction réelle (« créer les palettes couleur 1 à 6, Lee, chaud/froid/
+    rouge/vert/bleu/jaune »). Le dépôt sait QUE le nuancier Lee est la bibliothèque 3
+    (`Color 3/<numéro>`, manuel §10, corpus #082) mais ne contient AUCUNE table reliant un
+    nom de teinte (chaud, froid, rouge, primaire, corrections colorimétriques...) à son
+    numéro de gel Lee. Seul `Lee 195` apparaît dans le corpus, comme exemple générique non
+    rattaché à une couleur nommée. **Même nature de lacune que #32 (ASCII)** : ce n'est pas
+    une zone d'ombre de la console — ni un banc, ni une session console ne la résout, il
+    faut le document lui-même. **Risque distinct des autres points du backlog** : une
+    mauvaise référence de gel ne produit ni erreur de syntaxe ni refus de la console — la
+    macro s'exécute et donne silencieusement la mauvaise couleur sur scène. Le traducteur
+    ne doit donc jamais deviner un numéro Lee ; il doit le demander à l'utilisateur ou
+    consulter une table sourcée. À rapatrier (voir `CLAUDE.md` règle n°1) : la charte des
+    couleurs Lee (catalogue officiel Lee Filters), ou au minimum un sous-ensemble courant
+    (primaires, correction CT chaud/froid) suffisant pour les demandes usuelles.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :

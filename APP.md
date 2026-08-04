@@ -6,7 +6,7 @@ vers la console.
 État : **conception en cours**. Ce fichier ne contient que ce qui est décidé ou imposé
 par des faits techniques établis. Le reste est marqué ouvert.
 
-Dernière mise à jour : 2026-08-01.
+Dernière mise à jour : 2026-08-03.
 
 ---
 
@@ -172,3 +172,15 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
   message d'erreur de la console soit assez précis pour être exploité. À vérifier —
   le simulateur ne renvoie pas d'erreur réaliste. Si le message s'avère trop pauvre,
   l'app signalera le refus sans pouvoir proposer de correction.
+- **Enregistrement d'un record target sans scope de channels explicite — l'app doit
+  demander.** Trouvé le 2026-08-03 en testant une traduction réelle (« créer les palettes
+  couleur 1 à 6, Lee, chaud/froid/rouge/vert/bleu/jaune ») : la demande ne précisait aucun
+  channel. `Record Color Palette` capture l'état de la sélection courante, ou de tous les
+  channels non-défaut si rien n'est sélectionné (rarement l'intention réelle) — voir
+  `grammar/modele.yaml` § palettes. Le traducteur ne doit jamais choisir cette portée à la
+  place de l'utilisateur : c'est une **question à poser en écran 1**, pas une valeur par
+  défaut à deviner. Deux réponses possibles à proposer : une sélection précise (« quels
+  circuits ? »), ou `{By Type}` (palette générique réutilisable sur tout fixture du même
+  type, sans dépendre de channels précis — manuel §10). Motif générique, pas propre aux
+  palettes couleur : vaut pour tout Record sans sélection explicite dans la phrase
+  d'origine (presets, palettes de toute famille, submasters).
