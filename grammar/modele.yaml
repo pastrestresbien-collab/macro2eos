@@ -422,16 +422,29 @@ saisie_niveau:
       le seul piège rencontré jusqu'ici qui transforme une commande valide en
       résultat faux d'un ordre de grandeur.
     regle: >
-      Le générateur n'émet jamais un niveau d'un seul chiffre. Il avertit et
-      propose la forme à deux chiffres.
+      Le générateur n'émet jamais un niveau d'un seul chiffre nu. Pour une
+      valeur de 1 à 9, il écrit systématiquement la forme à deux chiffres avec
+      un zéro de tête (voir `forme_pourcentage_simple`).
   forme_pourcentage_simple:
-    deduction: "`At 05` devrait donner 5 %, par symétrie avec la lecture littérale à deux chiffres"
-    confiance: null
-    backlog: 29
-    note: >
-      Aucun exemple du manuel ne montre une valeur inférieure à 10 %. La
-      déduction est solide mais reste une déduction — à confirmer au banc avant
-      de la faire produire par le traducteur.
+    regle: >
+      Sous 10 %, écrire DEUX chiffres avec un zéro de tête : `At 05` = 5 %,
+      `At 07` = 7 %, et ainsi de suite. Symétrique avec la lecture littérale à
+      deux chiffres déjà établie (`At 45` = 45 %) — la présence du second
+      chiffre, zéro ou non, est ce qui lève l'ambiguïté du chiffre unique.
+    confiance: S
+    source: >
+      Confirmation directe de l'utilisateur en session, 2026-08-03 : « 5 vaut
+      50 et 2 vaut 20 ainsi de suite. 05 vaut 5 et 07 vaut 7 ainsi de suite. »
+      Résout PLANNING #29, ouvert depuis v0.12 faute d'exemple du manuel sous
+      10 %. Confiance S par analogie avec `reference/JOURNAL_observations_nomad.md` :
+      même nature de source (retour direct de l'opérateur console) que les
+      autres observations S du projet, pas un document tiers.
+    generateur: >
+      `_formater_niveau()` applique cette règle : toute valeur entière de 1 à 9
+      passée à un niveau `At` (intensité, park) est rendue sur deux chiffres.
+      Ne s'étend pas à `Time`/`Delay`, qui lisent un chiffre unique
+      littéralement (`Time 6` = 6 s, manuel §8) — la règle du zéro implicite
+      est propre à `At`, pas au clavier numérique en général.
 
 # --------------------------------------------------------------------------
 # COURBES — une relation entre le temps et le niveau
@@ -3878,15 +3891,15 @@ legalite:
       Le mécanisme Flexichannel lui-même n'est pas encore dans le modèle —
       hors périmètre pour l'instant, pas une zone d'ombre de la console.
 
-  - combinaison: "niveau à un seul chiffre"
-    valide: inconnu
-    confiance: null
-    backlog: 29
+  - combinaison: "niveau sous 10 % — zéro de tête"
+    valide: oui
+    confiance: S
     note: >
-      `At 5` vaut 50 % (manuel §6, cinq occurrences de la notation `<0>`).
-      Comment exprimer 5 % n'est montré nulle part : aucun exemple du manuel ne
-      descend sous 10 %. `At 05` est la déduction naturelle, à confirmer avant
-      de la faire produire.
+      RÉSOLU 2026-08-03 (ex-#29). `At 5` vaut 50 % (manuel §6, cinq occurrences
+      de la notation `<0>`) ; sous 10 %, `At 05` = 5 %, `At 07` = 7 % —
+      confirmation directe de l'utilisateur en session. Le générateur écrit
+      désormais systématiquement deux chiffres pour toute valeur 1-9 via
+      `_formater_niveau()`, jamais un chiffre nu.
 
   - combinaison: "pose de filtres par accord maintenu"
     valide: inconnu

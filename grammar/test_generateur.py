@@ -435,14 +435,32 @@ CAS = [
     },
     # -------------------- Courbes (§22), Snapshots (§23), niveaux
     {
-        "nom": "manuel §6 — un niveau à un chiffre vaut des DIZAINES",
-        # [1] [+] [3] [At] [5] <0> = 50 %, donc `At 5` ne peut pas vouloir dire 5 %
+        "nom": "résolu ex-#29 — sous 10 %, le générateur écrit un zéro de tête",
+        # confirmation utilisateur 2026-08-03 : 05 = 5 %, 07 = 7 % ainsi de suite
         "ir": [
             {"selection": {"objet": "Chan", "numero": 1},
              "action": {"type": "intensite", "valeur": 5}},
         ],
-        "attendu": "Chan 1 At 5 Enter",
-        "avertissements": 1,      # PLANNING #29 — facteur dix silencieux
+        "attendu": "Chan 1 At 05 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "résolu ex-#29 — même règle pour 7 %",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "intensite", "valeur": 7}},
+        ],
+        "attendu": "Chan 1 At 07 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "0 % reste `At 0`, sans ambiguïté de dizaine à lever",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "intensite", "valeur": 0}},
+        ],
+        "attendu": "Chan 1 At 0 Enter",
+        "avertissements": 0,
     },
     {
         "nom": "un niveau à deux chiffres est lu littéralement, sans avertissement",
@@ -501,6 +519,15 @@ CAS = [
              "action": {"type": "parquer", "valeur": 50}},
         ],
         "attendu": "Chan 2 At 50 Park Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "résolu ex-#29 — le zéro de tête s'applique aussi au parquage",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 2},
+             "action": {"type": "parquer", "valeur": 5}},
+        ],
+        "attendu": "Chan 2 At 05 Park Enter",
         "avertissements": 0,
     },
     {

@@ -294,23 +294,33 @@ class Generateur:
 
         return " ".join(morceaux)
 
-    def _verifier_niveau(self, valeur: object, avert: list[str]) -> None:
+    def _formater_niveau(self, valeur: object) -> str:
         """`At 5` vaut 50 %, pas 5 % : un chiffre unique reçoit un zéro
-        implicite (manuel §6, notation `<0>`, cinq occurrences). C'est le seul
-        piège du modèle qui transforme une commande valide en résultat faux
-        d'un facteur dix, sans erreur de syntaxe."""
-        texte = str(valeur)
-        if len(texte) == 1 and texte.isdigit() and texte != "0":
-            backlog = self._backlog_de("niveau à un seul chiffre")
-            avert.append(
-                f"niveau `{texte}` : un chiffre unique reçoit un zéro implicite — "
-                f"la console lira {int(texte) * 10} %, pas {texte} % "
-                f"(manuel §6). Écrire `{int(texte) * 10}` pour {int(texte) * 10} %, "
-                f"ou voir PLANNING #{backlog} pour {texte} %"
-            )
+        implicite (manuel §6, notation `<0>`, cinq occurrences). Confirmé en
+        session le 2026-08-03 : sous 10 %, il faut écrire deux chiffres avec un
+        zéro de tête — `05` = 5 %, `07` = 7 % — pour rester lu littéralement.
+
+        Ne s'applique QU'aux niveaux `At` (pourcentages). `Time`/`Delay` lisent
+        un chiffre unique littéralement — `Time 6` vaut 6 s, pas 60 s (manuel
+        §8) — donc cette méthode n'est appelée que pour `intensite`/`parquer`,
+        jamais pour `_plage_ou_valeur` générique."""
+        if isinstance(valeur, int) and 1 <= valeur <= 9:
+            return f"{valeur:02d}"
+        return str(valeur)
+
+    def _plage_ou_valeur_pourcentage(self, act: dict, cle: str = "valeur") -> str:
+        """Comme `_plage_ou_valeur`, avec le zéro de tête sous 10 % (voir
+        `_formater_niveau`) — réservé aux niveaux `At`."""
+        if "de" in act:
+            return (f"{self._formater_niveau(act['de'])} {self._thru} "
+                    f"{self._formater_niveau(act['a'])}")
+        return self._formater_niveau(act[cle])
 
     def _plage_ou_valeur(self, act: dict, cle: str = "valeur") -> str:
-        """`10` ou `10 Thru 50` — la seconde forme est un fan implicite."""
+        """`10` ou `10 Thru 50` — la seconde forme est un fan implicite.
+        Chiffre unique rendu littéralement : ne PAS utiliser pour un niveau
+        `At` (voir `_plage_ou_valeur_pourcentage`) — `Time`/`Delay` et les
+        autres cibles numérotées n'ont pas la règle du zéro implicite."""
         if "de" in act:
             return f"{act['de']} {self._thru} {act['a']}"
         return str(act[cle])
@@ -343,10 +353,7 @@ class Generateur:
             return f"{mot} {act['nuancier']}/{act['teinte']}"
 
         if t == "intensite":
-            for cle in ("valeur", "de", "a"):
-                if cle in act:
-                    self._verifier_niveau(act[cle], avert)
-            return " ".join([mot, self._plage_ou_valeur(act)]
+            return " ".join([mot, self._plage_ou_valeur_pourcentage(act)]
                             + self._suffixe_fan(act, avert))
 
         if t in ("temps", "delai"):
@@ -499,8 +506,6 @@ class Generateur:
             return mot
 
         if t == "parquer":
-            if "valeur" in act:
-                self._verifier_niveau(act["valeur"], avert)
             if "valeur" not in act:
                 avert.append(
                     "`At Park` sans valeur est un bascule : il déparque si le "
@@ -508,7 +513,7 @@ class Generateur:
                     "pour un résultat déterministe"
                 )
                 return f"At {mot}"
-            return f"At {act['valeur']} {mot}"
+            return f"At {self._formater_niveau(act['valeur'])} {mot}"
 
         if t == "parquer_echelle":
             return f"{mot} {act['valeur']} Park"

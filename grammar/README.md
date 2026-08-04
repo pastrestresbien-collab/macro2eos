@@ -173,9 +173,10 @@ C'est le seul piège rencontré qui transforme une commande **parfaitement valid
 résultat faux d'un **facteur dix**, sans erreur de syntaxe et sans rien signaler. Une
 demande « mets les circuits à 5 % » traduite naïvement donne 50 %.
 
-Le générateur refuse désormais d'émettre un niveau à un chiffre et propose la forme à deux
-chiffres. Et comment exprimer réellement 5 % reste ouvert (#29) : **aucun exemple du manuel
-ne descend sous 10 %**. `At 05` est la déduction naturelle, mais ce n'est qu'une déduction.
+Le générateur refuse d'émettre un niveau à un chiffre nu et écrit deux chiffres avec un zéro
+de tête pour toute valeur de 1 à 9. **Résolu le 2026-08-03** (confiance S, confirmation
+directe en session) : `05` = 5 %, `07` = 7 %, ainsi de suite — voir l'ex-#29, désormais dans
+la section « Résolu » de `PLANNING.md`.
 
 Le reste de v0.12 :
 

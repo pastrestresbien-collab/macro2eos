@@ -244,7 +244,7 @@ notation `<0>`, et le §22 le reconfirme sur les points de courbe. C'est le seul
 rencontré dans tout ce travail qui transforme une commande parfaitement valide en résultat
 faux d'un **facteur dix**, en silence. Le générateur refuse désormais d'émettre un niveau
 à un chiffre. Comment exprimer réellement 5 % reste ouvert (#29) — aucun exemple du manuel
-ne descend sous 10 %.
+ne descend sous 10 %. *(Résolu le 2026-08-03, voir « Résolu » en tête du backlog technique.)*
 
 Deux autres apports. L'**idiome `At Enter`** est encodé comme idiome général plutôt que
 redécouvert chapitre par chapitre : six occurrences dans cinq chapitres où `At` suivi
@@ -337,12 +337,15 @@ forme générale est « un attribut suivi d'`Enter` sans valeur efface l'attribu
 
 ## Bilan de la campagne d'extension (v0.1 → v0.16) — v0.15 clôturée le 3 août, prolongée le même jour à la demande de l'utilisateur
 
-Seize tranches, du 1ᵉʳ au 3 août 2026. Le modèle est passé de 2 objets et 3 actions à
-**9 objets, 79 actions, 10 modificateurs, 164 règles de légalité**, avec **107 cas de
-non-régression** dont la majorité sont des exemples chiffrés du manuel officiel recopiés
-verbatim. Le backlog est passé de 12 à **33 points**, dont 21 ouverts par ce travail.
-**26 d'entre eux sont encodés dans le modèle** et déclenchent un avertissement du
-générateur — ils ne dorment pas dans un fichier, ils parlent à l'usage.
+Seize tranches, du 1ᵉʳ au 3 août 2026, plus une résolution le même jour. Le modèle est
+passé de 2 objets et 3 actions à **9 objets, 79 actions, 10 modificateurs, 164 règles de
+légalité**, avec **110 cas de non-régression** dont la majorité sont des exemples chiffrés
+du manuel officiel recopiés verbatim. Le backlog est passé de 12 à **33 points**, dont 21
+ouverts par ce travail. **25 restent encodés dans le modèle** et déclenchent un
+avertissement du générateur — ils ne dorment pas dans un fichier, ils parlent à l'usage.
+**Un point (#29) est résolu** : c'est la première fois qu'une confirmation réelle, en
+session, referme une zone d'ombre plutôt que d'en ouvrir une — la preuve que le mécanisme
+fonctionne dans les deux sens.
 
 ### Ce que la couverture atteint
 
@@ -372,13 +375,14 @@ qu'elle *produit*, sans que son texte change d'un caractère. Pris ensemble, ils
 constituent l'argument le plus solide en faveur de la validation utilisateur avant envoi —
 qui n'était jusqu'ici justifiée que par prudence.
 
-### Le piège le plus coûteux
+### Le piège le plus coûteux — résolu
 
-**`At 5` vaut 50 %, pas 5 %** (#29). Établi par cinq occurrences de la notation `<0>` au
-§6 et reconfirmé au §22. C'est le seul cas rencontré où une commande parfaitement valide
-produit un résultat faux d'un **facteur dix**, en silence. Le générateur refuse désormais
-d'émettre un niveau à un chiffre — mais la forme correcte pour 5 % reste à confirmer,
-aucun exemple du manuel ne descendant sous 10 %.
+**`At 5` vaut 50 %, pas 5 %** (ex-#29). Établi par cinq occurrences de la notation `<0>`
+au §6 et reconfirmé au §22. C'était le seul cas rencontré où une commande parfaitement
+valide produisait un résultat faux d'un **facteur dix**, en silence. Résolu le 2026-08-03
+par confirmation directe de l'utilisateur (confiance S) : sous 10 %, écrire deux chiffres
+avec un zéro de tête (`05` = 5 %, `07` = 7 %). Le générateur applique désormais la règle
+au lieu de simplement la signaler.
 
 ### Contradictions relevées plutôt que lissées
 
@@ -406,11 +410,11 @@ stratégie d'injection qui change, pas seulement la syntaxe.
 
 ### Prochaines étapes recommandées
 
-1. **Trancher #29 au banc** — le facteur dix est le seul risque de dommage direct.
-2. **Trancher #18** — il conditionne l'architecture d'injection.
-3. **Rapatrier la spécification USITT ASCII** (#32) — sans elle, la moitié annoncée de
-   l'architecture de sortie n'existe pas. Puis relecture d'ensemble du modèle.
-4. Brancher la couche NL (axe B), qui peut désormais s'appuyer sur un modèle qui refuse
+1. **Trancher #18 au banc** — les accolades dans `/eos/cmd` conditionnent l'architecture
+   d'injection ; c'est maintenant le point le plus critique encore ouvert (#29 est résolu).
+2. **Rapatrier la spécification USITT ASCII** (#32) — sans elle, la moitié annoncée de
+   l'architecture de sortie n'existe pas.
+3. Brancher la couche NL (axe B), qui peut désormais s'appuyer sur un modèle qui refuse
    d'inventer.
 
 **Reste à faire** :
@@ -447,6 +451,23 @@ cités tels quels par `grammar/modele.yaml` et `grammar/refus_terrain.yaml`. Ils
 donc jamais renumérotés : un point ajouté tardivement en priorité haute porte un grand
 numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros.
 
+**Un point résolu n'est jamais supprimé** : il migre ici, avec sa date et sa source, plutôt
+que de disparaître — le numéro reste citable dans l'historique de `grammar/modele.yaml`.
+
+### Résolu
+
+29. **✅ Niveau sous 10 % — zéro de tête.** Le manuel §6 établissait déjà, par cinq
+    occurrences de sa notation `<0>`, qu'un chiffre unique après `At` reçoit un zéro
+    implicite : `At 5` vaut **50 %**, pas 5 %. Restait ouvert : comment exprimer un
+    pourcentage réellement inférieur à 10, puisqu'aucun exemple du manuel n'y descendait.
+    **Résolu le 2026-08-03** par confirmation directe de l'utilisateur en session : « 5 vaut
+    50 et 2 vaut 20 ainsi de suite. 05 vaut 5 et 07 vaut 7 ainsi de suite. » Confiance S, par
+    analogie avec `reference/JOURNAL_observations_nomad.md` — même nature de source (retour
+    direct de l'opérateur console), pas un document tiers. Le générateur écrit désormais
+    systématiquement deux chiffres pour toute valeur 1-9 (`_formater_niveau()` dans
+    `grammar/generateur.py`), et ne signale plus rien : c'est devenu une règle appliquée, pas
+    une zone d'ombre.
+
 ### Priorité haute — bloquent des décisions d'architecture
 
 32. **La spécification du format ASCII est absente du dépôt — et elle n'est pas au banc.**
@@ -462,16 +483,6 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
     reste un flux manuel que l'app peut assister, pas générer.
     À rapatrier (voir `CLAUDE.md` règle n°1 pour la procédure) : la norme *USITT ASCII
     Text Representation* et la documentation ETC de son extension macro.
-
-29. **Comment exprime-t-on un niveau inférieur à 10 % ?** Le manuel §6 établit sans
-    ambiguïté, par cinq occurrences de sa notation `<0>`, qu'un chiffre unique après `At`
-    reçoit un zéro implicite : `At 5` vaut **50 %**, pas 5 %. Le §22 le reconfirme sur les
-    points de courbe. Mais **aucun exemple du manuel ne descend sous 10 %**, donc la forme
-    d'un petit pourcentage n'est montrée nulle part. `At 05` est la déduction naturelle et
-    cohérente avec la lecture littérale à deux chiffres, mais elle reste une déduction.
-    À trancher en priorité : c'est le seul piège rencontré qui transforme une commande
-    parfaitement valide en résultat faux d'un **facteur dix**, en silence. Le générateur
-    refuse désormais d'émettre un niveau à un chiffre et le signale.
 
 1. **`SubDown` / `SubUp` — survie à l'export/import ASCII.** Corpus #027 signale que les
    macros pilotant un submaster par apprentissage ne survivent pas au cycle ASCII. Si
