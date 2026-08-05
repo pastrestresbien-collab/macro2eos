@@ -78,10 +78,13 @@
     border-radius: 30px;
     padding: 10px;
     box-shadow: 0 16px 40px rgba(4, 10, 18, 0.3);
+    max-width: 100%;
   }
   .viewport {
-    width: 340px;
-    height: 660px;
+    /* s'adapte aux vrais téléphones hors plein écran, sans jamais déborder */
+    width: min(340px, calc(100vw - 56px));
+    height: min(660px, calc(100dvh - 220px));
+    min-height: 480px;
     background: var(--app-bg);
     color: var(--app-ink);
     border-radius: 22px;
@@ -352,6 +355,21 @@
   .hint { max-width: 52ch; font-size: 12.5px; color: var(--page-muted); text-align: center; }
   .hint code { font-family: var(--mono); background: var(--page-surface); border: 1px solid var(--page-line); border-radius: 4px; padding: 1px 5px; }
 
+  .guide { max-width: 54ch; width: 100%; border-top: 1px solid var(--page-line); padding-top: 20px; }
+  .guide h2 { margin: 0 0 12px; font-size: 15px; letter-spacing: -.01em; }
+  .guide ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .guide li { font-size: 13px; color: var(--page-muted); line-height: 1.5; }
+  .guide li b { color: var(--page-ink); font-weight: 620; }
+  .guide code {
+    font-family: var(--mono); font-size: 11.5px; background: var(--page-surface);
+    border: 1px solid var(--page-line); border-radius: 4px; padding: 1px 5px;
+    overflow-wrap: anywhere;
+  }
+  .guide-note {
+    margin: 16px 0 0; font-size: 12px; color: var(--page-muted); line-height: 1.55;
+    border-left: 2px solid var(--page-accent); padding-left: 12px;
+  }
+
   .fs-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
   .fs-btn {
     display: inline-flex; align-items: center; gap: 7px;
@@ -414,12 +432,33 @@
     <a class="fs-btn" id="open-browser" href="#" target="_blank" rel="noopener noreferrer">↗ Ouvrir dans le navigateur</a>
   </div>
 
-  <p class="hint">
-    Essayez : « groupe 5 et circuits 1 à 6 en lee 195 » (avertissement + correction par
-    tap), « circuits 10 a 20 en lee 195 » (refusée par la console), ou ouvrez la
-    <code>Bibliothèque</code> depuis l'écran de saisie. Le bouton d'état réseau, en haut,
-    simule une coupure.
-  </p>
+  <section class="guide">
+    <h2>Six choses à essayer</h2>
+    <ol>
+      <li><b>Le geste de jeu.</b> Favoris → <b>▶ Mode jeu</b>, puis envoyez des tuiles à
+        une main. La barre du bas disparaît : plus rien sous le pouce que des tuiles.
+        C'est le test qui compte le plus — faites-le en plein écran.</li>
+      <li><b>Une macro qui inquiète.</b> Saisie → tapez
+        <code>groupe 5 et circuits 1 à 6 en lee 195</code> → Traduire. Elle porte un ⚠,
+        la confirmation passe en plein écran. Tapez sur <code>Group</code> dans l'aperçu
+        pour corriger le champ sans retaper la phrase.</li>
+      <li><b>Un refus de la console.</b> Tapez
+        <code>circuits 10 a 20 en lee 195</code> → Traduire → Envoyer. La console refuse ;
+        la correction proposée s'affiche avant tout renvoi.</li>
+      <li><b>Une coupure réseau.</b> Armez <i>Démo · simuler une coupure</i>, envoyez.
+        La commande reste en suspens : à vous de trancher, rien n'est rejoué tout seul.</li>
+      <li><b>Le lien favoris ↔ historique.</b> ↺ en haut → <i>+ Ajouter en favori</i>, ou
+        Favoris → <i>+ Depuis l'historique</i>. Chaque envoi montre quels favoris en sont issus.</li>
+      <li><b>La navigation.</b> ↺ et ⚙ sont joignables depuis n'importe quel écran, et le
+        retour vous ramène toujours d'où vous veniez.</li>
+    </ol>
+    <p class="guide-note">
+      Vos favoris, onglets et historique sont conservés sur cet appareil : fermez et
+      rouvrez sans rien perdre. Pour repartir propre : ⚙ → <i>Repartir de zéro</i>.
+      Le moteur de traduction est une démonstration à vocabulaire limité — c'est la
+      navigation et les enchaînements qui sont à juger, pas sa compréhension.
+    </p>
+  </section>
 </div>
 
 <script>
@@ -618,11 +657,45 @@
   }
 
   // ---------- rendu ----------
+  // ---------------------------------------------------------------------------
+  // PERSISTANCE
+  // Seules les données que l'utilisateur a construites sont conservées : favoris,
+  // onglets, historique, mode d'envoi. L'état d'écran, lui, ne l'est pas — on
+  // rouvre toujours sur Favoris, prêt à jouer, jamais au milieu d'un formulaire.
+  // ---------------------------------------------------------------------------
+  var STORE_KEY = "macro2eos.prototype.v1";
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        uid: uid, tabs: state.tabs, activeTab: state.activeTab,
+        favoris: state.favoris, favMode: state.favMode, history: state.history
+      }));
+    } catch (e) { /* mode privé, quota : le prototype reste utilisable sans */ }
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.tabs) || !Array.isArray(d.favoris)) return false;
+      uid = d.uid || uid;
+      state.tabs = d.tabs;
+      state.favoris = d.favoris;
+      state.history = Array.isArray(d.history) ? d.history : state.history;
+      state.favMode = d.favMode === "confirm" ? "confirm" : "immediate";
+      state.activeTab = d.tabs.indexOf(d.activeTab) >= 0 ? d.activeTab : d.tabs[0];
+      return true;
+    } catch (e) { return false; }
+  }
+
   function renderAll() {
     renderStatusbar();
     renderBanner();
     renderScreen();
     renderNav();
+    save();
   }
 
   function renderStatusbar() {
@@ -722,8 +795,10 @@
 
     out += '<div class="label">Votre demande</div>';
     out += '<textarea id="nl-input" rows="2" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195">' + esc(state.lastInputText || "") + "</textarea>";
+    // Historique a quitté cette rangée : il est désormais dans l'en-tête, joignable
+    // depuis tous les écrans. Le retirer d'ici rend à « Traduire », l'action
+    // principale de cet écran, la place qu'un bouton principal mérite.
     out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="bibliotheque">Bibliothèque</button>' +
-           '<button class="btn btn-ghost btn-sm btn-aside" data-action="util" data-screen="historique">Historique</button>' +
            '<button class="btn btn-primary" data-action="translate">Traduire</button></div>';
 
     out += '<div class="demo-toggle"><span><b>Démo</b> · simuler une coupure au prochain envoi</span>' +
@@ -927,6 +1002,19 @@
 
     out += '<div class="group"><div class="label">Saisie</div>' +
       '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
+
+    out += '<div class="group"><div class="label">Prototype</div>';
+    if (state.resetAsk) {
+      out += '<div class="card card-danger"><strong>Tout remettre à zéro ?</strong>' +
+        "<p>Vos favoris, onglets et historique de test seront effacés et remplacés par l'exemple de départ.</p></div>" +
+        '<div class="btn-row"><button class="btn btn-danger btn-sm" data-action="proto:reset:confirm">Effacer</button>' +
+        '<button class="btn btn-ghost btn-sm" data-action="proto:reset:cancel">Annuler</button></div>';
+    } else {
+      out += '<div class="row click" data-action="proto:reset:ask"><span class="k">Repartir de zéro</span>' +
+        '<span class="v">Réinitialiser</span></div>';
+    }
+    out += '<p class="play-note">Vos favoris et votre historique sont conservés sur cet appareil : ' +
+      "vous pouvez fermer et rouvrir sans rien perdre.</p></div>";
 
     return out;
   }
@@ -1397,6 +1485,13 @@
         showToast("Export généré (démo) — texte + fichier.");
         break;
 
+      case "proto:reset:ask":   state.resetAsk = true;  renderAll(); break;
+      case "proto:reset:cancel": state.resetAsk = false; renderAll(); break;
+      case "proto:reset:confirm":
+        try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+        location.reload();
+        break;
+
       case "settings:import:confirm": {
         var tab = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
         state.favoris.push(
@@ -1489,6 +1584,9 @@
     link.href = window.location.href;
   })();
 
+  // Une session de test reprend là où la précédente s'était arrêtée : on rouvre
+  // sur Favoris, l'écran de jeu, avec les favoris et l'historique déjà construits.
+  if (load()) state.screen = "favoris";
   renderAll();
 })();
 </script>
