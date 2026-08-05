@@ -328,19 +328,26 @@
     padding: 9px 16px; cursor: pointer; text-decoration: none;
   }
   .fs-btn:hover { border-color: var(--page-accent); color: var(--page-accent); }
-  .fs-btn[disabled] { opacity: .55; cursor: default; }
-  .fs-btn[disabled]:hover { border-color: var(--page-line); color: var(--page-ink); }
 
-  /* plein écran : le châssis disparaît, l'écran de l'app occupe tout l'espace */
-  #viewport:fullscreen, #viewport:-webkit-full-screen {
-    width: 100vw; height: 100vh; max-width: none; border-radius: 0;
+  /* plein écran simulé en CSS pur : ne dépend d'aucune permission ni API
+     (l'API Fullscreen native est indisponible pour un élément quelconque sur
+     Safari iOS — cette version fonctionne dans tous les navigateurs). */
+  body.sim-fs { overflow: hidden; }
+  body.sim-fs .page { padding: 0; max-width: none; }
+  body.sim-fs .page > *:not(.device) { display: none; }
+  body.sim-fs .device {
+    position: fixed; inset: 0; z-index: 9999;
+    padding: 0; border: none; border-radius: 0; box-shadow: none;
   }
-  #viewport:fullscreen .os-bar, #viewport:-webkit-full-screen .os-bar { padding-top: 14px; }
-  .fs-exit-hint {
-    display: none; flex: none; text-align: center; font-size: 11px; color: var(--app-muted);
-    padding: 6px 10px 10px;
+  body.sim-fs .viewport { width: 100%; height: 100%; border-radius: 0; }
+
+  #sim-exit {
+    display: none; position: fixed; top: 10px; right: 10px; z-index: 10000;
+    width: 36px; height: 36px; border-radius: 50%; align-items: center; justify-content: center;
+    background: rgba(20,27,36,.85); border: 1px solid rgba(255,255,255,.18); color: #E4EAF2;
+    font-size: 16px; line-height: 1; cursor: pointer;
   }
-  #viewport:fullscreen .fs-exit-hint, #viewport:-webkit-full-screen .fs-exit-hint { display: block; }
+  body.sim-fs #sim-exit { display: flex; }
 </style>
 
 <div class="page">
@@ -354,6 +361,7 @@
   </p>
 
   <div class="device">
+    <button id="sim-exit" type="button" aria-label="Quitter le plein écran">✕</button>
     <div class="viewport" id="viewport">
       <div class="os-bar">
         <span>21:14</span>
@@ -366,7 +374,6 @@
       <div id="banner-slot"></div>
       <main id="screen"></main>
       <nav id="bottom-nav"></nav>
-      <div class="fs-exit-hint">Échap pour quitter le plein écran</div>
     </div>
   </div>
 
@@ -374,10 +381,6 @@
     <button class="fs-btn" id="fs-toggle" type="button">⛶ Tester en plein écran</button>
     <a class="fs-btn" id="open-browser" href="#" target="_blank" rel="noopener noreferrer">↗ Ouvrir dans le navigateur</a>
   </div>
-  <p class="hint" id="fs-status" style="display:none;">
-    Le plein écran est bloqué ici (souvent le cas dans un aperçu intégré). Utilisez
-    « Ouvrir dans le navigateur » ci-dessus, puis réessayez depuis là.
-  </p>
 
   <p class="hint">
     Essayez : « groupe 5 et circuits 1 à 6 en lee 195 » (avertissement + correction par
@@ -1205,26 +1208,39 @@
 
   (function setupFullscreen() {
     var btn = document.getElementById("fs-toggle");
+    var exitBtn = document.getElementById("sim-exit");
     var vp = document.getElementById("viewport");
-    var supported = !!(vp.requestFullscreen || vp.webkitRequestFullscreen);
-    if (!supported) { btn.textContent = "⛶ Plein écran indisponible ici — ouvrez le lien dans un onglet"; btn.disabled = true; return; }
 
-    function isFs() { return document.fullscreenElement || document.webkitFullscreenElement; }
-    function updateLabel() { btn.textContent = isFs() ? "⛶ Quitter le plein écran" : "⛶ Tester en plein écran"; }
+    function nativeOn() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+    function updateLabel() {
+      var on = document.body.classList.contains("sim-fs") || nativeOn();
+      btn.textContent = on ? "⛶ Quitter le plein écran" : "⛶ Tester en plein écran";
+    }
+
+    function enter() {
+      // le CSS seul garantit l'effet partout (y compris Safari iOS, où l'API
+      // Fullscreen native est indisponible pour un élément quelconque) ; la
+      // vraie API est tentée en plus, en bonus, quand le navigateur la permet.
+      document.body.classList.add("sim-fs");
+      var req = vp.requestFullscreen || vp.webkitRequestFullscreen;
+      if (req) { try { var p = req.call(vp); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+      updateLabel();
+    }
+    function exit() {
+      document.body.classList.remove("sim-fs");
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+      else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+      updateLabel();
+    }
 
     btn.addEventListener("click", function () {
-      var status = document.getElementById("fs-status");
-      if (isFs()) {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      } else if (vp.requestFullscreen) {
-        vp.requestFullscreen().then(function () { status.style.display = "none"; })
-          .catch(function () { status.style.display = ""; });
-      } else if (vp.webkitRequestFullscreen) {
-        vp.webkitRequestFullscreen();
-      }
+      if (document.body.classList.contains("sim-fs")) exit(); else enter();
     });
-    document.addEventListener("fullscreenchange", updateLabel);
+    exitBtn.addEventListener("click", exit);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && document.body.classList.contains("sim-fs")) exit();
+    });
+    document.addEventListener("fullscreenchange", function () { if (!nativeOn()) updateLabel(); });
     document.addEventListener("webkitfullscreenchange", updateLabel);
   })();
 
