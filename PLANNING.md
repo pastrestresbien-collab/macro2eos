@@ -638,10 +638,15 @@ que de disparaître — le numéro reste citable dans l'historique de `grammar/m
     lui-même. **Risque distinct des autres points du backlog** : une mauvaise référence
     de gel ne produit ni erreur de syntaxe ni refus de la console — la macro s'exécute et
     donne silencieusement la mauvaise couleur sur scène.
-    **Partiellement comblé le même jour**, en autonomie, via `WebSearch` (le seul canal
-    réseau qui fonctionne ici — `WebFetch` refuse 403 sur toutes les pages testées,
-    y compris Wikipedia) : voir [`reference/lee_filters_theatre.md`](reference/lee_filters_theatre.md).
-    Quatre teintes non ambiguës sourcées (rouge=106, vert=139, bleu=120, jaune=101).
+    **Élargi le même jour**, en autonomie, via `WebSearch` (le seul canal réseau qui
+    fonctionne ici — `WebFetch` refuse 403 sur toutes les pages testées, y compris
+    Wikipedia) : voir [`reference/lee_filters_theatre.md`](reference/lee_filters_theatre.md).
+    Environ 60 teintes recensées, à deux niveaux de confiance distincts de l'échelle
+    S/A/B/C/D du reste du projet — page produit individuelle retrouvée (✅), ou nom
+    cohérent entre recherches mais non vérifié entrée par entrée (〰️, à re-vérifier avant
+    un usage critique). Une quarantaine de noms « spéciaux » (série 700) obtenus d'un
+    coup sans vérification individuelle ont été délibérément écartés — volume trop grand
+    pour ce niveau de confiance, risque d'invention par l'outil de recherche lui-même.
     **Chaud/froid restent ouverts** : deux lectures de conception distinctes coexistent
     (correction CT 205/202, ou wash d'ambiance 147/?), sans confirmation qu'une seule est
     la bonne — à trancher avec l'utilisateur avant de générer la macro finale, pas
