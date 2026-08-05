@@ -647,12 +647,19 @@ que de disparaître — le numéro reste citable dans l'historique de `grammar/m
     un usage critique). Une quarantaine de noms « spéciaux » (série 700) obtenus d'un
     coup sans vérification individuelle ont été délibérément écartés — volume trop grand
     pour ce niveau de confiance, risque d'invention par l'outil de recherche lui-même.
-    **Chaud/froid restent ouverts** : deux lectures de conception distinctes coexistent
-    (correction CT 205/202, ou wash d'ambiance 147/?), sans confirmation qu'une seule est
-    la bonne — à trancher avec l'utilisateur avant de générer la macro finale, pas
-    par le traducteur seul. Catalogue complet toujours absent ; cette table reste un
-    sous-ensemble vérifié, pas une conversion intégrale (celle-ci nécessiterait le
-    catalogue officiel Lee, à rapatrier selon `CLAUDE.md` règle n°1 si besoin un jour).
+    **Chaud/froid, mis à jour le même jour** : l'utilisateur a confirmé que 204-206 sont
+    la famille chaud (Orange) et 201-203 la famille froid (Blue), les trois forces
+    (Full/Half/Quarter) étant maintenant sourcées individuellement (✅). En l'absence
+    d'autre précision, 205/202 (force « moitié ») est retenu par défaut de façon
+    autonome — documenté comme tel dans le fichier, pas deviné en silence. La lecture 2
+    (wash 147 Apricot, confirmé ambre/chaud par l'utilisateur) reste une option non
+    tranchée si la lecture CT n'est pas celle voulue. **Descriptions d'usage ajoutées**
+    pour chaque teinte confirmée (effet rapporté, pas juste le nom) afin qu'une future
+    session puisse choisir sans redemander systématiquement — les entrées 〰️ sans
+    description restent à vérifier avant un choix où l'effet compte. Catalogue complet
+    toujours absent ; cette table reste un sous-ensemble vérifié, pas une conversion
+    intégrale (celle-ci nécessiterait le catalogue officiel Lee, à rapatrier selon
+    `CLAUDE.md` règle n°1 si besoin un jour).
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :
