@@ -269,6 +269,8 @@
   .lib-conf.c { color: var(--app-muted); }
 
   .hist-item { cursor: default; border-left: 2px solid var(--app-line); }
+  .hist-pick { cursor: pointer; }
+  .hist-pick:hover { border-color: var(--app-muted); }
   .hist-item.ok { border-left-color: var(--app-ok); }
   .hist-item.doute { border-left-color: var(--app-accent); }
   .hist-item.bad { border-left-color: var(--app-danger); }
@@ -280,6 +282,11 @@
   .hist-tag.bad { color: var(--app-danger); } .hist-tag.pending { color: var(--app-warn); }
   .hist-item .cmd { font-family: var(--mono); font-size: 11.5px; color: var(--app-ink); }
   .hist-item .note { font-size: 11.5px; color: var(--app-muted); }
+  .hist-assigned { display: flex; flex-wrap: wrap; gap: 6px; }
+  .assign-chip {
+    font-size: 10.5px; background: rgba(77,163,217,.12); border: 1px solid rgba(77,163,217,.35);
+    color: var(--app-accent); border-radius: 6px; padding: 3px 7px;
+  }
 
   .import-item { cursor: default; flex-direction: row; align-items: center; justify-content: space-between; }
   .import-item .meta { display: flex; flex-direction: column; gap: 3px; }
@@ -409,6 +416,8 @@
       confidence: "A", source: "manuel officiel, Eos L3 Workbook" }
   ];
 
+  var TAG_LABEL = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
+
   var uid = 100;
   var state = {
     screen: "saisie",
@@ -437,10 +446,11 @@
     favMode: "immediate",     // immediate | confirm
     tileConfirmId: null,
     reglagesView: "root",     // root | tabs | historique | import
+    histPickChoice: null,
     history: [
-      { time: "20:58", cmd: "Chan 10 Thru 20 Color 3/195 Enter", tag: "bad",
+      { id: uid++, time: "20:58", cmd: "Chan 10 Thru 20 Color 3/195 Enter", tag: "bad", accepted: true,
         note: "Mot-clé « Colour » refusé, renvoyée avec « Color » — acceptée." },
-      { time: "19:50", cmd: "SubDown 3 Enter", tag: "ok",
+      { id: uid++, time: "19:50", cmd: "SubDown 3 Enter", tag: "ok", accepted: true,
         note: "Depuis la bibliothèque de macros." }
     ],
     toast: null
@@ -728,6 +738,10 @@
       out += "</div>";
     }
 
+    if (!state.editMode) {
+      out += '<button class="btn btn-ghost" data-action="favoris:add-from-history">+ Depuis l\'historique</button>';
+    }
+
     if (state.editMode && state.editingTileId != null) {
       var tile = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
       if (tile) {
@@ -815,12 +829,20 @@
 
   // ---------- écran historique ----------
   function screenHistorique() {
-    var tagLabel = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
     var out = '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="saisie"><span class="arrow">‹</span>Saisie</button></div>';
     out += '<div class="label">Historique des envois</div>';
     state.history.forEach(function (h) {
-      out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + tagLabel[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
-        '<div class="cmd">' + esc(h.cmd) + '</div><div class="note">' + esc(h.note) + "</div></div>";
+      var assigned = state.favoris.filter(function (f) { return f.historyId === h.id; });
+      out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
+        '<div class="cmd">' + esc(h.cmd) + '</div><div class="note">' + esc(h.note) + "</div>";
+      if (assigned.length) {
+        out += '<div class="hist-assigned">' + assigned.map(function (f) {
+          return '<span class="assign-chip">▦ ' + esc(f.name) + " · " + esc(f.tab) + "</span>";
+        }).join("") + "</div>";
+      } else if (h.accepted) {
+        out += '<button class="btn btn-ghost btn-sm" data-action="historique:add-favori" data-id="' + h.id + '" style="align-self:flex-start; width:auto; padding:6px 11px;">+ Ajouter en favori</button>';
+      }
+      out += "</div>";
     });
     if (!state.history.length) out += '<div class="empty-tab">Aucun envoi journalisé pour l\'instant.</div>';
     return out;
@@ -866,6 +888,34 @@
         '<div class="back-row"><button class="back-btn" data-action="lib:close"><span class="arrow">‹</span>Saisie</button></div>' +
         '<div class="label">Bibliothèque de macros</div>' +
         body + "</div></div>";
+    }
+    if (state.overlay === "histpick") {
+      if (state.histPickChoice == null) {
+        var eligible = state.history.filter(function (h) { return h.accepted; });
+        var listBody = eligible.length ? eligible.map(function (h) {
+          return '<button class="hist-item hist-pick ' + h.tag + '" data-action="histpick:choose" data-id="' + h.id + '">' +
+            '<div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
+            '<div class="cmd">' + esc(h.cmd) + "</div>" +
+            "</button>";
+        }).join("") : '<div class="empty-tab">Aucun envoi accepté à reprendre pour l\'instant.</div>';
+        return '<div class="overlay"><div class="drawer-body">' +
+          '<div class="back-row"><button class="back-btn" data-action="histpick:close"><span class="arrow">‹</span>Favoris</button></div>' +
+          '<div class="label">Choisir dans l\'historique</div>' +
+          listBody + "</div></div>";
+      }
+      var chosen = state.history.filter(function (h) { return h.id === state.histPickChoice; })[0];
+      if (!chosen) { return ""; }
+      return '<div class="overlay"><div class="drawer-body">' +
+        '<div class="back-row"><button class="back-btn" data-action="histpick:back"><span class="arrow">‹</span>Historique</button></div>' +
+        '<div class="label">Nouveau favori</div>' +
+        '<div class="macro"><code>' + esc(chosen.cmd) + "</code></div>" +
+        '<div class="label">Nom du favori</div>' +
+        '<div class="menu" style="padding:8px;"><input type="text" id="histpick-name" placeholder="ex. ' + esc(chosen.cmd.split(" ").slice(0, 2).join(" ")) + '" /></div>' +
+        '<div class="label">Onglet</div>' +
+        '<div class="menu">' + state.tabs.map(function (tb) {
+          return '<div class="opt" data-action="histpick:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
+        }).join("") + "</div>" +
+        "</div></div>";
     }
     return "";
   }
@@ -945,7 +995,7 @@
           state.result = null;
           state.connected = false;
           state.dropArmed = false;
-          history_push({ time: nowTime(), cmd: r2.cmd, tag: "pending", note: "Coupure réseau simulée juste après l'envoi." });
+          history_push({ time: nowTime(), cmd: r2.cmd, tag: "pending", accepted: false, note: "Coupure réseau simulée juste après l'envoi." });
           renderAll();
           break;
         }
@@ -955,8 +1005,8 @@
 
       case "retry:fix": {
         var fixed = state.lastOutcome.cmd.replace(/colour/i, "Color");
-        state.lastOutcome = { status: "ok", cmd: fixed, doute: false };
-        history_push({ time: nowTime(), cmd: fixed, tag: "bad", note: "Corrigée après refus (Colour → Color) — acceptée." });
+        var hidFix = history_push({ time: nowTime(), cmd: fixed, tag: "bad", accepted: true, note: "Corrigée après refus (Colour → Color) — acceptée." });
+        state.lastOutcome = { status: "ok", cmd: fixed, doute: false, historyId: hidFix };
         renderAll();
         break;
       }
@@ -1004,7 +1054,7 @@
       case "save-favori:tab": {
         var nameEl = document.getElementById("fav-name");
         var name = (nameEl && nameEl.value.trim()) || state.lastOutcome.cmd.split(" ").slice(0, 2).join(" ");
-        state.favoris.push({ id: uid++, name: name, cmd: state.lastOutcome.cmd, tab: data.tab });
+        state.favoris.push({ id: uid++, name: name, cmd: state.lastOutcome.cmd, tab: data.tab, historyId: state.lastOutcome.historyId });
         state.saveForm = false;
         showToast("Ajouté à Favoris → " + data.tab);
         break;
@@ -1019,6 +1069,48 @@
         state.overlay = null;
         renderAll();
         break;
+
+      case "favoris:add-from-history":
+        state.overlay = "histpick";
+        state.histPickChoice = null;
+        renderAll();
+        break;
+
+      case "historique:add-favori":
+        state.overlay = "histpick";
+        state.histPickChoice = Number(data.id);
+        renderAll();
+        break;
+
+      case "histpick:choose":
+        state.histPickChoice = Number(data.id);
+        renderAll();
+        break;
+
+      case "histpick:back":
+        state.histPickChoice = null;
+        renderAll();
+        break;
+
+      case "histpick:close":
+        state.overlay = null;
+        state.histPickChoice = null;
+        renderAll();
+        break;
+
+      case "histpick:tab": {
+        var chosenH = state.history.filter(function (h) { return h.id === state.histPickChoice; })[0];
+        if (!chosenH) break;
+        var hpNameEl = document.getElementById("histpick-name");
+        var hpName = (hpNameEl && hpNameEl.value.trim()) || chosenH.cmd.split(" ").slice(0, 2).join(" ");
+        state.favoris.push({ id: uid++, name: hpName, cmd: chosenH.cmd, tab: data.tab, historyId: chosenH.id });
+        state.activeTab = data.tab;
+        state.screen = "favoris";
+        state.overlay = null;
+        state.histPickChoice = null;
+        showToast("Ajouté à Favoris → " + data.tab);
+        break;
+      }
 
       case "lib:pick": {
         var it = LIBRARY[Number(data.idx)];
@@ -1064,7 +1156,7 @@
           break;
         }
         state.tileConfirmId = null;
-        history_push({ time: nowTime(), cmd: tile2.cmd, tag: "ok", note: "Favori « " + tile2.name + " »." });
+        history_push({ time: nowTime(), cmd: tile2.cmd, tag: "ok", accepted: true, note: "Favori « " + tile2.name + " »." });
         showToast("Envoyé : " + tile2.cmd);
         break;
       }
@@ -1094,7 +1186,7 @@
       case "tile:duplicate": {
         var src = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
         if (src) {
-          var copy = { id: uid++, name: src.name + " (copie)", cmd: src.cmd, tab: src.tab };
+          var copy = { id: uid++, name: src.name + " (copie)", cmd: src.cmd, tab: src.tab, historyId: src.historyId };
           state.favoris.push(copy);
           showToast("Dupliqué : " + copy.name);
         }
@@ -1179,18 +1271,20 @@
     var refused = /colour/i.test(r.cmd);
     if (refused) {
       state.result = null;
-      state.lastOutcome = { status: "bad", cmd: r.cmd };
-      history_push({ time: nowTime(), cmd: r.cmd, tag: "bad", note: "Refusée : mot-clé « Colour » inconnu." });
+      var hidBad = history_push({ time: nowTime(), cmd: r.cmd, tag: "bad", accepted: false, note: "Refusée : mot-clé « Colour » inconnu." });
+      state.lastOutcome = { status: "bad", cmd: r.cmd, historyId: hidBad };
     } else {
       state.result = null;
-      state.lastOutcome = { status: "ok", cmd: r.cmd, doute: !!r.warn };
-      history_push({ time: nowTime(), cmd: r.cmd, tag: r.warn ? "doute" : "ok", note: r.warn ? "Partait avec ⚠, acceptée." : "Acceptée directement." });
+      var hidOk = history_push({ time: nowTime(), cmd: r.cmd, tag: r.warn ? "doute" : "ok", accepted: true, note: r.warn ? "Partait avec ⚠, acceptée." : "Acceptée directement." });
+      state.lastOutcome = { status: "ok", cmd: r.cmd, doute: !!r.warn, historyId: hidOk };
     }
     renderAll();
   }
 
   function history_push(entry) {
+    entry.id = uid++;
     state.history.unshift(entry);
+    return entry.id;
   }
 
   document.getElementById("viewport").addEventListener("click", function (e) {
