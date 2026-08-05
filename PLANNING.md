@@ -627,7 +627,7 @@ que de disparaître — le numéro reste citable dans l'historique de `grammar/m
     la partition courante. Le mécanisme Flexichannel lui-même (`§6`, « Using Flexichannel »)
     n'est pas encore dans le modèle — hors périmètre pour l'instant, pas une zone d'ombre
     de la console.
-34. **Table de référence des couleurs Lee — absente du dépôt, partiellement comblée.**
+34. **Table de référence des couleurs Lee — résolue via catalogue officiel reçu.**
     Trouvé le 2026-08-03 en testant une traduction réelle (« créer les palettes couleur
     1 à 6, Lee, chaud/froid/rouge/vert/bleu/jaune »). Le dépôt sait QUE le nuancier Lee
     est la bibliothèque 3 (`Color 3/<numéro>`, manuel §10, corpus #082) mais n'avait aucune
@@ -647,19 +647,22 @@ que de disparaître — le numéro reste citable dans l'historique de `grammar/m
     un usage critique). Une quarantaine de noms « spéciaux » (série 700) obtenus d'un
     coup sans vérification individuelle ont été délibérément écartés — volume trop grand
     pour ce niveau de confiance, risque d'invention par l'outil de recherche lui-même.
-    **Chaud/froid, mis à jour le même jour** : l'utilisateur a confirmé que 204-206 sont
-    la famille chaud (Orange) et 201-203 la famille froid (Blue), les trois forces
-    (Full/Half/Quarter) étant maintenant sourcées individuellement (✅). En l'absence
-    d'autre précision, 205/202 (force « moitié ») est retenu par défaut de façon
-    autonome — documenté comme tel dans le fichier, pas deviné en silence. La lecture 2
-    (wash 147 Apricot, confirmé ambre/chaud par l'utilisateur) reste une option non
-    tranchée si la lecture CT n'est pas celle voulue. **Descriptions d'usage ajoutées**
-    pour chaque teinte confirmée (effet rapporté, pas juste le nom) afin qu'une future
-    session puisse choisir sans redemander systématiquement — les entrées 〰️ sans
-    description restent à vérifier avant un choix où l'effet compte. Catalogue complet
-    toujours absent ; cette table reste un sous-ensemble vérifié, pas une conversion
-    intégrale (celle-ci nécessiterait le catalogue officiel Lee, à rapatrier selon
-    `CLAUDE.md` règle n°1 si besoin un jour).
+    **Chaud/froid, confirmé par l'utilisateur le 2026-08-03** : 204-206 = famille chaud
+    (Orange), 201-203 = famille froid (Blue) — cohérent avec les valeurs Kelvin
+    officielles du catalogue (204 : 6500K→3200K, etc.). Décision autonome documentée :
+    205/202 (force « moitié ») par défaut en l'absence d'autre précision.
+    **Résolu le 2026-08-05** : l'utilisateur a uploadé directement le catalogue officiel
+    Lee Filters « Art of Light » (~2007, 39 pages, PDF conservé dans
+    `reference/source/LEE_Filters_Art_of_Light_brochure.pdf`) après que la voie réseau se
+    soit révélée bloquée pour ce besoin (règle n°1 de `CLAUDE.md`). Les 39 pages ont été
+    lues intégralement. `reference/lee_filters_theatre.md` a été réécrit à partir de
+    cette source unique : gamme couleur complète (~230 teintes, numéro + nom +
+    description officielle), remplaçant l'ancienne table à confiance variable
+    sourcée par `WebSearch`. Seul point encore non tranché : le catalogue ne publie pas
+    de paire chaud/froid explicite pour un wash (lecture 2, complément de 147 Apricot) —
+    detail mineur, documenté comme ouvert dans le fichier. Édition ~2007 : à revérifier
+    un jour si une teinte semble avoir changé depuis, mais c'est désormais une source
+    officielle et complète, plus un sous-ensemble de recherche.
 10. **Ambiguïté `duration` (OSC)** et dérive de nommage `console_settings` /
     `desk_settings` — écarts relevés dans `reference/eosKeys_vs_manual_comparison.md`.
 11. **Familles entières jamais explorées fonctionnellement**, découvertes via `eosKeys.ts` :
