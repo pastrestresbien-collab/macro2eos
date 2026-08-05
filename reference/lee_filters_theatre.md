@@ -45,22 +45,28 @@ usages de conception différents, chacun avec ses propres numéros.
 
 | Teinte | Numéro | Nom officiel | Niveau | Source |
 |---|---|---|---|---|
-| — | 201 | Full C.T. Blue (3200K→4300K) | 〰️ | synthèse recherche |
-| Froid | 202 | 1/2 C.T. Blue | ✅ | [thomannmusic.com/lee_farbfolie_nr202](https://www.thomannmusic.com/lee_farbfolie_nr202_half_ctblue.htm) |
-| — | 203 | 1/4 C.T. Blue (3200K→3600K) | ✅ | [usa.leefiltersdirect.com/products/203-quarter-c-t-blue](https://usa.leefiltersdirect.com/products/203-quarter-c-t-blue) |
-| — | 204 | Full C.T. Orange (6500K→3200K) | 〰️ | synthèse recherche |
-| Chaud | 205 | 1/2 C.T. Orange | 〰️ | synthèse recherche |
-| — | 206 | 1/4 C.T. Orange (6500K→4600K) | 〰️ | synthèse recherche |
+| Froid (famille) | 201 | Full C.T. Blue (3200K→4300K) | 〰️ | synthèse recherche |
+| Froid (famille) | 202 | 1/2 C.T. Blue | ✅ | [thomannmusic.com/lee_farbfolie_nr202](https://www.thomannmusic.com/lee_farbfolie_nr202_half_ctblue.htm) |
+| Froid (famille) | 203 | 1/4 C.T. Blue (3200K→3600K) | ✅ | [usa.leefiltersdirect.com/products/203-quarter-c-t-blue](https://usa.leefiltersdirect.com/products/203-quarter-c-t-blue) |
+| Chaud (famille) | 204 | Full C.T. Orange (6500K→3200K) | 〰️ | synthèse recherche |
+| Chaud (famille) | 205 | 1/2 C.T. Orange | 〰️ | synthèse recherche |
+| Chaud (famille) | 206 | 1/4 C.T. Orange (6500K→4600K) | 〰️ | synthèse recherche |
 
-Paire retenue pour chaud/froid (202/205) : cohérente par construction — les deux sont
-nommées comme correction CT complémentaire (« Half C.T. » de part et d'autre), pas une
-paire assemblée par déduction. Sens des mots : « Blue » refroidit, « Orange » réchauffe.
+**Confirmé par l'utilisateur (2026-08-03, connaissance terrain)** : « les correcteurs
+chauds sont plutôt de 204 à 206 » — 204-206 forment la famille CHAUD (Orange, réchauffe),
+201-203 la famille FROID (Blue, refroidit), chacune graduée full/half/quarter selon
+l'intensité de correction. Confiance relevée à S sur ce point (source directe), le reste
+(noms précis 201/204/206) demeure 〰️ tant que la page produit individuelle n'est pas vue.
+
+Paire chaud/froid « milieu de famille » : 205 (Half CT Orange) / 202 (Half CT Blue) —
+cohérente par construction, les deux nommées comme correction CT complémentaire. À
+préciser : 204 (Full), 205 (Half) ou 206 (Quarter) exactement pour la macro ?
 
 ### Lecture 2 — teinte d'ambiance chaude/froide pour une conduite (wash)
 
 | Teinte | Numéro | Nom officiel | Caractère rapporté | Niveau | Source |
 |---|---|---|---|---|---|
-| Chaud | 147 | Apricot | « warm highlight… good for warm front light, complimentary to most skin tones » | ✅ | [leefilters.com/colour/147-apricot](https://leefilters.com/colour/147-apricot/) |
+| Chaud | 147 | Apricot | « warm highlight… good for warm front light, complimentary to most skin tones » — **confirmé ambre/chaud par l'utilisateur (S)**, 2026-08-03 | ✅ S | [leefilters.com/colour/147-apricot](https://leefilters.com/colour/147-apricot/) |
 | Froid | inconnu | — | trois candidats, aucun confirmé comme complément standard de 147 : `161` Slate Blue (moonlight/dusk), `118` Light Blue (cool/night), ou `202` (lecture 1) | — | — |
 
 **Aucune source consultée ne confirme de paire chaud/froid « officielle » pour un wash.**
