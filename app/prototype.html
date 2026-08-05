@@ -296,7 +296,6 @@
 
   /* ---------- overlays ---------- */
   .overlay { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; background: var(--app-bg); }
-  .drawer-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 
   .confirm-full { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 24px 20px; text-align: center; }
   .confirm-full .warn-icon { font-size: 28px; color: var(--app-warn); }
@@ -418,12 +417,46 @@
 
   var TAG_LABEL = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
 
+  // Modèle de navigation unique. Trois écrans principaux (barre du bas) ; tous les
+  // autres sont des écrans secondaires rattachés à un parent, avec un retour nommé
+  // au même endroit et le même habillage. Rien ne se navigue autrement — la seule
+  // exception est la confirmation plein écran, qui masque volontairement la barre
+  // du bas pour qu'on ne puisse pas envoyer distraitement (voir APP.md).
+  var SCREENS = {
+    saisie:       { label: "Saisie",    primary: true },
+    favoris:      { label: "Favoris",   primary: true },
+    reglages:     { label: "Réglages",  primary: true },
+
+    bibliotheque: { label: "Bibliothèque", parent: "saisie",   title: "Bibliothèque de macros" },
+    historique:   { label: "Historique",   parent: "saisie",   title: "Historique des envois" },
+    histpick:     { label: "Historique",   parent: "favoris",  title: "Choisir dans l'historique" },
+    histpickform: { label: "Nouveau favori", parent: "favoris", title: "Nouveau favori" },
+    tabs:         { label: "Onglets",   parent: "reglages", title: "Onglets de favoris" },
+    importer:     { label: "Importer",  parent: "reglages", title: "Importer des favoris" }
+  };
+
+  // Où mène le retour d'un écran secondaire : son parent, sauf cas où l'écran a été
+  // atteint depuis ailleurs (on revient alors d'où l'on vient, jamais ailleurs).
+  function backTarget(id) {
+    if (id === "histpick") return state.histPickFrom || "favoris";
+    if (id === "histpickform") return state.histPickDirect ? (state.histPickFrom || "favoris") : "histpick";
+    return (SCREENS[id] && SCREENS[id].parent) || "saisie";
+  }
+
+  function screenHeader(id) {
+    var to = backTarget(id);
+    var conf = SCREENS[id] || {};
+    return '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="' + to + '">' +
+      '<span class="arrow">‹</span>' + esc((SCREENS[to] || {}).label || "Retour") + "</button></div>" +
+      (conf.title ? '<div class="label">' + esc(conf.title) + "</div>" : "");
+  }
+
   var uid = 100;
   var state = {
     screen: "saisie",
     connected: true,
     pendingCommand: null,
-    overlay: null,            // null | 'confirm' | 'lib'
+    overlay: null,            // null | 'confirm' (seul overlay restant)
     result: null,             // {cmd, warn, warnText, tokens, note}
     lastOutcome: null,        // {status:'ok'|'bad', cmd, fix, note}
     lastInputText: "",
@@ -445,8 +478,9 @@
     ],
     favMode: "immediate",     // immediate | confirm
     tileConfirmId: null,
-    reglagesView: "root",     // root | tabs | historique | import
     histPickChoice: null,
+    histPickFrom: "favoris",  // écran d'où l'on est entré dans le choix historique
+    histPickDirect: false,    // entré directement sur le formulaire, sans passer par la liste
     history: [
       { id: uid++, time: "20:58", cmd: "Chan 10 Thru 20 Color 3/195 Enter", tag: "bad", accepted: true,
         note: "Mot-clé « Colour » refusé, renvoyée avec « Color » — acceptée." },
@@ -575,20 +609,33 @@
       { id: "favoris", ic: "▦", label: "Favoris" },
       { id: "reglages", ic: "⚙", label: "Réglages" }
     ];
+    var conf = SCREENS[state.screen] || {};
+    var active = conf.primary ? state.screen : conf.parent;
     el.innerHTML = items.map(function (it) {
-      var on = state.screen === it.id || (it.id === "saisie" && state.screen === "historique");
-      return '<button data-action="nav" data-screen="' + it.id + '" class="' + (on ? "on" : "") + '">' +
+      return '<button data-action="nav" data-screen="' + it.id + '" class="' + (active === it.id ? "on" : "") + '">' +
         '<span class="ic">' + it.ic + '</span>' + it.label + '</button>';
     }).join("");
   }
 
+  var VIEWS = {
+    saisie: screenSaisie,
+    favoris: screenFavoris,
+    reglages: screenReglages,
+    bibliotheque: screenBibliotheque,
+    historique: screenHistorique,
+    histpick: screenHistPick,
+    histpickform: screenHistPickForm,
+    tabs: screenTabs,
+    importer: screenImport
+  };
+
   function renderScreen() {
     var el = document.getElementById("screen");
-    var html = "";
-    if (state.screen === "saisie") html = screenSaisie();
-    else if (state.screen === "historique") html = screenHistorique();
-    else if (state.screen === "favoris") html = screenFavoris();
-    else if (state.screen === "reglages") html = screenReglages();
+    var conf = SCREENS[state.screen] || {};
+    var view = VIEWS[state.screen] || screenSaisie;
+    // L'en-tête (retour + titre) est posé ici pour tous les écrans secondaires :
+    // aucun écran ne dessine le sien, donc aucun ne peut diverger.
+    var html = (conf.primary ? "" : screenHeader(state.screen)) + view();
     el.innerHTML = html + overlayHtml() + toastHtml();
   }
 
@@ -613,7 +660,7 @@
 
     out += '<div class="label">Votre demande</div>';
     out += '<textarea id="nl-input" rows="2" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195">' + esc(state.lastInputText || "") + "</textarea>";
-    out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="lib:open">Bibliothèque</button>' +
+    out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="bibliotheque">Bibliothèque</button>' +
            '<button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="historique">Historique</button>' +
            '<button class="btn btn-primary" data-action="translate">Traduire</button></div>';
 
@@ -698,7 +745,7 @@
     if (state.unrecognized) {
       out += '<div class="card card-neutral"><strong style="color:var(--app-ink)">Je n\'ai pas compris cette formulation</strong>' +
         "<p>Le vocabulaire de ce prototype est volontairement limité. Essayez la bibliothèque, ou reformulez avec « groupe », « circuit(s) », « lee/couleur ».</p></div>";
-      out += '<div class="actions"><button class="btn btn-ghost" data-action="lib:open">Ouvrir la bibliothèque</button></div>';
+      out += '<div class="actions"><button class="btn btn-ghost" data-action="nav" data-screen="bibliotheque">Ouvrir la bibliothèque</button></div>';
     }
 
     return out;
@@ -785,9 +832,6 @@
 
   // ---------- écran 3 : réglages ----------
   function screenReglages() {
-    if (state.reglagesView === "tabs") return reglagesTabs();
-    if (state.reglagesView === "import") return reglagesImport();
-
     var out = "";
     out += '<div class="group"><div class="label">Console</div>' +
       '<div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>' +
@@ -799,11 +843,11 @@
       '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="settings:favmode" data-mode="immediate">Immédiat</button>' +
       '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
       "</span></div>" +
-      '<div class="row click" data-action="settings:tabs:open"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + ' onglets</span></div></div>';
+      '<div class="row click" data-action="nav" data-screen="tabs"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + ' onglets</span></div></div>';
 
     out += '<div class="group"><div class="label">Sauvegarde</div>' +
       '<div class="row click" data-action="settings:export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
-      '<div class="row click" data-action="settings:import:open"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div></div>';
+      '<div class="row click" data-action="nav" data-screen="importer"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div></div>';
 
     out += '<div class="group"><div class="label">Saisie</div>' +
       '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
@@ -811,10 +855,8 @@
     return out;
   }
 
-  function reglagesTabs() {
-    var out = '<div class="back-row"><button class="back-btn" data-action="settings:tabs:back"><span class="arrow">‹</span>Réglages</button></div>';
-    out += '<div class="label">Onglets de favoris</div>';
-    out += '<div class="menu">';
+  function screenTabs() {
+    var out = '<div class="menu">';
     state.tabs.forEach(function (tb) {
       var count = state.favoris.filter(function (f) { return f.tab === tb; }).length;
       out += '<div class="opt" style="cursor:default;"><span>' + esc(tb) + ' <span style="color:var(--app-muted); font-size:11.5px;">(' + count + ")</span></span>" +
@@ -830,8 +872,7 @@
 
   // ---------- écran historique ----------
   function screenHistorique() {
-    var out = '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="saisie"><span class="arrow">‹</span>Saisie</button></div>';
-    out += '<div class="label">Historique des envois</div>';
+    var out = "";
     state.history.forEach(function (h) {
       var assigned = state.favoris.filter(function (f) { return f.historyId === h.id; });
       out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
@@ -853,9 +894,8 @@
     return out;
   }
 
-  function reglagesImport() {
-    var out = '<div class="back-row"><button class="back-btn" data-action="settings:import:cancel"><span class="arrow">‹</span>Réglages</button></div>';
-    out += '<div class="label">Fichier : cyrano-favoris.eosfav</div>';
+  function screenImport() {
+    var out = '<div class="label">Fichier : cyrano-favoris.eosfav</div>';
     out += '<div class="card card-warn"><strong>2 favoris référencent un autre spectacle</strong>' +
       "<p>Ils restent syntaxiquement valides mais peuvent pointer vers d'autres circuits ou palettes ici.</p></div>";
     out += '<div class="import-list" style="display:flex; flex-direction:column; gap:8px;">' +
@@ -864,11 +904,49 @@
       '<div class="import-item"><div class="meta"><span class="name">Face seule</span><span class="cmd">Group 3 At 85 Enter</span></div><span class="badge-other">Autre spectacle</span></div>' +
       "</div>";
     out += '<div class="actions"><button class="btn btn-primary" data-action="settings:import:confirm">Importer les 3 favoris</button>' +
-      '<button class="btn btn-ghost" data-action="settings:import:cancel">Annuler</button></div>';
+      '<button class="btn btn-ghost" data-action="nav" data-screen="reglages">Annuler</button></div>';
     return out;
   }
 
-  // ---------- overlay plein écran (confirmation) et tiroir (bibliothèque) ----------
+  // ---------- écran bibliothèque ----------
+  function screenBibliotheque() {
+    return LIBRARY.map(function (it, i) {
+      var cls = it.confidence === "A" ? "a" : "c";
+      return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
+        '<span class="req">' + esc(it.req) + '</span>' +
+        '<span class="cmd">' + esc(it.cmd) + '</span>' +
+        '<span class="src"><span class="lib-conf ' + cls + '">' + it.confidence + "</span>" + esc(it.source) + "</span>" +
+        "</button>";
+    }).join("");
+  }
+
+  // ---------- écrans « reprendre un envoi de l'historique en favori » ----------
+  function screenHistPick() {
+    var eligible = state.history.filter(function (h) { return h.accepted; });
+    if (!eligible.length) return '<div class="empty-tab">Aucun envoi accepté à reprendre pour l\'instant.</div>';
+    return eligible.map(function (h) {
+      return '<button class="hist-item hist-pick ' + h.tag + '" data-action="histpick:choose" data-id="' + h.id + '">' +
+        '<div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
+        '<div class="cmd">' + esc(h.cmd) + "</div>" +
+        "</button>";
+    }).join("");
+  }
+
+  function screenHistPickForm() {
+    var chosen = state.history.filter(function (h) { return h.id === state.histPickChoice; })[0];
+    if (!chosen) return '<div class="empty-tab">Envoi introuvable.</div>';
+    return '<div class="macro"><code>' + esc(chosen.cmd) + "</code></div>" +
+      '<div class="label">Nom du favori</div>' +
+      '<div class="menu" style="padding:8px;"><input type="text" id="histpick-name" placeholder="ex. ' + esc(chosen.cmd.split(" ").slice(0, 2).join(" ")) + '" /></div>' +
+      '<div class="label">Onglet</div>' +
+      '<div class="menu">' + state.tabs.map(function (tb) {
+        return '<div class="opt" data-action="histpick:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
+      }).join("") + "</div>";
+  }
+
+  // ---------- seul overlay restant : la confirmation plein écran ----------
+  // Elle masque volontairement la barre du bas — c'est ce qui rend impossible
+  // l'envoi distrait d'une macro portant un ⚠ (APP.md).
   function overlayHtml() {
     if (state.overlay === "confirm" && state.result) {
       var r = state.result;
@@ -878,48 +956,6 @@
         '<div class="macro"><code>' + esc(r.cmd) + "</code></div>" +
         '<div class="actions"><button class="btn btn-warn" data-action="confirm:send">J\'ai vérifié — envoyer</button>' +
         '<button class="btn btn-ghost" data-action="confirm:cancel">Annuler</button></div>' +
-        "</div></div>";
-    }
-    if (state.overlay === "lib") {
-      var body = LIBRARY.map(function (it, i) {
-        var cls = it.confidence === "A" ? "a" : "c";
-        return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
-          '<span class="req">' + esc(it.req) + '</span>' +
-          '<span class="cmd">' + esc(it.cmd) + '</span>' +
-          '<span class="src"><span class="lib-conf ' + cls + '">' + it.confidence + "</span>" + esc(it.source) + "</span>" +
-          "</button>";
-      }).join("");
-      return '<div class="overlay"><div class="drawer-body">' +
-        '<div class="back-row"><button class="back-btn" data-action="lib:close"><span class="arrow">‹</span>Saisie</button></div>' +
-        '<div class="label">Bibliothèque de macros</div>' +
-        body + "</div></div>";
-    }
-    if (state.overlay === "histpick") {
-      if (state.histPickChoice == null) {
-        var eligible = state.history.filter(function (h) { return h.accepted; });
-        var listBody = eligible.length ? eligible.map(function (h) {
-          return '<button class="hist-item hist-pick ' + h.tag + '" data-action="histpick:choose" data-id="' + h.id + '">' +
-            '<div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
-            '<div class="cmd">' + esc(h.cmd) + "</div>" +
-            "</button>";
-        }).join("") : '<div class="empty-tab">Aucun envoi accepté à reprendre pour l\'instant.</div>';
-        return '<div class="overlay"><div class="drawer-body">' +
-          '<div class="back-row"><button class="back-btn" data-action="histpick:close"><span class="arrow">‹</span>Favoris</button></div>' +
-          '<div class="label">Choisir dans l\'historique</div>' +
-          listBody + "</div></div>";
-      }
-      var chosen = state.history.filter(function (h) { return h.id === state.histPickChoice; })[0];
-      if (!chosen) { return ""; }
-      return '<div class="overlay"><div class="drawer-body">' +
-        '<div class="back-row"><button class="back-btn" data-action="histpick:back"><span class="arrow">‹</span>Historique</button></div>' +
-        '<div class="label">Nouveau favori</div>' +
-        '<div class="macro"><code>' + esc(chosen.cmd) + "</code></div>" +
-        '<div class="label">Nom du favori</div>' +
-        '<div class="menu" style="padding:8px;"><input type="text" id="histpick-name" placeholder="ex. ' + esc(chosen.cmd.split(" ").slice(0, 2).join(" ")) + '" /></div>' +
-        '<div class="label">Onglet</div>' +
-        '<div class="menu">' + state.tabs.map(function (tb) {
-          return '<div class="opt" data-action="histpick:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
-        }).join("") + "</div>" +
         "</div></div>";
     }
     return "";
@@ -934,9 +970,12 @@
   function handleAction(action, target) {
     var data = target.dataset;
     switch (action) {
+      // Point d'entrée unique de la navigation : tout écran, principal ou
+      // secondaire, s'atteint et se quitte par cette action.
       case "nav":
         state.screen = data.screen;
         if (data.screen !== "favoris") { state.editMode = false; state.editingTileId = null; }
+        if (data.screen !== "histpick" && data.screen !== "histpickform") state.histPickChoice = null;
         renderAll();
         break;
 
@@ -1065,25 +1104,19 @@
         break;
       }
 
-      case "lib:open":
-        state.overlay = "lib";
-        renderAll();
-        break;
-
-      case "lib:close":
-        state.overlay = null;
-        renderAll();
-        break;
-
       case "favoris:add-from-history":
-        state.overlay = "histpick";
+        state.histPickFrom = "favoris";
+        state.histPickDirect = false;
         state.histPickChoice = null;
+        state.screen = "histpick";
         renderAll();
         break;
 
       case "historique:add-favori":
-        state.overlay = "histpick";
+        state.histPickFrom = "historique";
+        state.histPickDirect = true;
         state.histPickChoice = Number(data.id);
+        state.screen = "histpickform";
         renderAll();
         break;
 
@@ -1110,17 +1143,8 @@
 
       case "histpick:choose":
         state.histPickChoice = Number(data.id);
-        renderAll();
-        break;
-
-      case "histpick:back":
-        state.histPickChoice = null;
-        renderAll();
-        break;
-
-      case "histpick:close":
-        state.overlay = null;
-        state.histPickChoice = null;
+        state.histPickDirect = false;
+        state.screen = "histpickform";
         renderAll();
         break;
 
@@ -1132,7 +1156,6 @@
         state.favoris.push({ id: uid++, name: hpName, cmd: chosenH.cmd, tab: data.tab, historyId: chosenH.id });
         state.activeTab = data.tab;
         state.screen = "favoris";
-        state.overlay = null;
         state.histPickChoice = null;
         showToast("Ajouté à Favoris → " + data.tab);
         break;
@@ -1140,7 +1163,6 @@
 
       case "lib:pick": {
         var it = LIBRARY[Number(data.idx)];
-        state.overlay = null;
         state.screen = "saisie";
         state.lastInputText = it.req;
         renderAll();
@@ -1251,9 +1273,6 @@
         renderAll();
         break;
 
-      case "settings:tabs:open": state.reglagesView = "tabs"; renderAll(); break;
-      case "settings:tabs:back": state.reglagesView = "root"; renderAll(); break;
-
       case "settings:tabs:add": {
         var el3 = document.getElementById("new-tab-name");
         if (el3 && el3.value.trim()) { state.tabs.push(el3.value.trim()); renderAll(); }
@@ -1275,8 +1294,6 @@
         showToast("Export généré (démo) — texte + fichier.");
         break;
 
-      case "settings:import:open": state.reglagesView = "import"; renderAll(); break;
-      case "settings:import:cancel": state.reglagesView = "root"; renderAll(); break;
       case "settings:import:confirm": {
         var tab = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
         state.favoris.push(
@@ -1284,7 +1301,7 @@
           { id: uid++, name: "195 · Par LED (import)", cmd: "Color Palette 5 Enter", tab: tab },
           { id: uid++, name: "Face seule (import)", cmd: "Group 3 At 85 Enter", tab: tab }
         );
-        state.reglagesView = "root";
+        state.screen = "reglages";
         showToast("3 favoris importés dans « Importé ».");
         break;
       }
