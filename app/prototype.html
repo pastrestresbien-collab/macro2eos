@@ -759,6 +759,7 @@
         } else {
           out += '<div class="menu">' +
             '<div class="opt" data-action="tile:rename:ask">Modifier le libellé</div>' +
+            '<div class="opt" data-action="load:edit" data-kind="favori" data-id="' + tile.id + '">Éditer dans Saisie</div>' +
             '<div class="opt" data-action="tile:duplicate">Dupliquer</div>' +
             '<div class="opt" style="cursor:default; color:var(--app-muted); font-size:11.5px; padding-bottom:0;">Déplacer vers l\'onglet</div>' +
             state.tabs.filter(function (tb) { return tb !== tile.tab; }).map(function (tb) {
@@ -839,9 +840,13 @@
         out += '<div class="hist-assigned">' + assigned.map(function (f) {
           return '<span class="assign-chip">▦ ' + esc(f.name) + " · " + esc(f.tab) + "</span>";
         }).join("") + "</div>";
-      } else if (h.accepted) {
-        out += '<button class="btn btn-ghost btn-sm" data-action="historique:add-favori" data-id="' + h.id + '" style="align-self:flex-start; width:auto; padding:6px 11px;">+ Ajouter en favori</button>';
       }
+      out += '<div style="display:flex; flex-wrap:wrap; gap:8px;">';
+      out += '<button class="btn btn-ghost btn-sm" data-action="load:edit" data-kind="history" data-id="' + h.id + '" style="width:auto; padding:6px 11px;">✎ Éditer dans Saisie</button>';
+      if (h.accepted && !assigned.length) {
+        out += '<button class="btn btn-ghost btn-sm" data-action="historique:add-favori" data-id="' + h.id + '" style="width:auto; padding:6px 11px;">+ Ajouter en favori</button>';
+      }
+      out += "</div>";
       out += "</div>";
     });
     if (!state.history.length) out += '<div class="empty-tab">Aucun envoi journalisé pour l\'instant.</div>';
@@ -1081,6 +1086,27 @@
         state.histPickChoice = Number(data.id);
         renderAll();
         break;
+
+      case "load:edit": {
+        var src2 = data.kind === "favori"
+          ? state.favoris.filter(function (f) { return f.id == data.id; })[0]
+          : state.history.filter(function (h) { return h.id == data.id; })[0];
+        if (!src2) break;
+        resetSaisie();
+        state.lastInputText = src2.cmd;
+        state.result = {
+          cmd: src2.cmd, warn: false, warnText: null, tokens: [],
+          note: data.kind === "favori" ? "Repris depuis vos favoris — modifiable avant renvoi." : "Repris depuis l'historique — modifiable avant renvoi."
+        };
+        state.screen = "saisie";
+        state.editMode = false;
+        state.editingTileId = null;
+        state.overlay = null;
+        renderAll();
+        var taEdit = document.getElementById("nl-input");
+        if (taEdit) taEdit.focus();
+        break;
+      }
 
       case "histpick:choose":
         state.histPickChoice = Number(data.id);
