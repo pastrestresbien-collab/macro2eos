@@ -131,10 +131,28 @@
     font-size: 11.5px; font-weight: 600; cursor: pointer; padding: 0; flex: none;
   }
 
+  /* utilitaires d'en-tête : accessibles de partout, mais loin du pouce */
+  .hdr-right { display: flex; align-items: center; gap: 6px; flex: none; }
+  .hdr-btn {
+    flex: none; width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: 1px solid transparent; color: var(--app-muted);
+    font-size: 14px; line-height: 1; cursor: pointer; font-family: inherit;
+  }
+  .hdr-btn:hover { color: var(--app-ink); border-color: var(--app-line); }
+  .hdr-btn.on { color: var(--app-accent); border-color: var(--app-line); background: var(--app-surface-hi); }
+  .hdr-exit {
+    width: auto; padding: 0 11px; height: 28px; font-size: 12px; font-weight: 600;
+    color: var(--app-warn); border-color: rgba(224,168,60,.4);
+  }
+  .hdr-exit:hover { color: var(--app-warn); border-color: var(--app-warn); }
+
   main#screen {
     flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 14px 18px;
     display: flex; flex-direction: column; gap: 12px;
   }
+  /* en mode jeu, la grille respire : plus de barre du bas à contourner */
+  body.play main#screen { padding-bottom: 14px; }
 
   .label {
     font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
@@ -217,6 +235,14 @@
   .tile-edit-btn { position: absolute; top: 8px; right: 8px; font-size: 11px; line-height: 1; color: var(--app-muted);
     border: 1px solid var(--app-line); border-radius: 6px; padding: 3px 6px; background: var(--app-surface-hi); cursor: pointer; }
   .empty-tab { font-size: 13px; color: var(--app-muted); border: 1px dashed var(--app-line); border-radius: 10px; padding: 20px 14px; text-align: center; }
+
+  .btn-play { background: var(--app-surface-hi); border-color: var(--app-line); color: var(--app-ink); }
+  .btn-play:hover { border-color: var(--app-accent); color: var(--app-accent); }
+  .play-note { margin: 0; font-size: 11.5px; color: var(--app-muted); line-height: 1.45; }
+  .play-strip {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--app-muted);
+    border-top: 1px solid var(--app-line); padding: 11px 2px 2px;
+  }
 
   .mode-strip { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--app-muted); padding: 10px 14px;
     border-top: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
@@ -417,30 +443,46 @@
 
   var TAG_LABEL = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
 
-  // Modèle de navigation unique. Trois écrans principaux (barre du bas) ; tous les
-  // autres sont des écrans secondaires rattachés à un parent, avec un retour nommé
-  // au même endroit et le même habillage. Rien ne se navigue autrement — la seule
-  // exception est la confirmation plein écran, qui masque volontairement la barre
-  // du bas pour qu'on ne puisse pas envoyer distraitement (voir APP.md).
+  // ---------------------------------------------------------------------------
+  // MODÈLE DE NAVIGATION
+  //
+  // Les écrans ne sont pas des pairs : leur fréquence d'usage et leur niveau de
+  // risque vont de « constante, en pleine représentation » à « une fois par
+  // installation ». La navigation reflète cette hiérarchie plutôt que de la nier.
+  //
+  //   destination  — barre du bas, gros doigt, les deux seules choses qu'on FAIT :
+  //                  Favoris (le seul écran de jeu) et Saisie (l'atelier).
+  //   utilitaire   — en-tête, en haut, hors de la zone du pouce : Historique et
+  //                  Réglages. Consultés depuis n'importe où, sans détour, et sans
+  //                  jamais occuper l'espace où le pouce se pose pendant un show.
+  //   satellite    — rattaché à un écran précis, atteint depuis lui seul.
+  //
+  // Le pouce se pose en bas de l'écran. En représentation, tout ce qui s'y trouve
+  // et qui n'envoie pas de macro est un risque : c'est pourquoi la barre du bas ne
+  // contient plus que deux destinations, et disparaît entièrement en mode jeu.
+  // ---------------------------------------------------------------------------
   var SCREENS = {
-    saisie:       { label: "Saisie",    primary: true },
-    favoris:      { label: "Favoris",   primary: true },
-    reglages:     { label: "Réglages",  primary: true },
+    favoris:      { label: "Favoris",   role: "destination" },
+    saisie:       { label: "Saisie",    role: "destination" },
 
-    bibliotheque: { label: "Bibliothèque", parent: "saisie",   title: "Bibliothèque de macros" },
-    historique:   { label: "Historique",   parent: "saisie",   title: "Historique des envois" },
-    histpick:     { label: "Historique",   parent: "favoris",  title: "Choisir dans l'historique" },
-    histpickform: { label: "Nouveau favori", parent: "favoris", title: "Nouveau favori" },
-    tabs:         { label: "Onglets",   parent: "reglages", title: "Onglets de favoris" },
-    importer:     { label: "Importer",  parent: "reglages", title: "Importer des favoris" }
+    historique:   { label: "Historique", role: "utilitaire", title: "Historique des envois" },
+    reglages:     { label: "Réglages",   role: "utilitaire", title: "Réglages" },
+
+    bibliotheque: { label: "Bibliothèque",   role: "satellite", parent: "saisie",   title: "Bibliothèque de macros" },
+    histpick:     { label: "Historique",     role: "satellite", parent: "favoris",  title: "Choisir dans l'historique" },
+    histpickform: { label: "Nouveau favori", role: "satellite", parent: "favoris",  title: "Nouveau favori" },
+    tabs:         { label: "Onglets",        role: "satellite", parent: "reglages", title: "Onglets de favoris" },
+    importer:     { label: "Importer",       role: "satellite", parent: "reglages", title: "Importer des favoris" }
   };
 
-  // Où mène le retour d'un écran secondaire : son parent, sauf cas où l'écran a été
-  // atteint depuis ailleurs (on revient alors d'où l'on vient, jamais ailleurs).
+  // Où mène le retour. Un utilitaire s'ouvre depuis n'importe où : il revient d'où
+  // l'on vient, jamais vers un parent arbitraire. Un satellite revient à son parent.
   function backTarget(id) {
+    var conf = SCREENS[id] || {};
+    if (conf.role === "utilitaire") return state.returnTo || "favoris";
     if (id === "histpick") return state.histPickFrom || "favoris";
     if (id === "histpickform") return state.histPickDirect ? (state.histPickFrom || "favoris") : "histpick";
-    return (SCREENS[id] && SCREENS[id].parent) || "saisie";
+    return conf.parent || "favoris";
   }
 
   function screenHeader(id) {
@@ -454,6 +496,8 @@
   var uid = 100;
   var state = {
     screen: "saisie",
+    returnTo: "saisie",       // d'où l'on a ouvert un utilitaire (historique / réglages)
+    playMode: false,          // mode jeu : l'app se réduit à la grille de tuiles
     connected: true,
     pendingCommand: null,
     overlay: null,            // null | 'confirm' (seul overlay restant)
@@ -585,10 +629,19 @@
     var el = document.getElementById("statusbar-slot");
     var dot = state.connected ? "dot-ok" : "dot-wait";
     var label = state.connected ? "Console connectée" : "Reconnexion en cours…";
+
+    // En mode jeu, l'en-tête ne garde que ce qui compte en représentation :
+    // l'état de la console, et la sortie du mode. Aucune navigation latérale.
+    var right = state.playMode
+      ? '<button class="hdr-btn hdr-exit" data-action="play:exit">Quitter le mode jeu</button>'
+      : '<span class="user-tag">User 12</span>' +
+        '<button class="hdr-btn' + (state.screen === "historique" ? " on" : "") + '" data-action="util" data-screen="historique" aria-label="Historique">↺</button>' +
+        '<button class="hdr-btn' + (state.screen === "reglages" ? " on" : "") + '" data-action="util" data-screen="reglages" aria-label="Réglages">⚙</button>';
+
     el.innerHTML =
       '<div class="statusbar">' +
         '<button class="conn" data-action="toggle-connection"><span class="dot ' + dot + '"></span>' + label + '</button>' +
-        '<span class="user-tag">User 12</span>' +
+        '<span class="hdr-right">' + right + "</span>" +
       '</div>';
   }
 
@@ -604,13 +657,20 @@
 
   function renderNav() {
     var el = document.getElementById("bottom-nav");
+    // Deux destinations seulement — les deux seules choses qu'on fait vraiment.
+    // Favoris en premier : c'est l'écran de jeu, et le pouce va naturellement
+    // du côté où il se pose. Réglages et Historique sont montés dans l'en-tête.
     var items = [
-      { id: "saisie", ic: "✎", label: "Saisie" },
       { id: "favoris", ic: "▦", label: "Favoris" },
-      { id: "reglages", ic: "⚙", label: "Réglages" }
+      { id: "saisie", ic: "✎", label: "Saisie" }
     ];
+    // En mode jeu, la barre du bas disparaît : le pouce se pose là, et pendant une
+    // représentation tout ce qui s'y trouve et n'envoie pas de macro est un risque.
+    if (state.playMode) { el.innerHTML = ""; el.style.display = "none"; return; }
+    el.style.display = "";
+
     var conf = SCREENS[state.screen] || {};
-    var active = conf.primary ? state.screen : conf.parent;
+    var active = conf.role === "destination" ? state.screen : conf.parent;
     el.innerHTML = items.map(function (it) {
       return '<button data-action="nav" data-screen="' + it.id + '" class="' + (active === it.id ? "on" : "") + '">' +
         '<span class="ic">' + it.ic + '</span>' + it.label + '</button>';
@@ -635,7 +695,9 @@
     var view = VIEWS[state.screen] || screenSaisie;
     // L'en-tête (retour + titre) est posé ici pour tous les écrans secondaires :
     // aucun écran ne dessine le sien, donc aucun ne peut diverger.
-    var html = (conf.primary ? "" : screenHeader(state.screen)) + view();
+    // Une destination n'a pas de retour (la barre du bas s'en charge) ; tout le
+    // reste porte le même en-tête, posé ici une seule fois pour tous.
+    var html = (conf.role === "destination" ? "" : screenHeader(state.screen)) + view();
     el.innerHTML = html + overlayHtml() + toastHtml();
   }
 
@@ -661,7 +723,7 @@
     out += '<div class="label">Votre demande</div>';
     out += '<textarea id="nl-input" rows="2" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195">' + esc(state.lastInputText || "") + "</textarea>";
     out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="bibliotheque">Bibliothèque</button>' +
-           '<button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="historique">Historique</button>' +
+           '<button class="btn btn-ghost btn-sm btn-aside" data-action="util" data-screen="historique">Historique</button>' +
            '<button class="btn btn-primary" data-action="translate">Traduire</button></div>';
 
     out += '<div class="demo-toggle"><span><b>Démo</b> · simuler une coupure au prochain envoi</span>' +
@@ -758,9 +820,13 @@
     state.tabs.forEach(function (tb) {
       out += '<button class="tab' + (tb === state.activeTab ? " on" : "") + '" data-action="tab:switch" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
     });
-    out += '<button class="tab" data-action="tab:add">+</button>';
+    // En mode jeu : plus d'ajout d'onglet, plus d'entrée en édition. Les onglets
+    // restent commutables — changer d'onglet fait partie du jeu.
+    if (!state.playMode) out += '<button class="tab" data-action="tab:add">+</button>';
     out += "</div>";
-    out += '<button class="tab-edit" data-action="edit:toggle">' + (state.editMode ? "Terminé" : "Modifier") + "</button>";
+    if (!state.playMode) {
+      out += '<button class="tab-edit" data-action="edit:toggle">' + (state.editMode ? "Terminé" : "Modifier") + "</button>";
+    }
     out += "</div>";
 
     out += '<div style="padding:14px 14px 0; display:flex; flex-direction:column; gap:12px;">';
@@ -785,7 +851,7 @@
       out += "</div>";
     }
 
-    if (!state.editMode) {
+    if (!state.editMode && !state.playMode) {
       out += '<button class="btn btn-ghost" data-action="favoris:add-from-history">+ Depuis l\'historique</button>';
     }
 
@@ -818,12 +884,22 @@
       }
     }
 
-    if (!state.editMode) {
+    if (state.playMode) {
+      // Rappel en lecture seule : on ne découvre jamais en plein spectacle que le
+      // mode d'envoi n'était pas celui qu'on croyait (APP.md) — mais on ne peut
+      // pas non plus le changer d'un doigt qui traîne.
+      out += '<div class="play-strip"><span class="dot dot-ok"></span>' +
+        (state.favMode === "immediate" ? "Envoi immédiat — un appui suffit" : "Envoi après confirmation — deux appuis") +
+        "</div>";
+    } else if (!state.editMode) {
       out += '<div class="label">Mode d\'envoi</div>';
       out += '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
         '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="settings:favmode" data-mode="immediate">Immédiat</button>' +
         '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
         "</span></div>";
+      out += '<button class="btn btn-play" data-action="play:enter">▶ Mode jeu</button>' +
+        '<p class="play-note">Réduit l\'app à la grille de tuiles : plus de barre de navigation sous le pouce, ' +
+        "plus d'édition possible. À activer avant que la salle s'éteigne.</p>";
     }
 
     out += "</div>";
@@ -970,12 +1046,39 @@
   function handleAction(action, target) {
     var data = target.dataset;
     switch (action) {
-      // Point d'entrée unique de la navigation : tout écran, principal ou
-      // secondaire, s'atteint et se quitte par cette action.
+      // Point d'entrée unique de la navigation : tout écran, quel que soit son
+      // rôle, s'atteint et se quitte par cette action.
       case "nav":
         state.screen = data.screen;
         if (data.screen !== "favoris") { state.editMode = false; state.editingTileId = null; }
         if (data.screen !== "histpick" && data.screen !== "histpickform") state.histPickChoice = null;
+        renderAll();
+        break;
+
+      // Ouverture d'un utilitaire d'en-tête : on mémorise d'où l'on vient pour
+      // que le retour ramène là, et pas vers un parent choisi arbitrairement.
+      case "util": {
+        var here = SCREENS[state.screen] || {};
+        state.returnTo = here.role === "destination" ? state.screen : (here.parent || state.returnTo);
+        state.screen = data.screen;
+        state.editMode = false;
+        state.editingTileId = null;
+        renderAll();
+        break;
+      }
+
+      case "play:enter":
+        state.playMode = true;
+        state.screen = "favoris";
+        state.editMode = false;
+        state.editingTileId = null;
+        document.body.classList.add("play");
+        renderAll();
+        break;
+
+      case "play:exit":
+        state.playMode = false;
+        document.body.classList.remove("play");
         renderAll();
         break;
 

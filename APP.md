@@ -6,7 +6,7 @@ vers la console.
 État : **conception en cours**. Ce fichier ne contient que ce qui est décidé ou imposé
 par des faits techniques établis. Le reste est marqué ouvert.
 
-Dernière mise à jour : 2026-08-03.
+Dernière mise à jour : 2026-08-05.
 
 ---
 
@@ -15,7 +15,7 @@ Dernière mise à jour : 2026-08-03.
 | Date | Décision | Portée |
 |---|---|---|
 | 2026-08-01 | **Saisie texte d'abord.** La saisie vocale reste au programme, mais après. | Entrée utilisateur |
-| 2026-08-01 | **Trois écrans parallèles** : saisie/traduction/envoi, favoris, paramètres. | Structure |
+| 2026-08-01 | **Trois écrans parallèles** : saisie/traduction/envoi, favoris, paramètres. *(Les trois écrans demeurent ; leur accès est hiérarchisé depuis le 2026-08-05 — voir « Navigation ».)* | Structure |
 | 2026-08-01 | **La programmation complexe ne se fait pas en jeu.** Envois confirmés et sauvegardés. | Usage |
 | 2026-08-01 | Perte de connexion : **l'app tente de se reconnecter** automatiquement. | Réseau |
 | 2026-08-01 | Console qui refuse : **proposer une correction bien visible** avant renvoi. | Écran 1 |
@@ -32,6 +32,8 @@ Dernière mise à jour : 2026-08-03.
 | 2026-08-03 | Favoris : **modifiables (libellé), duplicables, supprimables, déplaçables vers un autre onglet**, via un mode édition explicite hors jeu. | Écran 2 |
 | 2026-08-03 | **Bibliothèque de macros** issue du corpus, accessible depuis l'écran 1 : remplit le champ de saisie, ne court-circuite jamais l'aperçu. | Écran 1 |
 | 2026-08-03 | **Historique des envois** journalisé en paramètres, avec une qualité par entrée (acceptée / a levé un doute / refusée / en suspens). | Écran 3 |
+| 2026-08-05 | **Navigation hiérarchisée, pas trois pairs.** Barre du bas réduite à deux destinations (Favoris, Saisie) ; Historique et Réglages montent dans l'en-tête. | Navigation |
+| 2026-08-05 | **Mode jeu** : sur Favoris, réduit l'app à la grille de tuiles — barre du bas masquée, édition impossible. | Écran 2 |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -150,6 +152,51 @@ lisible dans le noir, aucun texte superflu.
     l'a pas été sur le moment.
 - **Sauvegarde / partage** : export et import (voir ci-dessous).
 - Plus tard : activation de la saisie vocale.
+
+---
+
+## Navigation
+
+Les trois écrans restent les trois écrans. Ce qui change, c'est qu'ils ne sont pas
+**atteints** de la même façon : leur fréquence d'usage et leur niveau de risque vont de
+« constante, en pleine représentation » à « une fois par installation ». Les traiter en
+pairs dans une barre d'onglets revenait à nier la seule chose que ce produit sait de son
+usage.
+
+Le raisonnement tient en une observation : **le pouce se pose en bas de l'écran.** Sur
+l'écran de jeu, en salle noire, une main, tout ce qui se trouve à cet endroit et
+n'envoie pas de macro est un risque — sortir de la grille de tuiles en plein spectacle
+coûte bien plus cher que d'atteindre les réglages une seconde plus tard.
+
+Trois rôles, donc :
+
+- **Destinations** — barre du bas, grandes cibles : **Favoris** et **Saisie**, les deux
+  seules choses qu'on *fait*. Favoris en premier, du côté où le pouce se pose.
+- **Utilitaires** — en-tête, en haut, hors de la zone du pouce : **Historique** et
+  **Réglages**. Consultables depuis n'importe où sans détour, et le retour ramène là
+  d'où l'on vient. C'est aussi ce qui corrige un défaut réel : l'historique enregistre
+  les envois de Favoris autant que ceux de Saisie, il n'avait aucune raison d'être
+  enfermé derrière l'atelier.
+- **Satellites** — rattachés à un écran précis et atteints depuis lui seul : la
+  bibliothèque appartient à Saisie (elle remplit son champ), la gestion des onglets et
+  l'import appartiennent aux Réglages.
+
+### Mode jeu
+
+Le prolongement logique de « réorganisation hors jeu uniquement » : ce qui valait pour
+l'édition vaut pour la navigation. Activé depuis Favoris avant que la salle s'éteigne,
+il réduit l'app à ce qui sert en représentation :
+
+- barre du bas **masquée** — plus rien sous le pouce que des tuiles ;
+- édition, ajout d'onglet et ajout de favori **indisponibles** ;
+- onglets **toujours commutables** — changer d'onglet fait partie du jeu ;
+- mode d'envoi rappelé **en lecture seule** : on ne découvre jamais en plein spectacle
+  qu'il n'était pas celui qu'on croyait, et on ne peut pas le changer d'un doigt qui
+  traîne ;
+- état de la console toujours visible, et une sortie explicite en haut de l'écran.
+
+Ce mode est un garde-fou, pas un verrou : la sortie est immédiate, en un appui, loin
+du pouce. Rien ne doit jamais empêcher quelqu'un de reprendre la main sur sa conduite.
 
 ---
 
