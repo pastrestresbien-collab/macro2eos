@@ -8,16 +8,49 @@ déjà prises) ni [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMA
 
 > **Qu'est-ce que la grammaire Eos force l'interface à faire ?**
 
-Neuf règles, chacune établie par le corpus, chacune avec sa conséquence directe sur l'UI.
-Elles ne sont pas des préférences de conception : ce sont des propriétés de la plateforme.
-Une interface qui les ignore produira des macros valides et fausses.
-
-**Origine** : synthèse des 16 tranches de [`grammar/`](grammar/README.md), du manuel
-officiel v3.2.0, du corpus de 174 entrées et du journal terrain. Les renvois `#n`
-pointent le backlog de [`PLANNING.md`](PLANNING.md).
+Neuf règles, chacune avec sa conséquence directe sur l'UI. Elles ne sont pas des
+préférences de conception : ce sont des propriétés de la plateforme. Une interface qui les
+ignore produira des macros valides et fausses.
 
 Une section préliminaire décrit **comment la syntaxe est structurée** — c'est ce que
 l'interface affiche, et sa régularité conditionne ce qu'on peut en montrer.
+
+---
+
+## ⚠️ Avant de lire : ce document a déjà véhiculé des erreurs
+
+**Première version le 2026-08-06. Relue le même jour contre le manuel officiel et les
+workbooks — deux erreurs trouvées, dont une avait déjà produit une macro fausse livrée
+comme correcte** (voir `PLANNING.md` #35 et #36). Les deux venaient de la même cause :
+des affirmations écrites de mémoire ou reprises d'une synthèse, présentées avec la même
+assurance qu'un fait vérifié.
+
+D'où la règle de lecture de ce document :
+
+> **En cas de contradiction entre ce document et le manuel officiel, le manuel a raison.**
+> Signaler l'écart plutôt que de le contourner — c'est ainsi que #35 et #36 ont été
+> trouvées.
+
+### Marqueur de confiance sur chaque affirmation
+
+Le reste du dépôt étiquette chaque affirmation par sa source (échelle S/A/B/C/D). Ce
+document ne le faisait pas, et c'est ce qui a laissé passer l'erreur. Il le fait
+désormais, avec trois marqueurs lisibles sans connaître la console :
+
+| Marqueur | Sens | Comment s'en servir |
+|---|---|---|
+| ✅ | **Vérifié mot à mot** dans le manuel ou un workbook officiel pendant la relecture du 2026-08-06, chapitre cité | Construire dessus sans réserve |
+| 📄 | **Documenté** par une source établie du dépôt (manuel, réponse ETC, observation terrain) mais **non re-vérifié à la source** dans cette passe | Fiable en principe ; re-vérifier avant d'en faire un point d'architecture |
+| ⚠️ | **Déduction du projet** — raisonnement cohérent, pas un fait documenté | Ne jamais présenter à l'utilisateur comme une certitude |
+
+Les conséquences UI (« → Pour l'UI ») sont **toujours** des déductions : elles portent le
+raisonnement du projet, pas une prescription d'ETC. Elles ne sont pas marquées une par une
+pour ne pas alourdir — le marqueur porte sur le **fait console**, qui est ce qui peut être
+faux.
+
+**Origine** : synthèse des 16 tranches de [`grammar/`](grammar/README.md), du manuel
+officiel v3.2.0 (32 chapitres), des workbooks officiels, du corpus de 174 entrées et du
+journal terrain. Les renvois `#n` pointent le backlog de [`PLANNING.md`](PLANNING.md).
 
 ---
 
@@ -26,10 +59,10 @@ l'interface affiche, et sa régularité conditionne ce qu'on peut en montrer.
 Avant les règles : la forme. Elle est plus régulière qu'il n'y paraît, ce qui rend un
 aperçu structuré possible plutôt qu'un simple bloc de texte.
 
-## La structure fondamentale : Objet → Action → Cible
+## ✅ La structure fondamentale : Objet → Action → Cible
 
-**Confirmé A** (manuel v3.2.0, « Important Concepts » ; recoupé deux fois par le corpus).
-La plupart des instructions répondent à trois questions, dans cet ordre :
+Manuel §00 « Important Concepts », vérifié mot à mot. La plupart des instructions
+répondent à trois questions, dans cet ordre :
 
 | | Question | Exemple |
 |---|---|---|
@@ -37,27 +70,34 @@ La plupart des instructions répondent à trois questions, dans cet ordre :
 | 2 | **Que doit-il faire ?** | `At` |
 | 3 | **Quelle valeur ?** | `50` |
 
-Tout le reste — modificateurs, temps, libellés — vient s'accrocher à ces trois étapes.
-C'est ce principe, et non une grammaire formelle, qui est encodé dans
-[`grammar/modele.yaml`](grammar/README.md) : la ligne de commande Eos est modale, une
-EBNF forcerait à trancher des points jamais validés.
+Le manuel ajoute lui-même la nuance, dans les mêmes lignes : « **most** other functions
+are modifiers of these three basic steps ». Ce n'est pas une grammaire complète, c'est le
+squelette le plus fréquent. C'est ce principe, et non une grammaire formelle, qui est
+encodé dans [`grammar/modele.yaml`](grammar/README.md) : la ligne de commande Eos est
+modale, une EBNF forcerait à trancher des points jamais validés.
 
-**Toutes les actions ne passent pas par la ligne de commande.** Softkeys, direct selects
-et encodeurs la contournent entièrement — l'app ne peut donc pas tout exprimer sous forme
-de texte injectable.
+✅ **Toutes les actions ne passent pas par la ligne de commande.** Manuel §00, textuel :
+« Not all actions must be entered from the command line [...] **Other actions bypass the
+command line entirely.** » Softkeys, direct selects et encodeurs la contournent — l'app ne
+peut donc pas tout exprimer sous forme de texte injectable.
 
-## L'ordre des créneaux dans une ligne
+## ⚠️ L'ordre des créneaux dans une ligne
 
 ```
 [sélection]  [action]  [valeur]  [modificateurs]  [Time …]  [Label …]  [Enter]
 ```
 
-Deux règles d'ordre sont établies et doivent être respectées telles quelles :
+**Ce schéma est une généralisation du projet, pas une règle publiée par ETC.** Il décrit
+fidèlement tous les exemples rencontrés, mais aucun chapitre du manuel ne l'énonce comme
+tel. Ne pas s'en servir pour valider une commande, seulement pour la présenter.
 
-- **Sur un `Go To Cue`, `Time` se pose toujours en dernier**, après les autres
+En revanche, deux règles d'ordre sont, elles, explicitement établies :
+
+- 📄 **Sur un `Go To Cue`, `Time` se pose toujours en dernier**, après les autres
   modificateurs (manuel §16). `{Manual}` en est exempté.
-- **`Send_String` doit être en dernière position** d'une macro multi-lignes, sinon un
-  `/r` parasite s'insère dans l'adresse OSC générée [EOS-55864].
+- 📄 **`Send_String` doit être en dernière position** d'une macro multi-lignes, sinon un
+  `/r` parasite s'insère dans l'adresse OSC générée [EOS-55864] — ticket ETC rapporté par
+  le corpus, pas une phrase du manuel.
 
 Exemples réels — sorties **exactes** du générateur, vérifiées, telles que l'app les
 affichera :
@@ -82,20 +122,20 @@ qui compare l'aperçu au manuel doit s'attendre à cet écart — il est voulu.
 
 ## Les briques
 
-| Brique | Forme | Note |
-|---|---|---|
-| Sélection | `1`, `1 Thru 10`, `1 Thru 10 + 15`, `1 Thru 10 - 5`, `Group 3` | `+`/`-` ajoutent et retirent |
-| Sous-groupe | `( 1 Thru 4 )` | compte pour **un seul** channel dans un Fan, un effet, un parcours |
-| Sélection conditionnelle | `Query {Isn't In} Beam Palette 25` | seul endroit du langage où existe une négation |
-| Softkey | `{By Type}`, `{Mirror Out}`, `{Q Only}` | toujours entre accolades |
-| Libellé | `Label <texte>` | comportement du clavier virtuel avec espaces **non observé** (#5) |
-| Terminaison | `Enter` | sauf commandes auto-terminées, voir plus bas |
+| Brique | Forme | Note | |
+|---|---|---|---|
+| Sélection | `1`, `1 Thru 10`, `1 Thru 10 + 15`, `1 Thru 10 - 5`, `Group 3` | `+`/`-` ajoutent et retirent | ✅ |
+| Sous-groupe | `( 1 Thru 4 )` | compte pour **un seul** channel dans un Fan, un effet, un parcours | 📄 |
+| Sélection conditionnelle | `Query {Isn't In} Beam Palette 25` | seul endroit du langage où existe une négation | 📄 |
+| Softkey | `{By Type}`, `{Mirror Out}`, `{Q Only}` | toujours entre accolades | ✅ |
+| Libellé | `Label <texte>` | comportement du clavier virtuel avec espaces **non observé** (#5) | ⚠️ |
+| Terminaison | `Enter` | sauf commandes auto-terminées, voir plus bas | ✅ |
 
-Numérotation : palettes de `0.001` à `9999.999`, presets 1000 maximum, trois décimales.
+✅ Numérotation des palettes : de `0.001` à `9999.999` (manuel §10, textuel).
 
 ## Quatre propriétés qui ne se devinent pas en lisant une ligne
 
-**La sélection survit à l'`Enter` — mais pas à un `Record`.** C'est une règle en deux
+### ✅ La sélection survit à l'`Enter` — mais pas à un `Record` C'est une règle en deux
 temps, et le second temps est un piège de première catégorie.
 
 `Enter` termine la *ligne de commande*, pas la sélection : celle-ci reste active pour la
@@ -132,41 +172,52 @@ si une IR ne le fait pas.
 > doit repasser par le générateur, jamais manipuler le texte. Une ligne déplacée peut
 > perdre le sens que lui donnait la précédente.
 
-**Certaines commandes s'auto-terminent** et ne prennent pas d'`Enter` : `Out`, `+%`,
-`-%`, `Level`, et les actions depuis les direct selects. Un `Enter` de trop ne provoque
-pas d'erreur — il **valide la ligne suivante**. Et la liste d'ETC est incomplète de son
-propre aveu (« Some, but not all, of these commands are »), d'où #19 : toute commande non
-marquée comme auto-terminée est *présumée* avoir besoin d'`Enter`, ce n'est pas un fait
-établi.
+### ✅ Certaines commandes s'auto-terminent
+
+Elles ne prennent pas d'`Enter` : `Out`, `+%`, `-%`, `Level`, et les actions depuis les
+direct selects (manuel §00, liste vérifiée). S'y ajoutent des doubles appuis — `Full Full`
+et `Sneak Sneak` s'auto-terminent, leur forme simple non (manuel §02).
+
+Et la liste d'ETC est **incomplète de son propre aveu** : « Some (**but not all**) of these
+commands are » — d'où #19. Toute commande non marquée comme auto-terminée est *présumée*
+avoir besoin d'`Enter` ; c'est une présomption du projet, pas un fait établi.
+
+⚠️ Qu'un `Enter` de trop **valide la ligne suivante** est une déduction du projet, pas une
+phrase du manuel — mais elle motive la prudence du générateur.
 
 > **→ Pour l'UI.** Ne jamais « compléter serviablement » une commande avec un `Enter`.
 > La terminaison est calculée par le générateur, commande par commande.
 
-**Le même symbole a plusieurs sens — et les deux polysémies ne sont pas de même nature.**
+### 📄 Le même symbole a plusieurs sens — et les deux polysémies ne sont pas de même nature
 
 | Symbole | Sens | Distingué par |
 |---|---|---|
 | `At` / `@` | niveau en Live, **adresse DMX en Patch** | l'**écran actif** — état extérieur à la phrase |
-| `/` | 7 sens documentés : préfixe de cue list (`Cue 2/5`), montée/descente (`Time 4/3`), pourcentage de temps (`Time /50`), valeur DMX brute (`At / / 239`), univers/adresse (`At 2 / 146`), liste entière (`Cue 2/ Assert`), échelle de park (`At / 125 Park`) | la **position** dans la ligne |
+| `/` | 7 sens recensés : préfixe de cue list (`Cue 2/5`), montée/descente (`Time 4/3`), pourcentage de temps (`Time /50`), valeur DMX brute (`At / / 239`), univers/adresse (`At 2 / 146`), liste entière (`Cue 2/ Assert`), échelle de park (`At / 125 Park`) | la **position** dans la ligne |
 
 La distinction compte : la polysémie de `/` est lisible dans le texte de la commande,
 celle de `At` **ne l'est pas** — elle dépend d'un état que l'app ne contrôle pas. C'est
 la règle n°1 ci-dessous, et le générateur peut au moins forcer l'écran (`Tab <n> Enter`).
 
-**Fan n'est pas une commande.** C'est le comportement **implicite** de toute commande de
-niveau ou de temps utilisant `Thru` ou une liste de références. La touche `Fan` ne sert
-qu'à changer de *style* de répartition. `1 Thru 10 At 10 Thru 30 Enter` fane déjà, sans
-qu'aucun mot ne le dise.
+Le décompte « sept sens » est un recensement du projet à travers plusieurs chapitres, pas
+une liste publiée par ETC — chaque sens est sourcé individuellement dans
+`grammar/modele.yaml`, le total ne l'est pas.
+
+### 📄 Fan n'est pas une commande
+
+C'est le comportement **implicite** de toute commande de niveau ou de temps utilisant
+`Thru` ou une liste de références. La touche `Fan` ne sert qu'à changer de *style* de
+répartition. `1 Thru 10 At 10 Thru 30 Enter` fane déjà, sans qu'aucun mot ne le dise.
 
 > **→ Pour l'UI.** Un utilisateur qui écrit « circuits 1 à 5 de 10 à 50 % » obtient un
 > dégradé. C'est l'intention normale, mais rien dans la commande produite ne porte le mot
 > « dégradé » : l'aperçu doit le dire en clair si l'app veut être relue utilement.
 
-## On assemble des tokens, jamais du texte
+## 📄 On assemble des tokens, jamais du texte
 
-Règle structurelle, issue d'une observation terrain (corpus #060) : une commande construite
-par concaténation de chaînes — `"Go_To_Cue_" + str(n)` — **tronque les décimales** sur
-console réelle. `Go To Cue 5.5` devient `Go To Cue 5`.
+Observation terrain (corpus #060, confiance S — pas une phrase du manuel) : une commande
+construite par concaténation de chaînes — `"Go_To_Cue_" + str(n)` — **tronque les
+décimales** sur console réelle. `Go To Cue 5.5` devient `Go To Cue 5`.
 
 > **→ Pour l'UI.** Si l'interface propose un jour de retoucher une macro générée, elle doit
 > éditer l'**IR** (la représentation structurée) et la faire re-rendre, **jamais** éditer la
@@ -202,13 +253,35 @@ que de son texte, mais de l'état de la console au moment où elle arrive. Cinq 
 sont établis, et **aucun n'est publié par une adresse `/eos/out/…` documentée** — vérifié
 sur le manuel §31 et sur `Supported_OSC_Commands.md` :
 
-| État | Effet | Renvoi |
-|---|---|---|
-| Mode de patch By Channel / By Address | `5 At 100` patche deux choses opposées | #20 |
-| Mode Q Only / Track | change ce qu'une modification propage aux cues suivantes | — |
-| AutoMark vs marques référencées | réglage global *et rétroactif* de Setup | #24 |
-| Cue list « courante » | change à chaque `Record`, `Go`, `Back` | #25 |
-| État des filtres | change **ce qui est enregistré**, à texte de commande identique | #28 |
+| | État | Effet | Renvoi |
+|---|---|---|---|
+| 📄 | Mode de patch By Channel / By Address | `5 At 100` patche deux choses opposées | #20 |
+| ✅ | Mode Q Only / Track | **le bouton `Q Only/Track` inverse son sens** selon le réglage | — |
+| ✅ | AutoMark | évalué **au playback**, pas à l'enregistrement | #24 |
+| ✅ | Cue list « courante » | déterminée par la « cue sélectionnée », qui change à chaque `Record`, `Update`, `Go`, `Back`, `Go To Cue` ou modification d'attribut | #25 |
+| 📄 | État des filtres | change **ce qui est enregistré**, à texte de commande identique | #28 |
+
+Trois d'entre eux ont été vérifiés mot à mot le 2026-08-06, et **deux se sont révélés
+pires que ce que ce document décrivait d'abord** :
+
+✅ **`Q Only/Track` ne fait pas une chose, il fait son contraire selon le réglage.** Manuel
+§00 : « if the console is set to Tracking, the button acts as Cue Only. If console is set
+to Cue Only, it behaves as a **Track** button. » Et §12 : « **The system setting determines
+the actual context of the button.** » Ce n'est donc pas seulement l'*effet* d'une commande
+qui dépend d'un état invisible : c'est le sens d'un **token écrit dans la macro** qui
+s'inverse.
+
+✅ **AutoMark est évalué au moment de la lecture, pas de l'écriture.** Manuel §9, textuel :
+« AutoMark is based on the current setting of the default **during playback. It does not
+matter what the setting is at the point of record.** » Une macro enregistrée aujourd'hui
+peut donc produire un résultat différent demain sans avoir changé d'un caractère.
+
+✅ **La cue list de destination est celle de la « cue sélectionnée ».** Manuel §14 : « The
+cue list that you are storing to is always determined by the selected cue, **unless you
+specify a different cue list**. The selected cue is the last cue that you affected in Live.
+This includes a record, an update, a playback action such as [Go], [Back], a [Go To Cue]
+instruction, or simply changing a cue attribute. » La parade est dans la phrase même —
+nommer la liste explicitement — et c'est ce que fait le générateur.
 
 Les quatre premiers changent ce que la commande *veut dire*. Le cinquième change ce
 qu'elle *produit* — c'est le plus dangereux.
@@ -230,17 +303,21 @@ Corollaire : le User# dédié protège des interférences avec l'opérateur, **p
 
 ## 2. Un refus prouve tout, une acceptation prouve peu
 
-**La règle** (déjà posée dans `APP.md`, rappelée ici parce qu'elle est asymétrique et que
-l'asymétrie se perd facilement dans une interface) :
+⚠️ **La règle est une doctrine du projet, pas une phrase d'ETC.** Elle est posée dans
+`APP.md` et rappelée ici parce que l'asymétrie se perd facilement dans une interface. Elle
+n'est pas moins solide pour autant — elle découle de faits vérifiés — mais elle relève du
+raisonnement, pas de la citation.
 
-- **Un refus est une preuve définitive** — la syntaxe est invalide, sans appel. C'est même
-  la source de confiance la plus haute du projet (niveau S).
+- **Un refus est une preuve définitive** — la syntaxe est invalide, sans appel. C'est la
+  source de confiance la plus haute du projet (niveau S).
 - **Une acceptation établit seulement que la commande est syntaxiquement valide.** Pas
   qu'elle fait ce que l'utilisateur voulait. Une commande valide peut agir sur les mauvais
-  circuits, dans le mauvais mode, avec le mauvais filtre actif.
+  circuits, dans le mauvais mode, avec le mauvais filtre actif — la règle 1 en donne cinq
+  raisons.
 
-Le retour est exploitable : `/eos/out/cmd` diffuse la ligne en clair avec un flag d'erreur
-(1 = erreur de syntaxe, 0 = ok, Eos 2.6.0+ — confirmé S, corpus #140).
+📄 Le retour est exploitable : `/eos/out/cmd` diffuse la ligne en clair avec un flag
+d'erreur (1 = erreur de syntaxe, 0 = ok, Eos 2.6.0+ — corpus #140, confiance S, non
+re-vérifié dans le manuel §31 lors de cette passe).
 
 **→ Pour l'UI.** Deux traitements visuels distincts, jamais confondus. Un refus est un
 état terminal qui n'offre **aucune option de renvoyer tel quel** (déjà décidé dans
@@ -258,9 +335,18 @@ de correction.
 
 ## 3. En Blind, il n'y a pas d'étape de validation
 
-**La règle** (confirmée A, répétée chapitre après chapitre du manuel — §17 en CAUTION,
-§20, §18, §10) : en Blind, les éditions prennent effet **immédiatement**, sans `Record` ni
-`Update`.
+✅ **C'est la règle la mieux établie de tout ce document.** Le manuel l'énonce **cinq fois,
+dans cinq chapitres différents, toujours en CAUTION** — vérifié un par un le 2026-08-06 :
+
+| Chapitre | Texte |
+|---|---|
+| §10 Palettes | « changes to palettes are automatic, therefore no update or record command is required » |
+| §11 Presets | « changes to presets are automatically stored. Therefore no update or record command is required » |
+| §12 Cues | « Edits in blind **take effect immediately**. [Record] or [Update] commands are **not required** in blind » |
+| §16 Cue Playback | « changes to cues are automatically stored, therefore no update or record command is required » |
+| §17 Multipart | « Edits in Blind take effect immediately, they do not require a [Record] or [Update] command » |
+
+Quand ETC répète un avertissement cinq fois, c'est qu'il coûte cher à ignorer.
 
 **→ Pour l'UI.** Le flux « je prépare, l'utilisateur relit, puis j'envoie » **n'existe pas
 en Blind**. La première commande envoyée est déjà appliquée. Conséquences :
@@ -282,34 +368,60 @@ signale — ni erreur de syntaxe, ni refus, ni trace dans l'aperçu.
 
 Cas établis :
 
-- **`At 5` vaut 50 %, pas 5 %.** Un chiffre unique après `At` reçoit un zéro implicite
-  (manuel §6, cinq occurrences ; §22 le reconfirme). Facteur dix. *Résolu* : `05` = 5 %
-  (confirmation utilisateur, S) — le générateur écrit systématiquement deux chiffres.
-- **Une valeur parquée est exclue de tous les record targets.** Et le manuel §19 précise
+- ✅ **Un chiffre seul vaut des dizaines — et pas seulement après `At`.** C'est plus large
+  que ce que ce document affirmait d'abord. Manuel §6, exemples textuels : `[1] {Iris} [5]
+  [Enter]` « places the iris parameter of channel 1 **at 50%** », et `[5] {Iris} [5] {Zoom}
+  [6][5] {Edge} [5] [Enter]` donne iris 50 %, zoom 65 %, edge 50 %. La règle vaut donc pour
+  **toute saisie de valeur de paramètre**, pas seulement pour l'intensité après `At`.
+  Facteur dix, sans erreur ni refus. *Résolu* : `05` = 5 % (confirmation utilisateur, S) —
+  le générateur écrit systématiquement deux chiffres.
+- ✅ **Une valeur parquée est exclue de tous les record targets.** Et le manuel §19 précise
   le cas encore plus vicieux : on *peut* régler manuellement puis enregistrer une valeur
   sur un channel parqué — « the values set and stored in live **do not actually output to
   the system** if the parameter is parked ». Une macro qui règle puis enregistre un channel
   parqué produit donc une cue correcte sur le papier et un plateau inchangé, sans qu'aucune
   erreur ne remonte.
-- **Sélection = fusion, absence de sélection = remplacement.** Constante de la grammaire
-  (cues §12, submasters §20, palettes §10). Mais l'assignation de channels à une
-  **partition inverse la règle** : une liste nue *remplace*, il faut `+` pour ajouter.
-- **`Mark Cue <n>` a un effet de bord silencieux** : il supprime les mouvements NP
-  intermédiaires de ces channels, dans des cues que l'utilisateur n'a pas nommées.
-- **Supprimer une courbe préprogrammée ne la supprime pas** : elle revient à son état
+- ✅ **Sélection = fusion, absence de sélection = remplacement.** Manuel §12, textuel :
+  « Using a selective store for an already existing cue will **modify the selected data
+  only, leaving the rest of the cue untouched. This does not overwrite the whole cue.** »
+  📄 La constante vaut aussi pour submasters §20 et palettes §10 (non re-vérifiés dans
+  cette passe), et l'assignation de channels à une **partition inverse la règle** : une
+  liste nue *remplace*, il faut `+` pour ajouter.
+- ✅ **Un enregistrement sélectif ne produit pas une cue isolée.** Trouvé pendant la
+  vérification, absent de la première version. Manuel §12 : « any channels not included in
+  the selective store, but that do have values in the previous cue **will track into the
+  recorded cue. This is true even when the console is in Cue Only mode.** » Une demande
+  « enregistre seulement les circuits 1 à 5 dans la cue 4 » produit donc une cue qui
+  contient **aussi** tout ce qui trackait depuis la cue précédente. La macro est
+  sélective, le résultat ne l'est pas.
+- ✅ **`Mark Cue <n>` a un effet de bord silencieux.** Manuel §9, textuel : « As long as
+  intensity is at zero within the cue range, if there are any non-intensity move
+  instructions for these channels between these two cues, **they will be removed.** » Des
+  mouvements sont supprimés dans des cues que l'utilisateur n'a pas nommées.
+- ✅ **`Mark` est un interrupteur, pas un réglage.** Manuel §9 : « **Mark is a toggle
+  state.** Therefore, the first mark command sets a mark. The second removes it. » Une
+  macro qui pose une marque *retire* la marque si elle existait déjà — le résultat dépend
+  d'un état antérieur invisible. Même famille que le mode `Format` en Patch et que
+  `At Park` sans valeur.
+- ✅ **Marquer vers une cue inexistante la crée.** Manuel §9 : « it is also possible to
+  mark to a cue that doesn't exist, and when the mark is stored, **Eos will automatically
+  create the cue** ». Une confirmation « Create Mark Cue? » apparaît sur la console — mais
+  une macro qui répond `Enter` à l'aveugle crée une cue que personne n'a demandée.
+- 📄 **Supprimer une courbe préprogrammée ne la supprime pas** : elle revient à son état
   d'origine. Une confirmation formulée « supprimer la courbe 901 ? » serait trompeuse.
-- **`Thru Thru`** : un chiffre de décimale d'écart change la nature du résultat (décimales
-  ou entiers) ; au-delà de 10 000 cibles, la commande est **ignorée en silence**.
-- **Une mauvaise référence de gélatine** ne produit ni erreur ni refus : la macro s'exécute
-  et donne la mauvaise couleur sur scène.
-- **Une sélection perdue après un `Record`** (voir le préliminaire) : la suite de la
+- 📄 **`Thru Thru`** : un chiffre de décimale d'écart change la nature du résultat
+  (décimales ou entiers) ; au-delà de 10 000 cibles, la commande est **ignorée en silence**.
+- ⚠️ **Une mauvaise référence de gélatine** ne produit ni erreur ni refus : la macro
+  s'exécute et donne la mauvaise couleur sur scène. Déduction évidente, mais c'est une
+  déduction — aucune source ne l'énonce.
+- ✅ **Une sélection perdue après un `Record`** (voir le préliminaire) : la suite de la
   séquence s'applique à rien. **Ce cas n'est pas théorique — il a été produit par ce
   projet.** La première macro générée pour une demande réelle (six palettes de couleur en
   série) était fausse à partir de sa deuxième palette, et elle a été relue, testée et
   livrée sans que rien ne la signale. Trouvé le 2026-08-06 en vérifiant le présent
   document contre le manuel. C'est l'illustration la plus nette de toute cette section :
   le texte de la macro était impeccable.
-- **`{By Type}` sur une sélection large** fige silencieusement les channels surnuméraires.
+- ✅ **`{By Type}` sur une sélection large** fige silencieusement les channels surnuméraires.
   Le manuel §10 : « the lowest number channel of each fixture type will be the default
   channel [...] **any additional channels in that fixture type will be recorded with
   discrete data** ». La palette se crée, la console accepte, et elle contient l'inverse de
@@ -343,14 +455,23 @@ l'effet réel, pas le verbe employé par l'utilisateur.
 | `a_preciser` | une ou plusieurs **questions**, avec leurs options |
 | `incompris` | rien, et la liste des mots non reconnus |
 
-`a_preciser` n'est pas un échec dégradé. C'est le comportement correct face à une
-ambiguïté que **seul l'utilisateur peut lever**. Deux sont déjà encodées :
+⚠️ Le découpage en trois états est une **décision de conception du projet**, pas une
+contrainte d'ETC. Mais elle repose sur un fait, lui vérifié :
 
-- **la portée d'un enregistrement** — `Record Color Palette` capture la sélection
-  courante, ou *tous les channels non-défaut* si rien n'est sélectionné, ce qui n'est
-  presque jamais l'intention. Motif générique : vaut pour tout `Record` sans sélection
-  explicite (presets, palettes, submasters).
-- **une couleur ambiguë** — « ambre » a quatre candidats sérieux au catalogue Lee.
+✅ **la portée d'un enregistrement** — manuel §10, textuel : « [Record] will store the
+relevant current parameter data for **all channels with non-default data** for the
+appropriate palette type, **as modified by the filter settings**. » Et : « Otherwise all
+channels with appropriate non-default data will be stored in the new palette. » Sans
+sélection, un `Record` ratisse donc tout le plateau non-défaut — presque jamais
+l'intention — et son résultat dépend en plus de l'état des filtres (règle 1). Motif
+générique : vaut pour tout `Record` sans sélection explicite (presets, palettes de toute
+famille, submasters).
+
+📄 **une couleur ambiguë** — « ambre » a quatre candidats sérieux au catalogue officiel
+Lee, « rose » aussi (`reference/lee_filters_theatre.md`).
+
+`a_preciser` n'est pas un échec dégradé. C'est le comportement correct face à une
+ambiguïté que **seul l'utilisateur peut lever**.
 
 **→ Pour l'UI.** Il faut un **troisième écran d'état**, ni succès ni erreur : une question
 avec ses options, présentée comme une étape normale du flux et non comme un échec. Une
@@ -368,26 +489,34 @@ l'utilisateur ait à connaître la console.
 
 ## 6. Certaines intentions n'ont pas de traduction — l'app doit savoir dire non
 
-**La règle.** Absences structurelles confirmées de la plateforme (§12 de la grammaire
-consolidée) :
+**La règle.** Absences structurelles de la plateforme, reprises de §12 de la grammaire
+consolidée. ⚠️ **Aucune n'a été re-vérifiée dans cette passe**, et trois d'entre elles ne
+viennent pas du manuel mais de réponses ETC en forum ou support — une absence est par
+nature difficile à sourcer dans une documentation :
 
-- **Pas de variables ni de formules natives** (A/B, ETC — demande sans suite depuis 2010).
-- **Pas d'auto-palette native** (A/B, choix de conception assumé par ETC).
-- **Pas de négation hors du sous-système Query** (B, réponse directe du support ETC).
+- 📄 **Pas de variables ni de formules natives** (réponse ETC, demande sans suite depuis
+  2010). L'indirection macro-dans-macro est le seul palliatif de la plateforme.
+- 📄 **Pas d'auto-palette native** (réponse ETC, choix de conception assumé).
+- 📄 **Pas de négation hors du sous-système Query** (réponse directe du support ETC).
   Toute intention « tout sauf… » passe par Query, ou n'a pas de traduction.
-- **Un preset ne peut pas en référencer un autre** (A). « Le preset B, plus deux
+- 📄 **Un preset ne peut pas en référencer un autre.** « Le preset B, plus deux
   changements » n'a pas de traduction référencée.
-- **Les channels à marquer sont obligatoires** : « Eos will not assume all automated
+- 📄 **Les channels à marquer sont obligatoires** : « Eos will not assume all automated
   fixtures apply to any given mark ». « Marque les asservis » n'a pas de traduction.
+
+⚠️ **Avant de bâtir un écran « ceci est impossible » sur l'une de ces cinq lignes, la
+re-vérifier.** Se tromper sur une absence est plus grave que se tromper sur une syntaxe :
+l'app refuserait une demande parfaitement légitime, et l'utilisateur n'aurait aucun moyen
+de savoir que l'app a tort.
 
 S'y ajoutent des limites de l'outil, pas de la console :
 
-- **La voie ASCII n'est pas générable** (#32) : sa spécification est absente du dépôt.
+- 📄 **La voie ASCII n'est pas générable** (#32) : sa spécification est absente du dépôt.
   « Injection OSC ou ASCII » doit se lire « injection OSC ». L'export ASCII est de toute
   façon une navigation dans le Browser, sans commande ni touche OSC.
-- **Sept conditions Query n'ont pas de touche OSC** (#15) — atteignables au doigt
+- 📄 **Sept conditions Query n'ont pas de touche OSC** (#15) — atteignables au doigt
   seulement, potentiellement hors de portée de l'app.
-- **`{Emergency Mark}` n'est pas générable** : c'est un réglage de Setup.
+- 📄 **`{Emergency Mark}` n'est pas générable** : c'est un réglage de Setup.
 
 **→ Pour l'UI.** Un chemin « ceci n'est pas possible » de plein droit, distinct du refus
 de la console et distinct du « je n'ai pas compris ». Avec, quand elle existe, la raison
@@ -398,24 +527,28 @@ pas. Ce chemin ne doit **jamais** proposer de contournement approximatif.
 
 ## 7. Les numéros appartiennent à une conduite, pas à une macro
 
-**La règle.** Une macro générée référence des numéros propres à un spectacle : palette 5,
-groupe 12, cue 47. Importée sur une autre conduite, elle reste **syntaxiquement valide**
-et pointe vers autre chose.
+⚠️ **La règle** est une évidence de conception, pas un fait documenté. Une macro générée
+référence des numéros propres à un spectacle : palette 5, groupe 12, cue 47. Importée sur
+une autre conduite, elle reste **syntaxiquement valide** et pointe vers autre chose.
 
 **→ Pour l'UI.** Déjà décidé dans `APP.md` — l'import **signale sans bloquer**. Ce qui
 reste à concevoir : le signalement doit survivre à l'usage, pas seulement apparaître au
 moment de l'import. Une tuile de favori importée d'un autre spectacle mérite de rester
 identifiable comme telle jusqu'à ce que l'utilisateur l'ait validée une fois.
 
-Rappel utile : un `Group` sélectionne des channels et **ne contient jamais de niveaux**,
-contrairement à une palette. La distinction compte dans les libellés affichés.
+📄 Rappel utile : un `Group` sélectionne des channels et **ne contient jamais de niveaux**,
+contrairement à une palette. La distinction compte dans les libellés affichés. (Corpus
+#058/#082, confirmation ETC — **cherché sans succès dans le manuel §7 lors de cette
+passe**, donc à re-vérifier avant d'en faire un texte affiché à l'utilisateur.)
 
 ---
 
 ## 8. Le transport impose ses propres règles
 
-**La règle.** Contraintes établies, non négociables (détail : `APP.md` § Contraintes
-techniques, et §11 de la grammaire consolidée) :
+📄 **La règle.** Contraintes établies, non négociables (détail : `APP.md` § Contraintes
+techniques, et §11 de la grammaire consolidée). ⚠️ **Aucune n'a été re-vérifiée dans cette
+passe** — elles proviennent du journal terrain (S) et de tickets ETC rapportés par le
+corpus (B), sources solides mais de seconde main ici :
 
 - OSC sur TCP, port 3032. Ligne de commande via `/eos/cmd` ou `/eos/newcmd`.
 - **User# dédié et fixe**, assigné dès la connexion, pour ne pas interférer avec
@@ -472,6 +605,36 @@ Deux conséquences visuelles déjà actées dans `APP.md`, à respecter :
   distraitement ;
 - **aucun ⚠ ne peut apparaître dans les favoris**, propres par construction puisqu'une
   macro n'y entre qu'après acceptation *et* validation visuelle.
+
+---
+
+## État de vérification — à lire avant de bâtir dessus
+
+Passe du 2026-08-06, contre le manuel officiel v3.2.0 et les workbooks.
+
+| Partie | État |
+|---|---|
+| Préliminaire (anatomie de la syntaxe) | ✅ vérifié, sauf l'ordre des créneaux (⚠️ généralisation du projet) |
+| Règle 1 — états invisibles | ✅ 3 des 5 vérifiés mot à mot ; 📄 patch et filtres non re-vérifiés |
+| Règle 2 — refus / acceptation | ⚠️ doctrine du projet, appuyée sur des faits vérifiés |
+| Règle 3 — Blind | ✅ vérifié cinq fois, cinq chapitres |
+| Règle 4 — erreurs silencieuses | ✅ 7 items vérifiés (dont 3 ajoutés par cette passe) ; 📄 3 non re-vérifiés |
+| Règle 5 — trois issues | ✅ le fait qui la fonde est vérifié ; ⚠️ le découpage est un choix de conception |
+| Règle 6 — absences | ⚠️ **aucune re-vérifiée** — la partie la plus fragile du document |
+| Règle 7 — numéros propres à une conduite | ⚠️ évidence de conception ; 📄 la note sur `Group` reste à confirmer |
+| Règle 8 — transport | 📄 aucune re-vérifiée dans cette passe |
+| Règle 9 — avertissements = données | ✅ vérifiable directement dans `grammar/` |
+
+**Ce que cette passe a changé.** Trois items nouveaux en règle 4 (enregistrement sélectif
+qui n'isole pas, `Mark` en interrupteur, marque créant une cue), deux affirmations
+**élargies** parce qu'elles étaient trop étroites (le zéro implicite vaut pour tout
+paramètre, pas seulement après `At` ; `Q Only/Track` n'a pas un sens variable mais un sens
+**inversé**), et une affirmation **restreinte** parce qu'elle était trop large (l'ordre des
+créneaux n'est pas une règle publiée).
+
+**Ce qui reste à faire.** Les règles 6 et 8 n'ont pas été re-vérifiées à la source. La
+règle 6 est la plus risquée des deux : une absence mal établie fait refuser à l'app une
+demande légitime, et rien dans l'interface ne permettrait de s'en apercevoir.
 
 ---
 
