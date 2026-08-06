@@ -32,20 +32,20 @@ Le constat qui ouvrait cette section jusqu'au 3 août — « le dépôt est à 1
 Markdown, rien n'y est consommable par un programme sauf `eosKeys.ts` » — n'est plus vrai.
 [`grammar/`](grammar/README.md) porte désormais un modèle typé de **79 actions et 164
 règles de légalité**, compilé en JSON, avec un générateur qui produit trois sorties
-distinctes (ligne de commande, contenu de macro, paquets OSC) et **107 cas de
+distinctes (ligne de commande, contenu de macro, paquets OSC) et **110 cas de
 non-régression**, dont la majorité sont des exemples chiffrés du manuel officiel recopiés
 verbatim.
 
-**Premier essai réel de traduction fait le 2026-08-03/06** : « créer les palettes
-couleur 1 à 6, Lee, chaud/froid/rouge/vert/bleu/jaune » → 6 macros générées et
-vérifiées par l'outil, avec les vraies références Lee (catalogue officiel intégré,
-`reference/lee_filters_theatre.md`) et le choix `{By Type}` confirmé par l'utilisateur.
-Fait à la main cette fois (pas encore d'axe B automatisé) — voir historique de session.
+**L'axe B est commencé** depuis le 2026-08-06 : [`traducteur/`](traducteur/README.md)
+traduit une phrase française en IR, que le générateur rend ensuite. La demande réelle de
+l'utilisateur — « créer les palettes couleur 1 à 6, Lee, chaud/froid/rouge/vert/bleu/jaune »,
+posée en session comme « un objectif de traduction réelle » — est traitée de bout en bout,
+recopiée verbatim dans les tests avec ses fautes de frappe.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | ⬜ non commencé — un premier cas réel traité à la main confirme que le modèle tient la route |
+| **B — écrire le traducteur NL** | 🚧 v0.1 — 3 intentions, 17 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 34 points recensés au backlog (#34 tout juste résolu via le catalogue officiel Lee) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -427,11 +427,52 @@ stratégie d'injection qui change, pas seulement la syntaxe.
 cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23, Magic Sheets
 §25, puis l'export ASCII. Ensuite, brancher la couche NL (axe B).
 
-### B. Écrire le traducteur NL → macro
+### B. Écrire le traducteur NL → macro — **commencé (v0.1)**
 
 Le cœur du produit. Dépend de A si l'on veut éviter la duplication de la grammaire
 dans le code. Prérequis déjà satisfaits : vocabulaire canonique, grammaire consolidée,
 référentiel de risques, banc de transport OSC pour tester l'injection.
+
+**Approche retenue (2026-08-06) : traducteur déterministe à lexique, sans IA à
+l'exécution.** Voir [`traducteur/README.md`](traducteur/README.md). Trois raisons :
+
+1. **Le réseau.** Dans le théâtre, le téléphone est sur le Wi-Fi de la console ; rien ne
+   garantit un accès Internet (`APP.md`, « Même réseau que la console »). Un traducteur
+   qui dépend d'un serveur distant tombe exactement quand on en a besoin.
+2. **« N'invente rien »** (`CLAUDE.md` règle n°1). Un modèle de langue invente par
+   construction — il peut produire une syntaxe plausible et inexistante. Un lexique ne
+   peut sortir que ce qu'on y a mis, et chaque entrée est sourcée.
+3. **C'est réversible.** L'IR est le contrat : une couche de compréhension plus souple
+   pourra se brancher devant et émettre la même IR sans que rien en aval ne bouge.
+   Commencer déterministe ne ferme aucune porte.
+
+**Le choix de conception central : trois issues, pas deux.** `compris`, `a_preciser`,
+`incompris`. Poser une question n'est pas un échec dégradé, c'est le comportement correct
+face à une ambiguïté que seul l'utilisateur peut lever — c'est « n'invente rien » rendu
+exécutable. Sans cette issue, un traducteur n'a d'autre choix que de deviner, et une
+couleur devinée produit une macro valide, acceptée par la console, et la mauvaise teinte
+sur scène : le pire des trois échecs possibles parce qu'il est **silencieux**.
+
+**Fait — v0.1 (2026-08-06)** : 3 intentions (créer des palettes de couleur, colorer une
+sélection, régler une intensité), 9 couleurs nommées, 2 couleurs déclarées ambiguës,
+17 cas de non-régression. Le cas d'ancrage est la demande réelle de l'utilisateur
+recopiée verbatim, fautes comprises, doublée d'un cas identique écrit proprement qui
+**exige le même résultat** — sinon la tolérance au bruit est illusoire.
+
+Deux constats de cette tranche valent d'être retenus :
+
+- **La tolérance aux fautes doit être restreinte au créneau en cours**, jamais globale.
+  L'utilisateur avait écrit « chang » pour « chaud » ; dans tout le lexique, le plus
+  proche voisin de « chang » est « chan » (distance 1), le mot-clé Eos pour un circuit.
+  Une correction globale aurait traduit une couleur en sélection de circuits, sans rien
+  dire. Restreinte aux couleurs, « chaud » gagne seul.
+- **Un numéro de gel ne s'écrit jamais avec un zéro de tête en YAML.** `020` est lu comme
+  de l'octal et vaut 16. Bug réellement rencontré à l'écriture du lexique, silencieux et
+  plausible (`Color 3/016` au lieu de `Color 3/020`). Corrigé, et désormais vérifié par un
+  test qui contrôle les numéros un par un.
+
+**Reste à couvrir** : cues, groupes, submasters, effets, Query, macros — la majeure partie
+des 79 actions du modèle. Le lexique se remplira par tranches, comme le modèle l'a été.
 
 ### C. Valider au banc réel
 

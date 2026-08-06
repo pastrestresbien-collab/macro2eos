@@ -1,0 +1,328 @@
+# Lexique — le français de l'utilisateur vers les concepts du modèle
+#
+# Ce fichier ne contient AUCUNE syntaxe Eos. Il ne fait qu'une chose : relier des
+# mots français à des concepts que `grammar/modele.yaml` connaît déjà. La syntaxe
+# reste la propriété exclusive du modèle, et c'est `grammar/generateur.py` qui
+# l'écrit. Un mot absent d'ici ne produit donc jamais une commande approximative :
+# il produit un « je n'ai pas compris ».
+#
+# ÉCHELLE DE CONFIANCE — distincte du S/A/B/C/D du reste du projet.
+# Celle-ci mesure la fiabilité d'une *commande console*. Ici on mesure autre chose :
+# « ce mot français désigne-t-il bien ce concept ? ». Chaque entrée porte donc soit
+# une `source` (d'où vient le rattachement), soit un `choix` (décision assumée du
+# projet, faute de correspondance évidente).
+
+meta:
+  version: "0.1"
+  maj: "2026-08-06"
+
+# --------------------------------------------------------------------------
+# NORMALISATION — appliquée avant toute recherche
+#
+# La saisie vocale arrivera plus tard sur la même chaîne (`APP.md`), et la saisie
+# texte d'un téléphone est déjà bruitée. On ne suppose donc jamais une entrée
+# propre : minuscules, accents retirés, ponctuation ignorée.
+#
+# Retirer les accents n'est pas cosmétique : l'utilisateur écrit « 1 a 6 » aussi
+# souvent que « 1 à 6 ». Sans cette normalisation, la moitié des plages échouent.
+# --------------------------------------------------------------------------
+normalisation:
+  minuscules: true
+  sans_accents: true
+  ponctuation_ignoree: ",;:!?.()[]"
+
+# --------------------------------------------------------------------------
+# TOLÉRANCE AUX FAUTES DE FRAPPE
+#
+# Distance d'édition, mais **jamais globale** : toujours restreinte aux candidats
+# du créneau en cours de remplissage. La raison tient dans un cas réel.
+#
+# L'utilisateur a écrit « chang » pour « chaud ». En cherchant dans tout le
+# lexique, le plus proche voisin de « chang » n'est pas « chaud » (distance 2)
+# mais « chan » (distance 1) — le mot-clé Eos pour un circuit. Une correction
+# globale aurait donc traduit une couleur en sélection de circuits, silencieusement.
+#
+# Restreinte à la liste des couleurs, où « chan » n'est pas candidat, « chaud »
+# gagne sans ambiguïté. Le créneau fait le désambiguïsateur.
+# --------------------------------------------------------------------------
+tolerance:
+  # Pas de correction sous 4 lettres : trop de mots courts sont à distance 1 les
+  # uns des autres (« r » et « v » sont des couleurs distinctes, pas des fautes).
+  longueur_minimale: 4
+  distance_max_mot_court: 1     # 4 lettres
+  distance_max_mot_long: 2      # 5 lettres et plus
+  # Deux candidats à égalité de distance ne sont jamais départagés au hasard :
+  # c'est une question à poser, pas un pari.
+  egalite: question
+
+# --------------------------------------------------------------------------
+# MOTS OUTILS — ignorés, mais listés
+#
+# Listés explicitement plutôt que devinés : un mot inconnu doit rester inconnu.
+# Si un mot outil manque ici, il ressortira en « non reconnu » et l'utilisateur
+# le verra — c'est le bon échec, bruyant plutôt que silencieux.
+# --------------------------------------------------------------------------
+mots_outils:
+  - le
+  - la
+  - les
+  - l
+  - un
+  - une
+  - des
+  - du
+  - de
+  - d
+  - et
+  - en
+  - avec
+  - dans
+  - sur
+  - pour
+  - au
+  - aux
+  - ref
+  - refs
+  - reference
+  - references
+  - numero
+  - numeros
+  - no
+  - s
+  - il
+  - me
+  - moi
+  - stp
+  - please
+
+# --------------------------------------------------------------------------
+# OPÉRATEURS DE PLAGE — « 1 à 6 », « 1 thru 6 », « 1-6 »
+# --------------------------------------------------------------------------
+plage:
+  mots: [a, thru, jusqu, jusqua, "-"]
+  source: "`Thru` est l'opérateur de plage du modèle (grammar/modele.yaml, operateurs.plage)"
+
+# --------------------------------------------------------------------------
+# OBJETS — les mots français qui désignent une cible du modèle
+#
+# La clé est le nom d'objet tel que `grammar/modele.yaml` l'écrit. Les alias sont
+# les façons dont un utilisateur français le dit réellement.
+# --------------------------------------------------------------------------
+objets:
+  Chan:
+    alias: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, lampe, lampes]
+    source: "objets.Chan du modèle ; alias métier français courants"
+  Group:
+    alias: [groupe, groupes, group, groups]
+    source: "objets.Group du modèle"
+  Cue:
+    alias: [cue, cues, memoire, memoires, sequence]
+    source: >
+      objets.Cue du modèle. « mémoire » est le terme français traditionnel du
+      métier pour une cue — conservé parce que la saisie vocale le produira.
+
+# --------------------------------------------------------------------------
+# NUANCIERS — bibliothèques de gélatines
+# --------------------------------------------------------------------------
+nuanciers:
+  lee:
+    numero: 3
+    alias: [lee, "lee filters", leefilters]
+    source: "manuel §10, corpus #082 — `Color 3/<numéro>`, confirmé A"
+
+# --------------------------------------------------------------------------
+# COULEURS — mot français → numéro de gélatine Lee
+#
+# Source unique : `reference/lee_filters_theatre.md`, lui-même issu du catalogue
+# officiel Lee « Art of Light » (PDF conservé dans `reference/source/`).
+#
+# RÈGLE DE PEUPLEMENT : une couleur n'entre ici que si le rattachement est
+# évident — le nom Lee est le mot français, sa traduction directe, ou une
+# décision déjà prise et documentée. Le catalogue compte ~230 teintes et la
+# plupart des mots français courants ont plusieurs candidats sérieux
+# (« ambre » en a au moins quatre). Dans ce cas la bonne réponse n'est pas de
+# choisir : c'est `ambigu`, qui fait poser la question.
+# --------------------------------------------------------------------------
+couleurs:
+  rouge:
+    gel: 106
+    nom_lee: "Primary Red"
+    alias: [r, rouges]
+    source: "catalogue officiel p.22 — « Strong red effect, cycloramas »"
+
+  vert:
+    gel: 139
+    nom_lee: "Primary Green"
+    alias: [v, verts]
+    source: "catalogue officiel p.19 — « Set lighting, cycloramas »"
+
+  bleu:
+    gel: 120
+    nom_lee: "Deep Blue"
+    alias: [b, bleus]
+    source: >
+      catalogue officiel p.17 — « Pleasing effect for theatrical lighting ».
+      Lee ne nomme aucune teinte « Primary Blue » : 120 est le bleu standard le
+      plus proche d'un bleu primaire dans la gamme théâtre.
+
+  jaune:
+    gel: 101
+    nom_lee: "Yellow"
+    alias: [j, jaunes]
+    source: "catalogue officiel p.21 — « Sunlight and window effect »"
+
+  orange:
+    gel: 105
+    nom_lee: "Orange"
+    alias: [o, oranges]
+    source: "catalogue officiel p.22 — nom Lee littéralement identique au mot français"
+
+  magenta:
+    gel: 113
+    nom_lee: "Magenta"
+    alias: [magentas]
+    source: "catalogue officiel p.23 — nom Lee littéralement identique"
+
+  violet:
+    gel: 344
+    nom_lee: "Violet"
+    alias: [violets]
+    source: "catalogue officiel p.16 — nom Lee littéralement identique"
+
+  chaud:
+    gel: 205
+    nom_lee: "Half CTO"
+    alias: [chaude, chauds, chaudes]
+    choix: >
+      DÉCISION DU PROJET, pas une correspondance de catalogue. « Chaud » désigne
+      la famille CTO (204-206), qui réchauffe une source — confirmé par
+      l'utilisateur en session (confiance S) et cohérent avec les conversions
+      Kelvin officielles du catalogue p.30. Reste à choisir la force : 205 (Half)
+      est retenu comme défaut, ni la correction la plus forte (204) ni la plus
+      discrète (206). Voir `reference/lee_filters_theatre.md`.
+    note_utilisateur: >
+      chaud → Lee 205 (Half CTO, correction moyenne). Pour une correction plus
+      forte 204, plus légère 206.
+
+  froid:
+    gel: 202
+    nom_lee: "Half CTB"
+    alias: [froide, froids, froides]
+    choix: >
+      Symétrique de « chaud ». Famille CTB (201-203), qui refroidit une source.
+      202 (Half) retenu par défaut pour la même raison.
+    note_utilisateur: >
+      froid → Lee 202 (Half CTB, correction moyenne). Pour une correction plus
+      forte 201, plus légère 203.
+
+  # -- Ambigus : reconnus, mais jamais tranchés tout seuls -------------------
+  # ATTENTION — JAMAIS de zéro de tête sur un numéro de gel dans ce fichier.
+  # YAML 1.1 lit `020` comme de l'OCTAL : la valeur chargée vaut 16, pas 20.
+  # Le piège est silencieux (aucune erreur, un numéro plausible) et produirait
+  # `Color 3/016` au lieu de `Color 3/020` — la mauvaise gélatine sur scène.
+  # Les numéros s'écrivent donc en décimal nu ; c'est l'affichage qui remet les
+  # trois chiffres du catalogue Lee (`{gel:03d}` dans le code).
+  # Vérifié par `test_traducteur.py`.
+  ambre:
+    ambigu: true
+    alias: [ambres, amber]
+    candidats:
+      - { gel: 162, nom_lee: "Bastard Amber", effet: "blanc chaud, wash chaud, lumière de lampe" }
+      - { gel: 102, nom_lee: "Light Amber",   effet: "jaune chaud, bougie ou fort soleil" }
+      - { gel: 20,  nom_lee: "Medium Amber",  effet: "soleil d'après-midi, bougie, latéral" }
+      - { gel: 104, nom_lee: "Deep Amber",    effet: "soleil, accents, latéral" }
+    source: "catalogue officiel pp.20-22 — quatre ambres franchement distincts"
+
+  rose:
+    ambigu: true
+    alias: [roses, pink]
+    candidats:
+      - { gel: 157, nom_lee: "Pink",        effet: "danse, adoucit les costumes blancs" }
+      - { gel: 2,   nom_lee: "Rose Pink",   effet: "wash rose fort pour cyclorama" }
+      - { gel: 107, nom_lee: "Light Rose",  effet: "washs généraux, poursuites" }
+      - { gel: 128, nom_lee: "Bright Pink", effet: "contre-jour, latéral, comédies musicales" }
+    source: >
+      catalogue officiel pp.22-24. Piège de traduction en plus du choix de force :
+      le mot anglais « Rose » chez Lee ne recouvre pas le « rose » français, qui
+      se dit « Pink ». Raison de plus pour ne pas trancher tout seul.
+
+# --------------------------------------------------------------------------
+# INTENTIONS — ce que l'utilisateur veut faire
+#
+# Une intention se déclenche quand TOUS ses groupes de déclencheurs sont
+# présents dans la phrase (un mot suffit par groupe). Volontairement insensible
+# à l'ordre des mots : le français du métier est télégraphique et la dictée
+# vocale ne rendra pas une syntaxe propre.
+# --------------------------------------------------------------------------
+intentions:
+  creer_palettes_couleur:
+    description: "créer une ou plusieurs palettes de couleur à partir de gélatines"
+    declencheurs:
+      verbe: [creer, cree, crees, creez, enregistrer, enregistre, record, sauver, sauve, faire, fais, fait]
+      objet: [palette, palettes]
+      famille: [couleur, couleurs, color]
+    exemple_nl: "créer les palettes de couleur 1 à 6 avec les références lee, chaud froid r v b j"
+    origine: >
+      Demande réelle de l'utilisateur, session 2026-08-03, posée explicitement
+      comme « un objectif de traduction réelle ». C'est le cas d'ancrage du
+      traducteur : il est recopié verbatim, fautes comprises, dans les tests.
+
+  colorer_selection:
+    description: "mettre une sélection de circuits dans une couleur de nuancier"
+    declencheurs:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      # `@couleurs` est un joker : n'importe quel nom de teinte du lexique sert
+      # de déclencheur. Évite de recopier ici tous les noms de couleurs.
+      famille: [couleur, color, lee, gelatine, gel, "@couleurs"]
+    exemple_nl: "circuits 10 à 20 en Lee 195"
+    origine: "patron `selection_plage_couleur` (grammar/patrons.yaml), confiance A"
+
+  regler_intensite:
+    description: "donner un niveau d'intensité à une sélection"
+    declencheurs:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      niveau: [pourcent, "%", intensite, niveau]
+    exemple_nl: "circuits 1 à 5 à 50 %"
+    origine: "patron `degrade_intensite` (grammar/patrons.yaml), confiance A"
+    note: >
+      Un marqueur de niveau explicite est EXIGÉ (`%`, « pourcent », « intensité »,
+      « niveau »). « circuits 1 à 5 à 50 » sans marqueur reste volontairement
+      incompris : rien ne dit si 50 est un niveau, une cue ou une palette. C'est
+      le genre de phrase qu'il vaut mieux faire reformuler que deviner.
+
+# --------------------------------------------------------------------------
+# QUESTIONS — le troisième résultat possible
+#
+# Une traduction a trois issues, pas deux : comprise, **à préciser**, ou
+# incomprise. Poser une question n'est pas un échec du traducteur, c'est son
+# comportement correct face à une ambiguïté que seul l'utilisateur peut lever.
+# C'est « n'invente rien » rendu exécutable.
+# --------------------------------------------------------------------------
+questions:
+  portee_enregistrement:
+    texte: "Sur quels projecteurs enregistrer ?"
+    pourquoi: >
+      `Record Color Palette` capture l'état de la sélection courante — ou, si
+      rien n'est sélectionné, celui de tous les channels non-défaut, ce qui est
+      rarement l'intention réelle. La demande ne le précise pas, et le
+      traducteur ne doit pas choisir à la place de l'utilisateur.
+    source: "`APP.md` § Ouvert ; `grammar/modele.yaml` § palettes ; manuel §10"
+    options:
+      - cle: par_type
+        libelle: "Tous les projecteurs du même type"
+        detail: >
+          Palette générique, réutilisable sur n'importe quel projecteur du même
+          type, sans dépendre de numéros de circuit. Ajoute `{By Type}`.
+      - cle: selection
+        libelle: "Des circuits précis"
+        detail: "Demande les numéros de circuits ; la palette capture leur état."
+        demande_valeur: true
+
+  couleur_ambigue:
+    texte: "Quelle nuance exactement ?"
+    pourquoi: >
+      Le mot français reconnu recouvre plusieurs teintes franchement
+      différentes au catalogue Lee. Choisir au hasard produirait une macro
+      valide, acceptée par la console, et la mauvaise couleur sur scène — le
+      pire des trois échecs possibles parce qu'il est silencieux.
+    source: "`reference/lee_filters_theatre.md`, catalogue officiel Lee"
