@@ -5,7 +5,7 @@ qui coexistaient et divergeaient (corpus « PRIORITÉS BANC », corpus « ZONES 
 OUVERTES », grammaire consolidée §15) — celles-ci restent en place comme trace d'audit
 mais ne sont plus à mettre à jour.
 
-Dernière mise à jour : 2026-08-03.
+Dernière mise à jour : 2026-08-06.
 
 ---
 
@@ -30,17 +30,23 @@ utile est dans le dépôt.
 
 Le constat qui ouvrait cette section jusqu'au 3 août — « le dépôt est à 100 % de prose
 Markdown, rien n'y est consommable par un programme sauf `eosKeys.ts` » — n'est plus vrai.
-[`grammar/`](grammar/README.md) porte désormais un modèle typé de **74 actions et 158
+[`grammar/`](grammar/README.md) porte désormais un modèle typé de **79 actions et 164
 règles de légalité**, compilé en JSON, avec un générateur qui produit trois sorties
-distinctes (ligne de commande, contenu de macro, paquets OSC) et **100 cas de
+distinctes (ligne de commande, contenu de macro, paquets OSC) et **107 cas de
 non-régression**, dont la majorité sont des exemples chiffrés du manuel officiel recopiés
 verbatim.
 
+**Premier essai réel de traduction fait le 2026-08-03/06** : « créer les palettes
+couleur 1 à 6, Lee, chaud/froid/rouge/vert/bleu/jaune » → 6 macros générées et
+vérifiées par l'outil, avec les vraies références Lee (catalogue officiel intégré,
+`reference/lee_filters_theatre.md`) et le choix `{By Type}` confirmé par l'utilisateur.
+Fait à la main cette fois (pas encore d'axe B automatisé) — voir historique de session.
+
 | Axe | État |
 |---|---|
-| **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.15) |
-| **B — écrire le traducteur NL** | ⬜ non commencé — c'est la suite naturelle |
-| **C — valider au banc réel** | ⬜ non commencé — 32 points l'attendent, dont 25 encodés |
+| **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
+| **B — écrire le traducteur NL** | ⬜ non commencé — un premier cas réel traité à la main confirme que le modèle tient la route |
+| **C — valider au banc réel** | ⬜ non commencé — 34 points recensés au backlog (#34 tout juste résolu via le catalogue officiel Lee) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
 virtuel, le multi-console — et l'export ASCII, non par oubli mais faute de spécification
