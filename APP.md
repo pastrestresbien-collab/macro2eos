@@ -32,8 +32,9 @@ Dernière mise à jour : 2026-08-05.
 | 2026-08-03 | Favoris : **modifiables (libellé), duplicables, supprimables, déplaçables vers un autre onglet**, via un mode édition explicite hors jeu. | Écran 2 |
 | 2026-08-03 | **Bibliothèque de macros** issue du corpus, accessible depuis l'écran 1 : remplit le champ de saisie, ne court-circuite jamais l'aperçu. | Écran 1 |
 | 2026-08-03 | **Historique des envois** journalisé en paramètres, avec une qualité par entrée (acceptée / a levé un doute / refusée / en suspens). | Écran 3 |
+| 2026-08-05 | **Condition d'usage : le téléphone est posé sur la régie, pas tenu en main.** Lu à ~50 cm, dans le noir, regard sur le plateau. La contrainte est la lisibilité à distance, pas la portée du doigt. | Usage |
 | 2026-08-05 | **Navigation hiérarchisée, pas trois pairs.** Barre du bas réduite à deux destinations (Favoris, Saisie) ; Historique et Réglages montent dans l'en-tête. | Navigation |
-| 2026-08-05 | **Mode jeu** : sur Favoris, réduit l'app à la grille de tuiles — barre du bas masquée, édition impossible. | Écran 2 |
+| 2026-08-05 | **Mode jeu** : sur Favoris, agrandit tuiles et libellés, masque la barre du bas et la ligne de commande, rend l'édition impossible. | Écran 2 |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -105,8 +106,14 @@ se permettre d'être bavard et prudent.
 
 ### 2. Favoris — le seul écran de jeu
 
-Le seul écran utilisé en représentation. Donc : grandes cibles tactiles, une main,
-lisible dans le noir, aucun texte superflu.
+Le seul écran utilisé en représentation. **Le téléphone est posé sur la régie devant
+l'utilisateur, pas tenu en main** (précisé le 2026-08-05). Il est donc lu à une
+cinquantaine de centimètres, dans le noir, alors que le regard est sur le plateau.
+
+La contrainte dominante n'est pas la portée du doigt — tout l'écran est atteignable de
+la même façon — mais **ce qu'on reconnaît d'un coup d'œil, de loin**. Donc : grandes
+cibles tactiles, libellés lisibles à distance, et rien qui ne le soit pas. Un texte trop
+petit pour être lu depuis la régie n'est pas un repère discret, c'est du bruit.
 
 - **Onglets** en haut : regroupement thématique ou par spectacle, au choix de
   l'utilisateur.
@@ -163,40 +170,52 @@ Les trois écrans restent les trois écrans. Ce qui change, c'est qu'ils ne sont
 pairs dans une barre d'onglets revenait à nier la seule chose que ce produit sait de son
 usage.
 
-Le raisonnement tient en une observation : **le pouce se pose en bas de l'écran.** Sur
-l'écran de jeu, en salle noire, une main, tout ce qui se trouve à cet endroit et
-n'envoie pas de macro est un risque — sortir de la grille de tuiles en plein spectacle
-coûte bien plus cher que d'atteindre les réglages une seconde plus tard.
+Le raisonnement suit la condition d'usage réelle : **le téléphone est posé sur la régie,
+pas tenu en main.** Tout l'écran est donc atteignable de la même façon, et aucune zone
+n'est plus « dangereuse » qu'une autre. Ce qui est rare, en revanche, c'est l'attention :
+le regard est sur le plateau, et chaque élément affiché est quelque chose à balayer
+avant de trouver ce qu'on cherche.
 
-Trois rôles, donc :
+La question n'est donc pas « où le doigt se pose-t-il ? » mais **« combien de choses
+dois-je écarter du regard avant de voir celle qui sert ? »**. D'où trois rôles :
 
 - **Destinations** — barre du bas, grandes cibles : **Favoris** et **Saisie**, les deux
-  seules choses qu'on *fait*. Favoris en premier, du côté où le pouce se pose.
-- **Utilitaires** — en-tête, en haut, hors de la zone du pouce : **Historique** et
-  **Réglages**. Consultables depuis n'importe où sans détour, et le retour ramène là
-  d'où l'on vient. C'est aussi ce qui corrige un défaut réel : l'historique enregistre
-  les envois de Favoris autant que ceux de Saisie, il n'avait aucune raison d'être
-  enfermé derrière l'atelier.
+  seules choses qu'on *fait*. Deux plutôt que trois : moins à balayer, cibles plus
+  larges. Favoris en premier, c'est l'écran vers lequel on revient.
+- **Utilitaires** — en-tête, discrets : **Historique** et **Réglages**, rares, qui n'ont
+  pas à concurrencer visuellement ce qui sert. Consultables depuis n'importe où sans
+  détour, et le retour ramène là d'où l'on vient. C'est aussi ce qui corrige un défaut
+  réel : l'historique enregistre les envois de Favoris autant que ceux de Saisie, il
+  n'avait aucune raison d'être enfermé derrière l'atelier.
 - **Satellites** — rattachés à un écran précis et atteints depuis lui seul : la
   bibliothèque appartient à Saisie (elle remplit son champ), la gestion des onglets et
   l'import appartiennent aux Réglages.
 
 ### Mode jeu
 
-Le prolongement logique de « réorganisation hors jeu uniquement » : ce qui valait pour
-l'édition vaut pour la navigation. Activé depuis Favoris avant que la salle s'éteigne,
-il réduit l'app à ce qui sert en représentation :
+Deux raisons distinctes, aucune des deux liée à la façon de tenir l'appareil :
 
-- barre du bas **masquée** — plus rien sous le pouce que des tuiles ;
+1. **Lisibilité à distance.** À cinquante centimètres, dans le noir, il faut reconnaître
+   une tuile sans se pencher. Tout l'espace repris sur le reste de l'interface va aux
+   tuiles, qui grossissent, libellés compris.
+2. **Aucune édition possible** — prolongement de « réorganisation hors jeu uniquement ».
+
+Activé depuis Favoris avant que la salle s'éteigne :
+
+- barre du bas **masquée** — sa hauteur revient aux tuiles ;
+- tuiles et libellés **nettement agrandis** ;
+- la ligne de commande sous le libellé **disparaît** : illisible à cette distance, elle
+  n'est plus un repère discret mais du bruit (« aucun texte superflu ») ;
 - édition, ajout d'onglet et ajout de favori **indisponibles** ;
 - onglets **toujours commutables** — changer d'onglet fait partie du jeu ;
 - mode d'envoi rappelé **en lecture seule** : on ne découvre jamais en plein spectacle
-  qu'il n'était pas celui qu'on croyait, et on ne peut pas le changer d'un doigt qui
-  traîne ;
-- état de la console toujours visible, et une sortie explicite en haut de l'écran.
+  qu'il n'était pas celui qu'on croyait, sans pour autant offrir un réglage qu'un doigt
+  pourrait changer sans le vouloir ;
+- état de la console toujours visible et lisible, sortie explicite en haut de l'écran.
 
-Ce mode est un garde-fou, pas un verrou : la sortie est immédiate, en un appui, loin
-du pouce. Rien ne doit jamais empêcher quelqu'un de reprendre la main sur sa conduite.
+Ce mode est un confort de lecture doublé d'un garde-fou, pas un verrou : la sortie est
+immédiate, en un appui. Rien ne doit jamais empêcher quelqu'un de reprendre la main sur
+sa conduite.
 
 ---
 

@@ -134,7 +134,7 @@
     font-size: 11.5px; font-weight: 600; cursor: pointer; padding: 0; flex: none;
   }
 
-  /* utilitaires d'en-tête : accessibles de partout, mais loin du pouce */
+  /* utilitaires d'en-tête : accessibles de partout, discrets, jamais dans le chemin */
   .hdr-right { display: flex; align-items: center; gap: 6px; flex: none; }
   .hdr-btn {
     flex: none; width: 28px; height: 28px; border-radius: 8px;
@@ -243,9 +243,24 @@
   .btn-play:hover { border-color: var(--app-accent); color: var(--app-accent); }
   .play-note { margin: 0; font-size: 11.5px; color: var(--app-muted); line-height: 1.45; }
   .play-strip {
-    display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--app-muted);
-    border-top: 1px solid var(--app-line); padding: 11px 2px 2px;
+    display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: var(--app-muted);
+    border-top: 1px solid var(--app-line); padding: 13px 2px 2px;
   }
+
+  /* ---------------------------------------------------------------------------
+     MODE JEU — le téléphone est posé sur la régie, à 50 cm, dans le noir, et le
+     regard est sur le plateau. La contrainte n'est pas la portée du doigt : c'est
+     de reconnaître une tuile d'un coup d'œil, de loin. Tout grossit, et ce qui
+     n'est pas lisible à cette distance disparaît plutôt que de faire du bruit.
+     --------------------------------------------------------------------------- */
+  body.play .tile { min-height: 118px; padding: 18px 15px; justify-content: center; }
+  body.play .tile .name { font-size: 19px; line-height: 1.2; }
+  body.play .tile .cmd { display: none; }   /* illisible à 50 cm : du bruit, pas un repère */
+  body.play .conn { white-space: nowrap; }
+  body.play .tiles { gap: 12px; }
+  body.play .tab { font-size: 15px; padding: 11px 15px 12px; }
+  body.play .conn { font-size: 14px; color: var(--app-ink); }
+  body.play .dot { width: 9px; height: 9px; }
 
   .mode-strip { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--app-muted); padding: 10px 14px;
     border-top: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
@@ -435,9 +450,10 @@
   <section class="guide">
     <h2>Six choses à essayer</h2>
     <ol>
-      <li><b>Le geste de jeu.</b> Favoris → <b>▶ Mode jeu</b>, puis envoyez des tuiles à
-        une main. La barre du bas disparaît : plus rien sous le pouce que des tuiles.
-        C'est le test qui compte le plus — faites-le en plein écran.</li>
+      <li><b>Le test qui compte.</b> Favoris → <b>▶ Mode jeu</b>, puis <b>posez le téléphone
+        devant vous</b> à la distance de la régie, en plein écran, et envoyez des tuiles
+        sans vous pencher. Les libellés sont-ils lisibles de là où vous serez ? Les tuiles
+        assez grandes pour viser sans regarder longtemps ? C'est ça qu'il faut juger.</li>
       <li><b>Une macro qui inquiète.</b> Saisie → tapez
         <code>groupe 5 et circuits 1 à 6 en lee 195</code> → Traduire. Elle porte un ⚠,
         la confirmation passe en plein écran. Tapez sur <code>Group</code> dans l'aperçu
@@ -489,16 +505,16 @@
   // risque vont de « constante, en pleine représentation » à « une fois par
   // installation ». La navigation reflète cette hiérarchie plutôt que de la nier.
   //
-  //   destination  — barre du bas, gros doigt, les deux seules choses qu'on FAIT :
-  //                  Favoris (le seul écran de jeu) et Saisie (l'atelier).
-  //   utilitaire   — en-tête, en haut, hors de la zone du pouce : Historique et
-  //                  Réglages. Consultés depuis n'importe où, sans détour, et sans
-  //                  jamais occuper l'espace où le pouce se pose pendant un show.
+  //   destination  — barre du bas, grandes cibles, les deux seules choses qu'on
+  //                  FAIT : Favoris (le seul écran de jeu) et Saisie (l'atelier).
+  //   utilitaire   — en-tête : Historique et Réglages, consultés depuis n'importe
+  //                  où, sans détour, sans concurrencer visuellement ce qui sert.
   //   satellite    — rattaché à un écran précis, atteint depuis lui seul.
   //
-  // Le pouce se pose en bas de l'écran. En représentation, tout ce qui s'y trouve
-  // et qui n'envoie pas de macro est un risque : c'est pourquoi la barre du bas ne
-  // contient plus que deux destinations, et disparaît entièrement en mode jeu.
+  // Le téléphone est posé sur la régie, pas tenu en main : la contrainte n'est pas
+  // la portée du doigt mais ce qu'on reconnaît d'un coup d'œil, de loin, dans le
+  // noir. D'où deux destinations plutôt que trois — moins à balayer du regard,
+  // cibles plus grandes — et les deux utilitaires rares hors du chemin.
   // ---------------------------------------------------------------------------
   var SCREENS = {
     favoris:      { label: "Favoris",   role: "destination" },
@@ -701,7 +717,11 @@
   function renderStatusbar() {
     var el = document.getElementById("statusbar-slot");
     var dot = state.connected ? "dot-ok" : "dot-wait";
-    var label = state.connected ? "Console connectée" : "Reconnexion en cours…";
+    // En mode jeu, le libellé raccourcit : la place va au bouton de sortie, et
+    // « connectée ou non » est la seule chose qu'on lit vraiment en représentation.
+    var label = state.playMode
+      ? (state.connected ? "Connectée" : "Reconnexion…")
+      : (state.connected ? "Console connectée" : "Reconnexion en cours…");
 
     // En mode jeu, l'en-tête ne garde que ce qui compte en représentation :
     // l'état de la console, et la sortie du mode. Aucune navigation latérale.
@@ -731,14 +751,15 @@
   function renderNav() {
     var el = document.getElementById("bottom-nav");
     // Deux destinations seulement — les deux seules choses qu'on fait vraiment.
-    // Favoris en premier : c'est l'écran de jeu, et le pouce va naturellement
-    // du côté où il se pose. Réglages et Historique sont montés dans l'en-tête.
+    // Favoris en premier : c'est l'écran de jeu, celui vers lequel on revient.
+    // Réglages et Historique, rares, sont montés dans l'en-tête.
     var items = [
       { id: "favoris", ic: "▦", label: "Favoris" },
       { id: "saisie", ic: "✎", label: "Saisie" }
     ];
-    // En mode jeu, la barre du bas disparaît : le pouce se pose là, et pendant une
-    // représentation tout ce qui s'y trouve et n'envoie pas de macro est un risque.
+    // En mode jeu, la barre du bas disparaît : la hauteur qu'elle occupe revient
+    // aux tuiles, qui doivent être lisibles depuis la régie. La sortie reste en
+    // haut de l'écran, toujours visible.
     if (state.playMode) { el.innerHTML = ""; el.style.display = "none"; return; }
     el.style.display = "";
 
@@ -961,8 +982,8 @@
 
     if (state.playMode) {
       // Rappel en lecture seule : on ne découvre jamais en plein spectacle que le
-      // mode d'envoi n'était pas celui qu'on croyait (APP.md) — mais on ne peut
-      // pas non plus le changer d'un doigt qui traîne.
+      // mode d'envoi n'était pas celui qu'on croyait (APP.md) — sans pour autant
+      // offrir un réglage qu'un doigt pourrait changer sans le vouloir.
       out += '<div class="play-strip"><span class="dot dot-ok"></span>' +
         (state.favMode === "immediate" ? "Envoi immédiat — un appui suffit" : "Envoi après confirmation — deux appuis") +
         "</div>";
@@ -973,8 +994,9 @@
         '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
         "</span></div>";
       out += '<button class="btn btn-play" data-action="play:enter">▶ Mode jeu</button>' +
-        '<p class="play-note">Réduit l\'app à la grille de tuiles : plus de barre de navigation sous le pouce, ' +
-        "plus d'édition possible. À activer avant que la salle s'éteigne.</p>";
+        '<p class="play-note">Agrandit les tuiles et retire tout le reste : pensé pour un téléphone ' +
+        "posé sur la régie, lu de loin et dans le noir. L'édition devient impossible. " +
+        "À activer avant que la salle s'éteigne.</p>";
     }
 
     out += "</div>";
