@@ -6,7 +6,12 @@ vers la console.
 État : **conception en cours**. Ce fichier ne contient que ce qui est décidé ou imposé
 par des faits techniques établis. Le reste est marqué ouvert.
 
-Dernière mise à jour : 2026-08-03.
+**Avant de développer l'interface**, lire [`REGLES_POUR_UI.md`](REGLES_POUR_UI.md) : les
+neuf règles de la grammaire Eos qui contraignent l'UI, et ce que chacune impose. Ce
+fichier-ci dit *quoi construire* ; celui-là dit *pourquoi ça ne peut pas être construit
+autrement*.
+
+Dernière mise à jour : 2026-08-06.
 
 ---
 

@@ -5,7 +5,8 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 
 **Point d'entrée** : [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md)
 pour la syntaxe Eos de référence · [`PLANNING.md`](PLANNING.md) pour l'état d'avancement
-et le backlog de travail.
+et le backlog de travail · [`REGLES_POUR_UI.md`](REGLES_POUR_UI.md) pour **développer
+l'interface** : les neuf règles de la grammaire qui contraignent l'UI, et pourquoi.
 
 ## Corpus de collecte (grammaire, macros, risques)
 
@@ -77,6 +78,8 @@ méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 - `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
   valider au banc réel.
 - `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
+- `REGLES_POUR_UI.md` — cadrage pour la session qui développe l'interface : les règles
+  structurantes de la grammaire Eos et ce que chacune impose à l'UI.
 - `CLAUDE.md` — règles de travail pour toute session sur ce dépôt.
 
 ## Règle de fidélité
