@@ -6,7 +6,7 @@ vers la console.
 État : **conception en cours**. Ce fichier ne contient que ce qui est décidé ou imposé
 par des faits techniques établis. Le reste est marqué ouvert.
 
-Dernière mise à jour : 2026-08-05.
+Dernière mise à jour : 2026-08-06.
 
 ---
 
@@ -35,6 +35,8 @@ Dernière mise à jour : 2026-08-05.
 | 2026-08-05 | **Condition d'usage : le téléphone est posé sur la régie, pas tenu en main.** Lu à ~50 cm, dans le noir, regard sur le plateau. La contrainte est la lisibilité à distance, pas la portée du doigt. | Usage |
 | 2026-08-05 | **Navigation hiérarchisée, pas trois pairs.** Barre du bas réduite à deux destinations (Favoris, Saisie) ; Historique et Réglages montent dans l'en-tête. | Navigation |
 | 2026-08-05 | **Mode jeu** : sur Favoris, agrandit tuiles et libellés, masque la barre du bas et la ligne de commande, rend l'édition impossible. | Écran 2 |
+| 2026-08-06 | **L'historique n'est pas un écran, c'est le plan de travail.** L'atelier devient un fil de conversation avec la console ; consulter le passé et préparer la suite sont le même geste. | Structure |
+| 2026-08-06 | **Deux surfaces** : *Atelier* (le fil) et *Conduite* (la grille de jeu). Réglages redevient une icône d'angle. | Navigation |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la
@@ -164,8 +166,43 @@ petit pour être lu depuis la régie n'est pas un repère discret, c'est du brui
 
 ## Navigation
 
-Les trois écrans restent les trois écrans. Ce qui change, c'est qu'ils ne sont pas
-**atteints** de la même façon : leur fréquence d'usage et leur niveau de risque vont de
+### Le constat qui a tout réorganisé (2026-08-06)
+
+**On ne va jamais « dans l'historique » comme on va quelque part.** On le consulte
+toujours *par rapport à autre chose* : est-ce que c'est passé ? qu'est-ce que j'ai
+envoyé tout à l'heure ? je veux refaire ça. C'est un **contexte**, pas une destination —
+en faire un écran était une erreur, et le déplacer (barre du bas, puis en-tête) ne
+pouvait pas la corriger.
+
+Ce que l'usage décrit réellement, c'est une **conversation** : on demande, l'app propose,
+la console répond. Une fois qu'on le voit, le fil de cette conversation **est**
+l'historique, et il n'y a plus rien où se rendre.
+
+**Deux surfaces**, donc, au lieu de quatre destinations :
+
+- **Atelier** — le fil. On y écrit sa demande en bas ; au-dessus s'empilent les échanges :
+  ce qu'on a demandé, ce que l'app a compris, ce que la console a répondu. Préparer la
+  suite et consulter le passé sont le même geste, au même endroit.
+- **Conduite** — la grille de tuiles, seul écran de représentation (voir « Mode jeu »).
+
+**Réglages** redevient une icône d'angle. La bibliothèque reste un satellite de
+l'Atelier ; « reprendre un envoi accepté » est un satellite de la Conduite — choisir une
+source pour une action précise, ce qui n'est pas parcourir un historique.
+
+Ce que ça débloque, en cascade :
+
+- l'écran de saisie n'est plus vide : ce qu'on vient de faire est sous les yeux ;
+- « éditer dans la saisie » disparaît — on y est déjà, on touche un échange passé ;
+- **le refus devient un tour de parole**, correction en ligne, plus une alerte à traiter ;
+- les envois de favoris entrent dans le fil en pastille discrète : le journal reste
+  complet sans noyer le travail de préparation ;
+- **la dictée arrivera sans rien casser** : une conversation est déjà la bonne forme pour
+  de la voix, prévue au programme.
+
+### La hiérarchie d'accès (2026-08-05, toujours valable)
+
+Le raisonnement qui a mené à réduire la barre du bas tient toujours, et vaut maintenant
+pour les deux surfaces : leur fréquence d'usage et leur niveau de risque vont de
 « constante, en pleine représentation » à « une fois par installation ». Les traiter en
 pairs dans une barre d'onglets revenait à nier la seule chose que ce produit sait de son
 usage.
@@ -179,17 +216,19 @@ avant de trouver ce qu'on cherche.
 La question n'est donc pas « où le doigt se pose-t-il ? » mais **« combien de choses
 dois-je écarter du regard avant de voir celle qui sert ? »**. D'où trois rôles :
 
-- **Destinations** — barre du bas, grandes cibles : **Favoris** et **Saisie**, les deux
-  seules choses qu'on *fait*. Deux plutôt que trois : moins à balayer, cibles plus
-  larges. Favoris en premier, c'est l'écran vers lequel on revient.
-- **Utilitaires** — en-tête, discrets : **Historique** et **Réglages**, rares, qui n'ont
-  pas à concurrencer visuellement ce qui sert. Consultables depuis n'importe où sans
-  détour, et le retour ramène là d'où l'on vient. C'est aussi ce qui corrige un défaut
-  réel : l'historique enregistre les envois de Favoris autant que ceux de Saisie, il
-  n'avait aucune raison d'être enfermé derrière l'atelier.
-- **Satellites** — rattachés à un écran précis et atteints depuis lui seul : la
-  bibliothèque appartient à Saisie (elle remplit son champ), la gestion des onglets et
-  l'import appartiennent aux Réglages.
+- **Surfaces** — barre du bas, grandes cibles : **Conduite** et **Atelier**, les deux
+  seules choses qu'on *fait*. Conduite en premier, c'est l'écran vers lequel on revient.
+- **Utilitaire** — en-tête, discret : **Réglages**, rare, qui n'a pas à concurrencer
+  visuellement ce qui sert. Atteignable depuis n'importe où, et le retour ramène là d'où
+  l'on vient.
+- **Satellites** — rattachés à une surface précise et atteints depuis elle seule : la
+  bibliothèque appartient à l'Atelier (elle remplit son champ) ; « reprendre un envoi
+  accepté » appartient à la Conduite ; la gestion des onglets et l'import appartiennent
+  aux Réglages.
+
+*Note d'historique : jusqu'au 2026-08-05, l'Historique était lui-même un utilitaire
+d'en-tête. Le constat ci-dessus l'a supprimé en tant qu'écran — il n'y a plus rien à
+atteindre.*
 
 ### Mode jeu
 
@@ -304,11 +343,14 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
   écran, correction ciblée par champ, import inter-spectacle, mode édition des favoris,
   bibliothèque de macros, historique des envois). Reste en apparence d'intention, pas
   des pixels définitifs — à affiner encore à l'usage.
-- **Prototype** : `app/prototype.html` — un seul appareil, navigation réelle entre les
-  trois écrans, état qui change vraiment (favoris, historique, onglets...). Le moteur de
-  traduction NL → macro y est un module de démonstration à vocabulaire volontairement
-  limité (quelques motifs reconnus), pas une préfiguration du futur moteur — seuls la
-  navigation et les enchaînements d'écrans font foi.
+- **Prototype** : `app/prototype.html` — le prototype de référence, sur le modèle du fil
+  de conversation (Atelier + Conduite). Un seul appareil, navigation réelle, état
+  conservé d'une session à l'autre. Le moteur de traduction NL → macro y est un module de
+  démonstration à vocabulaire volontairement limité, pas une préfiguration du futur
+  moteur — seuls la navigation et les enchaînements font foi.
+- **Prototype archivé** : `app/prototype-onglets.html` conserve la navigation précédente
+  (quatre destinations, historique en écran d'en-tête), gardée comme trace de la
+  comparaison qui a mené au modèle actuel. Ne plus faire évoluer.
 - **Bibliothèque de macros — sélection à revoir avec l'axe A.** Les cinq entrées de la
   maquette sont choisies à la main dans le corpus (motifs qui reviennent, pas un vote de
   popularité qui n'existe pas dans les sources). Une fois l'axe A avancé, la sélection

@@ -2,427 +2,363 @@
 
 <style>
   :root {
-    --page-bg: #F2F4F7;
-    --page-surface: #FFFFFF;
-    --page-line: #D8DEE7;
-    --page-ink: #16202C;
-    --page-muted: #5C6B7D;
-    --page-accent: #1F6F9F;
+    --page-bg: #F2F4F7; --page-surface: #FFFFFF; --page-line: #D8DEE7;
+    --page-ink: #16202C; --page-muted: #5C6B7D; --page-accent: #1F6F9F;
 
-    --app-bg: #0B0F14;
-    --app-surface: #141B24;
-    --app-surface-hi: #1C2632;
-    --app-line: #26313F;
-    --app-ink: #E4EAF2;
-    --app-muted: #8496AB;
-    --app-accent: #4DA3D9;
-    --app-accent-ink: #06121C;
-    --app-warn: #E0A83C;
-    --app-danger: #D9605A;
-    --app-ok: #5FBF8F;
+    --app-bg: #0B0F14; --app-surface: #141B24; --app-surface-hi: #1C2632;
+    --app-line: #26313F; --app-ink: #E4EAF2; --app-muted: #8496AB;
+    --app-accent: #4DA3D9; --app-accent-ink: #06121C;
+    --app-warn: #E0A83C; --app-danger: #D9605A; --app-ok: #5FBF8F;
 
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --page-bg: #0D1319; --page-surface: #151D26; --page-line: #26313D;
-      --page-ink: #DFE7F0; --page-muted: #8595A6; --page-accent: #6BB6E4;
-    }
+    :root { --page-bg:#0D1319; --page-surface:#151D26; --page-line:#26313D;
+            --page-ink:#DFE7F0; --page-muted:#8595A6; --page-accent:#6BB6E4; }
   }
-  :root[data-theme="dark"] {
-    --page-bg: #0D1319; --page-surface: #151D26; --page-line: #26313D;
-    --page-ink: #DFE7F0; --page-muted: #8595A6; --page-accent: #6BB6E4;
-  }
-  :root[data-theme="light"] {
-    --page-bg: #F2F4F7; --page-surface: #FFFFFF; --page-line: #D8DEE7;
-    --page-ink: #16202C; --page-muted: #5C6B7D; --page-accent: #1F6F9F;
-  }
+  :root[data-theme="dark"] { --page-bg:#0D1319; --page-surface:#151D26; --page-line:#26313D;
+            --page-ink:#DFE7F0; --page-muted:#8595A6; --page-accent:#6BB6E4; }
+  :root[data-theme="light"] { --page-bg:#F2F4F7; --page-surface:#FFFFFF; --page-line:#D8DEE7;
+            --page-ink:#16202C; --page-muted:#5C6B7D; --page-accent:#1F6F9F; }
 
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--page-bg);
-    color: var(--page-ink);
-    font-family: var(--sans);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { margin:0; background:var(--page-bg); color:var(--page-ink); font-family:var(--sans);
+         line-height:1.5; -webkit-font-smoothing:antialiased; }
   button { font-family: inherit; }
-  button:focus-visible, .tab:focus-visible, .tile:focus-visible, [tabindex]:focus-visible {
-    outline: 2px solid var(--app-accent); outline-offset: 2px;
-  }
+  button:focus-visible, [tabindex]:focus-visible { outline:2px solid var(--app-accent); outline-offset:2px; }
 
-  .page {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 30px 18px 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-  }
-  .eyebrow {
-    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--page-muted); font-weight: 600; align-self: flex-start;
-  }
-  .page h1 { margin: 0; font-size: 22px; align-self: flex-start; letter-spacing: -.01em; }
-  .page p.lede {
-    margin: 0; align-self: flex-start; color: var(--page-muted); font-size: 13.5px; max-width: 52ch;
-  }
+  .page { max-width:520px; margin:0 auto; padding:30px 18px 60px;
+          display:flex; flex-direction:column; align-items:center; gap:18px; }
+  .eyebrow { font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+             color:var(--page-muted); font-weight:600; align-self:flex-start; }
+  .page h1 { margin:0; font-size:22px; align-self:flex-start; letter-spacing:-.01em; }
+  .page p.lede { margin:0; align-self:flex-start; color:var(--page-muted); font-size:13.5px; max-width:54ch; }
 
-  /* ---------- téléphone ---------- */
-  .device {
-    background: #05080B;
-    border: 1px solid var(--page-line);
-    border-radius: 30px;
-    padding: 10px;
-    box-shadow: 0 16px 40px rgba(4, 10, 18, 0.3);
-    max-width: 100%;
-  }
-  .viewport {
-    /* s'adapte aux vrais téléphones hors plein écran, sans jamais déborder */
-    width: min(340px, calc(100vw - 56px));
-    height: min(660px, calc(100dvh - 220px));
-    min-height: 480px;
-    background: var(--app-bg);
-    color: var(--app-ink);
-    border-radius: 22px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-    position: relative;
-  }
+  /* ---------- châssis ---------- */
+  .device { background:#05080B; border:1px solid var(--page-line); border-radius:30px;
+            padding:10px; box-shadow:0 16px 40px rgba(4,10,18,.3); max-width:100%; }
+  .viewport { width:min(340px, calc(100vw - 56px)); height:min(680px, calc(100dvh - 220px));
+              min-height:500px; background:var(--app-bg); color:var(--app-ink);
+              border-radius:22px; overflow:hidden; display:flex; flex-direction:column;
+              font-size:14px; position:relative; }
 
-  .os-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 16px 2px; font-size: 11.5px; color: var(--app-ink);
-    font-variant-numeric: tabular-nums; flex: none;
-  }
-  .os-bar .sig { display: flex; gap: 3px; align-items: flex-end; }
-  .os-bar .sig i { display: block; width: 3px; background: var(--app-ink); border-radius: 1px; }
-  .os-bar .sig i:nth-child(1) { height: 4px; } .os-bar .sig i:nth-child(2) { height: 6px; }
-  .os-bar .sig i:nth-child(3) { height: 8px; } .os-bar .sig i:nth-child(4) { height: 10px; }
-  .os-bar .batt { border: 1px solid var(--app-muted); border-radius: 2px; width: 20px; height: 10px; position: relative; padding: 1px; }
-  .os-bar .batt::after { content:""; position:absolute; right:-3px; top:3px; width:2px; height:4px; background:var(--app-muted); border-radius:1px; }
-  .os-bar .batt i { display:block; height:100%; width: 78%; background: var(--app-ink); border-radius: 1px; }
+  .os-bar { display:flex; align-items:center; justify-content:space-between;
+            padding:7px 16px 2px; font-size:11.5px; color:var(--app-ink);
+            font-variant-numeric:tabular-nums; flex:none; }
+  .os-bar .sig { display:flex; gap:3px; align-items:flex-end; }
+  .os-bar .sig i { display:block; width:3px; background:var(--app-ink); border-radius:1px; }
+  .os-bar .sig i:nth-child(1){height:4px} .os-bar .sig i:nth-child(2){height:6px}
+  .os-bar .sig i:nth-child(3){height:8px} .os-bar .sig i:nth-child(4){height:10px}
+  .os-bar .batt { border:1px solid var(--app-muted); border-radius:2px; width:20px; height:10px;
+                  position:relative; padding:1px; }
+  .os-bar .batt::after { content:""; position:absolute; right:-3px; top:3px; width:2px; height:4px;
+                         background:var(--app-muted); border-radius:1px; }
+  .os-bar .batt i { display:block; height:100%; width:78%; background:var(--app-ink); border-radius:1px; }
 
-  .statusbar {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: 10px 14px; border-bottom: 1px solid var(--app-line);
-    background: var(--app-surface); flex: none;
-  }
-  .conn { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--app-muted); background: none; border: none; padding: 4px 2px; cursor: pointer; }
-  .conn:hover { color: var(--app-ink); }
-  .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
-  .dot-ok { background: var(--app-ok); box-shadow: 0 0 0 3px rgba(95,191,143,.16); }
-  .dot-wait { background: var(--app-warn); box-shadow: 0 0 0 3px rgba(224,168,60,.16); }
-  .user-tag {
-    font-family: var(--mono); font-size: 11.5px; color: var(--app-accent);
-    border: 1px solid var(--app-line); border-radius: 6px; padding: 2px 7px;
-  }
+  .statusbar { display:flex; align-items:center; justify-content:space-between; gap:10px;
+               padding:8px 12px 8px 14px; border-bottom:1px solid var(--app-line);
+               background:var(--app-surface); flex:none; }
+  .conn { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--app-muted);
+          background:none; border:none; padding:4px 2px; cursor:pointer; }
+  .conn:hover { color:var(--app-ink); }
+  .dot { width:7px; height:7px; border-radius:50%; flex:none; }
+  .dot-ok { background:var(--app-ok); box-shadow:0 0 0 3px rgba(95,191,143,.16); }
+  .dot-wait { background:var(--app-warn); box-shadow:0 0 0 3px rgba(224,168,60,.16); }
+  .user-tag { font-family:var(--mono); font-size:11.5px; color:var(--app-accent);
+              border:1px solid var(--app-line); border-radius:6px; padding:2px 7px; }
+  .hdr-right { display:flex; align-items:center; gap:7px; flex:none; }
+  .hdr-btn { flex:none; width:38px; height:38px; border-radius:10px;
+             display:inline-flex; align-items:center; justify-content:center;
+             background:none; border:1px solid transparent; color:var(--app-muted);
+             font-size:20px; line-height:1; cursor:pointer; }
+  .hdr-btn:hover { color:var(--app-ink); border-color:var(--app-line); }
+  .hdr-btn.on { color:var(--app-accent); border-color:var(--app-line); background:var(--app-surface-hi); }
+  .hdr-exit { width:auto; padding:0 12px; height:34px; font-size:12.5px; font-weight:600;
+              color:var(--app-warn); border-color:rgba(224,168,60,.4); }
 
-  .banner-recon {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 8px 14px; background: rgba(224,168,60,.13);
-    border-bottom: 1px solid rgba(224,168,60,.32); color: var(--app-warn);
-    font-size: 12px; font-weight: 600; flex: none;
-  }
-  .banner-recon button {
-    background: none; border: none; color: var(--app-warn); text-decoration: underline;
-    font-size: 11.5px; font-weight: 600; cursor: pointer; padding: 0; flex: none;
-  }
+  .banner-recon { display:flex; align-items:center; justify-content:space-between; gap:8px;
+                  padding:8px 14px; background:rgba(224,168,60,.13);
+                  border-bottom:1px solid rgba(224,168,60,.32); color:var(--app-warn);
+                  font-size:12px; font-weight:600; flex:none; }
+  .banner-recon button { background:none; border:none; color:var(--app-warn);
+                         text-decoration:underline; font-size:11.5px; font-weight:600;
+                         cursor:pointer; padding:0; flex:none; }
 
-  /* utilitaires d'en-tête : accessibles de partout, discrets, jamais dans le chemin */
-  .hdr-right { display: flex; align-items: center; gap: 6px; flex: none; }
-  .hdr-btn {
-    flex: none; width: 36px; height: 36px; border-radius: 9px;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: none; border: 1px solid transparent; color: var(--app-muted);
-    font-size: 19px; line-height: 1; cursor: pointer; font-family: inherit;
-  }
-  .hdr-btn:hover { color: var(--app-ink); border-color: var(--app-line); }
-  .hdr-btn.on { color: var(--app-accent); border-color: var(--app-line); background: var(--app-surface-hi); }
-  .hdr-exit {
-    width: auto; padding: 0 12px; height: 34px; font-size: 12.5px; font-weight: 600;
-    color: var(--app-warn); border-color: rgba(224,168,60,.4);
-  }
-  .hdr-exit:hover { color: var(--app-warn); border-color: var(--app-warn); }
+  main#screen { flex:1; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; }
 
-  main#screen {
-    flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 14px 18px;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  /* en mode jeu, la grille respire : plus de barre du bas à contourner */
-  body.play main#screen { padding-bottom: 14px; }
+  .label { font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+           color:var(--app-muted); font-weight:600; }
 
-  .label {
-    font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
-    color: var(--app-muted); font-weight: 600;
-  }
+  /* ==========================================================================
+     LE FIL — cœur du prototype B.
+     L'historique n'est pas un écran où l'on se rend : c'est le plan de travail
+     lui-même. On y voit ce qu'on a demandé, ce que l'app a compris, ce que la
+     console a répondu. Consulter le passé et préparer la suite sont le même
+     geste, au même endroit.
+     ========================================================================== */
+  .thread { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+  .thread-empty { margin:auto; text-align:center; color:var(--app-muted); font-size:13px;
+                  max-width:30ch; line-height:1.55; }
 
-  textarea#nl-input {
-    background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 10px;
-    padding: 12px 13px; font-size: 15px; line-height: 1.4; color: var(--app-ink);
-    font-family: inherit; resize: none; width: 100%; min-height: 46px;
-  }
-  textarea#nl-input:focus { outline: none; border-color: var(--app-accent); box-shadow: 0 0 0 3px rgba(77,163,217,.15); }
-  textarea#nl-input::placeholder { color: var(--app-muted); }
+  .day { display:flex; align-items:center; gap:10px; color:var(--app-muted); font-size:10.5px;
+         letter-spacing:.1em; text-transform:uppercase; }
+  .day::before, .day::after { content:""; flex:1; height:1px; background:var(--app-line); }
 
-  .macro {
-    background: #070B10; border: 1px solid var(--app-line); border-left: 2px solid var(--app-accent);
-    border-radius: 10px; padding: 13px; display: flex; flex-direction: column; gap: 7px; overflow-x: auto;
-  }
-  .macro code { font-family: var(--mono); font-size: 13px; white-space: pre-wrap; word-break: break-word; color: var(--app-ink); }
-  .macro code .chip { border-bottom: 1px dashed var(--app-muted); padding-bottom: 1px; cursor: pointer; }
-  .macro code .chip:hover, .macro code .chip.active { border-bottom-color: var(--app-accent); color: var(--app-accent); }
+  .exch { display:flex; flex-direction:column; gap:7px; }
 
-  .card { border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
-  .card strong { font-size: 13px; font-weight: 620; }
-  .card p { margin: 0; color: var(--app-muted); line-height: 1.45; }
-  .card-warn { background: rgba(224,168,60,.09); border: 1px solid rgba(224,168,60,.35); }
-  .card-warn strong { color: var(--app-warn); }
-  .card-danger { background: rgba(217,96,90,.09); border: 1px solid rgba(217,96,90,.38); }
-  .card-danger strong { color: var(--app-danger); }
-  .card-ok { background: rgba(95,191,143,.09); border: 1px solid rgba(95,191,143,.32); }
-  .card-ok strong { color: var(--app-ok); }
-  .card-neutral { background: var(--app-surface); border: 1px solid var(--app-line); }
+  /* la demande : ce que l'utilisateur a dit, aligné à droite comme un message envoyé */
+  .ask { align-self:flex-end; max-width:85%; background:var(--app-accent); color:var(--app-accent-ink);
+         border-radius:14px 14px 4px 14px; padding:9px 13px; font-size:14px; line-height:1.35; }
+  .ask.from-lib { background:var(--app-surface-hi); color:var(--app-ink); border:1px solid var(--app-line); }
+  .ask .src-tag { display:block; font-size:10px; opacity:.75; margin-top:3px; }
 
-  .fix { font-family: var(--mono); font-size: 12.5px; background: #070B10; border: 1px solid var(--app-line);
-    border-radius: 8px; padding: 9px 10px; margin-top: 3px; color: var(--app-ink); overflow-x: auto; white-space: pre; }
-  .fix .was { color: var(--app-danger); text-decoration: line-through; }
-  .fix .now { color: var(--app-ok); }
+  /* la proposition : ce que l'app a compris, à gauche */
+  .reply { align-self:flex-start; max-width:92%; background:var(--app-surface);
+           border:1px solid var(--app-line); border-radius:14px 14px 14px 4px;
+           padding:11px 12px; display:flex; flex-direction:column; gap:8px; }
+  .reply .macro { font-family:var(--mono); font-size:13px; line-height:1.45; color:var(--app-ink);
+                  overflow-wrap:anywhere; }
+  .reply .macro .chip { border-bottom:1px dashed var(--app-muted); padding-bottom:1px; cursor:pointer; }
+  .reply .macro .chip:hover, .reply .macro .chip.active { border-bottom-color:var(--app-accent); color:var(--app-accent); }
 
-  .actions { display: flex; flex-direction: column; gap: 9px; }
-  .btn {
-    display: block; width: 100%; box-sizing: border-box; text-align: center; border-radius: 11px;
-    padding: 13px 12px; font-size: 14.5px; font-weight: 620; border: 1px solid transparent; cursor: pointer;
-  }
-  .btn-primary { background: var(--app-accent); color: var(--app-accent-ink); }
-  .btn-warn { background: var(--app-warn); color: #1A1204; }
-  .btn-danger { background: var(--app-danger); color: #200706; }
-  .btn-ghost { background: transparent; border-color: var(--app-line); color: var(--app-muted); }
-  .btn-ghost:hover { color: var(--app-ink); border-color: var(--app-muted); }
-  .btn-sm { padding: 9px 10px; font-size: 13px; border-radius: 9px; }
-  .btn-row { display: flex; gap: 8px; }
-  .btn-row .btn { flex: 1; min-width: 0; }
-  .btn-row .btn-aside { flex: none; width: auto; }
+  .flag { display:flex; gap:7px; font-size:11.5px; line-height:1.45; border-radius:9px; padding:8px 10px; }
+  .flag-warn { background:rgba(224,168,60,.1); border:1px solid rgba(224,168,60,.32); color:var(--app-warn); }
+  .flag-bad { background:rgba(217,96,90,.1); border:1px solid rgba(217,96,90,.35); color:var(--app-danger); }
+  .flag-ok { background:rgba(95,191,143,.1); border:1px solid rgba(95,191,143,.3); color:var(--app-ok); }
+  .flag b { font-weight:650; }
+  .flag .txt { color:var(--app-muted); }
 
-  .demo-toggle {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    border: 1px dashed var(--app-line); border-radius: 10px; padding: 9px 11px; font-size: 11.5px; color: var(--app-muted);
-  }
-  .demo-toggle b { color: var(--app-muted); font-weight: 600; }
-  .swtch { flex: none; width: 34px; height: 20px; border-radius: 20px; background: var(--app-line); position: relative; cursor: pointer; border: none; padding: 0; }
-  .swtch::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background: var(--app-muted); transition: transform .15s; }
-  .swtch.on { background: rgba(224,168,60,.35); }
-  .swtch.on::after { transform: translateX(14px); background: var(--app-warn); }
+  .fixline { font-family:var(--mono); font-size:12px; background:#070B10; border:1px solid var(--app-line);
+             border-radius:8px; padding:8px 9px; }
+  .fixline .was { color:var(--app-danger); text-decoration:line-through; }
+  .fixline .now { color:var(--app-ok); }
 
-  /* ---------- onglets favoris ---------- */
-  .tabs-row { display: flex; align-items: center; border-bottom: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
-  .tabs { display: flex; align-items: center; gap: 6px; padding: 10px 6px 0 14px; overflow-x: auto; flex: 1; min-width: 0; }
-  .tab { flex: none; padding: 8px 12px 10px; font-size: 13px; color: var(--app-muted); border-bottom: 2px solid transparent; white-space: nowrap; background: none; border-left: none; border-right: none; border-top: none; cursor: pointer; }
-  .tab.on { color: var(--app-ink); border-bottom-color: var(--app-accent); font-weight: 600; }
-  .tab-edit { flex: none; font-size: 12px; color: var(--app-accent); padding: 6px 12px 8px 6px; background: none; border: none; cursor: pointer; white-space: nowrap; }
+  /* verdict de la console : rattaché à l'échange, pas une notification volante */
+  .verdict { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:620; }
+  .verdict.ok { color:var(--app-ok); } .verdict.doute { color:var(--app-accent); }
+  .verdict.bad { color:var(--app-danger); } .verdict.pending { color:var(--app-warn); }
+  .verdict .t { margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--app-muted); font-weight:400; }
 
-  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tile { background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 12px; padding: 14px 12px; min-height: 84px;
-    min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; text-align: left; cursor: pointer; position: relative; color: inherit; }
-  .tile:hover { border-color: var(--app-muted); }
-  .tile .name { font-size: 14.5px; font-weight: 600; line-height: 1.25; }
-  .tile .cmd { font-family: var(--mono); font-size: 10.5px; color: var(--app-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tile.editable { border-style: dashed; border-color: var(--app-muted); cursor: default; }
-  .tile.editable .name { padding-right: 34px; }
-  .tile.editable.active { border-color: var(--app-accent); }
-  .tile-edit-btn { position: absolute; top: 8px; right: 8px; font-size: 11px; line-height: 1; color: var(--app-muted);
-    border: 1px solid var(--app-line); border-radius: 6px; padding: 3px 6px; background: var(--app-surface-hi); cursor: pointer; }
-  .empty-tab { font-size: 13px; color: var(--app-muted); border: 1px dashed var(--app-line); border-radius: 10px; padding: 20px 14px; text-align: center; }
+  /* envoi d'un favori : un événement, pas un tour de parole — volontairement discret */
+  .event { align-self:center; display:flex; align-items:center; gap:8px; font-size:11.5px;
+           color:var(--app-muted); background:var(--app-surface); border:1px solid var(--app-line);
+           border-radius:20px; padding:6px 13px; max-width:92%; }
+  .event .nm { color:var(--app-ink); font-weight:600; }
 
-  .btn-play { background: var(--app-surface-hi); border-color: var(--app-line); color: var(--app-ink); }
-  .btn-play:hover { border-color: var(--app-accent); color: var(--app-accent); }
-  .play-note { margin: 0; font-size: 11.5px; color: var(--app-muted); line-height: 1.45; }
-  .play-strip {
-    display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: var(--app-muted);
-    border-top: 1px solid var(--app-line); padding: 13px 2px 2px;
-  }
+  .kept { display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--app-accent); }
 
-  /* ---------------------------------------------------------------------------
-     MODE JEU — le téléphone est posé sur la régie, à 50 cm, dans le noir, et le
-     regard est sur le plateau. La contrainte n'est pas la portée du doigt : c'est
-     de reconnaître une tuile d'un coup d'œil, de loin. Tout grossit, et ce qui
-     n'est pas lisible à cette distance disparaît plutôt que de faire du bruit.
-     --------------------------------------------------------------------------- */
-  body.play .tile { min-height: 118px; padding: 18px 15px; justify-content: center; }
-  body.play .tile .name { font-size: 19px; line-height: 1.2; }
-  body.play .tile .cmd { display: none; }   /* illisible à 50 cm : du bruit, pas un repère */
-  body.play .conn { white-space: nowrap; }
-  body.play .tiles { gap: 12px; }
-  body.play .tab { font-size: 15px; padding: 11px 15px 12px; }
-  body.play .conn { font-size: 14px; color: var(--app-ink); }
-  body.play .dot { width: 9px; height: 9px; }
+  .row-actions { display:flex; flex-wrap:wrap; gap:7px; }
+  .mini { font-size:12px; padding:7px 11px; border-radius:9px; border:1px solid var(--app-line);
+          background:transparent; color:var(--app-muted); cursor:pointer; }
+  .mini:hover { color:var(--app-ink); border-color:var(--app-muted); }
+  .mini.go { background:var(--app-accent); border-color:var(--app-accent); color:var(--app-accent-ink); font-weight:620; }
+  .mini.warn { background:var(--app-warn); border-color:var(--app-warn); color:#1A1204; font-weight:620; }
 
-  .mode-strip { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--app-muted); padding: 10px 14px;
-    border-top: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
+  .menu { background:var(--app-surface-hi); border:1px solid var(--app-line); border-radius:10px;
+          padding:6px; display:flex; flex-direction:column; gap:2px; }
+  .menu .opt { display:flex; align-items:center; justify-content:space-between; padding:10px;
+               border-radius:7px; font-size:13.5px; background:none; border:none; text-align:left;
+               color:var(--app-ink); cursor:pointer; width:100%; }
+  .menu .opt:hover { background:rgba(255,255,255,.04); }
+  .menu .opt.sel { background:rgba(77,163,217,.14); color:var(--app-accent); font-weight:620; }
+  .menu .opt.danger { color:var(--app-danger); }
+  .menu input[type=text] { background:var(--app-bg); border:1px solid var(--app-line); border-radius:8px;
+                           color:var(--app-ink); font-size:13.5px; padding:9px 10px; font-family:inherit; width:100%; }
+  .menu input[type=text]:focus { outline:none; border-color:var(--app-accent); }
 
-  /* ---------- menus contextuels ---------- */
-  .menu { background: var(--app-surface-hi); border: 1px solid var(--app-line); border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
-  .menu .opt { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px; border-radius: 7px; font-size: 13.5px;
-    background: none; border: none; text-align: left; color: var(--app-ink); cursor: pointer; width: 100%; }
-  .menu .opt:hover { background: rgba(255,255,255,.04); }
-  .menu .opt.sel { background: rgba(77,163,217,.14); color: var(--app-accent); font-weight: 620; }
-  .menu .opt.danger { color: var(--app-danger); }
-  .menu .opt .tick { color: var(--app-accent); font-size: 12px; }
-  .menu input[type=text] {
-    background: var(--app-bg); border: 1px solid var(--app-line); border-radius: 8px; color: var(--app-ink);
-    font-size: 13.5px; padding: 8px 10px; font-family: inherit; width: 100%;
-  }
-  .menu input[type=text]:focus { outline: none; border-color: var(--app-accent); }
+  /* ---------- la barre de saisie, ancrée en bas du fil ---------- */
+  .composer { flex:none; border-top:1px solid var(--app-line); background:var(--app-surface);
+              padding:10px 12px; display:flex; align-items:flex-end; gap:8px; }
+  .composer textarea { flex:1; min-width:0; background:var(--app-bg); border:1px solid var(--app-line);
+                       border-radius:18px; padding:10px 14px; font-size:14.5px; line-height:1.35;
+                       color:var(--app-ink); font-family:inherit; resize:none; max-height:96px; }
+  .composer textarea:focus { outline:none; border-color:var(--app-accent); }
+  .composer textarea::placeholder { color:var(--app-muted); }
+  .cbtn { flex:none; width:40px; height:40px; border-radius:50%; display:inline-flex;
+          align-items:center; justify-content:center; font-size:18px; cursor:pointer;
+          background:var(--app-surface-hi); border:1px solid var(--app-line); color:var(--app-muted); }
+  .cbtn:hover { color:var(--app-ink); border-color:var(--app-muted); }
+  .cbtn.send { background:var(--app-accent); border-color:var(--app-accent); color:var(--app-accent-ink); }
+  .demo-line { flex:none; display:flex; align-items:center; justify-content:space-between; gap:10px;
+               padding:7px 14px; font-size:11px; color:var(--app-muted);
+               border-top:1px dashed var(--app-line); background:var(--app-surface); }
+  .swtch { flex:none; width:32px; height:19px; border-radius:19px; background:var(--app-line);
+           position:relative; cursor:pointer; border:none; padding:0; }
+  .swtch::after { content:""; position:absolute; top:2px; left:2px; width:15px; height:15px;
+                  border-radius:50%; background:var(--app-muted); transition:transform .15s; }
+  .swtch.on { background:rgba(224,168,60,.35); }
+  .swtch.on::after { transform:translateX(13px); background:var(--app-warn); }
+
+  /* ---------- favoris ---------- */
+  .tabs-row { display:flex; align-items:center; border-bottom:1px solid var(--app-line);
+              background:var(--app-surface); flex:none; }
+  .tabs { display:flex; align-items:center; gap:6px; padding:10px 6px 0 14px; overflow-x:auto; flex:1; min-width:0; }
+  .tab { flex:none; padding:8px 12px 10px; font-size:13px; color:var(--app-muted);
+         border:none; border-bottom:2px solid transparent; white-space:nowrap;
+         background:none; cursor:pointer; }
+  .tab.on { color:var(--app-ink); border-bottom-color:var(--app-accent); font-weight:600; }
+  .tab-edit { flex:none; font-size:12px; color:var(--app-accent); padding:6px 12px 8px 6px;
+              background:none; border:none; cursor:pointer; white-space:nowrap; }
+
+  .pad { padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile { background:var(--app-surface); border:1px solid var(--app-line); border-radius:12px;
+          padding:14px 12px; min-height:84px; min-width:0; display:flex; flex-direction:column;
+          justify-content:space-between; gap:8px; text-align:left; cursor:pointer;
+          position:relative; color:inherit; }
+  .tile:hover { border-color:var(--app-muted); }
+  .tile .name { font-size:14.5px; font-weight:600; line-height:1.25; }
+  .tile .cmd { font-family:var(--mono); font-size:10.5px; color:var(--app-muted);
+               white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tile.editable { border-style:dashed; border-color:var(--app-muted); cursor:default; }
+  .tile.editable .name { padding-right:34px; }
+  .tile.editable.active { border-color:var(--app-accent); }
+  .tile-edit-btn { position:absolute; top:8px; right:8px; font-size:11px; line-height:1;
+                   color:var(--app-muted); border:1px solid var(--app-line); border-radius:6px;
+                   padding:3px 6px; background:var(--app-surface-hi); cursor:pointer; }
+  .empty-tab { font-size:13px; color:var(--app-muted); border:1px dashed var(--app-line);
+               border-radius:10px; padding:20px 14px; text-align:center; }
+
+  .btn { display:block; width:100%; text-align:center; border-radius:11px; padding:13px 12px;
+         font-size:14.5px; font-weight:620; border:1px solid transparent; cursor:pointer; }
+  .btn-primary { background:var(--app-accent); color:var(--app-accent-ink); }
+  .btn-warn { background:var(--app-warn); color:#1A1204; }
+  .btn-danger { background:var(--app-danger); color:#200706; }
+  .btn-ghost { background:transparent; border-color:var(--app-line); color:var(--app-muted); }
+  .btn-ghost:hover { color:var(--app-ink); border-color:var(--app-muted); }
+  .btn-sm { padding:9px 10px; font-size:13px; border-radius:9px; }
+  .btn-row { display:flex; gap:8px; }
+  .btn-row .btn { flex:1; min-width:0; }
+  .btn-play { background:var(--app-surface-hi); border-color:var(--app-line); color:var(--app-ink); }
+  .play-note { margin:0; font-size:11.5px; color:var(--app-muted); line-height:1.45; }
+  .play-strip { display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--app-muted);
+                border-top:1px solid var(--app-line); padding:13px 2px 2px; }
+
+  body.play .tile { min-height:118px; padding:18px 15px; justify-content:center; }
+  body.play .tile .name { font-size:19px; line-height:1.2; }
+  body.play .tile .cmd { display:none; }
+  body.play .tiles { gap:12px; }
+  body.play .tab { font-size:15px; padding:11px 15px 12px; }
+  body.play .conn { font-size:14px; color:var(--app-ink); white-space:nowrap; }
+  body.play .dot { width:9px; height:9px; }
 
   /* ---------- réglages ---------- */
-  .group { display: flex; flex-direction: column; gap: 8px; }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--app-surface);
-    border: 1px solid var(--app-line); border-radius: 10px; padding: 12px 13px; }
-  .row.click { cursor: pointer; }
-  .row.click:hover { border-color: var(--app-muted); }
-  .row .k { font-size: 13.5px; }
-  .row .v { font-family: var(--mono); font-size: 12.5px; color: var(--app-muted); text-align: right; }
-  .row .v.accent { color: var(--app-accent); font-family: var(--sans); }
-  .seg { display: flex; background: var(--app-bg); border: 1px solid var(--app-line); border-radius: 9px; padding: 3px; gap: 3px; }
-  .seg button { font-family: inherit; font-size: 12px; padding: 6px 10px; border-radius: 6px; color: var(--app-muted); background: none; border: none; cursor: pointer; }
-  .seg button.on { background: var(--app-accent); color: var(--app-accent-ink); font-weight: 600; }
-  .soon { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--app-muted); border: 1px solid var(--app-line); border-radius: 5px; padding: 2px 6px; }
-  .back-row { display: flex; align-items: center; gap: 8px; }
-  .back-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--app-surface-hi); border: 1px solid var(--app-line); color: var(--app-ink);
-    font-size: 13.5px; font-weight: 620; border-radius: 20px; padding: 8px 14px 8px 11px; cursor: pointer;
-  }
-  .back-btn:hover { border-color: var(--app-muted); }
-  .back-btn .arrow { color: var(--app-accent); font-size: 15px; line-height: 1; }
+  .group { display:flex; flex-direction:column; gap:8px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px;
+         background:var(--app-surface); border:1px solid var(--app-line); border-radius:10px; padding:12px 13px; }
+  .row.click { cursor:pointer; }
+  .row.click:hover { border-color:var(--app-muted); }
+  .row .k { font-size:13.5px; }
+  .row .v { font-family:var(--mono); font-size:12.5px; color:var(--app-muted); text-align:right; }
+  .row .v.accent { color:var(--app-accent); font-family:var(--sans); }
+  .seg { display:flex; background:var(--app-bg); border:1px solid var(--app-line);
+         border-radius:9px; padding:3px; gap:3px; }
+  .seg button { font-size:12px; padding:6px 10px; border-radius:6px; color:var(--app-muted);
+                background:none; border:none; cursor:pointer; }
+  .seg button.on { background:var(--app-accent); color:var(--app-accent-ink); font-weight:600; }
+  .soon { font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--app-muted);
+          border:1px solid var(--app-line); border-radius:5px; padding:2px 6px; }
+  .back-row { display:flex; align-items:center; gap:8px; }
+  .back-btn { display:inline-flex; align-items:center; gap:6px; background:var(--app-surface-hi);
+              border:1px solid var(--app-line); color:var(--app-ink); font-size:13.5px; font-weight:620;
+              border-radius:20px; padding:8px 14px 8px 11px; cursor:pointer; }
+  .back-btn .arrow { color:var(--app-accent); font-size:15px; line-height:1; }
 
-  /* ---------- bibliothèque / import / historique ---------- */
-  .lib-item, .hist-item, .import-item { display: flex; flex-direction: column; gap: 6px; background: var(--app-surface);
-    border: 1px solid var(--app-line); border-radius: 10px; padding: 12px 13px; text-align: left; cursor: pointer; color: inherit; width: 100%; }
-  .lib-item:hover { border-color: var(--app-muted); }
-  .lib-item .req { font-size: 13.5px; font-weight: 620; line-height: 1.3; }
-  .lib-item .cmd, .import-item .cmd { font-family: var(--mono); font-size: 10.5px; color: var(--app-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lib-item .src { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--app-muted); }
-  .lib-conf { flex: none; font-family: var(--mono); font-size: 9.5px; border-radius: 5px; padding: 1px 6px; border: 1px solid var(--app-line); }
-  .lib-conf.a { color: var(--app-ok); border-color: rgba(95,191,143,.4); }
-  .lib-conf.c { color: var(--app-muted); }
+  .lib-item { display:flex; flex-direction:column; gap:6px; background:var(--app-surface);
+              border:1px solid var(--app-line); border-radius:10px; padding:12px 13px;
+              text-align:left; cursor:pointer; color:inherit; width:100%; }
+  .lib-item:hover { border-color:var(--app-muted); }
+  .lib-item .req { font-size:13.5px; font-weight:620; line-height:1.3; }
+  .lib-item .cmd { font-family:var(--mono); font-size:10.5px; color:var(--app-muted);
+                   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lib-item .src { display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--app-muted); }
+  .lib-conf { flex:none; font-family:var(--mono); font-size:9.5px; border-radius:5px;
+              padding:1px 6px; border:1px solid var(--app-line); }
+  .lib-conf.a { color:var(--app-ok); border-color:rgba(95,191,143,.4); }
+  .lib-conf.c { color:var(--app-muted); }
 
-  .hist-item { cursor: default; border-left: 2px solid var(--app-line); }
-  .hist-pick { cursor: pointer; }
-  .hist-pick:hover { border-color: var(--app-muted); }
-  .hist-item.ok { border-left-color: var(--app-ok); }
-  .hist-item.doute { border-left-color: var(--app-accent); }
-  .hist-item.bad { border-left-color: var(--app-danger); }
-  .hist-item.pending { border-left-color: var(--app-warn); }
-  .hist-item .top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .hist-item .time { font-family: var(--mono); font-size: 10.5px; color: var(--app-muted); }
-  .hist-tag { font-size: 10.5px; font-weight: 650; }
-  .hist-tag.ok { color: var(--app-ok); } .hist-tag.doute { color: var(--app-accent); }
-  .hist-tag.bad { color: var(--app-danger); } .hist-tag.pending { color: var(--app-warn); }
-  .hist-item .cmd { font-family: var(--mono); font-size: 11.5px; color: var(--app-ink); }
-  .hist-item .note { font-size: 11.5px; color: var(--app-muted); }
-  .hist-assigned { display: flex; flex-wrap: wrap; gap: 6px; }
-  .assign-chip {
-    font-size: 10.5px; background: rgba(77,163,217,.12); border: 1px solid rgba(77,163,217,.35);
-    color: var(--app-accent); border-radius: 6px; padding: 3px 7px;
-  }
+  .import-item { display:flex; align-items:center; justify-content:space-between; gap:10px;
+                 background:var(--app-surface); border:1px solid var(--app-line);
+                 border-radius:10px; padding:11px 12px; }
+  .import-item .meta { display:flex; flex-direction:column; gap:3px; }
+  .import-item .meta .name { font-size:13.5px; font-weight:600; }
+  .import-item .meta .cmd { font-family:var(--mono); font-size:11px; color:var(--app-muted); }
+  .badge-other { flex:none; font-size:9.5px; text-transform:uppercase; color:var(--app-warn);
+                 border:1px solid rgba(224,168,60,.4); background:rgba(224,168,60,.1);
+                 border-radius:5px; padding:3px 6px; white-space:nowrap; }
+  .card { border-radius:10px; padding:12px 13px; display:flex; flex-direction:column; gap:5px; font-size:13px; }
+  .card strong { font-size:13px; font-weight:620; }
+  .card p { margin:0; color:var(--app-muted); line-height:1.45; }
+  .card-warn { background:rgba(224,168,60,.09); border:1px solid rgba(224,168,60,.35); }
+  .card-warn strong { color:var(--app-warn); }
+  .card-danger { background:rgba(217,96,90,.09); border:1px solid rgba(217,96,90,.38); }
+  .card-danger strong { color:var(--app-danger); }
 
-  .import-item { cursor: default; flex-direction: row; align-items: center; justify-content: space-between; }
-  .import-item .meta { display: flex; flex-direction: column; gap: 3px; }
-  .import-item .meta .name { font-size: 13.5px; font-weight: 600; }
-  .badge-other { flex: none; font-size: 9.5px; letter-spacing: .03em; text-transform: uppercase; color: var(--app-warn);
-    border: 1px solid rgba(224,168,60,.4); background: rgba(224,168,60,.1); border-radius: 5px; padding: 3px 6px; white-space: nowrap; }
+  /* ---------- overlay : confirmation plein écran ---------- */
+  .overlay { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; background:var(--app-bg); }
+  .confirm-full { flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px;
+                  padding:24px 20px; text-align:center; }
+  .confirm-full .warn-icon { font-size:28px; color:var(--app-warn); }
+  .confirm-full h3 { margin:0; font-size:16.5px; }
+  .confirm-full p { margin:0; color:var(--app-muted); font-size:13px; }
+  .confirm-full .mono-box { font-family:var(--mono); font-size:13px; text-align:left;
+                            background:#070B10; border:1px solid var(--app-line);
+                            border-left:2px solid var(--app-accent); border-radius:10px; padding:12px; }
+  .confirm-full .actions { display:flex; flex-direction:column; gap:9px; }
 
-  /* ---------- overlays ---------- */
-  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; background: var(--app-bg); }
-
-  .confirm-full { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 24px 20px; text-align: center; }
-  .confirm-full .warn-icon { font-size: 28px; color: var(--app-warn); }
-  .confirm-full h3 { margin: 0; font-size: 16.5px; }
-  .confirm-full p { margin: 0; color: var(--app-muted); font-size: 13px; }
-  .confirm-full .macro { text-align: left; }
-
-  .toast {
-    position: absolute; left: 14px; right: 14px; bottom: 78px; z-index: 8;
-    background: var(--app-surface-hi); border: 1px solid var(--app-line); color: var(--app-ink);
-    font-size: 12.5px; padding: 10px 13px; border-radius: 10px; text-align: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,.35);
-  }
+  .toast { position:absolute; left:14px; right:14px; bottom:82px; z-index:8;
+           background:var(--app-surface-hi); border:1px solid var(--app-line); color:var(--app-ink);
+           font-size:12.5px; padding:10px 13px; border-radius:10px; text-align:center;
+           box-shadow:0 8px 20px rgba(0,0,0,.35); }
   @media (prefers-reduced-motion: no-preference) {
     .toast { animation: toast-in .18s ease-out; }
   }
-  @keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toast-in { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
 
-  /* ---------- nav du bas ---------- */
-  nav#bottom-nav { display: flex; border-top: 1px solid var(--app-line); background: var(--app-surface); flex: none; }
-  nav#bottom-nav button {
-    flex: 1; background: none; border: none; padding: 11px 6px 12px; display: flex; flex-direction: column;
-    align-items: center; gap: 3px; color: var(--app-muted); font-size: 11px; font-family: inherit; cursor: pointer;
-  }
-  nav#bottom-nav button .ic { font-size: 16px; line-height: 1; }
-  nav#bottom-nav button.on { color: var(--app-accent); }
+  nav#bottom-nav { display:flex; border-top:1px solid var(--app-line); background:var(--app-surface); flex:none; }
+  nav#bottom-nav button { flex:1; background:none; border:none; padding:11px 6px 12px;
+                          display:flex; flex-direction:column; align-items:center; gap:3px;
+                          color:var(--app-muted); font-size:11px; cursor:pointer; }
+  nav#bottom-nav button .ic { font-size:17px; line-height:1; }
+  nav#bottom-nav button.on { color:var(--app-accent); }
 
-  .hint { max-width: 52ch; font-size: 12.5px; color: var(--page-muted); text-align: center; }
-  .hint code { font-family: var(--mono); background: var(--page-surface); border: 1px solid var(--page-line); border-radius: 4px; padding: 1px 5px; }
+  /* ---------- page ---------- */
+  .fs-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+  .fs-btn { display:inline-flex; align-items:center; gap:7px; background:var(--page-surface);
+            border:1px solid var(--page-line); color:var(--page-ink); font-size:13px; font-weight:600;
+            border-radius:10px; padding:9px 16px; cursor:pointer; text-decoration:none; }
+  .fs-btn:hover { border-color:var(--page-accent); color:var(--page-accent); }
 
-  .guide { max-width: 54ch; width: 100%; border-top: 1px solid var(--page-line); padding-top: 20px; }
-  .guide h2 { margin: 0 0 12px; font-size: 15px; letter-spacing: -.01em; }
-  .guide ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .guide li { font-size: 13px; color: var(--page-muted); line-height: 1.5; }
-  .guide li b { color: var(--page-ink); font-weight: 620; }
-  .guide code {
-    font-family: var(--mono); font-size: 11.5px; background: var(--page-surface);
-    border: 1px solid var(--page-line); border-radius: 4px; padding: 1px 5px;
-    overflow-wrap: anywhere;
-  }
-  .guide-note {
-    margin: 16px 0 0; font-size: 12px; color: var(--page-muted); line-height: 1.55;
-    border-left: 2px solid var(--page-accent); padding-left: 12px;
-  }
+  body.sim-fs { overflow:hidden; }
+  body.sim-fs .page { padding:0; max-width:none; }
+  body.sim-fs .page > *:not(.device) { display:none; }
+  body.sim-fs .device { position:fixed; inset:0; z-index:9999; padding:0; border:none;
+                        border-radius:0; box-shadow:none; }
+  body.sim-fs .viewport { width:100%; height:100%; border-radius:0; }
+  #sim-exit { display:none; position:fixed; top:10px; right:10px; z-index:10000;
+              width:36px; height:36px; border-radius:50%; align-items:center; justify-content:center;
+              background:rgba(20,27,36,.85); border:1px solid rgba(255,255,255,.18);
+              color:#E4EAF2; font-size:16px; cursor:pointer; }
+  body.sim-fs #sim-exit { display:flex; }
 
-  .fs-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-  .fs-btn {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: var(--page-surface); border: 1px solid var(--page-line); color: var(--page-ink);
-    font-family: inherit; font-size: 13px; font-weight: 600; border-radius: 10px;
-    padding: 9px 16px; cursor: pointer; text-decoration: none;
-  }
-  .fs-btn:hover { border-color: var(--page-accent); color: var(--page-accent); }
-
-  /* plein écran simulé en CSS pur : ne dépend d'aucune permission ni API
-     (l'API Fullscreen native est indisponible pour un élément quelconque sur
-     Safari iOS — cette version fonctionne dans tous les navigateurs). */
-  body.sim-fs { overflow: hidden; }
-  body.sim-fs .page { padding: 0; max-width: none; }
-  body.sim-fs .page > *:not(.device) { display: none; }
-  body.sim-fs .device {
-    position: fixed; inset: 0; z-index: 9999;
-    padding: 0; border: none; border-radius: 0; box-shadow: none;
-  }
-  body.sim-fs .viewport { width: 100%; height: 100%; border-radius: 0; }
-
-  #sim-exit {
-    display: none; position: fixed; top: 10px; right: 10px; z-index: 10000;
-    width: 36px; height: 36px; border-radius: 50%; align-items: center; justify-content: center;
-    background: rgba(20,27,36,.85); border: 1px solid rgba(255,255,255,.18); color: #E4EAF2;
-    font-size: 16px; line-height: 1; cursor: pointer;
-  }
-  body.sim-fs #sim-exit { display: flex; }
+  .why { max-width:56ch; width:100%; border-top:1px solid var(--page-line); padding-top:20px; }
+  .why h2 { margin:0 0 12px; font-size:15px; }
+  .why p { margin:0 0 12px; font-size:13px; color:var(--page-muted); line-height:1.55; }
+  .why b { color:var(--page-ink); font-weight:620; }
+  .why ul { margin:0; padding-left:19px; display:flex; flex-direction:column; gap:8px; }
+  .why li { font-size:13px; color:var(--page-muted); line-height:1.5; }
+  .why code { font-family:var(--mono); font-size:11.5px; background:var(--page-surface);
+              border:1px solid var(--page-line); border-radius:4px; padding:1px 5px; }
 </style>
 
 <div class="page">
   <div class="eyebrow">macro2eos · prototype</div>
-  <h1>Prototype interactif</h1>
+  <h1>La console comme conversation</h1>
   <p class="lede">
-    Un seul appareil, une vraie navigation entre les trois écrans. Le texte s'interprète
-    avec un petit moteur de démonstration (vocabulaire volontairement limité) — assez
-    pour naviguer les mêmes flux que la maquette d'intention, avec des états qui changent
-    réellement.
+    Deux surfaces : l'<b>Atelier</b>, où l'on demande et où tout ce qu'on a fait reste
+    sous les yeux, et la <b>Conduite</b>, la grille de jeu. L'historique n'est plus un
+    écran où l'on se rend — il <i>est</i> le plan de travail.
   </p>
 
   <div class="device">
@@ -447,32 +383,55 @@
     <a class="fs-btn" id="open-browser" href="#" target="_blank" rel="noopener noreferrer">↗ Ouvrir dans le navigateur</a>
   </div>
 
-  <section class="guide">
-    <h2>Six choses à essayer</h2>
-    <ol>
-      <li><b>Le test qui compte.</b> Favoris → <b>▶ Mode jeu</b>, puis <b>posez le téléphone
-        devant vous</b> à la distance de la régie, en plein écran, et envoyez des tuiles
-        sans vous pencher. Les libellés sont-ils lisibles de là où vous serez ? Les tuiles
-        assez grandes pour viser sans regarder longtemps ? C'est ça qu'il faut juger.</li>
-      <li><b>Une macro qui inquiète.</b> Saisie → tapez
-        <code>groupe 5 et circuits 1 à 6 en lee 195</code> → Traduire. Elle porte un ⚠,
-        la confirmation passe en plein écran. Tapez sur <code>Group</code> dans l'aperçu
-        pour corriger le champ sans retaper la phrase.</li>
-      <li><b>Un refus de la console.</b> Tapez
-        <code>circuits 10 a 20 en lee 195</code> → Traduire → Envoyer. La console refuse ;
-        la correction proposée s'affiche avant tout renvoi.</li>
-      <li><b>Une coupure réseau.</b> Armez <i>Démo · simuler une coupure</i>, envoyez.
-        La commande reste en suspens : à vous de trancher, rien n'est rejoué tout seul.</li>
-      <li><b>Le lien favoris ↔ historique.</b> ↺ en haut → <i>+ Ajouter en favori</i>, ou
-        Favoris → <i>+ Depuis l'historique</i>. Chaque envoi montre quels favoris en sont issus.</li>
-      <li><b>La navigation.</b> ↺ et ⚙ sont joignables depuis n'importe quel écran, et le
-        retour vous ramène toujours d'où vous veniez.</li>
+  <section class="why">
+    <h2>Ce qui change, et pourquoi</h2>
+    <p>
+      <b>Le constat.</b> On ne va jamais « dans l'historique » comme on va quelque part.
+      On le consulte toujours <i>par rapport à autre chose</i> : est-ce que c'est passé ?
+      qu'est-ce que j'ai envoyé tout à l'heure ? je veux refaire ça. C'est un contexte,
+      pas une destination — en faire un écran était l'erreur de départ.
+    </p>
+    <p>
+      <b>La conséquence.</b> Ce que décrit vraiment l'usage, c'est une conversation :
+      vous demandez, l'app propose, la console répond. Alors le fil de cette conversation
+      <i>est</i> l'historique. Il n'y a plus rien où se rendre.
+    </p>
+    <ul>
+      <li><b>Deux surfaces, plus quatre destinations.</b> <code>Atelier</code> (le fil) et
+        <code>Conduite</code> (la grille de jeu). Réglages reste une icône d'angle.</li>
+      <li><b>L'écran de saisie n'est plus vide.</b> Avant, un champ et deux boutons dans le
+        vide. Maintenant, ce que vous venez de faire est sous vos yeux.</li>
+      <li><b>« Éditer dans Saisie » disparaît</b> — vous y êtes déjà. On touche un échange
+        passé pour le reprendre.</li>
+      <li><b>Le refus devient un tour de parole</b>, pas une alerte : la console répond,
+        vous corrigez, vous renvoyez. C'est la forme naturelle de l'échange.</li>
+      <li><b>Les envois de favoris apparaissent dans le fil</b> en ligne discrète : le
+        journal reste complet sans noyer votre travail de préparation.</li>
+      <li><b>La dictée arrivera ici sans rien casser</b> — une conversation est déjà la
+        bonne forme pour de la voix (voir <code>APP.md</code>).</li>
+    </ul>
+    <h2 style="margin-top:26px;">Six choses à essayer</h2>
+    <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+      <li><b>Le test qui compte.</b> Conduite → <b>▶ Mode jeu</b>, puis <b>posez le téléphone
+        devant vous</b> à la distance de la régie, en plein écran. Les libellés sont-ils
+        lisibles de là où vous serez ?</li>
+      <li><b>Une macro qui inquiète.</b> Atelier → <code>groupe 5 et circuits 1 à 6 en lee 195</code>
+        → ↵. Elle porte un ⚠ ; la confirmation passe en plein écran. Touchez
+        <code>Group</code> dans la réponse pour corriger ce champ sans retaper la phrase.</li>
+      <li><b>Un refus.</b> <code>circuits 10 a 20 en lee 195</code> → envoyer. La console
+        répond dans le fil, la correction est proposée sur place.</li>
+      <li><b>Une coupure.</b> Armez <i>Démo · simuler une coupure</i> puis envoyez : la
+        commande reste en suspens, à vous de trancher. Rien n'est rejoué tout seul.</li>
+      <li><b>Garder et reprendre.</b> Sous un envoi accepté : <i>Garder en favori</i> ou
+        <i>Reprendre</i>. Depuis la Conduite : <i>+ Reprendre un envoi accepté</i>.</li>
+      <li><b>Le fil comme journal.</b> Envoyez une tuile depuis la Conduite, revenez à
+        l'Atelier : elle y figure en pastille discrète, sans noyer votre travail.</li>
     </ol>
-    <p class="guide-note">
-      Vos favoris, onglets et historique sont conservés sur cet appareil : fermez et
-      rouvrez sans rien perdre. Pour repartir propre : ⚙ → <i>Repartir de zéro</i>.
-      Le moteur de traduction est une démonstration à vocabulaire limité — c'est la
-      navigation et les enchaînements qui sont à juger, pas sa compréhension.
+    <p style="margin-top:16px; border-left:2px solid var(--page-accent); padding-left:12px;">
+      Vos favoris et le fil sont conservés sur cet appareil : fermez et rouvrez sans rien
+      perdre. Pour repartir propre : ⚙ → <i>Repartir de zéro</i>. Le moteur de traduction
+      reste une démonstration à vocabulaire limité — c'est la navigation qu'il faut juger,
+      pas sa compréhension.
     </p>
   </section>
 </div>
@@ -482,461 +441,358 @@
   "use strict";
 
   var LIBRARY = [
-    { req: "Nettoyer les mouvements invisibles du show",
-      cmd: "Query Dark_Moves Enter AllNPs @ Enter Update Enter Clear_Cmd",
-      confidence: "C", source: "corpus communautaire, non testé au banc" },
-    { req: "Bump le sub 3 pour la durée de l'effet en cours",
-      cmd: "SubDown 3 Enter SubUp 3 Enter",
-      confidence: "C", source: "corpus communautaire, non testé au banc" },
-    { req: "Effet cercle symétrique jardin / cour",
-      cmd: "Group 1 Effect 201.1 Group 2 Offset Reverse Effect 201.2",
-      confidence: "C", source: "corpus communautaire, non testé au banc" },
-    { req: "Highlight de référence sur une sélection",
-      cmd: "{Highlight RemDim} Preset 9997 Enter",
-      confidence: "A", source: "manuel officiel, Eos L3 Workbook" }
+    { req:"Nettoyer les mouvements invisibles du show",
+      cmd:"Query Dark_Moves Enter AllNPs @ Enter Update Enter Clear_Cmd",
+      confidence:"C", source:"corpus communautaire, non testé au banc" },
+    { req:"Bump le sub 3 pour la durée de l'effet en cours",
+      cmd:"SubDown 3 Enter SubUp 3 Enter",
+      confidence:"C", source:"corpus communautaire, non testé au banc" },
+    { req:"Effet cercle symétrique jardin / cour",
+      cmd:"Group 1 Effect 201.1 Group 2 Offset Reverse Effect 201.2",
+      confidence:"C", source:"corpus communautaire, non testé au banc" },
+    { req:"Highlight de référence sur une sélection",
+      cmd:"{Highlight RemDim} Preset 9997 Enter",
+      confidence:"A", source:"manuel officiel, Eos L3 Workbook" }
   ];
 
-  var TAG_LABEL = { ok: "Acceptée · déjà connue", doute: "Acceptée · a levé un doute", bad: "Refusée, puis corrigée", pending: "En suspens" };
-
-  // ---------------------------------------------------------------------------
-  // MODÈLE DE NAVIGATION
-  //
-  // Les écrans ne sont pas des pairs : leur fréquence d'usage et leur niveau de
-  // risque vont de « constante, en pleine représentation » à « une fois par
-  // installation ». La navigation reflète cette hiérarchie plutôt que de la nier.
-  //
-  //   destination  — barre du bas, grandes cibles, les deux seules choses qu'on
-  //                  FAIT : Favoris (le seul écran de jeu) et Saisie (l'atelier).
-  //   utilitaire   — en-tête : Historique et Réglages, consultés depuis n'importe
-  //                  où, sans détour, sans concurrencer visuellement ce qui sert.
-  //   satellite    — rattaché à un écran précis, atteint depuis lui seul.
-  //
-  // Le téléphone est posé sur la régie, pas tenu en main : la contrainte n'est pas
-  // la portée du doigt mais ce qu'on reconnaît d'un coup d'œil, de loin, dans le
-  // noir. D'où deux destinations plutôt que trois — moins à balayer du regard,
-  // cibles plus grandes — et les deux utilitaires rares hors du chemin.
-  // ---------------------------------------------------------------------------
+  // Deux surfaces seulement. Le reste est satellite ou utilitaire d'angle.
   var SCREENS = {
-    favoris:      { label: "Favoris",   role: "destination" },
-    saisie:       { label: "Saisie",    role: "destination" },
-
-    historique:   { label: "Historique", role: "utilitaire", title: "Historique des envois" },
-    reglages:     { label: "Réglages",   role: "utilitaire", title: "Réglages" },
-
-    bibliotheque: { label: "Bibliothèque",   role: "satellite", parent: "saisie",   title: "Bibliothèque de macros" },
-    histpick:     { label: "Historique",     role: "satellite", parent: "favoris",  title: "Choisir dans l'historique" },
-    histpickform: { label: "Nouveau favori", role: "satellite", parent: "favoris",  title: "Nouveau favori" },
-    tabs:         { label: "Onglets",        role: "satellite", parent: "reglages", title: "Onglets de favoris" },
-    importer:     { label: "Importer",       role: "satellite", parent: "reglages", title: "Importer des favoris" }
+    atelier:   { label:"Atelier",  role:"surface" },
+    conduite:  { label:"Conduite", role:"surface" },
+    reglages:  { label:"Réglages", role:"utilitaire", title:"Réglages" },
+    biblio:    { label:"Bibliothèque", role:"satellite", parent:"atelier",  title:"Bibliothèque de macros" },
+    // Satellite de la Conduite : reprendre un envoi déjà accepté du fil pour en
+    // faire un favori. Ce n'est pas « parcourir l'historique » — c'est choisir
+    // une source pour une action précise, depuis l'écran qui la demande.
+    puiser:    { label:"Puiser",   role:"satellite", parent:"conduite", title:"Reprendre un envoi accepté" },
+    tabs:      { label:"Onglets",  role:"satellite", parent:"reglages", title:"Onglets de favoris" },
+    importer:  { label:"Importer", role:"satellite", parent:"reglages", title:"Importer des favoris" }
   };
 
-  // Où mène le retour. Un utilitaire s'ouvre depuis n'importe où : il revient d'où
-  // l'on vient, jamais vers un parent arbitraire. Un satellite revient à son parent.
   function backTarget(id) {
-    var conf = SCREENS[id] || {};
-    if (conf.role === "utilitaire") return state.returnTo || "favoris";
-    if (id === "histpick") return state.histPickFrom || "favoris";
-    if (id === "histpickform") return state.histPickDirect ? (state.histPickFrom || "favoris") : "histpick";
-    return conf.parent || "favoris";
-  }
-
-  function screenHeader(id) {
-    var to = backTarget(id);
-    var conf = SCREENS[id] || {};
-    return '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="' + to + '">' +
-      '<span class="arrow">‹</span>' + esc((SCREENS[to] || {}).label || "Retour") + "</button></div>" +
-      (conf.title ? '<div class="label">' + esc(conf.title) + "</div>" : "");
+    var c = SCREENS[id] || {};
+    if (c.role === "utilitaire") return state.returnTo || "atelier";
+    return c.parent || "atelier";
   }
 
   var uid = 100;
   var state = {
-    screen: "saisie",
-    returnTo: "saisie",       // d'où l'on a ouvert un utilitaire (historique / réglages)
-    playMode: false,          // mode jeu : l'app se réduit à la grille de tuiles
+    screen: "atelier",
+    returnTo: "atelier",
+    playMode: false,
     connected: true,
-    pendingCommand: null,
-    overlay: null,            // null | 'confirm' (seul overlay restant)
-    result: null,             // {cmd, warn, warnText, tokens, note}
-    lastOutcome: null,        // {status:'ok'|'bad', cmd, fix, note}
-    lastInputText: "",
-    chipMenuOpen: false,
-    saveForm: false,
+    overlay: null,
     dropArmed: false,
+    draft: "",
+    chipOpenId: null,
+    keepFormId: null,
+    puiserChoice: null,
+    resetAsk: false,
     tabs: ["Cyrano", "Général", "Couleurs"],
     activeTab: "Cyrano",
-    editMode: false,
-    editingTileId: null,
-    deletingTileId: null,
+    editMode: false, editingTileId: null, deletingTileId: null, renamingTileId: null,
+    favMode: "immediate", tileConfirmId: null,
     favoris: [
-      { id: uid++, name: "Noir salle", cmd: "Sub 12 At 0 Enter", tab: "Cyrano" },
-      { id: uid++, name: "Plein feu", cmd: "Chan 1 Thru 96 At Full Enter", tab: "Cyrano" },
-      { id: uid++, name: "195 · Par LED", cmd: "Color Palette 5 Enter", tab: "Couleurs" },
-      { id: uid++, name: "Face seule", cmd: "Group 3 At 85 Enter", tab: "Cyrano" },
-      { id: uid++, name: "Contre chaud", cmd: "Group 7 Color 3/204 Enter", tab: "Couleurs" },
-      { id: uid++, name: "Rappel saluts", cmd: "Macro 12 Enter", tab: "Général" }
+      { id: uid++, name:"Noir salle", cmd:"Sub 12 At 0 Enter", tab:"Cyrano" },
+      { id: uid++, name:"Plein feu", cmd:"Chan 1 Thru 96 At Full Enter", tab:"Cyrano" },
+      { id: uid++, name:"195 · Par LED", cmd:"Color Palette 5 Enter", tab:"Couleurs" },
+      { id: uid++, name:"Face seule", cmd:"Group 3 At 85 Enter", tab:"Cyrano" },
+      { id: uid++, name:"Rappel saluts", cmd:"Macro 12 Enter", tab:"Général" }
     ],
-    favMode: "immediate",     // immediate | confirm
-    tileConfirmId: null,
-    histPickChoice: null,
-    histPickFrom: "favoris",  // écran d'où l'on est entré dans le choix historique
-    histPickDirect: false,    // entré directement sur le formulaire, sans passer par la liste
-    history: [
-      { id: uid++, time: "20:58", cmd: "Chan 10 Thru 20 Color 3/195 Enter", tag: "bad", accepted: true,
-        note: "Mot-clé « Colour » refusé, renvoyée avec « Color » — acceptée." },
-      { id: uid++, time: "19:50", cmd: "SubDown 3 Enter", tag: "ok", accepted: true,
-        note: "Depuis la bibliothèque de macros." }
+    // LE FIL. Chaque entrée est un échange complet, ou un événement.
+    //   kind: 'exchange' — ask -> proposition -> verdict
+    //   kind: 'event'    — envoi d'un favori
+    thread: [
+      { id: uid++, kind:"exchange", time:"19:50", ask:"Bump le sub 3 pour la durée de l'effet en cours",
+        fromLib:"corpus communautaire · C", cmd:"SubDown 3 Enter SubUp 3 Enter",
+        status:"ok", tokens:[] },
+      { id: uid++, kind:"exchange", time:"20:58", ask:"circuits 10 a 20 en lee 195",
+        cmd:"Chan 10 Thru 20 Color 3/195 Enter", status:"fixed",
+        wasRefused:true, tokens:[] }
     ],
     toast: null
   };
 
-  var toastTimer = null;
-  function showToast(msg) {
-    state.toast = msg;
-    renderAll();
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { state.toast = null; renderAll(); }, 1800);
-  }
-
-  function nowTime() {
-    var d = new Date();
-    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-  }
-
-  function esc(s) {
-    return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; });
-  }
-
-  function normalize(s) {
-    return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-  }
-
-  // ---------- moteur de traduction de démonstration ----------
-  function translate(raw) {
-    var t = normalize(raw);
-    if (!t) return null;
-
-    for (var i = 0; i < LIBRARY.length; i++) {
-      var item = LIBRARY[i];
-      if (t === normalize(item.req)) {
-        var warnLib = item.confidence !== "A";
-        return {
-          cmd: item.cmd, warn: warnLib,
-          warnText: warnLib ? "Motif issu du corpus communautaire (confiance " + item.confidence + ") — non validé sur cette console." : null,
-          tokens: [], note: "Bibliothèque · " + item.source
-        };
-      }
-    }
-
-    if (/\b(noir salle|blackout|noir)\b/.test(t)) {
-      return { cmd: "Sub 12 At 0 Enter", warn: false, warnText: null, tokens: [] };
-    }
-    if (/\b(plein feu|full)\b/.test(t)) {
-      return { cmd: "Chan 1 Thru 96 At Full Enter", warn: false, warnText: null, tokens: [] };
-    }
-
-    var groupe = t.match(/groupe\s+(\d+)/);
-    var circuits = t.match(/circuits?\s+(\d+)\s*(?:a|à|thru)\s*(\d+)/) || t.match(/circuits?\s+(\d+)/);
-    var colorMatch = t.match(/(?:en\s+)?(?:lee|couleur|gel)\s+(\d+)/);
-
-    if (!groupe && !circuits) return null;
-
-    var target, tokens = [];
-    if (groupe && circuits) {
-      target = "Group " + groupe[1] + " + " + circuits[1] + " Thru " + circuits[2] + " ";
-      tokens = [{ id: "t1", match: "Group", selected: "Groupe",
-        alternatives: ["Circuit", "Groupe", "Palette", "Preset"] }];
-    } else if (groupe) {
-      target = "Group " + groupe[1] + " ";
-    } else if (circuits[2]) {
-      target = "Chan " + circuits[1] + " Thru " + circuits[2] + " ";
-    } else {
-      target = "Chan " + circuits[1] + " ";
-    }
-
-    var color = "", colourTypo = false;
-    if (colorMatch) {
-      if (/circuits?\s+10\s*(?:a|à|thru)\s*20/.test(t) && colorMatch[1] === "195") {
-        color = "Colour 3/" + colorMatch[1] + " ";
-        colourTypo = true;
-      } else {
-        color = "Color 3/" + colorMatch[1] + " ";
-      }
-    }
-
-    var cmd = (target + color).trim() + " Enter";
-    var warn = !!(groupe && circuits);
-    var warnText = warn
-      ? "Mélanger un groupe et une plage de circuits dans la même sélection n'a pas été confirmé sur un Eos réel. La commande part telle quelle — vérifiez le résultat."
-      : null;
-
-    return { cmd: cmd, warn: warn, warnText: warnText, tokens: tokens, colourTypo: colourTypo };
-  }
-
-  // ---------- rendu ----------
-  // ---------------------------------------------------------------------------
-  // PERSISTANCE
-  // Seules les données que l'utilisateur a construites sont conservées : favoris,
-  // onglets, historique, mode d'envoi. L'état d'écran, lui, ne l'est pas — on
-  // rouvre toujours sur Favoris, prêt à jouer, jamais au milieu d'un formulaire.
-  // ---------------------------------------------------------------------------
-  var STORE_KEY = "macro2eos.prototype.v1";
-
+  var STORE_KEY = "macro2eos.prototypeB.v1";
   function save() {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
-        uid: uid, tabs: state.tabs, activeTab: state.activeTab,
-        favoris: state.favoris, favMode: state.favMode, history: state.history
+        uid:uid, tabs:state.tabs, activeTab:state.activeTab, favoris:state.favoris,
+        favMode:state.favMode, thread:state.thread
       }));
-    } catch (e) { /* mode privé, quota : le prototype reste utilisable sans */ }
+    } catch (e) {}
   }
-
   function load() {
     try {
-      var raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return false;
+      var raw = localStorage.getItem(STORE_KEY); if (!raw) return false;
       var d = JSON.parse(raw);
       if (!d || !Array.isArray(d.tabs) || !Array.isArray(d.favoris)) return false;
-      uid = d.uid || uid;
-      state.tabs = d.tabs;
-      state.favoris = d.favoris;
-      state.history = Array.isArray(d.history) ? d.history : state.history;
+      uid = d.uid || uid; state.tabs = d.tabs; state.favoris = d.favoris;
+      state.thread = Array.isArray(d.thread) ? d.thread : state.thread;
       state.favMode = d.favMode === "confirm" ? "confirm" : "immediate";
       state.activeTab = d.tabs.indexOf(d.activeTab) >= 0 ? d.activeTab : d.tabs[0];
       return true;
     } catch (e) { return false; }
   }
 
+  var toastTimer = null;
+  function showToast(m) {
+    state.toast = m; renderAll();
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ state.toast = null; renderAll(); }, 1800);
+  }
+  function nowTime() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+  function esc(s) { return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+  function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim(); }
+
+  // ---------- moteur de démonstration (vocabulaire volontairement limité) ----------
+  function translate(raw) {
+    var t = norm(raw); if (!t) return null;
+    for (var i=0;i<LIBRARY.length;i++) {
+      if (t === norm(LIBRARY[i].req)) {
+        var L = LIBRARY[i];
+        return { cmd:L.cmd, warn:L.confidence !== "A",
+                 warnText: L.confidence !== "A" ? "Motif du corpus communautaire (confiance " + L.confidence + ") — jamais validé sur cette console." : null,
+                 tokens:[], fromLib: L.source + " · " + L.confidence };
+      }
+    }
+    if (/\b(noir salle|blackout|noir)\b/.test(t)) return { cmd:"Sub 12 At 0 Enter", warn:false, tokens:[] };
+    if (/\b(plein feu|full)\b/.test(t)) return { cmd:"Chan 1 Thru 96 At Full Enter", warn:false, tokens:[] };
+
+    var g = t.match(/groupe\s+(\d+)/);
+    var c = t.match(/circuits?\s+(\d+)\s*(?:a|à|thru)\s*(\d+)/) || t.match(/circuits?\s+(\d+)/);
+    var col = t.match(/(?:en\s+)?(?:lee|couleur|gel)\s+(\d+)/);
+    if (!g && !c) return null;
+
+    var target, tokens = [];
+    if (g && c) {
+      target = "Group " + g[1] + " + " + c[1] + " Thru " + c[2] + " ";
+      tokens = [{ match:"Group", selected:"Groupe", alternatives:["Circuit","Groupe","Palette","Preset"] }];
+    } else if (g) target = "Group " + g[1] + " ";
+    else if (c[2]) target = "Chan " + c[1] + " Thru " + c[2] + " ";
+    else target = "Chan " + c[1] + " ";
+
+    var color = "";
+    if (col) {
+      var typo = /circuits?\s+10\s*(?:a|à|thru)\s*20/.test(t) && col[1] === "195";
+      color = (typo ? "Colour 3/" : "Color 3/") + col[1] + " ";
+    }
+    var warn = !!(g && c);
+    return {
+      cmd: (target + color).trim() + " Enter", warn: warn, tokens: tokens,
+      warnText: warn ? "Mélanger un groupe et une plage de circuits dans la même sélection n'a jamais été confirmé sur un Eos réel." : null
+    };
+  }
+
+  // ---------- rendu ----------
   function renderAll() {
-    renderStatusbar();
-    renderBanner();
-    renderScreen();
-    renderNav();
-    save();
+    renderStatusbar(); renderBanner(); renderScreen(); renderNav(); save();
   }
 
   function renderStatusbar() {
     var el = document.getElementById("statusbar-slot");
     var dot = state.connected ? "dot-ok" : "dot-wait";
-    // En mode jeu, le libellé raccourcit : la place va au bouton de sortie, et
-    // « connectée ou non » est la seule chose qu'on lit vraiment en représentation.
     var label = state.playMode
       ? (state.connected ? "Connectée" : "Reconnexion…")
       : (state.connected ? "Console connectée" : "Reconnexion en cours…");
-
-    // En mode jeu, l'en-tête ne garde que ce qui compte en représentation :
-    // l'état de la console, et la sortie du mode. Aucune navigation latérale.
     var right = state.playMode
       ? '<button class="hdr-btn hdr-exit" data-action="play:exit">Quitter le mode jeu</button>'
       : '<span class="user-tag">User 12</span>' +
-        '<button class="hdr-btn' + (state.screen === "historique" ? " on" : "") + '" data-action="util" data-screen="historique" aria-label="Historique">↺</button>' +
         '<button class="hdr-btn' + (state.screen === "reglages" ? " on" : "") + '" data-action="util" data-screen="reglages" aria-label="Réglages">⚙</button>';
-
-    el.innerHTML =
-      '<div class="statusbar">' +
-        '<button class="conn" data-action="toggle-connection"><span class="dot ' + dot + '"></span>' + label + '</button>' +
-        '<span class="hdr-right">' + right + "</span>" +
-      '</div>';
+    el.innerHTML = '<div class="statusbar">' +
+      '<button class="conn" data-action="toggle-connection"><span class="dot ' + dot + '"></span>' + label + "</button>" +
+      '<span class="hdr-right">' + right + "</span></div>";
   }
 
   function renderBanner() {
     var el = document.getElementById("banner-slot");
     if (state.connected) { el.innerHTML = ""; return; }
-    el.innerHTML =
-      '<div class="banner-recon">' +
-        '<span>⚠ Connexion à la console perdue — nouvelle tentative en cours</span>' +
-        '<button data-action="toggle-connection">reconnecter (démo)</button>' +
-      '</div>';
+    el.innerHTML = '<div class="banner-recon"><span>⚠ Connexion perdue — nouvelle tentative en cours</span>' +
+      '<button data-action="toggle-connection">reconnecter (démo)</button></div>';
   }
 
   function renderNav() {
     var el = document.getElementById("bottom-nav");
-    // Deux destinations seulement — les deux seules choses qu'on fait vraiment.
-    // Favoris en premier : c'est l'écran de jeu, celui vers lequel on revient.
-    // Réglages et Historique, rares, sont montés dans l'en-tête.
-    var items = [
-      { id: "favoris", ic: "▦", label: "Favoris" },
-      { id: "saisie", ic: "✎", label: "Saisie" }
-    ];
-    // En mode jeu, la barre du bas disparaît : la hauteur qu'elle occupe revient
-    // aux tuiles, qui doivent être lisibles depuis la régie. La sortie reste en
-    // haut de l'écran, toujours visible.
     if (state.playMode) { el.innerHTML = ""; el.style.display = "none"; return; }
     el.style.display = "";
-
     var conf = SCREENS[state.screen] || {};
-    var active = conf.role === "destination" ? state.screen : conf.parent;
+    var active = conf.role === "surface" ? state.screen : conf.parent;
+    var items = [
+      { id:"conduite", ic:"▦", label:"Conduite" },
+      { id:"atelier",  ic:"⌨", label:"Atelier" }
+    ];
     el.innerHTML = items.map(function (it) {
       return '<button data-action="nav" data-screen="' + it.id + '" class="' + (active === it.id ? "on" : "") + '">' +
-        '<span class="ic">' + it.ic + '</span>' + it.label + '</button>';
+        '<span class="ic">' + it.ic + "</span>" + it.label + "</button>";
     }).join("");
   }
 
-  var VIEWS = {
-    saisie: screenSaisie,
-    favoris: screenFavoris,
-    reglages: screenReglages,
-    bibliotheque: screenBibliotheque,
-    historique: screenHistorique,
-    histpick: screenHistPick,
-    histpickform: screenHistPickForm,
-    tabs: screenTabs,
-    importer: screenImport
-  };
+  function screenHeader(id) {
+    var to = backTarget(id), conf = SCREENS[id] || {};
+    return '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="' + to + '">' +
+      '<span class="arrow">‹</span>' + esc((SCREENS[to]||{}).label || "Retour") + "</button></div>" +
+      (conf.title ? '<div class="label">' + esc(conf.title) + "</div>" : "");
+  }
 
   function renderScreen() {
     var el = document.getElementById("screen");
     var conf = SCREENS[state.screen] || {};
-    var view = VIEWS[state.screen] || screenSaisie;
-    // L'en-tête (retour + titre) est posé ici pour tous les écrans secondaires :
-    // aucun écran ne dessine le sien, donc aucun ne peut diverger.
-    // Une destination n'a pas de retour (la barre du bas s'en charge) ; tout le
-    // reste porte le même en-tête, posé ici une seule fois pour tous.
-    var html = (conf.role === "destination" ? "" : screenHeader(state.screen)) + view();
-    el.innerHTML = html + overlayHtml() + toastHtml();
+    var body;
+    if (state.screen === "atelier") body = screenAtelier();
+    else if (state.screen === "conduite") body = screenConduite();
+    else if (state.screen === "biblio") body = '<div class="pad">' + screenHeader("biblio") + screenBiblio() + "</div>";
+    else if (state.screen === "puiser") body = '<div class="pad">' + screenHeader("puiser") + screenPuiser() + "</div>";
+    else if (state.screen === "reglages") body = '<div class="pad">' + screenHeader("reglages") + screenReglages() + "</div>";
+    else if (state.screen === "tabs") body = '<div class="pad">' + screenHeader("tabs") + screenTabs() + "</div>";
+    else if (state.screen === "importer") body = '<div class="pad">' + screenHeader("importer") + screenImport() + "</div>";
+    else body = screenAtelier();
+    el.innerHTML = body + overlayHtml() + toastHtml();
+    var th = document.getElementById("thread");
+    if (th) th.scrollTop = th.scrollHeight;
+    var ta = document.getElementById("composer-input");
+    if (ta) { ta.value = state.draft; autoGrow(ta); }
   }
 
-  function toastHtml() {
-    if (!state.toast) return "";
-    return '<div class="toast">' + esc(state.toast) + "</div>";
-  }
+  function toastHtml() { return state.toast ? '<div class="toast">' + esc(state.toast) + "</div>" : ""; }
 
-  // ---------- écran 1 : saisie ----------
-  function macroTokensHtml(r) {
-    if (!r.tokens.length) return esc(r.cmd);
-    var t = r.tokens[0];
-    var idx = r.cmd.indexOf(t.match);
-    var before = r.cmd.slice(0, idx);
-    var after = r.cmd.slice(idx + t.match.length);
-    var cls = "chip" + (state.chipMenuOpen ? " active" : "");
-    return esc(before) + '<span class="' + cls + '" data-action="chip:open">' + esc(t.match) + "</span>" + esc(after);
-  }
+  function autoGrow(ta) { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 96) + "px"; }
 
-  function screenSaisie() {
-    var out = "";
+  // ===================== L'ATELIER : le fil =====================
+  function screenAtelier() {
+    var out = '<div class="thread" id="thread">';
+    if (!state.thread.length) {
+      out += '<div class="thread-empty">Décrivez ce que vous voulez faire.<br>' +
+             "Ce que vous envoyez restera ici, avec la réponse de la console.</div>";
+    } else {
+      out += '<div class="day">Aujourd\'hui</div>';
+      state.thread.forEach(function (e) { out += e.kind === "event" ? renderEvent(e) : renderExchange(e); });
+    }
+    out += "</div>";
 
-    out += '<div class="label">Votre demande</div>';
-    out += '<textarea id="nl-input" rows="2" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195">' + esc(state.lastInputText || "") + "</textarea>";
-    // Historique a quitté cette rangée : il est désormais dans l'en-tête, joignable
-    // depuis tous les écrans. Le retirer d'ici rend à « Traduire », l'action
-    // principale de cet écran, la place qu'un bouton principal mérite.
-    out += '<div class="btn-row"><button class="btn btn-ghost btn-sm btn-aside" data-action="nav" data-screen="bibliotheque">Bibliothèque</button>' +
-           '<button class="btn btn-primary" data-action="translate">Traduire</button></div>';
+    out += '<div class="composer">' +
+      '<button class="cbtn" data-action="nav" data-screen="biblio" aria-label="Bibliothèque">📚</button>' +
+      '<textarea id="composer-input" rows="1" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195"></textarea>' +
+      '<button class="cbtn send" data-action="ask" aria-label="Envoyer la demande">→</button></div>';
 
-    out += '<div class="demo-toggle"><span><b>Démo</b> · simuler une coupure au prochain envoi</span>' +
+    out += '<div class="demo-line"><span>Démo · simuler une coupure au prochain envoi</span>' +
       '<button class="swtch ' + (state.dropArmed ? "on" : "") + '" data-action="drop:toggle"></button></div>';
-
-    if (state.pendingCommand) {
-      out += '<div class="label">Envoyée à ' + esc(state.pendingCommand.time) + '</div>';
-      out += '<div class="macro"><code>' + esc(state.pendingCommand.cmd) + '</code></div>';
-      out += '<div class="card card-warn"><strong>Accusé de réception jamais reçu</strong>' +
-        '<p>La connexion est tombée juste après l\'envoi. Impossible de savoir si la console a exécuté cette commande avant la coupure.</p></div>';
-      out += '<div class="actions">' +
-        '<button class="btn btn-warn" data-action="pending:replay">Rejouer maintenant</button>' +
-        '<button class="btn btn-ghost" data-action="pending:leave">Laisser telle quelle — c\'est fait</button>' +
-        '</div>';
-      return out;
-    }
-
-    if (state.result) {
-      var r = state.result;
-      out += '<div class="label">Macro générée' + (r.tokens.length ? " — appuyez pour corriger un élément" : "") + '</div>';
-      out += '<div class="macro"><code>' + macroTokensHtml(r) + "</code></div>";
-
-      if (state.chipMenuOpen && r.tokens.length) {
-        var t = r.tokens[0];
-        out += '<div class="menu">';
-        t.alternatives.forEach(function (alt) {
-          var sel = alt === t.selected;
-          out += '<div class="opt' + (sel ? " sel" : "") + '" data-action="chip:pick" data-choice="' + esc(alt) + '">' +
-            esc(alt) + (sel ? '<span class="tick">✓ reconnu</span>' : "") + "</div>";
-        });
-        out += "</div>";
-      }
-
-      if (r.note) out += '<div class="card card-neutral"><p>' + esc(r.note) + "</p></div>";
-      if (r.warnText) out += '<div class="card card-warn"><strong>Syntaxe jamais vérifiée sur console</strong><p>' + esc(r.warnText) + "</p></div>";
-
-      out += '<div class="actions">';
-      out += r.warn
-        ? '<button class="btn btn-warn" data-action="confirm:open">Vérifier puis envoyer</button>'
-        : '<button class="btn btn-primary" data-action="confirm:send">Envoyer</button>';
-      out += '<button class="btn btn-ghost" data-action="reformulate">Modifier la demande</button>';
-      out += "</div>";
-      return out;
-    }
-
-    if (state.lastOutcome) {
-      var o = state.lastOutcome;
-      if (o.status === "ok") {
-        out += '<div class="label">Envoyée</div><div class="macro"><code>' + esc(o.cmd) + "</code></div>";
-        out += '<div class="card card-ok"><strong>Acceptée par la console' + (o.doute ? " · a levé un doute" : "") + '</strong>' +
-          "<p>" + (o.doute ? "Cette syntaxe partait avec un ⚠ — l'acceptation en fait la preuve pour cette commande." : "La commande a été exécutée.") + "</p></div>";
-        out += '<div class="actions">';
-        if (!state.saveForm) {
-          out += '<button class="btn btn-primary" data-action="save-favori:open">Sauvegarder en favori</button>';
-        } else {
-          out += '<div class="menu">' +
-            '<div class="label" style="padding:4px 4px 0;">Nom du favori</div>' +
-            '<div style="padding:6px 4px;"><input type="text" id="fav-name" placeholder="ex. ' + esc(o.cmd.split(" ")[0]) + '" /></div>' +
-            '<div class="label" style="padding:6px 4px 0;">Onglet</div>' +
-            state.tabs.map(function (tb) {
-              return '<div class="opt" data-action="save-favori:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
-            }).join("") +
-            "</div>" +
-            '<button class="btn btn-ghost" data-action="save-favori:cancel">Annuler</button>';
-        }
-        out += '<button class="btn btn-ghost" data-action="newrequest">Nouvelle demande</button>';
-        out += "</div>";
-      } else {
-        out += '<div class="label">Envoyée</div><div class="macro"><code>' + esc(o.cmd) + "</code></div>";
-        out += '<div class="card card-danger"><strong>Refusée par la console</strong>' +
-          '<p>Mot-clé inconnu : <code style="font-family:var(--mono)">Colour</code>. L\'orthographe attendue est américaine.</p>' +
-          '<div class="fix"><span class="was">Colour</span> → <span class="now">Color</span></div></div>';
-        out += '<div class="actions">' +
-          '<button class="btn btn-primary" data-action="retry:fix">Corriger et renvoyer</button>' +
-          '<button class="btn btn-ghost" data-action="reformulate">Reformuler ma demande</button>' +
-          "</div>";
-      }
-      return out;
-    }
-
-    if (state.unrecognized) {
-      out += '<div class="card card-neutral"><strong style="color:var(--app-ink)">Je n\'ai pas compris cette formulation</strong>' +
-        "<p>Le vocabulaire de ce prototype est volontairement limité. Essayez la bibliothèque, ou reformulez avec « groupe », « circuit(s) », « lee/couleur ».</p></div>";
-      out += '<div class="actions"><button class="btn btn-ghost" data-action="nav" data-screen="bibliotheque">Ouvrir la bibliothèque</button></div>';
-    }
-
     return out;
   }
 
-  // ---------- écran 2 : favoris ----------
-  function screenFavoris() {
-    var out = "";
-    out += '<div class="tabs-row"><div class="tabs">';
+  function renderEvent(e) {
+    return '<div class="event">▦ <span class="nm">' + esc(e.name) + "</span> · envoyé" +
+      '<span style="font-family:var(--mono); font-size:10.5px; margin-left:4px;">' + esc(e.time) + "</span></div>";
+  }
+
+  function macroHtml(e) {
+    if (!e.tokens || !e.tokens.length) return esc(e.cmd);
+    var t = e.tokens[0], i = e.cmd.indexOf(t.match);
+    if (i < 0) return esc(e.cmd);
+    var cls = "chip" + (state.chipOpenId === e.id ? " active" : "");
+    return esc(e.cmd.slice(0, i)) + '<span class="' + cls + '" data-action="chip:toggle" data-id="' + e.id + '">' +
+      esc(t.match) + "</span>" + esc(e.cmd.slice(i + t.match.length));
+  }
+
+  function renderExchange(e) {
+    var out = '<div class="exch">';
+
+    out += '<div class="ask' + (e.fromLib ? " from-lib" : "") + '">' + esc(e.ask) +
+      (e.fromLib ? '<span class="src-tag">📚 ' + esc(e.fromLib) + "</span>" : "") + "</div>";
+
+    out += '<div class="reply">';
+
+    if (e.status === "unknown") {
+      out += '<div class="flag flag-bad"><span>?</span><span><b>Je n\'ai pas compris cette formulation.</b> ' +
+        '<span class="txt">Le vocabulaire de ce prototype est volontairement limité : essayez « groupe », ' +
+        "« circuit(s) », « lee / couleur », ou reprenez une formulation de la bibliothèque.</span></span></div>";
+      out += '<div class="row-actions"><button class="mini go" data-action="nav" data-screen="biblio">📚 Bibliothèque</button>' +
+        '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reformuler</button></div>';
+      out += "</div></div>";
+      return out;
+    }
+
+    out += '<div class="macro">' + macroHtml(e) + "</div>";
+
+    if (state.chipOpenId === e.id && e.tokens && e.tokens.length) {
+      var tk = e.tokens[0];
+      out += '<div class="menu">' + tk.alternatives.map(function (a) {
+        var sel = a === tk.selected;
+        return '<button class="opt' + (sel ? " sel" : "") + '" data-action="chip:pick" data-id="' + e.id + '" data-choice="' + esc(a) + '">' +
+          esc(a) + (sel ? "<span>✓ reconnu</span>" : "") + "</button>";
+      }).join("") + "</div>";
+    }
+
+    if (e.status === "draft") {
+      if (e.warnText) out += '<div class="flag flag-warn"><span>⚠</span><span><b>Syntaxe jamais vérifiée sur console.</b> <span class="txt">' + esc(e.warnText) + "</span></span></div>";
+      out += '<div class="row-actions">' +
+        '<button class="mini ' + (e.warn ? "warn" : "go") + '" data-action="send" data-id="' + e.id + '">' +
+          (e.warn ? "Vérifier puis envoyer" : "Envoyer") + "</button>" +
+        '<button class="mini" data-action="discard" data-id="' + e.id + '">Reprendre</button></div>';
+    }
+
+    if (e.status === "refused") {
+      out += '<div class="flag flag-bad"><span>✕</span><span><b>Refusée par la console.</b> ' +
+        '<span class="txt">Mot-clé inconnu : <code style="font-family:var(--mono)">Colour</code>. L\'orthographe attendue est américaine.</span></span></div>';
+      out += '<div class="fixline"><span class="was">Colour</span> → <span class="now">Color</span></div>';
+      out += '<div class="row-actions"><button class="mini go" data-action="fix" data-id="' + e.id + '">Corriger et renvoyer</button>' +
+        '<button class="mini" data-action="reuse" data-id="' + e.id + '">Reformuler</button></div>';
+    }
+
+    if (e.status === "pending") {
+      out += '<div class="flag flag-warn"><span>⏱</span><span><b>Aucun accusé de réception.</b> ' +
+        '<span class="txt">La connexion est tombée juste après l\'envoi : impossible de savoir si la console a exécuté cette commande.</span></span></div>';
+      out += '<div class="row-actions"><button class="mini warn" data-action="replay" data-id="' + e.id + '">Rejouer maintenant</button>' +
+        '<button class="mini" data-action="leave" data-id="' + e.id + '">Laisser — c\'est fait</button></div>';
+    }
+
+    if (e.status === "ok" || e.status === "doute" || e.status === "fixed") {
+      var vc = e.status === "doute" ? "doute" : "ok";
+      var vt = e.status === "doute" ? "Acceptée · a levé un doute"
+             : e.status === "fixed" ? "Acceptée après correction" : "Acceptée par la console";
+      out += '<div class="verdict ' + vc + '">✓ ' + vt + '<span class="t">' + esc(e.time || "") + "</span></div>";
+
+      var fav = state.favoris.filter(function (f) { return f.threadId === e.id; })[0];
+      if (fav) {
+        out += '<div class="kept">▦ Gardée en favori · ' + esc(fav.name) + " · " + esc(fav.tab) + "</div>";
+      } else if (state.keepFormId === e.id) {
+        out += '<div class="menu"><div style="padding:6px 4px;"><input type="text" id="keep-name" placeholder="Nom du favori" /></div>' +
+          '<div class="label" style="padding:4px 6px;">Dans quel onglet ?</div>' +
+          state.tabs.map(function (tb) {
+            return '<button class="opt" data-action="keep:tab" data-id="' + e.id + '" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+          }).join("") + "</div>";
+      } else {
+        out += '<div class="row-actions">' +
+          '<button class="mini" data-action="keep:open" data-id="' + e.id + '">▦ Garder en favori</button>' +
+          '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reprendre</button></div>';
+      }
+    }
+
+    out += "</div></div>";
+    return out;
+  }
+
+  // ===================== LA CONDUITE : la grille =====================
+  function screenConduite() {
+    var out = '<div class="tabs-row"><div class="tabs">';
     state.tabs.forEach(function (tb) {
       out += '<button class="tab' + (tb === state.activeTab ? " on" : "") + '" data-action="tab:switch" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
     });
-    // En mode jeu : plus d'ajout d'onglet, plus d'entrée en édition. Les onglets
-    // restent commutables — changer d'onglet fait partie du jeu.
     if (!state.playMode) out += '<button class="tab" data-action="tab:add">+</button>';
     out += "</div>";
-    if (!state.playMode) {
-      out += '<button class="tab-edit" data-action="edit:toggle">' + (state.editMode ? "Terminé" : "Modifier") + "</button>";
-    }
+    if (!state.playMode) out += '<button class="tab-edit" data-action="edit:toggle">' + (state.editMode ? "Terminé" : "Modifier") + "</button>";
     out += "</div>";
 
-    out += '<div style="padding:14px 14px 0; display:flex; flex-direction:column; gap:12px;">';
-
+    out += '<div class="pad">';
     var list = state.favoris.filter(function (f) { return f.tab === state.activeTab; });
-    if (!list.length) {
-      out += '<div class="empty-tab">Aucun favori dans cet onglet.</div>';
-    } else {
+    if (!list.length) out += '<div class="empty-tab">Aucun favori dans cet onglet.</div>';
+    else {
       out += '<div class="tiles">';
       list.forEach(function (f) {
-        var isConfirming = state.tileConfirmId === f.id;
         if (state.editMode) {
-          var active = state.editingTileId === f.id;
-          out += '<div class="tile editable' + (active ? " active" : "") + '" data-action="tile:menu:open" data-id="' + f.id + '">' +
+          out += '<div class="tile editable' + (state.editingTileId === f.id ? " active" : "") + '" data-action="tile:menu" data-id="' + f.id + '">' +
             '<span class="name">' + esc(f.name) + '</span><span class="cmd">' + esc(f.cmd) + '</span>' +
             '<span class="tile-edit-btn">•••</span></div>';
         } else {
@@ -947,668 +803,449 @@
       out += "</div>";
     }
 
-    if (!state.editMode && !state.playMode) {
-      out += '<button class="btn btn-ghost" data-action="favoris:add-from-history">+ Depuis l\'historique</button>';
-    }
-
     if (state.editMode && state.editingTileId != null) {
       var tile = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
       if (tile) {
         out += '<div class="label">« ' + esc(tile.name) + ' »</div>';
         if (state.deletingTileId === tile.id) {
           out += '<div class="menu"><div style="padding:8px 10px; font-size:13px; color:var(--app-muted);">Supprimer ce favori ?</div>' +
-            '<div class="btn-row" style="padding:4px 8px 8px;">' +
-            '<button class="btn btn-danger btn-sm" data-action="tile:delete:confirm">Confirmer</button>' +
-            '<button class="btn btn-ghost btn-sm" data-action="tile:delete:cancel">Annuler</button></div></div>';
+            '<div class="btn-row" style="padding:4px 8px 8px;"><button class="btn btn-danger btn-sm" data-action="tile:del:ok">Confirmer</button>' +
+            '<button class="btn btn-ghost btn-sm" data-action="tile:del:no">Annuler</button></div></div>';
         } else if (state.renamingTileId === tile.id) {
           out += '<div class="menu"><div style="padding:6px 4px;"><input type="text" id="tile-rename" value="' + esc(tile.name) + '" /></div>' +
-            '<div class="btn-row" style="padding:2px 4px 6px;">' +
-            '<button class="btn btn-primary btn-sm" data-action="tile:rename:save">Enregistrer</button>' +
-            '<button class="btn btn-ghost btn-sm" data-action="tile:menu:open" data-id="' + tile.id + '">Annuler</button></div></div>';
+            '<div class="btn-row" style="padding:2px 4px 6px;"><button class="btn btn-primary btn-sm" data-action="tile:rename:save">Enregistrer</button>' +
+            '<button class="btn btn-ghost btn-sm" data-action="tile:menu" data-id="' + tile.id + '">Annuler</button></div></div>';
         } else {
           out += '<div class="menu">' +
-            '<div class="opt" data-action="tile:rename:ask">Modifier le libellé</div>' +
-            '<div class="opt" data-action="load:edit" data-kind="favori" data-id="' + tile.id + '">Éditer dans Saisie</div>' +
-            '<div class="opt" data-action="tile:duplicate">Dupliquer</div>' +
-            '<div class="opt" style="cursor:default; color:var(--app-muted); font-size:11.5px; padding-bottom:0;">Déplacer vers l\'onglet</div>' +
+            '<button class="opt" data-action="tile:rename">Modifier le libellé</button>' +
+            '<button class="opt" data-action="tile:dup">Dupliquer</button>' +
+            '<div class="opt" style="cursor:default; color:var(--app-muted); font-size:11.5px;">Déplacer vers l\'onglet</div>' +
             state.tabs.filter(function (tb) { return tb !== tile.tab; }).map(function (tb) {
-              return '<div class="opt" data-action="tile:move" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
+              return '<button class="opt" data-action="tile:move" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
             }).join("") +
-            '<div class="opt danger" data-action="tile:delete:ask">Supprimer</div>' +
-            "</div>";
+            '<button class="opt danger" data-action="tile:del">Supprimer</button></div>';
         }
       }
     }
 
     if (state.playMode) {
-      // Rappel en lecture seule : on ne découvre jamais en plein spectacle que le
-      // mode d'envoi n'était pas celui qu'on croyait (APP.md) — sans pour autant
-      // offrir un réglage qu'un doigt pourrait changer sans le vouloir.
       out += '<div class="play-strip"><span class="dot dot-ok"></span>' +
-        (state.favMode === "immediate" ? "Envoi immédiat — un appui suffit" : "Envoi après confirmation — deux appuis") +
-        "</div>";
+        (state.favMode === "immediate" ? "Envoi immédiat — un appui suffit" : "Envoi après confirmation — deux appuis") + "</div>";
     } else if (!state.editMode) {
+      out += '<button class="btn btn-ghost" data-action="nav" data-screen="puiser">+ Reprendre un envoi accepté</button>';
       out += '<div class="label">Mode d\'envoi</div>';
       out += '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
-        '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="settings:favmode" data-mode="immediate">Immédiat</button>' +
-        '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
-        "</span></div>";
+        '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="favmode" data-mode="immediate">Immédiat</button>' +
+        '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="favmode" data-mode="confirm">Confirmer</button></span></div>';
       out += '<button class="btn btn-play" data-action="play:enter">▶ Mode jeu</button>' +
-        '<p class="play-note">Agrandit les tuiles et retire tout le reste : pensé pour un téléphone ' +
-        "posé sur la régie, lu de loin et dans le noir. L'édition devient impossible. " +
-        "À activer avant que la salle s'éteigne.</p>";
+        '<p class="play-note">Agrandit les tuiles et retire tout le reste : pensé pour un téléphone posé ' +
+        "sur la régie, lu de loin et dans le noir. L'édition devient impossible.</p>";
     }
-
     out += "</div>";
     return out;
   }
 
-  // ---------- écran 3 : réglages ----------
+  // ===================== satellites =====================
+  function screenPuiser() {
+    var kept = {};
+    state.favoris.forEach(function (f) { if (f.threadId != null) kept[f.threadId] = true; });
+    var ok = state.thread.filter(function (e) {
+      return e.kind === "exchange" && (e.status === "ok" || e.status === "doute" || e.status === "fixed");
+    });
+    if (!ok.length) {
+      return '<div class="empty-tab">Aucun envoi accepté pour l\'instant.<br>' +
+        '<span style="font-size:11.5px;">Envoyez d\'abord une macro depuis l\'Atelier.</span></div>';
+    }
+    if (state.puiserChoice != null) {
+      var ch = state.thread.filter(function (e) { return e.id === state.puiserChoice; })[0];
+      if (ch) {
+        return '<div class="ask" style="align-self:stretch; max-width:none;">' + esc(ch.ask) + "</div>" +
+          '<div class="reply" style="max-width:none;"><div class="macro">' + esc(ch.cmd) + "</div></div>" +
+          '<div class="label">Nom du favori</div>' +
+          '<div class="menu" style="padding:8px;"><input type="text" id="puiser-name" placeholder="' +
+            esc(ch.cmd.split(" ").slice(0,2).join(" ")) + '" /></div>' +
+          '<div class="label">Dans quel onglet ?</div>' +
+          '<div class="menu">' + state.tabs.map(function (tb) {
+            return '<button class="opt" data-action="puiser:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+          }).join("") + "</div>" +
+          '<button class="btn btn-ghost btn-sm" data-action="puiser:back">Choisir un autre envoi</button>';
+      }
+    }
+    return ok.map(function (e) {
+      return '<button class="lib-item" data-action="puiser:pick" data-id="' + e.id + '">' +
+        '<span class="req">' + esc(e.ask) + "</span>" +
+        '<span class="cmd">' + esc(e.cmd) + "</span>" +
+        '<span class="src">' + (kept[e.id] ? "▦ déjà gardée en favori" : "✓ acceptée · " + esc(e.time || "")) + "</span>" +
+        "</button>";
+    }).join("");
+  }
+
+  function screenBiblio() {
+    return LIBRARY.map(function (it, i) {
+      return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
+        '<span class="req">' + esc(it.req) + '</span><span class="cmd">' + esc(it.cmd) + "</span>" +
+        '<span class="src"><span class="lib-conf ' + (it.confidence === "A" ? "a" : "c") + '">' + it.confidence + "</span>" +
+        esc(it.source) + "</span></button>";
+    }).join("");
+  }
+
   function screenReglages() {
-    var out = "";
-    out += '<div class="group"><div class="label">Console</div>' +
+    var out = '<div class="group"><div class="label">Console</div>' +
       '<div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>' +
       '<div class="row"><span class="k">Port</span><span class="v">3032</span></div>' +
       '<div class="row"><span class="k">Utilisateur dédié</span><span class="v accent">User 12</span></div></div>';
-
-    out += '<div class="group"><div class="label">Favoris</div>' +
+    out += '<div class="group"><div class="label">Conduite</div>' +
       '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
-      '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="settings:favmode" data-mode="immediate">Immédiat</button>' +
-      '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="settings:favmode" data-mode="confirm">Confirmer</button>' +
-      "</span></div>" +
-      '<div class="row click" data-action="nav" data-screen="tabs"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + ' onglets</span></div></div>';
-
+      '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="favmode" data-mode="immediate">Immédiat</button>' +
+      '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="favmode" data-mode="confirm">Confirmer</button></span></div>' +
+      '<div class="row click" data-action="nav" data-screen="tabs"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + " onglets</span></div></div>";
     out += '<div class="group"><div class="label">Sauvegarde</div>' +
-      '<div class="row click" data-action="settings:export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
+      '<div class="row click" data-action="export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
       '<div class="row click" data-action="nav" data-screen="importer"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div></div>';
-
     out += '<div class="group"><div class="label">Saisie</div>' +
       '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
-
     out += '<div class="group"><div class="label">Prototype</div>';
     if (state.resetAsk) {
-      out += '<div class="card card-danger"><strong>Tout remettre à zéro ?</strong>' +
-        "<p>Vos favoris, onglets et historique de test seront effacés et remplacés par l'exemple de départ.</p></div>" +
-        '<div class="btn-row"><button class="btn btn-danger btn-sm" data-action="proto:reset:confirm">Effacer</button>' +
-        '<button class="btn btn-ghost btn-sm" data-action="proto:reset:cancel">Annuler</button></div>';
+      out += '<div class="card card-danger"><strong>Tout remettre à zéro ?</strong><p>Le fil, les favoris et les onglets de test seront effacés.</p></div>' +
+        '<div class="btn-row"><button class="btn btn-danger btn-sm" data-action="reset:ok">Effacer</button>' +
+        '<button class="btn btn-ghost btn-sm" data-action="reset:no">Annuler</button></div>';
     } else {
-      out += '<div class="row click" data-action="proto:reset:ask"><span class="k">Repartir de zéro</span>' +
-        '<span class="v">Réinitialiser</span></div>';
+      out += '<div class="row click" data-action="reset:ask"><span class="k">Repartir de zéro</span><span class="v">Réinitialiser</span></div>';
     }
-    out += '<p class="play-note">Vos favoris et votre historique sont conservés sur cet appareil : ' +
-      "vous pouvez fermer et rouvrir sans rien perdre.</p></div>";
-
+    out += '<p class="play-note">Le fil et les favoris sont conservés sur cet appareil.</p></div>';
     return out;
   }
 
   function screenTabs() {
     var out = '<div class="menu">';
     state.tabs.forEach(function (tb) {
-      var count = state.favoris.filter(function (f) { return f.tab === tb; }).length;
-      out += '<div class="opt" style="cursor:default;"><span>' + esc(tb) + ' <span style="color:var(--app-muted); font-size:11.5px;">(' + count + ")</span></span>" +
-        (state.tabs.length > 1 ? '<button class="btn btn-ghost btn-sm" style="width:auto; padding:4px 9px;" data-action="settings:tabs:delete" data-tab="' + esc(tb) + '">Supprimer</button>' : "") +
-        "</div>";
+      var n = state.favoris.filter(function (f) { return f.tab === tb; }).length;
+      out += '<div class="opt" style="cursor:default;"><span>' + esc(tb) + ' <span style="color:var(--app-muted); font-size:11.5px;">(' + n + ")</span></span>" +
+        (state.tabs.length > 1 ? '<button class="btn btn-ghost btn-sm" style="width:auto; padding:4px 9px;" data-action="tabs:del" data-tab="' + esc(tb) + '">Supprimer</button>' : "") + "</div>";
     });
     out += "</div>";
-    out += '<div style="display:flex; gap:8px;"><input type="text" id="new-tab-name" placeholder="Nouvel onglet" style="flex:1; background:var(--app-surface); border:1px solid var(--app-line); border-radius:9px; color:var(--app-ink); padding:9px 11px; font-family:inherit;" />' +
-      '<button class="btn btn-primary btn-sm" style="width:auto; flex:none; padding:9px 14px;" data-action="settings:tabs:add">Ajouter</button></div>';
-    out += '<p style="font-size:11.5px; color:var(--app-muted);">Supprimer un onglet déplace ses favoris vers le premier onglet restant.</p>';
-    return out;
-  }
-
-  // ---------- écran historique ----------
-  function screenHistorique() {
-    var out = "";
-    state.history.forEach(function (h) {
-      var assigned = state.favoris.filter(function (f) { return f.historyId === h.id; });
-      out += '<div class="hist-item ' + h.tag + '"><div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
-        '<div class="cmd">' + esc(h.cmd) + '</div><div class="note">' + esc(h.note) + "</div>";
-      if (assigned.length) {
-        out += '<div class="hist-assigned">' + assigned.map(function (f) {
-          return '<span class="assign-chip">▦ ' + esc(f.name) + " · " + esc(f.tab) + "</span>";
-        }).join("") + "</div>";
-      }
-      out += '<div style="display:flex; flex-wrap:wrap; gap:8px;">';
-      out += '<button class="btn btn-ghost btn-sm" data-action="load:edit" data-kind="history" data-id="' + h.id + '" style="width:auto; padding:6px 11px;">✎ Éditer dans Saisie</button>';
-      if (h.accepted && !assigned.length) {
-        out += '<button class="btn btn-ghost btn-sm" data-action="historique:add-favori" data-id="' + h.id + '" style="width:auto; padding:6px 11px;">+ Ajouter en favori</button>';
-      }
-      out += "</div>";
-      out += "</div>";
-    });
-    if (!state.history.length) out += '<div class="empty-tab">Aucun envoi journalisé pour l\'instant.</div>';
+    out += '<div style="display:flex; gap:8px;"><input type="text" id="new-tab" placeholder="Nouvel onglet" style="flex:1; background:var(--app-surface); border:1px solid var(--app-line); border-radius:9px; color:var(--app-ink); padding:9px 11px; font-family:inherit;" />' +
+      '<button class="btn btn-primary btn-sm" style="width:auto; flex:none; padding:9px 14px;" data-action="tabs:add">Ajouter</button></div>';
+    out += '<p class="play-note">Supprimer un onglet déplace ses favoris vers le premier onglet restant.</p>';
     return out;
   }
 
   function screenImport() {
     var out = '<div class="label">Fichier : cyrano-favoris.eosfav</div>';
     out += '<div class="card card-warn"><strong>2 favoris référencent un autre spectacle</strong>' +
-      "<p>Ils restent syntaxiquement valides mais peuvent pointer vers d'autres circuits ou palettes ici.</p></div>";
-    out += '<div class="import-list" style="display:flex; flex-direction:column; gap:8px;">' +
+      "<p>Ils restent syntaxiquement valides mais peuvent pointer vers d'autres circuits ici.</p></div>";
+    out += '<div style="display:flex; flex-direction:column; gap:8px;">' +
       '<div class="import-item"><div class="meta"><span class="name">Rappel entracte</span><span class="cmd">Sub 9 At 0 Enter</span></div></div>' +
       '<div class="import-item"><div class="meta"><span class="name">195 · Par LED</span><span class="cmd">Color Palette 5 Enter</span></div><span class="badge-other">Autre spectacle</span></div>' +
-      '<div class="import-item"><div class="meta"><span class="name">Face seule</span><span class="cmd">Group 3 At 85 Enter</span></div><span class="badge-other">Autre spectacle</span></div>' +
-      "</div>";
-    out += '<div class="actions"><button class="btn btn-primary" data-action="settings:import:confirm">Importer les 3 favoris</button>' +
+      '<div class="import-item"><div class="meta"><span class="name">Face seule</span><span class="cmd">Group 3 At 85 Enter</span></div><span class="badge-other">Autre spectacle</span></div></div>';
+    out += '<div style="display:flex; flex-direction:column; gap:9px;"><button class="btn btn-primary" data-action="import:ok">Importer les 3 favoris</button>' +
       '<button class="btn btn-ghost" data-action="nav" data-screen="reglages">Annuler</button></div>';
     return out;
   }
 
-  // ---------- écran bibliothèque ----------
-  function screenBibliotheque() {
-    return LIBRARY.map(function (it, i) {
-      var cls = it.confidence === "A" ? "a" : "c";
-      return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
-        '<span class="req">' + esc(it.req) + '</span>' +
-        '<span class="cmd">' + esc(it.cmd) + '</span>' +
-        '<span class="src"><span class="lib-conf ' + cls + '">' + it.confidence + "</span>" + esc(it.source) + "</span>" +
-        "</button>";
-    }).join("");
-  }
-
-  // ---------- écrans « reprendre un envoi de l'historique en favori » ----------
-  function screenHistPick() {
-    var eligible = state.history.filter(function (h) { return h.accepted; });
-    if (!eligible.length) return '<div class="empty-tab">Aucun envoi accepté à reprendre pour l\'instant.</div>';
-    return eligible.map(function (h) {
-      return '<button class="hist-item hist-pick ' + h.tag + '" data-action="histpick:choose" data-id="' + h.id + '">' +
-        '<div class="top"><span class="hist-tag ' + h.tag + '">' + TAG_LABEL[h.tag] + '</span><span class="time">' + esc(h.time) + '</span></div>' +
-        '<div class="cmd">' + esc(h.cmd) + "</div>" +
-        "</button>";
-    }).join("");
-  }
-
-  function screenHistPickForm() {
-    var chosen = state.history.filter(function (h) { return h.id === state.histPickChoice; })[0];
-    if (!chosen) return '<div class="empty-tab">Envoi introuvable.</div>';
-    return '<div class="macro"><code>' + esc(chosen.cmd) + "</code></div>" +
-      '<div class="label">Nom du favori</div>' +
-      '<div class="menu" style="padding:8px;"><input type="text" id="histpick-name" placeholder="ex. ' + esc(chosen.cmd.split(" ").slice(0, 2).join(" ")) + '" /></div>' +
-      '<div class="label">Onglet</div>' +
-      '<div class="menu">' + state.tabs.map(function (tb) {
-        return '<div class="opt" data-action="histpick:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</div>";
-      }).join("") + "</div>";
-  }
-
-  // ---------- seul overlay restant : la confirmation plein écran ----------
-  // Elle masque volontairement la barre du bas — c'est ce qui rend impossible
-  // l'envoi distrait d'une macro portant un ⚠ (APP.md).
   function overlayHtml() {
-    if (state.overlay === "confirm" && state.result) {
-      var r = state.result;
-      return '<div class="overlay"><div class="confirm-full">' +
-        '<div class="warn-icon">⚠</div><h3>Syntaxe jamais vérifiée sur console</h3>' +
-        "<p>" + esc(r.warnText || "") + "</p>" +
-        '<div class="macro"><code>' + esc(r.cmd) + "</code></div>" +
-        '<div class="actions"><button class="btn btn-warn" data-action="confirm:send">J\'ai vérifié — envoyer</button>' +
-        '<button class="btn btn-ghost" data-action="confirm:cancel">Annuler</button></div>' +
-        "</div></div>";
+    if (state.overlay && state.overlay.kind === "confirm") {
+      var e = state.thread.filter(function (x) { return x.id === state.overlay.id; })[0];
+      if (!e) return "";
+      return '<div class="overlay"><div class="confirm-full"><div class="warn-icon">⚠</div>' +
+        "<h3>Syntaxe jamais vérifiée sur console</h3><p>" + esc(e.warnText || "") + "</p>" +
+        '<div class="mono-box">' + esc(e.cmd) + "</div>" +
+        '<div class="actions"><button class="btn btn-warn" data-action="confirm:yes" data-id="' + e.id + '">J\'ai vérifié — envoyer</button>' +
+        '<button class="btn btn-ghost" data-action="confirm:no">Annuler</button></div></div></div>';
     }
     return "";
   }
 
   // ---------- actions ----------
-  function resetSaisie() {
-    state.result = null; state.lastOutcome = null; state.chipMenuOpen = false;
-    state.saveForm = false; state.unrecognized = false; state.pendingCommand = null;
+  function findEx(id) { return state.thread.filter(function (e) { return e.id == id; })[0]; }
+
+  function commit(e) {
+    var refused = /colour/i.test(e.cmd);
+    e.time = nowTime();
+    if (state.dropArmed) {
+      e.status = "pending"; state.connected = false; state.dropArmed = false;
+    } else if (refused) {
+      e.status = "refused";
+    } else {
+      e.status = e.warn ? "doute" : "ok";
+    }
+    renderAll();
   }
 
-  function handleAction(action, target) {
-    var data = target.dataset;
+  function handle(action, target) {
+    var d = target.dataset, e;
     switch (action) {
-      // Point d'entrée unique de la navigation : tout écran, quel que soit son
-      // rôle, s'atteint et se quitte par cette action.
       case "nav":
-        state.screen = data.screen;
-        if (data.screen !== "favoris") { state.editMode = false; state.editingTileId = null; }
-        if (data.screen !== "histpick" && data.screen !== "histpickform") state.histPickChoice = null;
-        renderAll();
-        break;
+        state.screen = d.screen;
+        if (d.screen !== "conduite") { state.editMode = false; state.editingTileId = null; }
+        renderAll(); break;
 
-      // Ouverture d'un utilitaire d'en-tête : on mémorise d'où l'on vient pour
-      // que le retour ramène là, et pas vers un parent choisi arbitrairement.
       case "util": {
         var here = SCREENS[state.screen] || {};
-        state.returnTo = here.role === "destination" ? state.screen : (here.parent || state.returnTo);
-        state.screen = data.screen;
-        state.editMode = false;
-        state.editingTileId = null;
-        renderAll();
-        break;
+        state.returnTo = here.role === "surface" ? state.screen : (here.parent || state.returnTo);
+        state.screen = d.screen; state.editMode = false; state.editingTileId = null;
+        renderAll(); break;
       }
+
+      case "toggle-connection": state.connected = !state.connected; renderAll(); break;
+      case "drop:toggle": state.dropArmed = !state.dropArmed; renderAll(); break;
 
       case "play:enter":
-        state.playMode = true;
-        state.screen = "favoris";
-        state.editMode = false;
-        state.editingTileId = null;
-        document.body.classList.add("play");
-        renderAll();
-        break;
-
+        state.playMode = true; state.screen = "conduite"; state.editMode = false;
+        state.editingTileId = null; document.body.classList.add("play"); renderAll(); break;
       case "play:exit":
-        state.playMode = false;
-        document.body.classList.remove("play");
-        renderAll();
-        break;
+        state.playMode = false; document.body.classList.remove("play"); renderAll(); break;
 
-      case "toggle-connection":
-        state.connected = !state.connected;
-        renderAll();
-        break;
-
-      case "drop:toggle":
-        state.dropArmed = !state.dropArmed;
-        renderAll();
-        break;
-
-      case "translate": {
-        var raw = document.getElementById("nl-input").value;
-        resetSaisie();
-        state.lastInputText = raw;
+      // ---- le fil ----
+      case "ask": {
+        var ta = document.getElementById("composer-input");
+        var raw = ta ? ta.value : "";
+        if (!raw.trim()) break;
         var r = translate(raw);
-        if (!r) { state.unrecognized = true; renderAll(); break; }
-        state.result = r;
-        renderAll();
-        break;
+        state.draft = "";
+        if (!r) {
+          // Rien n'a été compris : il n'y a pas de macro, donc pas d'envoi à
+          // proposer. On le dit, et on n'offre que les issues qui ont un sens.
+          state.thread.push({ id: uid++, kind:"exchange", ask: raw, cmd: null,
+            status:"unknown", tokens: [], time: nowTime() });
+          renderAll(); break;
+        }
+        state.thread.push({ id: uid++, kind:"exchange", ask: raw, cmd: r.cmd, warn: !!r.warn,
+          warnText: r.warnText, tokens: r.tokens || [], fromLib: r.fromLib, status:"draft" });
+        renderAll(); break;
       }
 
-      case "chip:open":
-        state.chipMenuOpen = !state.chipMenuOpen;
-        renderAll();
-        break;
+      case "chip:toggle":
+        state.chipOpenId = state.chipOpenId == d.id ? null : Number(d.id);
+        renderAll(); break;
 
       case "chip:pick": {
-        var choice = data.choice;
-        var t = state.result.tokens[0];
-        t.selected = choice;
-        state.chipMenuOpen = false;
-        if (choice === "Circuit") {
-          state.result.cmd = state.result.cmd.replace(/^Group (\d+)/, "Chan $1");
-          state.result.warn = false;
-          state.result.warnText = null;
-          state.result.note = "Corrigé : Group → Chan (édition ciblée par champ).";
-          state.result.tokens = [];
+        e = findEx(d.id); if (!e) break;
+        e.tokens[0].selected = d.choice;
+        state.chipOpenId = null;
+        if (d.choice === "Circuit") {
+          e.cmd = e.cmd.replace(/^Group (\d+)/, "Chan $1");
+          e.warn = false; e.warnText = null; e.tokens = [];
         }
+        renderAll(); break;
+      }
+
+      case "send":
+        e = findEx(d.id); if (!e) break;
+        if (e.warn) { state.overlay = { kind:"confirm", id: e.id }; renderAll(); }
+        else commit(e);
+        break;
+
+      case "confirm:yes":
+        state.overlay = null; e = findEx(d.id); if (e) commit(e); break;
+      case "confirm:no": state.overlay = null; renderAll(); break;
+
+      case "discard":
+        state.thread = state.thread.filter(function (x) { return x.id != d.id; });
+        renderAll(); break;
+
+      case "fix": {
+        e = findEx(d.id); if (!e) break;
+        e.cmd = e.cmd.replace(/colour/i, "Color");
+        e.status = "fixed"; e.time = nowTime();
+        renderAll(); break;
+      }
+
+      case "replay": {
+        e = findEx(d.id); if (!e) break;
+        state.connected = true; e.status = "ok"; e.time = nowTime();
+        showToast("Rejouée."); break;
+      }
+      case "leave": {
+        e = findEx(d.id); if (!e) break;
+        state.connected = true; e.status = "ok"; e.time = e.time;
+        showToast("Laissée telle quelle — rien renvoyé."); break;
+      }
+
+      case "reuse": {
+        e = findEx(d.id); if (!e) break;
+        state.draft = e.ask; state.screen = "atelier";
         renderAll();
+        var ta2 = document.getElementById("composer-input");
+        if (ta2) { ta2.focus(); ta2.setSelectionRange(ta2.value.length, ta2.value.length); }
         break;
       }
 
-      case "confirm:open":
-        state.overlay = "confirm";
-        renderAll();
+      case "keep:open":
+        state.keepFormId = Number(d.id); renderAll();
+        setTimeout(function () { var n = document.getElementById("keep-name"); if (n) n.focus(); }, 0);
         break;
 
-      case "confirm:cancel":
-        state.overlay = null;
-        renderAll();
-        break;
-
-      case "confirm:send": {
-        state.overlay = null;
-        var r2 = state.result;
-        if (state.dropArmed) {
-          state.pendingCommand = { cmd: r2.cmd, time: nowTime() };
-          state.result = null;
-          state.connected = false;
-          state.dropArmed = false;
-          history_push({ time: nowTime(), cmd: r2.cmd, tag: "pending", accepted: false, note: "Coupure réseau simulée juste après l'envoi." });
-          renderAll();
-          break;
-        }
-        finishSend(r2);
-        break;
-      }
-
-      case "retry:fix": {
-        var fixed = state.lastOutcome.cmd.replace(/colour/i, "Color");
-        var hidFix = history_push({ time: nowTime(), cmd: fixed, tag: "bad", accepted: true, note: "Corrigée après refus (Colour → Color) — acceptée." });
-        state.lastOutcome = { status: "ok", cmd: fixed, doute: false, historyId: hidFix };
-        renderAll();
-        break;
-      }
-
-      case "reformulate":
-        resetSaisie();
-        renderAll();
-        var ta = document.getElementById("nl-input");
-        if (ta) ta.focus();
-        break;
-
-      case "newrequest":
-        resetSaisie();
-        state.lastInputText = "";
-        renderAll();
-        var ta2n = document.getElementById("nl-input");
-        if (ta2n) ta2n.focus();
-        break;
-
-      case "pending:replay": {
-        var replayed = state.pendingCommand.cmd;
-        state.pendingCommand = null;
-        state.connected = true;
-        finishSend({ cmd: replayed, warn: false });
-        break;
-      }
-
-      case "pending:leave":
-        state.pendingCommand = null;
-        state.connected = true;
-        showToast("Laissée telle quelle — rien renvoyé.");
-        break;
-
-      case "save-favori:open":
-        state.saveForm = true;
-        renderAll();
-        setTimeout(function () { var el = document.getElementById("fav-name"); if (el) el.focus(); }, 0);
-        break;
-
-      case "save-favori:cancel":
-        state.saveForm = false;
-        renderAll();
-        break;
-
-      case "save-favori:tab": {
-        var nameEl = document.getElementById("fav-name");
-        var name = (nameEl && nameEl.value.trim()) || state.lastOutcome.cmd.split(" ").slice(0, 2).join(" ");
-        state.favoris.push({ id: uid++, name: name, cmd: state.lastOutcome.cmd, tab: data.tab, historyId: state.lastOutcome.historyId });
-        state.saveForm = false;
-        showToast("Ajouté à Favoris → " + data.tab);
-        break;
-      }
-
-      case "favoris:add-from-history":
-        state.histPickFrom = "favoris";
-        state.histPickDirect = false;
-        state.histPickChoice = null;
-        state.screen = "histpick";
-        renderAll();
-        break;
-
-      case "historique:add-favori":
-        state.histPickFrom = "historique";
-        state.histPickDirect = true;
-        state.histPickChoice = Number(data.id);
-        state.screen = "histpickform";
-        renderAll();
-        break;
-
-      case "load:edit": {
-        var src2 = data.kind === "favori"
-          ? state.favoris.filter(function (f) { return f.id == data.id; })[0]
-          : state.history.filter(function (h) { return h.id == data.id; })[0];
-        if (!src2) break;
-        resetSaisie();
-        state.lastInputText = src2.cmd;
-        state.result = {
-          cmd: src2.cmd, warn: false, warnText: null, tokens: [],
-          note: data.kind === "favori" ? "Repris depuis vos favoris — modifiable avant renvoi." : "Repris depuis l'historique — modifiable avant renvoi."
-        };
-        state.screen = "saisie";
-        state.editMode = false;
-        state.editingTileId = null;
-        state.overlay = null;
-        renderAll();
-        var taEdit = document.getElementById("nl-input");
-        if (taEdit) taEdit.focus();
-        break;
-      }
-
-      case "histpick:choose":
-        state.histPickChoice = Number(data.id);
-        state.histPickDirect = false;
-        state.screen = "histpickform";
-        renderAll();
-        break;
-
-      case "histpick:tab": {
-        var chosenH = state.history.filter(function (h) { return h.id === state.histPickChoice; })[0];
-        if (!chosenH) break;
-        var hpNameEl = document.getElementById("histpick-name");
-        var hpName = (hpNameEl && hpNameEl.value.trim()) || chosenH.cmd.split(" ").slice(0, 2).join(" ");
-        state.favoris.push({ id: uid++, name: hpName, cmd: chosenH.cmd, tab: data.tab, historyId: chosenH.id });
-        state.activeTab = data.tab;
-        state.screen = "favoris";
-        state.histPickChoice = null;
-        showToast("Ajouté à Favoris → " + data.tab);
+      case "keep:tab": {
+        e = findEx(d.id); if (!e) break;
+        var nm = document.getElementById("keep-name");
+        var name = (nm && nm.value.trim()) || e.cmd.split(" ").slice(0,2).join(" ");
+        state.favoris.push({ id: uid++, name: name, cmd: e.cmd, tab: d.tab, threadId: e.id });
+        state.keepFormId = null;
+        showToast("Gardée dans Conduite → " + d.tab);
         break;
       }
 
       case "lib:pick": {
-        var it = LIBRARY[Number(data.idx)];
-        state.screen = "saisie";
-        state.lastInputText = it.req;
+        var it = LIBRARY[Number(d.idx)];
+        state.draft = it.req; state.screen = "atelier";
         renderAll();
-        var ta2 = document.getElementById("nl-input");
-        if (ta2) ta2.focus();
+        var ta3 = document.getElementById("composer-input");
+        if (ta3) ta3.focus();
         break;
       }
 
-      // ---- favoris ----
-      case "tab:switch":
-        state.activeTab = data.tab;
-        state.editingTileId = null;
-        renderAll();
+      // ---- reprendre un envoi accepté depuis la Conduite ----
+      case "puiser:pick": state.puiserChoice = Number(d.id); renderAll();
+        setTimeout(function () { var n = document.getElementById("puiser-name"); if (n) n.focus(); }, 0);
         break;
+      case "puiser:back": state.puiserChoice = null; renderAll(); break;
+      case "puiser:tab": {
+        e = state.thread.filter(function (x) { return x.id === state.puiserChoice; })[0];
+        if (!e) break;
+        var pn = document.getElementById("puiser-name");
+        var pname = (pn && pn.value.trim()) || e.cmd.split(" ").slice(0,2).join(" ");
+        state.favoris.push({ id: uid++, name: pname, cmd: e.cmd, tab: d.tab, threadId: e.id });
+        state.puiserChoice = null; state.activeTab = d.tab; state.screen = "conduite";
+        showToast("Gardée dans Conduite → " + d.tab);
+        break;
+      }
 
+      // ---- conduite ----
+      case "tab:switch": state.activeTab = d.tab; state.editingTileId = null; renderAll(); break;
       case "tab:add": {
-        var name2 = prompt("Nom du nouvel onglet ?");
-        if (name2 && name2.trim()) {
-          state.tabs.push(name2.trim());
-          state.activeTab = name2.trim();
-        }
-        renderAll();
-        break;
+        var n2 = prompt("Nom du nouvel onglet ?");
+        if (n2 && n2.trim()) { state.tabs.push(n2.trim()); state.activeTab = n2.trim(); }
+        renderAll(); break;
       }
-
-      case "edit:toggle":
-        state.editMode = !state.editMode;
-        state.editingTileId = null;
-        renderAll();
-        break;
+      case "edit:toggle": state.editMode = !state.editMode; state.editingTileId = null; renderAll(); break;
 
       case "tile:tap": {
-        var tile2 = state.favoris.filter(function (f) { return f.id == data.id; })[0];
-        if (!tile2) break;
-        if (state.favMode === "confirm" && state.tileConfirmId !== tile2.id) {
-          state.tileConfirmId = tile2.id;
-          showToast('Confirmer l\'envoi de « ' + tile2.name + ' » ? Ré-appuyez pour envoyer.');
+        var t2 = state.favoris.filter(function (f) { return f.id == d.id; })[0];
+        if (!t2) break;
+        if (state.favMode === "confirm" && state.tileConfirmId !== t2.id) {
+          state.tileConfirmId = t2.id;
+          showToast("Confirmer « " + t2.name + " » ? Ré-appuyez pour envoyer.");
           setTimeout(function () { state.tileConfirmId = null; }, 2500);
           break;
         }
         state.tileConfirmId = null;
-        history_push({ time: nowTime(), cmd: tile2.cmd, tag: "ok", accepted: true, note: "Favori « " + tile2.name + " »." });
-        showToast("Envoyé : " + tile2.cmd);
+        state.thread.push({ id: uid++, kind:"event", name: t2.name, cmd: t2.cmd, time: nowTime() });
+        showToast("Envoyé : " + t2.cmd);
         break;
       }
 
-      case "tile:menu:open":
-        state.editingTileId = (state.editingTileId == data.id) ? null : Number(data.id);
-        state.deletingTileId = null;
-        state.renamingTileId = null;
-        renderAll();
-        break;
-
-      case "tile:rename:ask":
-        state.renamingTileId = state.editingTileId;
-        renderAll();
+      case "tile:menu":
+        state.editingTileId = state.editingTileId == d.id ? null : Number(d.id);
+        state.deletingTileId = null; state.renamingTileId = null; renderAll(); break;
+      case "tile:rename":
+        state.renamingTileId = state.editingTileId; renderAll();
         setTimeout(function () { var el = document.getElementById("tile-rename"); if (el) { el.focus(); el.select(); } }, 0);
         break;
-
       case "tile:rename:save": {
         var el2 = document.getElementById("tile-rename");
-        var tile3 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
-        if (tile3 && el2 && el2.value.trim()) tile3.name = el2.value.trim();
-        state.renamingTileId = null;
-        renderAll();
-        break;
+        var t3 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (t3 && el2 && el2.value.trim()) t3.name = el2.value.trim();
+        state.renamingTileId = null; renderAll(); break;
       }
-
-      case "tile:duplicate": {
+      case "tile:dup": {
         var src = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
-        if (src) {
-          var copy = { id: uid++, name: src.name + " (copie)", cmd: src.cmd, tab: src.tab, historyId: src.historyId };
-          state.favoris.push(copy);
-          showToast("Dupliqué : " + copy.name);
-        }
-        state.editingTileId = null;
-        renderAll();
-        break;
+        if (src) { state.favoris.push({ id: uid++, name: src.name + " (copie)", cmd: src.cmd, tab: src.tab, threadId: src.threadId });
+                   showToast("Dupliqué."); }
+        state.editingTileId = null; renderAll(); break;
       }
-
       case "tile:move": {
-        var tile4 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
-        if (tile4) { tile4.tab = data.tab; showToast("Déplacé vers « " + data.tab + " »"); }
-        state.editingTileId = null;
-        renderAll();
-        break;
+        var t4 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (t4) { t4.tab = d.tab; showToast("Déplacé vers « " + d.tab + " »"); }
+        state.editingTileId = null; renderAll(); break;
       }
-
-      case "tile:delete:ask":
-        state.deletingTileId = state.editingTileId;
-        renderAll();
-        break;
-
-      case "tile:delete:cancel":
-        state.deletingTileId = null;
-        renderAll();
-        break;
-
-      case "tile:delete:confirm":
+      case "tile:del": state.deletingTileId = state.editingTileId; renderAll(); break;
+      case "tile:del:no": state.deletingTileId = null; renderAll(); break;
+      case "tile:del:ok":
         state.favoris = state.favoris.filter(function (f) { return f.id !== state.deletingTileId; });
-        state.editingTileId = null;
-        state.deletingTileId = null;
-        showToast("Favori supprimé.");
-        break;
+        state.editingTileId = null; state.deletingTileId = null; showToast("Favori supprimé."); break;
 
-      case "settings:favmode":
-        state.favMode = data.mode;
-        renderAll();
-        break;
+      case "favmode": state.favMode = d.mode; renderAll(); break;
 
-      case "settings:tabs:add": {
-        var el3 = document.getElementById("new-tab-name");
+      case "tabs:add": {
+        var el3 = document.getElementById("new-tab");
         if (el3 && el3.value.trim()) { state.tabs.push(el3.value.trim()); renderAll(); }
         break;
       }
-
-      case "settings:tabs:delete": {
+      case "tabs:del": {
         if (state.tabs.length <= 1) break;
-        var removed = data.tab;
-        state.tabs = state.tabs.filter(function (tb) { return tb !== removed; });
-        var fallback = state.tabs[0];
-        state.favoris.forEach(function (f) { if (f.tab === removed) f.tab = fallback; });
-        if (state.activeTab === removed) state.activeTab = fallback;
-        renderAll();
-        break;
+        var rm = d.tab;
+        state.tabs = state.tabs.filter(function (tb) { return tb !== rm; });
+        var fb = state.tabs[0];
+        state.favoris.forEach(function (f) { if (f.tab === rm) f.tab = fb; });
+        if (state.activeTab === rm) state.activeTab = fb;
+        renderAll(); break;
       }
 
-      case "settings:export":
-        showToast("Export généré (démo) — texte + fichier.");
-        break;
-
-      case "proto:reset:ask":   state.resetAsk = true;  renderAll(); break;
-      case "proto:reset:cancel": state.resetAsk = false; renderAll(); break;
-      case "proto:reset:confirm":
-        try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-        location.reload();
-        break;
-
-      case "settings:import:confirm": {
-        var tab = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
+      case "export": showToast("Export généré (démo) — texte + fichier."); break;
+      case "import:ok": {
+        var tb2 = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
         state.favoris.push(
-          { id: uid++, name: "Rappel entracte", cmd: "Sub 9 At 0 Enter", tab: tab },
-          { id: uid++, name: "195 · Par LED (import)", cmd: "Color Palette 5 Enter", tab: tab },
-          { id: uid++, name: "Face seule (import)", cmd: "Group 3 At 85 Enter", tab: tab }
-        );
+          { id: uid++, name:"Rappel entracte", cmd:"Sub 9 At 0 Enter", tab: tb2 },
+          { id: uid++, name:"195 · Par LED (import)", cmd:"Color Palette 5 Enter", tab: tb2 },
+          { id: uid++, name:"Face seule (import)", cmd:"Group 3 At 85 Enter", tab: tb2 });
         state.screen = "reglages";
-        showToast("3 favoris importés dans « Importé ».");
-        break;
+        showToast("3 favoris importés dans « Importé »."); break;
       }
+
+      case "reset:ask": state.resetAsk = true; renderAll(); break;
+      case "reset:no": state.resetAsk = false; renderAll(); break;
+      case "reset:ok":
+        try { localStorage.removeItem(STORE_KEY); } catch (err) {}
+        location.reload(); break;
 
       default: break;
     }
   }
 
-  function finishSend(r) {
-    var refused = /colour/i.test(r.cmd);
-    if (refused) {
-      state.result = null;
-      var hidBad = history_push({ time: nowTime(), cmd: r.cmd, tag: "bad", accepted: false, note: "Refusée : mot-clé « Colour » inconnu." });
-      state.lastOutcome = { status: "bad", cmd: r.cmd, historyId: hidBad };
-    } else {
-      state.result = null;
-      var hidOk = history_push({ time: nowTime(), cmd: r.cmd, tag: r.warn ? "doute" : "ok", accepted: true, note: r.warn ? "Partait avec ⚠, acceptée." : "Acceptée directement." });
-      state.lastOutcome = { status: "ok", cmd: r.cmd, doute: !!r.warn, historyId: hidOk };
-    }
-    renderAll();
-  }
-
-  function history_push(entry) {
-    entry.id = uid++;
-    state.history.unshift(entry);
-    return entry.id;
-  }
-
-  document.getElementById("viewport").addEventListener("click", function (e) {
-    var el = e.target.closest("[data-action]");
+  var vp = document.getElementById("viewport");
+  vp.addEventListener("click", function (ev) {
+    var el = ev.target.closest("[data-action]");
     if (!el) return;
-    handleAction(el.dataset.action, el);
+    handle(el.dataset.action, el);
   });
-
-  document.getElementById("viewport").addEventListener("keydown", function (e) {
-    if (e.target && e.target.id === "nl-input" && e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleAction("translate", e.target);
+  vp.addEventListener("input", function (ev) {
+    if (ev.target && ev.target.id === "composer-input") {
+      state.draft = ev.target.value;
+      autoGrow(ev.target);
+    }
+  });
+  vp.addEventListener("keydown", function (ev) {
+    if (ev.target && ev.target.id === "composer-input" && ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      handle("ask", ev.target);
     }
   });
 
-  (function setupFullscreen() {
-    var btn = document.getElementById("fs-toggle");
-    var exitBtn = document.getElementById("sim-exit");
-    var vp = document.getElementById("viewport");
-
-    function nativeOn() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
-    function updateLabel() {
-      var on = document.body.classList.contains("sim-fs") || nativeOn();
-      btn.textContent = on ? "⛶ Quitter le plein écran" : "⛶ Tester en plein écran";
-    }
-
+  (function fullscreen() {
+    var btn = document.getElementById("fs-toggle"), exit = document.getElementById("sim-exit");
+    function on() { return document.body.classList.contains("sim-fs"); }
+    function upd() { btn.textContent = on() ? "⛶ Quitter le plein écran" : "⛶ Tester en plein écran"; }
     function enter() {
-      // le CSS seul garantit l'effet partout (y compris Safari iOS, où l'API
-      // Fullscreen native est indisponible pour un élément quelconque) ; la
-      // vraie API est tentée en plus, en bonus, quand le navigateur la permet.
       document.body.classList.add("sim-fs");
-      var req = vp.requestFullscreen || vp.webkitRequestFullscreen;
-      if (req) { try { var p = req.call(vp); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
-      updateLabel();
+      var rq = vp.requestFullscreen || vp.webkitRequestFullscreen;
+      if (rq) { try { var pr = rq.call(vp); if (pr && pr.catch) pr.catch(function(){}); } catch (e) {} }
+      upd();
     }
-    function exit() {
+    function leave() {
       document.body.classList.remove("sim-fs");
-      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function(){});
       else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
-      updateLabel();
+      upd();
     }
-
-    btn.addEventListener("click", function () {
-      if (document.body.classList.contains("sim-fs")) exit(); else enter();
-    });
-    exitBtn.addEventListener("click", exit);
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && document.body.classList.contains("sim-fs")) exit();
-    });
-    document.addEventListener("fullscreenchange", function () { if (!nativeOn()) updateLabel(); });
-    document.addEventListener("webkitfullscreenchange", updateLabel);
+    btn.addEventListener("click", function () { on() ? leave() : enter(); });
+    exit.addEventListener("click", leave);
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && on()) leave(); });
   })();
 
-  (function setupOpenInBrowser() {
-    var link = document.getElementById("open-browser");
-    link.href = window.location.href;
-  })();
+  document.getElementById("open-browser").href = window.location.href;
 
-  // Une session de test reprend là où la précédente s'était arrêtée : on rouvre
-  // sur Favoris, l'écran de jeu, avec les favoris et l'historique déjà construits.
-  if (load()) state.screen = "favoris";
+  if (load()) state.screen = "conduite";
   renderAll();
 })();
 </script>
