@@ -16,7 +16,157 @@ Une interface qui les ignore produira des macros valides et fausses.
 officiel v3.2.0, du corpus de 174 entrées et du journal terrain. Les renvois `#n`
 pointent le backlog de [`PLANNING.md`](PLANNING.md).
 
+Une section préliminaire décrit **comment la syntaxe est structurée** — c'est ce que
+l'interface affiche, et sa régularité conditionne ce qu'on peut en montrer.
+
 ---
+
+# Préliminaire — l'anatomie d'une commande Eos
+
+Avant les règles : la forme. Elle est plus régulière qu'il n'y paraît, ce qui rend un
+aperçu structuré possible plutôt qu'un simple bloc de texte.
+
+## La structure fondamentale : Objet → Action → Cible
+
+**Confirmé A** (manuel v3.2.0, « Important Concepts » ; recoupé deux fois par le corpus).
+La plupart des instructions répondent à trois questions, dans cet ordre :
+
+| | Question | Exemple |
+|---|---|---|
+| 1 | **Qu'est-ce que j'affecte ?** | `Chan 1 Thru 5` |
+| 2 | **Que doit-il faire ?** | `At` |
+| 3 | **Quelle valeur ?** | `50` |
+
+Tout le reste — modificateurs, temps, libellés — vient s'accrocher à ces trois étapes.
+C'est ce principe, et non une grammaire formelle, qui est encodé dans
+[`grammar/modele.yaml`](grammar/README.md) : la ligne de commande Eos est modale, une
+EBNF forcerait à trancher des points jamais validés.
+
+**Toutes les actions ne passent pas par la ligne de commande.** Softkeys, direct selects
+et encodeurs la contournent entièrement — l'app ne peut donc pas tout exprimer sous forme
+de texte injectable.
+
+## L'ordre des créneaux dans une ligne
+
+```
+[sélection]  [action]  [valeur]  [modificateurs]  [Time …]  [Label …]  [Enter]
+```
+
+Deux règles d'ordre sont établies et doivent être respectées telles quelles :
+
+- **Sur un `Go To Cue`, `Time` se pose toujours en dernier**, après les autres
+  modificateurs (manuel §16). `{Manual}` en est exempté.
+- **`Send_String` doit être en dernière position** d'une macro multi-lignes, sinon un
+  `/r` parasite s'insère dans l'adresse OSC générée [EOS-55864].
+
+Exemples réels — sorties **exactes** du générateur, vérifiées, telles que l'app les
+affichera :
+
+```
+Chan 1 Thru 5 Record Cue 4 Enter                    sélection + action + cible
+Group 2 Record Only Cue 5 Enter                     objet ≠ Chan
+Go To Cue 5 MinusLinks Time Enter                   modificateur puis Time, dans cet ordre
+Chan 1 Thru 12 At 50 Thru 70 Fan {Repeat} 3 Enter   valeur en plage + style de Fan
+Record Color Palette 4 {By Type} Label FOH Blue Enter    ⚠ 1 avertissement
+```
+
+Le dernier porte un avertissement : le libellé fait deux mots, et le comportement du
+clavier virtuel de la console avec les espaces n'a jamais été observé (#5). C'est un
+exemple concret de la règle 4 plus bas — la commande a l'air parfaitement normale.
+
+**Différence de forme assumée avec le manuel** : le générateur écrit toujours `Chan` et
+`Cue` explicitement, là où le manuel s'appuie sur les modes implicites du clavier
+(`[1][Thru][5]` désigne des channels, `[Record][5]` une cue). Une macro se relit, se
+réimporte et s'exporte : l'implicite y coûte plus cher qu'il ne rapporte. Une session UI
+qui compare l'aperçu au manuel doit s'attendre à cet écart — il est voulu.
+
+## Les briques
+
+| Brique | Forme | Note |
+|---|---|---|
+| Sélection | `1`, `1 Thru 10`, `1 Thru 10 + 15`, `1 Thru 10 - 5`, `Group 3` | `+`/`-` ajoutent et retirent |
+| Sous-groupe | `( 1 Thru 4 )` | compte pour **un seul** channel dans un Fan, un effet, un parcours |
+| Sélection conditionnelle | `Query {Isn't In} Beam Palette 25` | seul endroit du langage où existe une négation |
+| Softkey | `{By Type}`, `{Mirror Out}`, `{Q Only}` | toujours entre accolades |
+| Libellé | `Label <texte>` | comportement du clavier virtuel avec espaces **non observé** (#5) |
+| Terminaison | `Enter` | sauf commandes auto-terminées, voir plus bas |
+
+Numérotation : palettes de `0.001` à `9999.999`, presets 1000 maximum, trois décimales.
+
+## Quatre propriétés qui ne se devinent pas en lisant une ligne
+
+**La sélection survit à l'`Enter`.** `Enter` termine la *ligne de commande*, pas la
+sélection : celle-ci reste active pour la commande suivante jusqu'à ce qu'une nouvelle
+sélection soit faite.
+
+> **→ Pour l'UI.** Dans un aperçu multi-lignes, **la ligne 3 peut dépendre d'une sélection
+> écrite ligne 1**. Un utilisateur qui lit une ligne isolée ne peut pas savoir sur quoi
+> elle agit. Si l'interface affiche, met en évidence ou laisse réordonner des lignes, elle
+> doit rendre cet héritage visible — sinon elle donne une fausse impression
+> d'indépendance entre les lignes.
+
+**Certaines commandes s'auto-terminent** et ne prennent pas d'`Enter` : `Out`, `+%`,
+`-%`, `Level`, et les actions depuis les direct selects. Un `Enter` de trop ne provoque
+pas d'erreur — il **valide la ligne suivante**. Et la liste d'ETC est incomplète de son
+propre aveu (« Some, but not all, of these commands are »), d'où #19 : toute commande non
+marquée comme auto-terminée est *présumée* avoir besoin d'`Enter`, ce n'est pas un fait
+établi.
+
+> **→ Pour l'UI.** Ne jamais « compléter serviablement » une commande avec un `Enter`.
+> La terminaison est calculée par le générateur, commande par commande.
+
+**Le même symbole a plusieurs sens — et les deux polysémies ne sont pas de même nature.**
+
+| Symbole | Sens | Distingué par |
+|---|---|---|
+| `At` / `@` | niveau en Live, **adresse DMX en Patch** | l'**écran actif** — état extérieur à la phrase |
+| `/` | 7 sens documentés : préfixe de cue list (`Cue 2/5`), montée/descente (`Time 4/3`), pourcentage de temps (`Time /50`), valeur DMX brute (`At / / 239`), univers/adresse (`At 2 / 146`), liste entière (`Cue 2/ Assert`), échelle de park (`At / 125 Park`) | la **position** dans la ligne |
+
+La distinction compte : la polysémie de `/` est lisible dans le texte de la commande,
+celle de `At` **ne l'est pas** — elle dépend d'un état que l'app ne contrôle pas. C'est
+la règle n°1 ci-dessous, et le générateur peut au moins forcer l'écran (`Tab <n> Enter`).
+
+**Fan n'est pas une commande.** C'est le comportement **implicite** de toute commande de
+niveau ou de temps utilisant `Thru` ou une liste de références. La touche `Fan` ne sert
+qu'à changer de *style* de répartition. `1 Thru 10 At 10 Thru 30 Enter` fane déjà, sans
+qu'aucun mot ne le dise.
+
+> **→ Pour l'UI.** Un utilisateur qui écrit « circuits 1 à 5 de 10 à 50 % » obtient un
+> dégradé. C'est l'intention normale, mais rien dans la commande produite ne porte le mot
+> « dégradé » : l'aperçu doit le dire en clair si l'app veut être relue utilement.
+
+## On assemble des tokens, jamais du texte
+
+Règle structurelle, issue d'une observation terrain (corpus #060) : une commande construite
+par concaténation de chaînes — `"Go_To_Cue_" + str(n)` — **tronque les décimales** sur
+console réelle. `Go To Cue 5.5` devient `Go To Cue 5`.
+
+> **→ Pour l'UI.** Si l'interface propose un jour de retoucher une macro générée, elle doit
+> éditer l'**IR** (la représentation structurée) et la faire re-rendre, **jamais** éditer la
+> chaîne affichée. La chaîne est un rendu, pas la source. Un champ de texte libre modifiable
+> sur une macro générée serait une régression fonctionnelle, pas une commodité.
+
+## Une même intention a trois formes de sortie
+
+Le générateur produit trois choses distinctes, qui n'obéissent pas aux mêmes règles :
+
+| Sortie | Contenu | Règles propres |
+|---|---|---|
+| `rendre()` | lignes de ligne de commande | matrice de légalité, Fan, modificateurs, terminaison |
+| `rendre_macro()` | contenu de macro enveloppé | chaînage en fin, mode, touches non enregistrables en Learn |
+| `rendre_osc()` | paquets OSC injectables | terminaison, accolades (#18), `Assert`, User# |
+
+Ce ne sont pas trois présentations de la même chose. Une macro n'est pas une liste de
+lignes de commande : certaines touches ne sont **pas enregistrables** en mode Learn — dont
+`[Macro]` elle-même, ce qui oblige à passer par l'éditeur pour tout chaînage.
+
+> **→ Pour l'UI.** L'utilisateur doit savoir laquelle des trois il est en train de
+> regarder. « Envoyer cette commande maintenant » et « graver cette macro dans la console »
+> ne sont pas la même action et n'ont pas les mêmes risques — la seconde est persistante.
+
+---
+
+# Les neuf règles
 
 ## 1. Cinq états de la console sont invisibles — et ils changent le sens des commandes
 
@@ -281,6 +431,10 @@ L'app n'est pas une télécommande : c'est un **atelier de préparation qui mont
 travail et déclare ce qu'il ignore**. Toutes les règles ci-dessus convergent vers la même
 exigence — l'aperçu, l'avertissement et la question sont les trois éléments structurants
 de l'interface, pas des ornements ajoutés autour d'un champ de saisie.
+
+Et la syntaxe est assez régulière (Objet → Action → Cible) pour que cet aperçu soit
+**structuré** plutôt qu'un bloc de texte : c'est une opportunité de conception, pas
+seulement une contrainte.
 
 ## Où creuser
 
