@@ -121,6 +121,60 @@ CAS = [
         "rendu": "Group 5 Color 3/120 Enter",
     },
 
+    # ------------------------------------------------------------------ cues
+    {
+        # Reprend `record_cue_selectif` (grammar/patrons.yaml, confiance A) et
+        # l'exemple chiffré du manuel §12 recopié dans test_generateur.py —
+        # même macro par deux voies indépendantes.
+        "nom": "enregistrement sélectif dans une cue",
+        "phrase": "enregistrer les circuits 1 à 5 dans la cue 4",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Record Cue 4 Enter",
+    },
+    {
+        # Piège réellement rencontré : « groupe » est à distance 2 de
+        # « rouge », dans la marge de tolérance normale. Le joker `@couleurs`
+        # de `colorer_selection` matchait donc « groupe » en « rouge » et
+        # détournait toute la phrase vers la mauvaise intention — pas une
+        # mauvaise couleur, une mauvaise INTENTION. Corrigé en interdisant la
+        # tolérance aux fautes dans la détection d'intention elle-même (elle
+        # reste réservée au remplissage d'un créneau déjà choisi).
+        "nom": "enregistrement sélectif — groupe plutôt que circuits",
+        "phrase": "enregistrer le groupe 2 dans la cue 5",
+        "statut": "compris",
+        "rendu": "Group 2 Record Cue 5 Enter",
+    },
+    {
+        "nom": "go to cue — numéro",
+        "phrase": "aller à la cue 5",
+        "statut": "compris",
+        "rendu": "Go To Cue 5 Enter",
+    },
+    {
+        # Cible symbolique : aucun numéro dans la phrase, aucun mot « cue » non
+        # plus. « noir » seul doit suffire à déclencher l'intention.
+        "nom": "go to cue — cible symbolique « noir » = Out",
+        "phrase": "va au noir",
+        "statut": "compris",
+        "rendu": "Go To Cue Out Enter",
+    },
+    {
+        "nom": "go to cue — cible symbolique « suivante » = Next",
+        "phrase": "va a la suivante",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Enter",
+    },
+    {
+        "nom": "enregistrer cue sans sélection — refus assumé",
+        "phrase": "enregistrer dans la cue 4",
+        "statut": "incompris",
+    },
+    {
+        "nom": "aller à cue sans cible — refus assumé",
+        "phrase": "aller a la cue",
+        "statut": "incompris",
+    },
+
     # ------------------------------------------------------------ intensité
     {
         # Deux « à » dans la phrase : le premier borne les circuits, le second

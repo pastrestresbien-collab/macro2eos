@@ -108,12 +108,15 @@ non-régression.
 | créer des palettes de couleur | « créer les palettes couleur 1 à 6 en lee, chaud froid r v b j » |
 | colorer une sélection | « circuits 10 à 20 en lee 195 », « groupe 5 en bleu » |
 | régler une intensité | « circuits 1 à 5 à 50 % », « circuits 1 à 5 de 10 à 50 % » |
+| enregistrer une cue (sélectif) | « enregistrer les circuits 1 à 5 dans la cue 4 » |
+| aller à une cue | « aller à la cue 5 », « va au noir », « va à la suivante » |
 
-Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee).
+Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
+quatre cibles symboliques de cue (Out/Next/Last/Home).
 
-**Ce qui n'est pas couvert** et devra l'être : cues, groupes, submasters, effets, Query,
-macros — soit la majeure partie des 79 actions du modèle. Le lexique se remplit par
-tranches, comme le modèle l'a été.
+**Ce qui n'est pas couvert** et devra l'être : submasters, effets, Query, macros — soit la
+majeure partie des 79 actions du modèle. Le lexique se remplit par tranches, comme le
+modèle l'a été.
 
 ## Deux règles de peuplement du lexique
 
@@ -128,3 +131,20 @@ valeur chargée vaut 16, pas 20. Le piège est silencieux — aucune erreur, un 
 parfaitement plausible — et produirait `Color 3/016` sur scène. Rencontré à l'écriture de
 ce lexique, corrigé, et désormais vérifié par un test qui contrôle les numéros un par un
 et pas seulement le fait qu'une question soit posée.
+
+## La tolérance aux fautes n'a pas le droit de vote sur l'intention
+
+Second piège réel, trouvé à l'ajout des cues (v0.1, même session) : le mot **« groupe »**
+est à distance d'édition 2 de **« rouge »** — dans la marge normalement tolérée pour un
+mot de cette longueur. Le joker `@couleurs`, qui sert à détecter l'intention « colorer une
+sélection » sans recopier tous les noms de couleurs dans les déclencheurs, utilisait cette
+même tolérance. Résultat : « enregistrer le groupe 2 dans la cue 5 » se faisait détourner
+vers l'intention couleur, avant même d'arriver au remplissage des créneaux.
+
+Ce n'est pas la même classe d'erreur que « chang »/« chan » — ici la tolérance ne se
+trompait pas de valeur *dans* un créneau, elle changeait l'intention *elle-même*, donc
+tout le reste de l'analyse avec elle. **Correction : la détection d'intention n'utilise
+plus jamais la tolérance aux fautes, seulement des correspondances exactes.** La
+tolérance reste réservée au remplissage d'un créneau déjà choisi, où le champ restreint
+des candidats la rend sûre — c'est tout l'intérêt du principe « restreint au créneau »
+énoncé plus haut, ici appliqué un cran plus tôt qu'attendu.

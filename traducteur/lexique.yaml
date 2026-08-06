@@ -247,6 +247,24 @@ couleurs:
       se dit « Pink ». Raison de plus pour ne pas trancher tout seul.
 
 # --------------------------------------------------------------------------
+# CIBLES SYMBOLIQUES DE CUE — mots-clés acceptés par `Go To Cue` à la place
+# d'un numéro (grammar/generateur.py, CIBLES_SYMBOLIQUES).
+# --------------------------------------------------------------------------
+cue_cibles:
+  Out:
+    alias: [out, noir, blackout]
+    source: "manuel §16 — Go To Cue Out ramène tous les paramètres de toutes les listes"
+  Next:
+    alias: [suivante, next, suivant]
+    source: "manuel §16"
+  Last:
+    alias: [precedente, last, derniere]
+    source: "manuel §16"
+  Home:
+    alias: [home, origine]
+    source: "manuel §16"
+
+# --------------------------------------------------------------------------
 # INTENTIONS — ce que l'utilisateur veut faire
 #
 # Une intention se déclenche quand TOUS ses groupes de déclencheurs sont
@@ -289,6 +307,30 @@ intentions:
       « niveau »). « circuits 1 à 5 à 50 » sans marqueur reste volontairement
       incompris : rien ne dit si 50 est un niveau, une cue ou une palette. C'est
       le genre de phrase qu'il vaut mieux faire reformuler que deviner.
+
+  enregistrer_cue:
+    description: "enregistrer une sélection de circuits dans une cue existante"
+    declencheurs:
+      verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
+      cue: [cue, cues, memoire, memoires, sequence]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "enregistrer les circuits 1 à 5 dans la cue 4"
+    origine: >
+      patron `record_cue_selectif` (grammar/patrons.yaml), confiance A — exemple
+      chiffré du manuel §12 « Using a Positive Selective Store ». Un
+      enregistrement sélectif sur une cue existante MODIFIE les circuits visés
+      sans écraser le reste : ce n'est pas un remplacement.
+
+  aller_a_cue:
+    description: "aller à une cue (Go To Cue)"
+    declencheurs:
+      verbe: [aller, va, vas, go, goto, jouer, joue, lancer, lance, demarrer, demarre]
+      # inclut le mot « cue » et les cibles symboliques (out/noir, next, etc.) :
+      # « va au noir » n'a pas besoin de dire « cue » pour être compris.
+      cible: [cue, cues, memoire, memoires, sequence, out, noir, blackout,
+              suivante, next, suivant, precedente, last, derniere, home, origine]
+    exemple_nl: "aller à la cue 5"
+    origine: "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts"
 
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible

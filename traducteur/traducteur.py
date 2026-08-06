@@ -132,6 +132,7 @@ class Traducteur:
         self._objets = self._indexer(self.lex["objets"])
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
+        self._cue_cibles = self._indexer(self.lex["cue_cibles"])
 
     @staticmethod
     def _indexer(section: dict) -> dict[str, str]:
@@ -294,12 +295,20 @@ class Traducteur:
         Le joker évite de recopier les 200 noms de couleurs dans les
         déclencheurs : « circuits 1 à 5 en rouge » doit marcher sans que
         « rouge » figure deux fois dans ce fichier.
+
+        **Toujours en correspondance EXACTE, jamais tolérante aux fautes.**
+        La détection d'intention est le routeur, pas un créneau — la tolérance
+        y est trop dangereuse : « groupe » est à distance 2 de « rouge », dans
+        la marge acceptée pour un mot de sa longueur. Une correction tolérante
+        ici ferait basculer une phrase sur GROUPES vers l'intention COULEUR,
+        une bascule d'interprétation entière plutôt qu'une simple faute de
+        frappe corrigée. La tolérance reste réservée au remplissage d'un
+        créneau déjà choisi, où le champ restreint des candidats la rend sûre.
         """
         if presents & set(mots):
             return True
         if "@couleurs" in mots:
-            return any(self._resoudre(t, self._couleurs)[0] for t in toks
-                       if not t.isdigit())
+            return any(t in self._couleurs for t in toks if not t.isdigit())
         return False
 
     # -- point d'entrée ----------------------------------------------------
@@ -323,6 +332,8 @@ class Traducteur:
             "creer_palettes_couleur": self._creer_palettes_couleur,
             "colorer_selection": self._colorer_selection,
             "regler_intensite": self._regler_intensite,
+            "enregistrer_cue": self._enregistrer_cue,
+            "aller_a_cue": self._aller_a_cue,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -535,7 +546,78 @@ class Traducteur:
                 return {"valeur": int(toks[i + 1])}
         return None
 
+    # -- intention : enregistrer une sélection dans une cue -----------------
+    def _enregistrer_cue(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Le marqueur « cue » d'abord : c'est lui qui sépare, dans la liste de
+        # nombres de la phrase, celui qui désigne la cible (après le marqueur)
+        # de ceux qui désignent la sélection (partout ailleurs).
+        i_cue = self._indice_objet_cle("Cue", toks, pris)
+        if i_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
+
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cue:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue trouvé après « cue »."])
+
+        objet = self._objet(toks, pris) or "Chan"
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+
+        ir = [{"selection": selection, "action": {"type": "record_cue", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : aller à une cue -----------------------------------------
+    def _aller_a_cue(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Une cible symbolique (« noir », « suivante »…) d'abord : elle seule
+        # dispense de tout numéro dans la phrase.
+        for i, tok in enumerate(toks):
+            if i in pris:
+                continue
+            cle, _ = self._resoudre(tok, self._cue_cibles)
+            if cle:
+                pris.add(i)
+                ir = [{"action": {"type": "go_to_cue", "mot": cle}}]
+                return Traduction(statut="compris", ir=ir,
+                                  non_reconnus=self._non_reconnus(toks, pris))
+
+        libres = self._nombres(toks, pris)
+        if not libres:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue ni destination reconnue "
+                "(noir, suivante, précédente, home)."])
+        i, cible = libres[0]
+        pris.add(i)
+        ir = [{"action": {"type": "go_to_cue", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
     # -- petits extracteurs partagés ---------------------------------------
+    def _indice_objet_cle(self, cle_cible: str, toks: list[str], pris: set[int]) -> int | None:
+        """Comme `_objet`, mais cherche UN objet précis (ex. `Cue`) et rend son
+        index — nécessaire quand la phrase distingue par position deux jeux de
+        nombres (la cible d'un `Record Cue`, et la sélection qui l'enregistre)."""
+        for i, tok in enumerate(toks):
+            if i in pris:
+                continue
+            cle, _ = self._resoudre(tok, self._objets)
+            if cle == cle_cible:
+                pris.add(i)
+                return i
+        return None
+
     def _objet(self, toks: list[str], pris: set[int]) -> str | None:
         for i, tok in enumerate(toks):
             if i in pris:

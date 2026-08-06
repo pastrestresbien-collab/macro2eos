@@ -45,7 +45,7 @@ recopiée verbatim dans les tests avec ses fautes de frappe.
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.1 — 3 intentions, 17 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.1 — 5 intentions, 24 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 34 points recensés au backlog (#34 tout juste résolu via le catalogue officiel Lee) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -453,13 +453,14 @@ exécutable. Sans cette issue, un traducteur n'a d'autre choix que de deviner, e
 couleur devinée produit une macro valide, acceptée par la console, et la mauvaise teinte
 sur scène : le pire des trois échecs possibles parce qu'il est **silencieux**.
 
-**Fait — v0.1 (2026-08-06)** : 3 intentions (créer des palettes de couleur, colorer une
-sélection, régler une intensité), 9 couleurs nommées, 2 couleurs déclarées ambiguës,
-17 cas de non-régression. Le cas d'ancrage est la demande réelle de l'utilisateur
-recopiée verbatim, fautes comprises, doublée d'un cas identique écrit proprement qui
-**exige le même résultat** — sinon la tolérance au bruit est illusoire.
+**Fait — v0.1 (2026-08-06)** : 5 intentions (créer des palettes de couleur, colorer une
+sélection, régler une intensité, enregistrer sélectivement dans une cue, aller à une cue),
+9 couleurs nommées, 2 couleurs déclarées ambiguës, 4 cibles symboliques de cue
+(Out/Next/Last/Home), 24 cas de non-régression. Le cas d'ancrage est la demande réelle de
+l'utilisateur recopiée verbatim, fautes comprises, doublée d'un cas identique écrit
+proprement qui **exige le même résultat** — sinon la tolérance au bruit est illusoire.
 
-Deux constats de cette tranche valent d'être retenus :
+Trois constats de cette tranche valent d'être retenus :
 
 - **La tolérance aux fautes doit être restreinte au créneau en cours**, jamais globale.
   L'utilisateur avait écrit « chang » pour « chaud » ; dans tout le lexique, le plus
@@ -470,9 +471,17 @@ Deux constats de cette tranche valent d'être retenus :
   de l'octal et vaut 16. Bug réellement rencontré à l'écriture du lexique, silencieux et
   plausible (`Color 3/016` au lieu de `Color 3/020`). Corrigé, et désormais vérifié par un
   test qui contrôle les numéros un par un.
+- **La tolérance aux fautes n'a pas le droit de vote sur l'INTENTION elle-même**, trouvé
+  en ajoutant les cues à la même tranche : « groupe » est à distance 2 de « rouge », dans
+  la marge normalement tolérée. Le joker qui détecte l'intention « colorer une sélection »
+  sans recopier tous les noms de couleur utilisait cette tolérance et détournait
+  « enregistrer le groupe 2 dans la cue 5 » vers la mauvaise intention — pas une mauvaise
+  couleur, une bascule d'interprétation entière. Corrigé : la détection d'intention
+  n'utilise plus que des correspondances exactes ; la tolérance reste réservée au
+  remplissage d'un créneau déjà choisi.
 
-**Reste à couvrir** : cues, groupes, submasters, effets, Query, macros — la majeure partie
-des 79 actions du modèle. Le lexique se remplira par tranches, comme le modèle l'a été.
+**Reste à couvrir** : submasters, effets, Query, macros — la majeure partie des 79 actions
+du modèle. Le lexique se remplira par tranches, comme le modèle l'a été.
 
 ### C. Valider au banc réel
 
