@@ -167,6 +167,59 @@ CAS = [
         "avertissements": 1,      # PLANNING #9
     },
 
+    # ------------------------------- Durée de vie d'une sélection (§6)
+    {
+        # Le piège qui a produit une macro fausse le 2026-08-06. `Record`
+        # désélectionne les channels (manuel §6, énoncé deux fois) : l'étape
+        # suivante s'applique à une sélection VIDE, sans que la console refuse
+        # quoi que ce soit. Seule la première palette d'une série serait
+        # correcte. Le générateur doit le dire.
+        "nom": "§6 — une sélection ne survit pas à un Record",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 99},
+             "action": {"type": "couleur_gel", "nuancier": 3, "teinte": 205}},
+            {"action": {"type": "record_palette", "famille": "Color Palette",
+                        "cible": 1}},
+            {"action": {"type": "couleur_gel", "nuancier": 3, "teinte": 202}},
+        ],
+        "attendu": ("Chan 99 Color 3/205 Enter\n"
+                    "Record Color Palette 1 Enter\n"
+                    "Color 3/202 Enter"),
+        "avertissements": 1,
+    },
+    {
+        # La parade : reposer la sélection à chaque étape. C'est la forme du
+        # workbook officiel L2, qui repose `[Group] [99]` (ou `[Select Last]`)
+        # à chacun des sept enregistrements de sa série de palettes.
+        "nom": "§6 — sélection reposée à chaque étape : aucun avertissement",
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 99},
+             "action": {"type": "couleur_gel", "nuancier": 3, "teinte": 205}},
+            {"selection": {"objet": "Group", "numero": 99},
+             "action": {"type": "record_palette", "famille": "Color Palette",
+                        "cible": 1}},
+            {"selection": {"objet": "Group", "numero": 99},
+             "action": {"type": "couleur_gel", "nuancier": 3, "teinte": 202}},
+        ],
+        "attendu": ("Group 99 Color 3/205 Enter\n"
+                    "Group 99 Record Color Palette 1 Enter\n"
+                    "Group 99 Color 3/202 Enter"),
+        "avertissements": 0,
+    },
+    {
+        # Une action qui porte son objet dans son mot-clé (`Go To Cue`) ne
+        # dépend d'aucune sélection : elle ne doit pas déclencher l'alerte.
+        "nom": "§6 — une action à objet implicite après un Record n'alerte pas",
+        "ir": [
+            {"selection": {"objet": "Chan", "de": 1, "a": 5},
+             "action": {"type": "record_cue", "cible": 4}},
+            {"action": {"type": "go_to_cue", "cible": 4}},
+        ],
+        "attendu": ("Chan 1 Thru 5 Record Cue 4 Enter\n"
+                    "Go To Cue 4 Enter"),
+        "avertissements": 0,
+    },
+
     # ---------------------------------------------------------- Cues (§12)
     {
         "nom": "manuel §12 — enregistrement sélectif dans une cue",

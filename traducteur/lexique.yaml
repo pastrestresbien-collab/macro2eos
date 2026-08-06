@@ -342,22 +342,34 @@ intentions:
 # --------------------------------------------------------------------------
 questions:
   portee_enregistrement:
-    texte: "Sur quels projecteurs enregistrer ?"
+    texte: "Sur quels circuits enregistrer ?"
     pourquoi: >
       `Record Color Palette` capture l'état de la sélection courante — ou, si
       rien n'est sélectionné, celui de tous les channels non-défaut, ce qui est
       rarement l'intention réelle. La demande ne le précise pas, et le
       traducteur ne doit pas choisir à la place de l'utilisateur.
     source: "`APP.md` § Ouvert ; `grammar/modele.yaml` § palettes ; manuel §10"
+    correction_2026_08_06: >
+      Cette question offrait auparavant « tous les projecteurs du même type »
+      comme une alternative DISPENSANT de donner des circuits. C'était faux :
+      `{By Type}` décrit ce que la palette CONTIENDRA, pas comment elle
+      s'enregistre. Le manuel §10 « Storing a By Type Palette » est explicite —
+      « the lowest number channel of each fixture type will be the default
+      channel [...] you will want only one channel of each fixture type in
+      use ». Les deux options exigent donc une sélection ; elles ne diffèrent
+      que par l'ajout de `{By Type}`.
     options:
       - cle: par_type
-        libelle: "Tous les projecteurs du même type"
+        libelle: "Une palette générique, réutilisable par type d'appareil"
         detail: >
-          Palette générique, réutilisable sur n'importe quel projecteur du même
-          type, sans dépendre de numéros de circuit. Ajoute `{By Type}`.
+          Ajoute `{By Type}`. Donner de préférence UN SEUL circuit par type
+          d'appareil : le plus petit numéro de chaque type devient la valeur par
+          défaut, et tous les autres circuits du même type sont figés en valeurs
+          individuelles (marqueur `T+`), ce qui est rarement voulu.
+        demande_valeur: true
       - cle: selection
-        libelle: "Des circuits précis"
-        detail: "Demande les numéros de circuits ; la palette capture leur état."
+        libelle: "Une palette sur des circuits précis"
+        detail: "La palette capture l'état exact des circuits donnés."
         demande_valeur: true
 
   couleur_ambigue:

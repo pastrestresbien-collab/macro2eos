@@ -621,6 +621,49 @@ class Generateur:
         return morceaux
 
     # -- cues multipart -----------------------------------------------------
+    def _verifier_survie_selection(self, ir: list[dict], avert: list[str]) -> None:
+        """Une sélection ne survit pas à un `Record`/`Update` (manuel §6).
+
+        Vérification structurelle, comme `_verifier_instruction_unique` : elle
+        porte sur l'enchaînement des étapes, pas sur un couple objet/action.
+
+        Le piège est silencieux et coûteux. Après un enregistrement, les
+        channels sont désélectionnés ; l'étape suivante est syntaxiquement
+        valide, la console ne refuse rien, et la commande s'applique à une
+        sélection VIDE. Une macro « colorer / enregistrer / colorer /
+        enregistrer » n'enregistre correctement que sa première cible.
+
+        Le workbook officiel L2 repose la sélection à chaque enregistrement —
+        soit en la réécrivant, soit par `Select Last`. Aucun `Record` n'y est nu.
+        """
+        regle = self.modele["duree_de_vie_selection"]
+        casse = set(regle["ne_survit_pas"]["declencheurs"])
+
+        selection_perdue = False
+        for etape in ir:
+            action = etape.get("action")
+
+            # une étape qui repose sa sélection repart d'un état propre
+            if "selection" in etape or "query" in etape:
+                selection_perdue = False
+            elif selection_perdue and action is not None:
+                spec = self.modele["actions"].get(action.get("type"), {})
+                if not spec.get("objet_implicite"):
+                    avert.append(
+                        f"`{spec.get('mot_cle', action.get('type'))}` suit un "
+                        f"enregistrement sans reposer de sélection — les channels "
+                        f"ont été désélectionnés (manuel §6), la commande "
+                        f"s'appliquera à une sélection vide"
+                    )
+                    selection_perdue = False   # ne pas répéter à chaque étape
+
+            if action is None:
+                continue
+            spec = self.modele["actions"].get(action["type"], {})
+            mot = str(spec.get("mot_cle", ""))
+            if any(mot.startswith(d) for d in casse):
+                selection_perdue = True
+
     def _verifier_instruction_unique(self, ir: list[dict], avert: list[str]) -> None:
         """Un channel ne peut recevoir qu'UNE instruction dans une cue multipart
         (manuel §17). C'est vérifiable statiquement : deux affectations du même
@@ -697,6 +740,7 @@ class Generateur:
         avert: list[str] = []
 
         self._verifier_instruction_unique(ir, avert)
+        self._verifier_survie_selection(ir, avert)
 
         if forcer_focus:
             numero = self._numero_ecran(contexte)

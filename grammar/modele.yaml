@@ -1043,6 +1043,22 @@ palettes:
         applicables à tout fixture du même type. Peut aussi porter des valeurs
         discrètes — marquées `T+` au lieu de `T`.
       confiance: A
+      ne_dispense_pas_de_selection: >
+        PIÈGE DE FORMULATION. « Applicable à tout fixture du même type » décrit
+        le RÉSULTAT, pas l'enregistrement : `{By Type}` ne dispense en rien de
+        sélectionner des channels. Le manuel §10 « Storing a By Type Palette »
+        est explicite : « the lowest number channel of each fixture type will be
+        the default channel. Generally, you will want ONLY ONE channel of each
+        fixture type in use. Any additional channels in that fixture type will
+        be recorded with discrete data. »
+      consequence: >
+        Enregistrer `{By Type}` sur une sélection large est actif­ement
+        contre-productif : un seul channel par type devient le défaut, TOUS les
+        autres sont figés en données discrètes (marqueur `T+`). La sélection
+        idéale est un channel par type de fixture — c'est exactement ce que fait
+        le groupe de travail du workbook L2 (`Group 99`).
+      source_complement: "manuel §10 « Using By Type Palettes » ; workbook L2 Enhanced v3.3"
+      backlog: null
     "{Absolute}":
       effet: >
         Au rappel, la donnée est traitée comme absolue : elle n'est JAMAIS
@@ -1279,6 +1295,71 @@ terminaison:
       ETC dit explicitement que sa propre liste est partielle. Toute action que
       le modèle ne marque pas `auto_termine` est donc PRÉSUMÉE avoir besoin
       d'`Enter`, sans preuve. C'est une présomption, pas un fait établi.
+
+# --------------------------------------------------------------------------
+# DURÉE DE VIE D'UNE SÉLECTION — la règle qui casse les macros multi-lignes
+#
+# Trouvée le 2026-08-06 en relisant le manuel §6 pour vérifier une affirmation
+# du document de cadrage UI. Elle manquait au modèle, et son absence a produit
+# une macro fausse (voir `avertissement_generateur` ci-dessous).
+# --------------------------------------------------------------------------
+duree_de_vie_selection:
+  confiance: A
+  source: >
+    manuel §6 « Deselecting Channels », énoncé DEUX fois textuellement
+    (« Channels are deselected when any action is taken on the keypad that is
+    unrelated to manual control, such as recording groups and cues, or updating
+    a record target, etc. »)
+
+  survit:
+    description: >
+      Une sélection survit à `Enter` et reste active pour la commande suivante
+      TANT QUE celle-ci relève du contrôle manuel (niveau, couleur, paramètre).
+    exemple: "`Chan 1 Thru 5 Full Enter` puis `Color 3/205 Enter` — même sélection"
+    source: >
+      manuel §6 : « You may continue to modify channels 1 through 5 since they
+      are still selected and displayed on the command line. »
+    confiance: A
+
+  ne_survit_pas:
+    description: >
+      Toute action ÉTRANGÈRE au contrôle manuel désélectionne — au premier chef
+      `Record` et `Update` sur n'importe quel record target.
+    declencheurs: [Record, Record Only, Update, Delete, Clear]
+    confiance: A
+    piege: >
+      C'est un piège silencieux de première catégorie : la ligne suivante est
+      syntaxiquement valide, la console ne refuse rien, et la commande s'applique
+      à une sélection VIDE. Une macro « colorer / enregistrer / colorer /
+      enregistrer » n'enregistre correctement que sa PREMIÈRE cible.
+
+  parade:
+    regle: >
+      Ne jamais compter sur la survie d'une sélection à travers un Record. Toute
+      étape qui suit un enregistrement doit reposer sa sélection explicitement,
+      ou la rappeler par `Select Last`.
+    formes_officielles:
+      - "`Group 99 Record Color Palette 1 Label Red Enter` — sélection reposée"
+      - "`Select Last Record Color Palette Next Label Orange Enter` — rappel"
+    source: >
+      Workbook officiel L2 Enhanced v3.3, section « COLOR PALETTES » : la
+      séquence d'enregistrement de sept palettes de couleur repose la sélection
+      à CHAQUE enregistrement, tantôt en réécrivant `[Group] [99]`, tantôt par
+      `[Select Last]`. Aucun `Record` n'y est écrit nu.
+    choix_du_projet: >
+      Le générateur repose la sélection en toutes lettres plutôt que d'employer
+      `Select Last`. Même raison que pour `Chan` et `Cue` explicites : une macro
+      se relit et se réimporte, et `Select Last` dépend d'un état antérieur que
+      le lecteur ne voit pas. Coût : des lignes plus longues. Gain : chaque ligne
+      est vraie isolément.
+    confiance: A
+
+  avertissement_generateur: >
+    Le générateur signale toute étape qui suit un `Record`/`Update` sans reposer
+    de sélection alors que l'étape précédente en portait une. Ce n'est pas une
+    précaution théorique : la première macro produite par ce dépôt pour une
+    demande réelle (six palettes de couleur en série) était fausse à partir de
+    sa deuxième palette, sans qu'aucun avertissement ne se déclenche.
 
 # --------------------------------------------------------------------------
 # OBJETS — ce qu'on sélectionne / ce qu'on cible

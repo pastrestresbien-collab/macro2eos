@@ -95,15 +95,42 @@ Numérotation : palettes de `0.001` à `9999.999`, presets 1000 maximum, trois d
 
 ## Quatre propriétés qui ne se devinent pas en lisant une ligne
 
-**La sélection survit à l'`Enter`.** `Enter` termine la *ligne de commande*, pas la
-sélection : celle-ci reste active pour la commande suivante jusqu'à ce qu'une nouvelle
-sélection soit faite.
+**La sélection survit à l'`Enter` — mais pas à un `Record`.** C'est une règle en deux
+temps, et le second temps est un piège de première catégorie.
 
-> **→ Pour l'UI.** Dans un aperçu multi-lignes, **la ligne 3 peut dépendre d'une sélection
-> écrite ligne 1**. Un utilisateur qui lit une ligne isolée ne peut pas savoir sur quoi
-> elle agit. Si l'interface affiche, met en évidence ou laisse réordonner des lignes, elle
-> doit rendre cet héritage visible — sinon elle donne une fausse impression
-> d'indépendance entre les lignes.
+`Enter` termine la *ligne de commande*, pas la sélection : celle-ci reste active pour la
+commande suivante **tant que celle-ci relève du contrôle manuel** (niveau, couleur,
+paramètre). Le manuel est explicite : « You may continue to modify channels 1 through 5
+since they are still selected. »
+
+Mais — manuel §6, énoncé **deux fois textuellement** :
+
+> « Channels are deselected when any action is taken on the keypad that is **unrelated to
+> manual control**, such as **recording groups and cues, or updating a record target**. »
+
+Autrement dit : **un `Record` ou un `Update` désélectionne.** L'étape suivante est
+syntaxiquement valide, la console ne refuse rien, et la commande s'applique à une
+sélection **vide**. Une séquence « colorer / enregistrer / colorer / enregistrer »
+n'enregistre correctement que sa **première** cible.
+
+Ce n'est pas une hypothèse : le workbook officiel L2 Enhanced, qui enseigne exactement
+l'enregistrement d'une série de sept palettes de couleur, repose la sélection à **chacun**
+des sept enregistrements — tantôt en réécrivant `[Group] [99]`, tantôt par `[Select Last]`.
+Aucun `Record` n'y est écrit nu.
+
+Le générateur repose donc la sélection en toutes lettres sur chaque ligne, et **avertit**
+si une IR ne le fait pas.
+
+> **→ Pour l'UI.** Deux conséquences, dans cet ordre d'importance.
+>
+> **1.** Les macros produites par ce projet répètent la sélection à chaque ligne. C'est
+> volontairement verbeux : chaque ligne est vraie isolément, et l'aperçu se relit sans
+> avoir à reconstituer un état. Ne pas « nettoyer » cette répétition à l'affichage — elle
+> est la correction, pas du bruit.
+>
+> **2.** Si l'interface laisse un jour réordonner, dupliquer ou supprimer des lignes, elle
+> doit repasser par le générateur, jamais manipuler le texte. Une ligne déplacée peut
+> perdre le sens que lui donnait la précédente.
 
 **Certaines commandes s'auto-terminent** et ne prennent pas d'`Enter` : `Out`, `+%`,
 `-%`, `Level`, et les actions depuis les direct selects. Un `Enter` de trop ne provoque
@@ -172,7 +199,8 @@ lignes de commande : certaines touches ne sont **pas enregistrables** en mode Le
 
 **La règle.** La ligne de commande Eos est *modale*. Le sens d'une commande ne dépend pas
 que de son texte, mais de l'état de la console au moment où elle arrive. Cinq de ces états
-sont établis, et **aucun n'est lisible** par OSC :
+sont établis, et **aucun n'est publié par une adresse `/eos/out/…` documentée** — vérifié
+sur le manuel §31 et sur `Supported_OSC_Commands.md` :
 
 | État | Effet | Renvoi |
 |---|---|---|
@@ -257,9 +285,12 @@ Cas établis :
 - **`At 5` vaut 50 %, pas 5 %.** Un chiffre unique après `At` reçoit un zéro implicite
   (manuel §6, cinq occurrences ; §22 le reconfirme). Facteur dix. *Résolu* : `05` = 5 %
   (confirmation utilisateur, S) — le générateur écrit systématiquement deux chiffres.
-- **Une valeur parquée est exclue de tous les record targets.** Une macro qui règle puis
-  enregistre un channel parqué produit une cue correcte sur le papier et un plateau
-  inchangé, sans qu'aucune erreur ne remonte.
+- **Une valeur parquée est exclue de tous les record targets.** Et le manuel §19 précise
+  le cas encore plus vicieux : on *peut* régler manuellement puis enregistrer une valeur
+  sur un channel parqué — « the values set and stored in live **do not actually output to
+  the system** if the parameter is parked ». Une macro qui règle puis enregistre un channel
+  parqué produit donc une cue correcte sur le papier et un plateau inchangé, sans qu'aucune
+  erreur ne remonte.
 - **Sélection = fusion, absence de sélection = remplacement.** Constante de la grammaire
   (cues §12, submasters §20, palettes §10). Mais l'assignation de channels à une
   **partition inverse la règle** : une liste nue *remplace*, il faut `+` pour ajouter.
@@ -271,6 +302,20 @@ Cas établis :
   ou entiers) ; au-delà de 10 000 cibles, la commande est **ignorée en silence**.
 - **Une mauvaise référence de gélatine** ne produit ni erreur ni refus : la macro s'exécute
   et donne la mauvaise couleur sur scène.
+- **Une sélection perdue après un `Record`** (voir le préliminaire) : la suite de la
+  séquence s'applique à rien. **Ce cas n'est pas théorique — il a été produit par ce
+  projet.** La première macro générée pour une demande réelle (six palettes de couleur en
+  série) était fausse à partir de sa deuxième palette, et elle a été relue, testée et
+  livrée sans que rien ne la signale. Trouvé le 2026-08-06 en vérifiant le présent
+  document contre le manuel. C'est l'illustration la plus nette de toute cette section :
+  le texte de la macro était impeccable.
+- **`{By Type}` sur une sélection large** fige silencieusement les channels surnuméraires.
+  Le manuel §10 : « the lowest number channel of each fixture type will be the default
+  channel [...] **any additional channels in that fixture type will be recorded with
+  discrete data** ». La palette se crée, la console accepte, et elle contient l'inverse de
+  ce qu'on voulait. À ne jamais présenter comme « une palette générique, donc pas besoin
+  de choisir les circuits » : la sélection reste obligatoire, et doit idéalement tenir en
+  un circuit par type d'appareil.
 
 **→ Pour l'UI.** C'est ici que l'interface gagne ou perd sa valeur. Ces cas ne peuvent pas
 être laissés au texte de la commande — il a l'air juste. Ils doivent être **traduits en
@@ -402,9 +447,14 @@ en est — voir §3 pour le cas Blind, où c'est irrattrapable.
 
 ## 9. Le modèle n'est pas figé — les avertissements sont des données, pas du texte
 
-**La règle.** Le backlog compte 34 points numérotés (numéros stables, jamais réattribués),
+**La règle.** Le backlog compte 36 points numérotés (numéros stables, jamais réattribués),
 dont **25 sont encodés dans le modèle** comme zones `inconnu` reliées à leur numéro. Le
 générateur avertit au lieu d'injecter en aveugle.
+
+Et le modèle se corrige encore. Ce document lui-même a fait remonter deux erreurs le
+2026-08-06 (#35 et #36, tous deux résolus) — dont une qui avait produit une macro fausse
+livrée comme correcte. Une session UI qui trouve une contradiction entre ce document et le
+manuel doit **suspecter le document**, pas le manuel.
 Chaque validation au banc réel en remplit une, et **la formulation des avertissements
 changera**. Certains disparaîtront, d'autres apparaîtront.
 

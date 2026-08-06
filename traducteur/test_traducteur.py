@@ -33,42 +33,60 @@ CAS = [
         "questions": ["portee_enregistrement"],
     },
     {
-        "nom": "phrase réelle + « tous les projecteurs du même type »",
+        # La portée n'est plus une alternative « avec ou sans circuits » : les
+        # deux options en exigent. `{By Type}` décrit ce que la palette
+        # contiendra, pas comment elle s'enregistre (manuel §10).
+        "nom": "phrase réelle + palette générique sur un groupe de travail",
         "phrase": PHRASE_REELLE,
-        "reponses": {"portee_enregistrement": "par_type"},
+        "reponses": {"portee_enregistrement": {"cle": "par_type",
+                                               "valeur": "groupe 99"}},
         "statut": "compris",
         "rendu": (
-            "Color 3/205 Enter\n"
-            "Record Color Palette 1 {By Type} Label Chaud Enter\n"
-            "Color 3/202 Enter\n"
-            "Record Color Palette 2 {By Type} Label Froid Enter\n"
-            "Color 3/106 Enter\n"
-            "Record Color Palette 3 {By Type} Label Rouge Enter\n"
-            "Color 3/139 Enter\n"
-            "Record Color Palette 4 {By Type} Label Vert Enter\n"
-            "Color 3/120 Enter\n"
-            "Record Color Palette 5 {By Type} Label Bleu Enter\n"
-            "Color 3/101 Enter\n"
-            "Record Color Palette 6 {By Type} Label Jaune Enter"),
+            "Group 99 Color 3/205 Enter\n"
+            "Group 99 Record Color Palette 1 {By Type} Label Chaud Enter\n"
+            "Group 99 Color 3/202 Enter\n"
+            "Group 99 Record Color Palette 2 {By Type} Label Froid Enter\n"
+            "Group 99 Color 3/106 Enter\n"
+            "Group 99 Record Color Palette 3 {By Type} Label Rouge Enter\n"
+            "Group 99 Color 3/139 Enter\n"
+            "Group 99 Record Color Palette 4 {By Type} Label Vert Enter\n"
+            "Group 99 Color 3/120 Enter\n"
+            "Group 99 Record Color Palette 5 {By Type} Label Bleu Enter\n"
+            "Group 99 Color 3/101 Enter\n"
+            "Group 99 Record Color Palette 6 {By Type} Label Jaune Enter"),
     },
     {
-        "nom": "phrase réelle + circuits précis",
+        # LA correction du 2026-08-06. La sélection est reposée sur CHAQUE
+        # ligne, y compris les Record : elle ne survit pas à un enregistrement
+        # (manuel §6, énoncé deux fois). La version précédente de ce test
+        # n'écrivait la sélection que sur les lignes `Color` — elle décrivait
+        # une macro dont seule la première palette aurait été correcte.
+        "nom": "phrase réelle + circuits précis — sélection reposée à chaque ligne",
         "phrase": PHRASE_REELLE,
         "reponses": {"portee_enregistrement": {"cle": "selection", "valeur": "1 a 10"}},
         "statut": "compris",
         "rendu": (
             "Chan 1 Thru 10 Color 3/205 Enter\n"
-            "Record Color Palette 1 Label Chaud Enter\n"
+            "Chan 1 Thru 10 Record Color Palette 1 Label Chaud Enter\n"
             "Chan 1 Thru 10 Color 3/202 Enter\n"
-            "Record Color Palette 2 Label Froid Enter\n"
+            "Chan 1 Thru 10 Record Color Palette 2 Label Froid Enter\n"
             "Chan 1 Thru 10 Color 3/106 Enter\n"
-            "Record Color Palette 3 Label Rouge Enter\n"
+            "Chan 1 Thru 10 Record Color Palette 3 Label Rouge Enter\n"
             "Chan 1 Thru 10 Color 3/139 Enter\n"
-            "Record Color Palette 4 Label Vert Enter\n"
+            "Chan 1 Thru 10 Record Color Palette 4 Label Vert Enter\n"
             "Chan 1 Thru 10 Color 3/120 Enter\n"
-            "Record Color Palette 5 Label Bleu Enter\n"
+            "Chan 1 Thru 10 Record Color Palette 5 Label Bleu Enter\n"
             "Chan 1 Thru 10 Color 3/101 Enter\n"
-            "Record Color Palette 6 Label Jaune Enter"),
+            "Chan 1 Thru 10 Record Color Palette 6 Label Jaune Enter"),
+    },
+    {
+        # Sans valeur de sélection, la question doit être reposée — même quand
+        # l'option choisie est « par type ». C'est le bug de conception corrigé.
+        "nom": "portée « par type » sans circuits — la question est reposée",
+        "phrase": PHRASE_REELLE,
+        "reponses": {"portee_enregistrement": "par_type"},
+        "statut": "a_preciser",
+        "questions": ["portee_enregistrement"],
     },
     {
         # Même phrase écrite proprement : doit donner exactement le même
@@ -76,21 +94,22 @@ CAS = [
         "nom": "phrase réelle écrite proprement — résultat identique",
         "phrase": ("créer les palettes de couleur 1 à 6 avec les références Lee : "
                    "chaud, froid, rouge, vert, bleu, jaune"),
-        "reponses": {"portee_enregistrement": "par_type"},
+        "reponses": {"portee_enregistrement": {"cle": "par_type",
+                                               "valeur": "groupe 99"}},
         "statut": "compris",
         "rendu": (
-            "Color 3/205 Enter\n"
-            "Record Color Palette 1 {By Type} Label Chaud Enter\n"
-            "Color 3/202 Enter\n"
-            "Record Color Palette 2 {By Type} Label Froid Enter\n"
-            "Color 3/106 Enter\n"
-            "Record Color Palette 3 {By Type} Label Rouge Enter\n"
-            "Color 3/139 Enter\n"
-            "Record Color Palette 4 {By Type} Label Vert Enter\n"
-            "Color 3/120 Enter\n"
-            "Record Color Palette 5 {By Type} Label Bleu Enter\n"
-            "Color 3/101 Enter\n"
-            "Record Color Palette 6 {By Type} Label Jaune Enter"),
+            "Group 99 Color 3/205 Enter\n"
+            "Group 99 Record Color Palette 1 {By Type} Label Chaud Enter\n"
+            "Group 99 Color 3/202 Enter\n"
+            "Group 99 Record Color Palette 2 {By Type} Label Froid Enter\n"
+            "Group 99 Color 3/106 Enter\n"
+            "Group 99 Record Color Palette 3 {By Type} Label Rouge Enter\n"
+            "Group 99 Color 3/139 Enter\n"
+            "Group 99 Record Color Palette 4 {By Type} Label Vert Enter\n"
+            "Group 99 Color 3/120 Enter\n"
+            "Group 99 Record Color Palette 5 {By Type} Label Bleu Enter\n"
+            "Group 99 Color 3/101 Enter\n"
+            "Group 99 Record Color Palette 6 {By Type} Label Jaune Enter"),
     },
 
     # ------------------------------------------------- colorer une sélection

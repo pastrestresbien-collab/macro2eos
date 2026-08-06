@@ -184,8 +184,14 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
   channels non-défaut si rien n'est sélectionné (rarement l'intention réelle) — voir
   `grammar/modele.yaml` § palettes. Le traducteur ne doit jamais choisir cette portée à la
   place de l'utilisateur : c'est une **question à poser en écran 1**, pas une valeur par
-  défaut à deviner. Deux réponses possibles à proposer : une sélection précise (« quels
-  circuits ? »), ou `{By Type}` (palette générique réutilisable sur tout fixture du même
-  type, sans dépendre de channels précis — manuel §10). Motif générique, pas propre aux
-  palettes couleur : vaut pour tout Record sans sélection explicite dans la phrase
-  d'origine (presets, palettes de toute famille, submasters).
+  défaut à deviner. Motif générique, pas propre aux palettes couleur : vaut pour tout
+  Record sans sélection explicite dans la phrase d'origine (presets, palettes de toute
+  famille, submasters).
+  **Corrigé le 2026-08-06** : cette entrée présentait `{By Type}` comme une réponse
+  possible « sans dépendre de channels précis ». C'était faux. `{By Type}` décrit ce que la
+  palette **contiendra**, pas comment elle s'enregistre — le manuel §10 « Storing a By Type
+  Palette » précise que le plus petit numéro de channel de chaque type devient le défaut et
+  que **tous les autres channels du même type sont enregistrés en données discrètes**. La
+  sélection reste donc obligatoire dans les deux cas ; `{By Type}` n'est qu'un modificateur,
+  et il appelle idéalement une sélection d'un seul circuit par type d'appareil (c'est le
+  rôle du groupe de travail `Group 99` dans le workbook officiel L2).

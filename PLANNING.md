@@ -32,7 +32,7 @@ Le constat qui ouvrait cette section jusqu'au 3 août — « le dépôt est à 1
 Markdown, rien n'y est consommable par un programme sauf `eosKeys.ts` » — n'est plus vrai.
 [`grammar/`](grammar/README.md) porte désormais un modèle typé de **79 actions et 164
 règles de légalité**, compilé en JSON, avec un générateur qui produit trois sorties
-distinctes (ligne de commande, contenu de macro, paquets OSC) et **110 cas de
+distinctes (ligne de commande, contenu de macro, paquets OSC) et **113 cas de
 non-régression**, dont la majorité sont des exemples chiffrés du manuel officiel recopiés
 verbatim.
 
@@ -45,8 +45,8 @@ recopiée verbatim dans les tests avec ses fautes de frappe.
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.1 — 5 intentions, 24 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
-| **C — valider au banc réel** | ⬜ non commencé — 34 points recensés au backlog (#34 tout juste résolu via le catalogue officiel Lee) |
+| **B — écrire le traducteur NL** | 🚧 v0.1 — 5 intentions, 25 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **C — valider au banc réel** | ⬜ non commencé — 36 points recensés au backlog (#34, #35 et #36 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
 virtuel, le multi-console — et l'export ASCII, non par oubli mais faute de spécification
@@ -511,6 +511,46 @@ numéro. C'est la priorité de la section qui fait foi, pas l'ordre des numéros
 que de disparaître — le numéro reste citable dans l'historique de `grammar/modele.yaml`.
 
 ### Résolu
+
+35. **✅ Une sélection ne survit pas à un `Record` — et le modèle l'ignorait.**
+    Trouvé le 2026-08-06 en vérifiant `REGLES_POUR_UI.md` contre le manuel plutôt que
+    contre la mémoire de la session. Le manuel §6 « Deselecting Channels » l'énonce
+    **deux fois textuellement** : « Channels are deselected when any action is taken on
+    the keypad that is unrelated to manual control, such as recording groups and cues, or
+    updating a record target. » Le workbook officiel **L2 Enhanced v3.3** le confirme en
+    pratique sur exactement le cas d'usage du projet — sa section « COLOR PALETTES »
+    enregistre une série de sept palettes et repose la sélection à **chacun** des sept
+    enregistrements, tantôt en réécrivant `[Group] [99]`, tantôt par `[Select Last]` ;
+    aucun `Record` n'y est écrit nu.
+    **Conséquence : la première macro produite par ce dépôt pour une demande réelle était
+    fausse.** Les six palettes de couleur générées le 2026-08-06 n'auraient enregistré
+    correctement que la première — les cinq suivantes se seraient enregistrées depuis une
+    sélection vide, sans refus de la console ni avertissement du générateur. Exemple
+    parfait de la classe d'erreur que ce projet existe pour attraper : commande valide,
+    console d'accord, résultat faux et silencieux.
+    **Corrigé** : règle encodée dans `grammar/modele.yaml` (`duree_de_vie_selection`,
+    confiance A), garde-fou structurel dans `generateur.py`
+    (`_verifier_survie_selection`, 3 cas de non-régression), et le traducteur repose
+    désormais la sélection sur **chaque** étape plutôt que de compter sur sa survie.
+    Choix assumé : reposer la sélection en toutes lettres plutôt qu'employer
+    `Select Last` — même raison que pour `Chan`/`Cue` explicites, chaque ligne doit être
+    vraie isolément.
+
+36. **✅ `{By Type}` ne dispense pas de sélectionner des channels.**
+    Trouvé dans la même passe. `APP.md` et le traducteur présentaient `{By Type}` comme
+    une réponse possible à « quels circuits ? » — une palette générique « sans dépendre
+    de channels précis ». C'était une erreur de lecture : `{By Type}` décrit ce que la
+    palette **contiendra**, pas comment elle s'enregistre. Manuel §10 « Storing a By Type
+    Palette » : « the lowest number channel of each fixture type will be the default
+    channel. Generally, you will want **only one channel of each fixture type in use**.
+    Any additional channels in that fixture type will be recorded with **discrete data**. »
+    Enregistrer `{By Type}` sur une sélection large est donc activement contre-productif —
+    un channel par type devient le défaut, tous les autres sont figés en valeurs
+    discrètes (marqueur `T+`), et la console n'en dit rien.
+    **Corrigé** dans `grammar/modele.yaml` (§ palettes, `ne_dispense_pas_de_selection`),
+    dans le lexique du traducteur (les deux options de la question exigent désormais une
+    sélection, `{By Type}` n'étant plus qu'un modificateur), dans `APP.md` et dans
+    `REGLES_POUR_UI.md`.
 
 29. **✅ Niveau sous 10 % — zéro de tête.** Le manuel §6 établissait déjà, par cinq
     occurrences de sa notation `<0>`, qu'un chiffre unique après `At` reçoit un zéro

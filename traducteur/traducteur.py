@@ -386,35 +386,43 @@ class Traducteur:
             return Traduction(statut="a_preciser", notes=notes,
                               questions=[self._question_portee()])
 
-        selection = None
-        options: list[str] = []
+        # Les deux options exigent une sélection. `{By Type}` ne dispense pas
+        # d'en donner une — il décrit ce que la palette contiendra, pas comment
+        # elle s'enregistre (manuel §10 « Storing a By Type Palette »).
         if isinstance(portee, dict):
             cle, valeur = portee.get("cle"), portee.get("valeur")
         else:
             cle, valeur = portee, None
-        if cle == "par_type":
-            options = ["{By Type}"]
-        elif cle == "selection":
-            selection = self._selection_depuis(valeur)
-            if selection is None:
-                return Traduction(statut="a_preciser", notes=notes,
-                                  questions=[self._question_portee()])
-        else:
+        if cle not in ("par_type", "selection"):
             return Traduction(statut="a_preciser", notes=notes,
                               questions=[self._question_portee()])
+        selection = self._selection_depuis(valeur)
+        if selection is None:
+            return Traduction(statut="a_preciser", notes=notes,
+                              questions=[self._question_portee()])
+        options = ["{By Type}"] if cle == "par_type" else []
+        if options:
+            notes.append("Palette générique `{By Type}` : donner de préférence un "
+                         "seul circuit par type d'appareil — les autres circuits du "
+                         "même type seraient figés en valeurs individuelles.")
 
+        # LA SÉLECTION EST REPOSÉE À CHAQUE ÉTAPE, y compris sur le Record.
+        # Elle ne survit pas à un enregistrement : `Record` désélectionne les
+        # channels (manuel §6, énoncé deux fois). Sans cette répétition, seule
+        # la PREMIÈRE palette d'une série serait correcte, les suivantes
+        # s'enregistrant depuis une sélection vide — sans que la console refuse
+        # quoi que ce soit. Le workbook officiel L2 repose la sélection à chaque
+        # enregistrement pour cette raison exacte.
         ir: list[dict] = []
         for cible, couleur in zip(cibles, couleurs):
-            etape = {"action": {"type": "couleur_gel",
-                                "nuancier": nuancier, "teinte": couleur["gel"]}}
-            if selection:
-                etape["selection"] = dict(selection)
-            ir.append(etape)
+            ir.append({"selection": dict(selection),
+                       "action": {"type": "couleur_gel",
+                                  "nuancier": nuancier, "teinte": couleur["gel"]}})
             record = {"type": "record_palette", "famille": "Color Palette",
                       "cible": cible, "label": couleur["nom"].capitalize()}
             if options:
                 record["options"] = list(options)
-            ir.append({"action": record})
+            ir.append({"selection": dict(selection), "action": record})
 
         # Les teintes qui portent déjà une note détaillée (une décision du
         # projet à expliquer) ne sont pas re-listées : elles sont plus haut.
@@ -438,7 +446,13 @@ class Traducteur:
         )
 
     def _selection_depuis(self, valeur) -> dict | None:
-        """La réponse « circuits précis » peut arriver en dict ou en texte."""
+        """La réponse à la question de portée, en dict, en entier ou en texte.
+
+        Le texte accepte un groupe (« groupe 99 ») autant que des circuits :
+        c'est la forme qu'emploie le workbook officiel L2 pour enregistrer une
+        série de palettes — un groupe de travail contenant un appareil de
+        chaque type.
+        """
         if isinstance(valeur, dict):
             return valeur
         if isinstance(valeur, int):
@@ -446,12 +460,8 @@ class Traducteur:
         if isinstance(valeur, str) and valeur.strip():
             toks = tokeniser(normaliser(valeur, self._ponctuation))
             pris: set[int] = set()
-            bornes = self._plage(toks, pris)
-            if bornes:
-                return {"objet": "Chan", "de": bornes[0], "a": bornes[1]}
-            nombres = self._nombres(toks, pris)
-            if nombres:
-                return {"objet": "Chan", "numero": nombres[0][1]}
+            objet = self._objet(toks, pris) or "Chan"
+            return self._selection_de(objet, toks, pris)
         return None
 
     # -- intention : colorer une sélection ---------------------------------
