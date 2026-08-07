@@ -46,6 +46,19 @@ que si un besoin précis et avéré l'exige (ex. : doute sur une fidélité de c
 vérifier, contenu manquant suspecté dans le `.md`). Dans ce cas, ne lire que la portion
 nécessaire, pas le fichier entier.
 
+**Cette règle vaut aussi pour les recherches, pas seulement les lectures complètes**
+(ajouté le 2026-08-07, après un audit de consommation de tokens). `manuals/`,
+`reference/` et `corpus/` — la « bibliographie » du projet — pèsent à eux trois plus de
+40 Mo de texte. Un `Grep`/`Glob` sans périmètre explicite balaie tout le dépôt, y compris
+ces dossiers : même sans ouvrir un fichier entier, une recherche large y coûte des tokens
+en sortie pour un résultat presque toujours hors sujet quand le travail porte sur
+`grammar/`, `traducteur/` ou `app/`. **Restreindre `path` (Grep) ou le dossier de départ
+(Glob) au périmètre concerné par défaut** ; n'élargir la recherche à la bibliographie que
+pour une vérification de fidélité précise contre une source primaire (ce que la règle
+n°2 ci-dessus autorise déjà pour la lecture), jamais par réflexe ou par recherche
+exploratoire large. Le principe est le même que pour les PDF : ce n'est pas qu'on n'a
+pas le droit d'y toucher, c'est que la routine doit l'éviter par défaut.
+
 ## Contexte du projet
 
 Voir `INDEX.md` (racine) pour l'état complet du corpus et des manuels convertis, et
