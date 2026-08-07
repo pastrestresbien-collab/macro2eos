@@ -6,6 +6,11 @@ vers la console.
 État : **conception en cours**. Ce fichier ne contient que ce qui est décidé ou imposé
 par des faits techniques établis. Le reste est marqué ouvert.
 
+**Avant de développer l'interface**, lire [`REGLES_POUR_UI.md`](REGLES_POUR_UI.md) : les
+neuf règles de la grammaire Eos qui contraignent l'UI, et ce que chacune impose. Ce
+fichier-ci dit *quoi construire* ; celui-là dit *pourquoi ça ne peut pas être construit
+autrement*.
+
 Dernière mise à jour : 2026-08-06.
 
 ---
@@ -367,3 +372,21 @@ Issues du corpus et du journal terrain — non négociables, déjà vérifiées.
   message d'erreur de la console soit assez précis pour être exploité. À vérifier —
   le simulateur ne renvoie pas d'erreur réaliste. Si le message s'avère trop pauvre,
   l'app signalera le refus sans pouvoir proposer de correction.
+- **Enregistrement d'un record target sans scope de channels explicite — l'app doit
+  demander.** Trouvé le 2026-08-03 en testant une traduction réelle (« créer les palettes
+  couleur 1 à 6, Lee, chaud/froid/rouge/vert/bleu/jaune ») : la demande ne précisait aucun
+  channel. `Record Color Palette` capture l'état de la sélection courante, ou de tous les
+  channels non-défaut si rien n'est sélectionné (rarement l'intention réelle) — voir
+  `grammar/modele.yaml` § palettes. Le traducteur ne doit jamais choisir cette portée à la
+  place de l'utilisateur : c'est une **question à poser en écran 1**, pas une valeur par
+  défaut à deviner. Motif générique, pas propre aux palettes couleur : vaut pour tout
+  Record sans sélection explicite dans la phrase d'origine (presets, palettes de toute
+  famille, submasters).
+  **Corrigé le 2026-08-06** : cette entrée présentait `{By Type}` comme une réponse
+  possible « sans dépendre de channels précis ». C'était faux. `{By Type}` décrit ce que la
+  palette **contiendra**, pas comment elle s'enregistre — le manuel §10 « Storing a By Type
+  Palette » précise que le plus petit numéro de channel de chaque type devient le défaut et
+  que **tous les autres channels du même type sont enregistrés en données discrètes**. La
+  sélection reste donc obligatoire dans les deux cas ; `{By Type}` n'est qu'un modificateur,
+  et il appelle idéalement une sélection d'un seul circuit par type d'appareil (c'est le
+  rôle du groupe de travail `Group 99` dans le workbook officiel L2).

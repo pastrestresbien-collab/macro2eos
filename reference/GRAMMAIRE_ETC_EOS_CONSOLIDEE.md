@@ -349,12 +349,21 @@ qu'en Foreground, corpus #068).
 `[Label]` · `{Icon}` · `{Color}` (Red/Green/White/Dark) · `{Toggle Blink}` ·
 `{Target}` (Device ou User ID) · `{SC Learn}` (exclusion de l'apprentissage show control).
 
-### 10.6 Risque de sécurité fonctionnelle (confirmé S, corpus #067)
+### 10.6 Risque de sécurité fonctionnelle (confiance C, corpus #067)
 
 Édition de macro en cours (Tab 18) + macro background déclenchée en parallèle → les
 commandes de la macro background **s'insèrent dans l'édition en cours** au lieu de
 s'exécuter en arrière-plan. **Ne jamais déclencher de macro via l'app pendant qu'une
 édition de macro est en cours sur la console.**
+
+> **Corrigé le 2026-08-06** : cette section affichait « confirmé S » — le niveau de
+> confiance le plus élevé du projet, réservé à l'observation terrain protocolée. L'entrée
+> source, corpus #067, est en réalité étiquetée **C** (« décrit avec précision, non résolu
+> dans le fil consulté ») : un témoignage de forum sérieux, mais pas une observation
+> confirmée. L'erreur avait été copiée telle quelle dans `REGLES_POUR_UI.md` sans être
+> revérifiée contre le corpus — voir `PLANNING.md` #37. La recommandation elle-même
+> (ne jamais déclencher de macro pendant une édition en cours) reste une précaution
+> raisonnable, mais elle ne s'appuie pas sur une preuve de niveau S.
 
 ---
 
