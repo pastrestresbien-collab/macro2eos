@@ -76,7 +76,9 @@ méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 - `SOURCES.md` — URLs officielles vérifiées de chaque document + miroirs.
 - `VERIFICATION.md` — rapport d'intégrité (couverture texte source ↔ Markdown).
 - `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
-  valider au banc réel.
+  valider au banc réel. Volontairement court (relu à chaque session) ; le récit
+  détaillé, daté, tranche par tranche est dans `PLANNING_HISTORIQUE.md` — à consulter
+  sur besoin précis, pas à relire systématiquement.
 - `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
 - `REGLES_POUR_UI.md` — cadrage pour la session qui développe l'interface : les règles
   structurantes de la grammaire Eos et ce que chacune impose à l'UI.
