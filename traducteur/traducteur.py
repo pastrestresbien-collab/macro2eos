@@ -41,8 +41,6 @@ import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import yaml
-
 RACINE = Path(__file__).parent
 GRAMMAIRE = RACINE.parent / "grammar"
 if str(GRAMMAIRE) not in sys.path:
@@ -124,8 +122,19 @@ def distance(a: str, b: str) -> int:
 
 # --------------------------------------------------------------------------
 class Traducteur:
-    def __init__(self) -> None:
-        self.lex = yaml.safe_load((RACINE / "lexique.yaml").read_text(encoding="utf-8"))
+    def __init__(self, lex: dict | None = None, generateur: object | None = None) -> None:
+        """`lex` et `generateur` permettent d'injecter des données/instance
+        déjà chargées plutôt que de lire `lexique.yaml` et `modele.yaml`
+        depuis le disque — nécessaire dans Pyodide (voir `app/`), qui n'a pas
+        de vrai système de fichiers pointant sur ce dépôt. Import de PyYAML
+        local à cette branche pour la même raison que dans `generateur.py` :
+        Pyodide ne l'a pas installé, et n'en a pas besoin ici."""
+        if lex is not None:
+            self.lex = lex
+        else:
+            import yaml
+            self.lex = yaml.safe_load((RACINE / "lexique.yaml").read_text(encoding="utf-8"))
+        self._generateur = generateur
         self._ponctuation = self.lex["normalisation"]["ponctuation_ignoree"]
         self._outils = set(self.lex["mots_outils"])
         self._mots_plage = set(self.lex["plage"]["mots"])
@@ -663,10 +672,16 @@ class Traducteur:
     def rendre(self, traduction: Traduction, **kwargs):
         """Passe l'IR au générateur. Ne court-circuite rien : les
         avertissements du modèle sur les zones non validées remontent tels
-        quels, en plus des notes du traducteur."""
-        from generateur import Generateur
+        quels, en plus des notes du traducteur.
+
+        Réutilise le générateur donné à la construction s'il y en a un —
+        évite de relire `modele.yaml` depuis le disque à chaque traduction,
+        et c'est obligatoire en Pyodide, où il n'y a rien à relire."""
         if not traduction.compris:
             raise ValueError("seule une traduction comprise peut être rendue")
+        if self._generateur is not None:
+            return self._generateur.rendre(traduction.ir, **kwargs)
+        from generateur import Generateur
         return Generateur().rendre(traduction.ir, **kwargs)
 
 

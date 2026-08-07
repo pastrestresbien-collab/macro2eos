@@ -1,0 +1,477 @@
+{
+  "meta": {
+    "version": "0.1",
+    "maj": "2026-08-06"
+  },
+  "normalisation": {
+    "minuscules": true,
+    "sans_accents": true,
+    "ponctuation_ignoree": ",;:!?.()[]"
+  },
+  "tolerance": {
+    "longueur_minimale": 4,
+    "distance_max_mot_court": 1,
+    "distance_max_mot_long": 2,
+    "egalite": "question"
+  },
+  "mots_outils": [
+    "le",
+    "la",
+    "les",
+    "l",
+    "un",
+    "une",
+    "des",
+    "du",
+    "de",
+    "d",
+    "et",
+    "en",
+    "avec",
+    "dans",
+    "sur",
+    "pour",
+    "au",
+    "aux",
+    "ref",
+    "refs",
+    "reference",
+    "references",
+    "numero",
+    "numeros",
+    false,
+    "s",
+    "il",
+    "me",
+    "moi",
+    "stp",
+    "please"
+  ],
+  "plage": {
+    "mots": [
+      "a",
+      "thru",
+      "jusqu",
+      "jusqua",
+      "-"
+    ],
+    "source": "`Thru` est l'opérateur de plage du modèle (grammar/modele.yaml, operateurs.plage)"
+  },
+  "objets": {
+    "Chan": {
+      "alias": [
+        "circuit",
+        "circuits",
+        "chan",
+        "chans",
+        "channel",
+        "channels",
+        "projecteur",
+        "projecteurs",
+        "proj",
+        "lampe",
+        "lampes"
+      ],
+      "source": "objets.Chan du modèle ; alias métier français courants"
+    },
+    "Group": {
+      "alias": [
+        "groupe",
+        "groupes",
+        "group",
+        "groups"
+      ],
+      "source": "objets.Group du modèle"
+    },
+    "Cue": {
+      "alias": [
+        "cue",
+        "cues",
+        "memoire",
+        "memoires",
+        "sequence"
+      ],
+      "source": "objets.Cue du modèle. « mémoire » est le terme français traditionnel du métier pour une cue — conservé parce que la saisie vocale le produira.\n"
+    }
+  },
+  "nuanciers": {
+    "lee": {
+      "numero": 3,
+      "alias": [
+        "lee",
+        "lee filters",
+        "leefilters"
+      ],
+      "source": "manuel §10, corpus #082 — `Color 3/<numéro>`, confirmé A"
+    }
+  },
+  "couleurs": {
+    "rouge": {
+      "gel": 106,
+      "nom_lee": "Primary Red",
+      "alias": [
+        "r",
+        "rouges"
+      ],
+      "source": "catalogue officiel p.22 — « Strong red effect, cycloramas »"
+    },
+    "vert": {
+      "gel": 139,
+      "nom_lee": "Primary Green",
+      "alias": [
+        "v",
+        "verts"
+      ],
+      "source": "catalogue officiel p.19 — « Set lighting, cycloramas »"
+    },
+    "bleu": {
+      "gel": 120,
+      "nom_lee": "Deep Blue",
+      "alias": [
+        "b",
+        "bleus"
+      ],
+      "source": "catalogue officiel p.17 — « Pleasing effect for theatrical lighting ». Lee ne nomme aucune teinte « Primary Blue » : 120 est le bleu standard le plus proche d'un bleu primaire dans la gamme théâtre.\n"
+    },
+    "jaune": {
+      "gel": 101,
+      "nom_lee": "Yellow",
+      "alias": [
+        "j",
+        "jaunes"
+      ],
+      "source": "catalogue officiel p.21 — « Sunlight and window effect »"
+    },
+    "orange": {
+      "gel": 105,
+      "nom_lee": "Orange",
+      "alias": [
+        "o",
+        "oranges"
+      ],
+      "source": "catalogue officiel p.22 — nom Lee littéralement identique au mot français"
+    },
+    "magenta": {
+      "gel": 113,
+      "nom_lee": "Magenta",
+      "alias": [
+        "magentas"
+      ],
+      "source": "catalogue officiel p.23 — nom Lee littéralement identique"
+    },
+    "violet": {
+      "gel": 344,
+      "nom_lee": "Violet",
+      "alias": [
+        "violets"
+      ],
+      "source": "catalogue officiel p.16 — nom Lee littéralement identique"
+    },
+    "chaud": {
+      "gel": 205,
+      "nom_lee": "Half CTO",
+      "alias": [
+        "chaude",
+        "chauds",
+        "chaudes"
+      ],
+      "choix": "DÉCISION DU PROJET, pas une correspondance de catalogue. « Chaud » désigne la famille CTO (204-206), qui réchauffe une source — confirmé par l'utilisateur en session (confiance S) et cohérent avec les conversions Kelvin officielles du catalogue p.30. Reste à choisir la force : 205 (Half) est retenu comme défaut, ni la correction la plus forte (204) ni la plus discrète (206). Voir `reference/lee_filters_theatre.md`.\n",
+      "note_utilisateur": "chaud → Lee 205 (Half CTO, correction moyenne). Pour une correction plus forte 204, plus légère 206.\n"
+    },
+    "froid": {
+      "gel": 202,
+      "nom_lee": "Half CTB",
+      "alias": [
+        "froide",
+        "froids",
+        "froides"
+      ],
+      "choix": "Symétrique de « chaud ». Famille CTB (201-203), qui refroidit une source. 202 (Half) retenu par défaut pour la même raison.\n",
+      "note_utilisateur": "froid → Lee 202 (Half CTB, correction moyenne). Pour une correction plus forte 201, plus légère 203.\n"
+    },
+    "ambre": {
+      "ambigu": true,
+      "alias": [
+        "ambres",
+        "amber"
+      ],
+      "candidats": [
+        {
+          "gel": 162,
+          "nom_lee": "Bastard Amber",
+          "effet": "blanc chaud, wash chaud, lumière de lampe"
+        },
+        {
+          "gel": 102,
+          "nom_lee": "Light Amber",
+          "effet": "jaune chaud, bougie ou fort soleil"
+        },
+        {
+          "gel": 20,
+          "nom_lee": "Medium Amber",
+          "effet": "soleil d'après-midi, bougie, latéral"
+        },
+        {
+          "gel": 104,
+          "nom_lee": "Deep Amber",
+          "effet": "soleil, accents, latéral"
+        }
+      ],
+      "source": "catalogue officiel pp.20-22 — quatre ambres franchement distincts"
+    },
+    "rose": {
+      "ambigu": true,
+      "alias": [
+        "roses",
+        "pink"
+      ],
+      "candidats": [
+        {
+          "gel": 157,
+          "nom_lee": "Pink",
+          "effet": "danse, adoucit les costumes blancs"
+        },
+        {
+          "gel": 2,
+          "nom_lee": "Rose Pink",
+          "effet": "wash rose fort pour cyclorama"
+        },
+        {
+          "gel": 107,
+          "nom_lee": "Light Rose",
+          "effet": "washs généraux, poursuites"
+        },
+        {
+          "gel": 128,
+          "nom_lee": "Bright Pink",
+          "effet": "contre-jour, latéral, comédies musicales"
+        }
+      ],
+      "source": "catalogue officiel pp.22-24. Piège de traduction en plus du choix de force : le mot anglais « Rose » chez Lee ne recouvre pas le « rose » français, qui se dit « Pink ». Raison de plus pour ne pas trancher tout seul.\n"
+    }
+  },
+  "cue_cibles": {
+    "Out": {
+      "alias": [
+        "out",
+        "noir",
+        "blackout"
+      ],
+      "source": "manuel §16 — Go To Cue Out ramène tous les paramètres de toutes les listes"
+    },
+    "Next": {
+      "alias": [
+        "suivante",
+        "next",
+        "suivant"
+      ],
+      "source": "manuel §16"
+    },
+    "Last": {
+      "alias": [
+        "precedente",
+        "last",
+        "derniere"
+      ],
+      "source": "manuel §16"
+    },
+    "Home": {
+      "alias": [
+        "home",
+        "origine"
+      ],
+      "source": "manuel §16"
+    }
+  },
+  "intentions": {
+    "creer_palettes_couleur": {
+      "description": "créer une ou plusieurs palettes de couleur à partir de gélatines",
+      "declencheurs": {
+        "verbe": [
+          "creer",
+          "cree",
+          "crees",
+          "creez",
+          "enregistrer",
+          "enregistre",
+          "record",
+          "sauver",
+          "sauve",
+          "faire",
+          "fais",
+          "fait"
+        ],
+        "objet": [
+          "palette",
+          "palettes"
+        ],
+        "famille": [
+          "couleur",
+          "couleurs",
+          "color"
+        ]
+      },
+      "exemple_nl": "créer les palettes de couleur 1 à 6 avec les références lee, chaud froid r v b j",
+      "origine": "Demande réelle de l'utilisateur, session 2026-08-03, posée explicitement comme « un objectif de traduction réelle ». C'est le cas d'ancrage du traducteur : il est recopié verbatim, fautes comprises, dans les tests.\n"
+    },
+    "colorer_selection": {
+      "description": "mettre une sélection de circuits dans une couleur de nuancier",
+      "declencheurs": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "famille": [
+          "couleur",
+          "color",
+          "lee",
+          "gelatine",
+          "gel",
+          "@couleurs"
+        ]
+      },
+      "exemple_nl": "circuits 10 à 20 en Lee 195",
+      "origine": "patron `selection_plage_couleur` (grammar/patrons.yaml), confiance A"
+    },
+    "regler_intensite": {
+      "description": "donner un niveau d'intensité à une sélection",
+      "declencheurs": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "niveau": [
+          "pourcent",
+          "%",
+          "intensite",
+          "niveau"
+        ]
+      },
+      "exemple_nl": "circuits 1 à 5 à 50 %",
+      "origine": "patron `degrade_intensite` (grammar/patrons.yaml), confiance A",
+      "note": "Un marqueur de niveau explicite est EXIGÉ (`%`, « pourcent », « intensité », « niveau »). « circuits 1 à 5 à 50 » sans marqueur reste volontairement incompris : rien ne dit si 50 est un niveau, une cue ou une palette. C'est le genre de phrase qu'il vaut mieux faire reformuler que deviner.\n"
+    },
+    "enregistrer_cue": {
+      "description": "enregistrer une sélection de circuits dans une cue existante",
+      "declencheurs": {
+        "verbe": [
+          "enregistrer",
+          "enregistre",
+          "record",
+          "sauver",
+          "sauve",
+          "graver",
+          "grave"
+        ],
+        "cue": [
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "enregistrer les circuits 1 à 5 dans la cue 4",
+      "origine": "patron `record_cue_selectif` (grammar/patrons.yaml), confiance A — exemple chiffré du manuel §12 « Using a Positive Selective Store ». Un enregistrement sélectif sur une cue existante MODIFIE les circuits visés sans écraser le reste : ce n'est pas un remplacement.\n"
+    },
+    "aller_a_cue": {
+      "description": "aller à une cue (Go To Cue)",
+      "declencheurs": {
+        "verbe": [
+          "aller",
+          "va",
+          "vas",
+          "go",
+          "goto",
+          "jouer",
+          "joue",
+          "lancer",
+          "lance",
+          "demarrer",
+          "demarre"
+        ],
+        "cible": [
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence",
+          "out",
+          "noir",
+          "blackout",
+          "suivante",
+          "next",
+          "suivant",
+          "precedente",
+          "last",
+          "derniere",
+          "home",
+          "origine"
+        ]
+      },
+      "exemple_nl": "aller à la cue 5",
+      "origine": "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts"
+    }
+  },
+  "questions": {
+    "portee_enregistrement": {
+      "texte": "Sur quels circuits enregistrer ?",
+      "pourquoi": "`Record Color Palette` capture l'état de la sélection courante — ou, si rien n'est sélectionné, celui de tous les channels non-défaut, ce qui est rarement l'intention réelle. La demande ne le précise pas, et le traducteur ne doit pas choisir à la place de l'utilisateur.\n",
+      "source": "`APP.md` § Ouvert ; `grammar/modele.yaml` § palettes ; manuel §10",
+      "correction_2026_08_06": "Cette question offrait auparavant « tous les projecteurs du même type » comme une alternative DISPENSANT de donner des circuits. C'était faux : `{By Type}` décrit ce que la palette CONTIENDRA, pas comment elle s'enregistre. Le manuel §10 « Storing a By Type Palette » est explicite — « the lowest number channel of each fixture type will be the default channel [...] you will want only one channel of each fixture type in use ». Les deux options exigent donc une sélection ; elles ne diffèrent que par l'ajout de `{By Type}`.\n",
+      "options": [
+        {
+          "cle": "par_type",
+          "libelle": "Une palette générique, réutilisable par type d'appareil",
+          "detail": "Ajoute `{By Type}`. Donner de préférence UN SEUL circuit par type d'appareil : le plus petit numéro de chaque type devient la valeur par défaut, et tous les autres circuits du même type sont figés en valeurs individuelles (marqueur `T+`), ce qui est rarement voulu.\n",
+          "demande_valeur": true
+        },
+        {
+          "cle": "selection",
+          "libelle": "Une palette sur des circuits précis",
+          "detail": "La palette capture l'état exact des circuits donnés.",
+          "demande_valeur": true
+        }
+      ]
+    },
+    "couleur_ambigue": {
+      "texte": "Quelle nuance exactement ?",
+      "pourquoi": "Le mot français reconnu recouvre plusieurs teintes franchement différentes au catalogue Lee. Choisir au hasard produirait une macro valide, acceptée par la console, et la mauvaise couleur sur scène — le pire des trois échecs possibles parce qu'il est silencieux.\n",
+      "source": "`reference/lee_filters_theatre.md`, catalogue officiel Lee"
+    }
+  }
+}

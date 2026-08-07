@@ -28,8 +28,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import yaml
-
 RACINE = Path(__file__).parent
 
 # Mots-clés de destination acceptés par Go To Cue à la place d'un numéro.
@@ -72,8 +70,20 @@ class ResultatOSC:
 
 
 class Generateur:
-    def __init__(self) -> None:
-        self.modele = yaml.safe_load((RACINE / "modele.yaml").read_text(encoding="utf-8"))
+    def __init__(self, modele: dict | None = None) -> None:
+        """`modele` permet d'injecter un modèle déjà chargé (le JSON compilé
+        par `build.py`, par exemple) plutôt que de relire `modele.yaml` depuis
+        le disque — nécessaire dans un contexte sans système de fichiers
+        classique, comme Pyodide dans le navigateur (voir `app/`).
+
+        L'import de PyYAML est local à cette branche, pas en tête de module :
+        Pyodide n'a pas ce paquet installé (voir `app/engine.js`), et il ne
+        doit pas être nécessaire tant qu'on ne lit pas réellement le YAML."""
+        if modele is not None:
+            self.modele = modele
+        else:
+            import yaml
+            self.modele = yaml.safe_load((RACINE / "modele.yaml").read_text(encoding="utf-8"))
         self._legalite = self.modele["legalite"]
         self._thru = self.modele["operateurs"]["plage"]["symbole"]
         self._plus = self.modele["operateurs"]["ajout"]["symbole"]

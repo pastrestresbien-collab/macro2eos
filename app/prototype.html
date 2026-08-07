@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>macro2eos — prototype interactif</title>
 
 <style>
@@ -430,12 +431,15 @@
     <p style="margin-top:16px; border-left:2px solid var(--page-accent); padding-left:12px;">
       Vos favoris et le fil sont conservés sur cet appareil : fermez et rouvrez sans rien
       perdre. Pour repartir propre : ⚙ → <i>Repartir de zéro</i>. Le moteur de traduction
-      reste une démonstration à vocabulaire limité — c'est la navigation qu'il faut juger,
-      pas sa compréhension.
+      est désormais le vrai traducteur du corpus (`traducteur/`), pas une démonstration —
+      il peut vous poser une vraie question quand la demande est ambiguë, au lieu de
+      deviner. Voir <code style="font-family:var(--mono)">app/engine.js</code>.
     </p>
   </section>
 </div>
 
+<script src="vendor/pyodide/pyodide.js"></script>
+<script src="engine.js"></script>
 <script>
 (function () {
   "use strict";
@@ -548,44 +552,17 @@
   function esc(s) { return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
   function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim(); }
 
-  // ---------- moteur de démonstration (vocabulaire volontairement limité) ----------
-  function translate(raw) {
-    var t = norm(raw); if (!t) return null;
-    for (var i=0;i<LIBRARY.length;i++) {
-      if (t === norm(LIBRARY[i].req)) {
-        var L = LIBRARY[i];
-        return { cmd:L.cmd, warn:L.confidence !== "A",
-                 warnText: L.confidence !== "A" ? "Motif du corpus communautaire (confiance " + L.confidence + ") — jamais validé sur cette console." : null,
-                 tokens:[], fromLib: L.source + " · " + L.confidence };
-      }
-    }
-    if (/\b(noir salle|blackout|noir)\b/.test(t)) return { cmd:"Sub 12 At 0 Enter", warn:false, tokens:[] };
-    if (/\b(plein feu|full)\b/.test(t)) return { cmd:"Chan 1 Thru 96 At Full Enter", warn:false, tokens:[] };
-
-    var g = t.match(/groupe\s+(\d+)/);
-    var c = t.match(/circuits?\s+(\d+)\s*(?:a|à|thru)\s*(\d+)/) || t.match(/circuits?\s+(\d+)/);
-    var col = t.match(/(?:en\s+)?(?:lee|couleur|gel)\s+(\d+)/);
-    if (!g && !c) return null;
-
-    var target, tokens = [];
-    if (g && c) {
-      target = "Group " + g[1] + " + " + c[1] + " Thru " + c[2] + " ";
-      tokens = [{ match:"Group", selected:"Groupe", alternatives:["Circuit","Groupe","Palette","Preset"] }];
-    } else if (g) target = "Group " + g[1] + " ";
-    else if (c[2]) target = "Chan " + c[1] + " Thru " + c[2] + " ";
-    else target = "Chan " + c[1] + " ";
-
-    var color = "";
-    if (col) {
-      var typo = /circuits?\s+10\s*(?:a|à|thru)\s*20/.test(t) && col[1] === "195";
-      color = (typo ? "Colour 3/" : "Color 3/") + col[1] + " ";
-    }
-    var warn = !!(g && c);
-    return {
-      cmd: (target + color).trim() + " Enter", warn: warn, tokens: tokens,
-      warnText: warn ? "Mélanger un groupe et une plage de circuits dans la même sélection n'a jamais été confirmé sur un Eos réel." : null
-    };
-  }
+  // ---------- moteur réel ----------
+  // La traduction elle-même vit dans app/engine.js (`window.traduireReel`),
+  // qui fait tourner le vrai `traducteur/traducteur.py` + `grammar/generateur.py`
+  // via Pyodide — pas un module de démonstration. Ce fichier-ci ne fait que
+  // relayer l'appel et poser le résultat dans le fil ; voir `handle("ask", …)`
+  // et `submitAnswer()` plus bas.
+  //
+  // `traduireReel` retourne toujours l'une de trois issues (jamais une devinette
+  // silencieuse) : "compris" (une commande), "a_preciser" (une question, avec
+  // ses options — voir REGLES_POUR_UI.md règle 5), ou "incompris" (rien, plus
+  // les mots non reconnus). Les trois sont posées dans le fil ci-dessous.
 
   // ---------- rendu ----------
   function renderAll() {
@@ -704,10 +681,51 @@
 
     out += '<div class="reply">';
 
+    if (e.status === "thinking") {
+      out += '<div class="flag"><span>…</span><span><b>Traduction en cours.</b> ' +
+        '<span class="txt">Premier appel : le moteur Python doit démarrer dans le navigateur, ' +
+        "ça peut prendre quelques secondes.</span></span></div>";
+      out += "</div></div>";
+      return out;
+    }
+
+    if (e.status === "engine-error") {
+      out += '<div class="flag flag-bad"><span>⚠</span><span><b>Le moteur réel n\'a pas pu répondre.</b> ' +
+        '<span class="txt">' + esc(e.errorText || "erreur inconnue") + "</span></span></div>";
+      out += '<div class="row-actions"><button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Réessayer</button></div>';
+      out += "</div></div>";
+      return out;
+    }
+
+    if (e.status === "question" && e.question) {
+      var q = e.question;
+      out += '<div class="flag flag-warn"><span>?</span><span><b>' + esc(q.texte) + '</b>' +
+        (q.pourquoi ? ' <span class="txt">' + esc(q.pourquoi) + "</span>" : "") + "</span></div>";
+      if (e.pendingChoice) {
+        out += '<div class="menu"><div style="padding:6px 4px;">' +
+          '<input type="text" id="answer-value-' + e.id + '" data-id="' + e.id +
+          '" placeholder="ex. 1 à 10, ou groupe 99" /></div>' +
+          '<div class="row-actions" style="padding:0 6px 6px;">' +
+          '<button class="mini go" data-action="answer:value-submit" data-id="' + e.id + '">Valider</button>' +
+          '<button class="mini" data-action="answer:cancel" data-id="' + e.id + '">← Changer d\'option</button>' +
+          "</div></div>";
+      } else {
+        out += '<div class="menu">' + q.options.map(function (o) {
+          return '<button class="opt" data-action="answer:pick" data-id="' + e.id + '" data-choice="' + esc(o.cle) + '">' +
+            esc(o.libelle) + (o.detail ? '<span class="txt" style="display:block;font-weight:400;">' + esc(o.detail) + "</span>" : "") +
+            "</button>";
+        }).join("") + "</div>";
+      }
+      out += "</div></div>";
+      return out;
+    }
+
     if (e.status === "unknown") {
+      var motsInconnus = (e.nonReconnus || []).length
+        ? "Mots non reconnus : « " + e.nonReconnus.join(" », « ") + " »."
+        : "Aucun vocabulaire connu dans cette phrase.";
       out += '<div class="flag flag-bad"><span>?</span><span><b>Je n\'ai pas compris cette formulation.</b> ' +
-        '<span class="txt">Le vocabulaire de ce prototype est volontairement limité : essayez « groupe », ' +
-        "« circuit(s) », « lee / couleur », ou reprenez une formulation de la bibliothèque.</span></span></div>";
+        '<span class="txt">' + esc(motsInconnus) + "</span></span></div>";
       out += '<div class="row-actions"><button class="mini go" data-action="nav" data-screen="biblio">📚 Bibliothèque</button>' +
         '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reformuler</button></div>';
       out += "</div></div>";
@@ -715,6 +733,9 @@
     }
 
     out += '<div class="macro">' + macroHtml(e) + "</div>";
+    if (e.notes && e.notes.length) {
+      out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
+    }
 
     if (state.chipOpenId === e.id && e.tokens && e.tokens.length) {
       var tk = e.tokens[0];
@@ -959,6 +980,56 @@
   // ---------- actions ----------
   function findEx(id) { return state.thread.filter(function (e) { return e.id == id; })[0]; }
 
+  // ---------- pont vers le vrai traducteur (app/engine.js) ----------
+
+  function askEngine(exchangeId, phrase, reponses) {
+    if (typeof window.traduireReel !== "function") {
+      applyRealError(exchangeId, "Le moteur réel (app/engine.js) n'est pas chargé.");
+      return;
+    }
+    window.traduireReel(phrase, reponses).then(function (r) {
+      applyRealResult(exchangeId, phrase, r, reponses);
+    }).catch(function (err) {
+      applyRealError(exchangeId, (err && err.message) || String(err));
+    });
+  }
+
+  // Rejoue une question déjà répondue avec une réponse de plus — c'est ainsi
+  // que le traducteur reprend là où il s'était arrêté sans redemander le
+  // reste (voir traducteur/README.md).
+  function submitAnswer(e, valeurReponse) {
+    var reponses = Object.assign({}, e.reponses || {});
+    reponses[e.question.id] = valeurReponse;
+    e.status = "thinking"; e.pendingChoice = null; e.question = null;
+    renderAll();
+    askEngine(e.id, e.ask, reponses);
+  }
+
+  function applyRealResult(exchangeId, phrase, r, reponses) {
+    var e = findEx(exchangeId); if (!e) return;
+    e.ask = phrase; e.reponses = reponses; e.pendingChoice = null;
+    e.notes = r.notes || []; e.nonReconnus = r.non_reconnus || [];
+
+    if (r.statut === "compris") {
+      e.cmd = r.commande;
+      e.warn = (r.avertissements || []).length > 0;
+      e.warnText = e.warn ? r.avertissements.join(" · ") : null;
+      e.question = null; e.status = "draft"; e.tokens = [];
+    } else if (r.statut === "a_preciser") {
+      e.question = (r.questions || [])[0] || null;
+      e.status = e.question ? "question" : "unknown";
+    } else {
+      e.question = null; e.status = "unknown";
+    }
+    renderAll();
+  }
+
+  function applyRealError(exchangeId, message) {
+    var e = findEx(exchangeId); if (!e) return;
+    e.status = "engine-error"; e.errorText = message;
+    renderAll();
+  }
+
   function commit(e) {
     var refused = /colour/i.test(e.cmd);
     e.time = nowTime();
@@ -1001,18 +1072,17 @@
         var ta = document.getElementById("composer-input");
         var raw = ta ? ta.value : "";
         if (!raw.trim()) break;
-        var r = translate(raw);
         state.draft = "";
-        if (!r) {
-          // Rien n'a été compris : il n'y a pas de macro, donc pas d'envoi à
-          // proposer. On le dit, et on n'offre que les issues qui ont un sens.
-          state.thread.push({ id: uid++, kind:"exchange", ask: raw, cmd: null,
-            status:"unknown", tokens: [], time: nowTime() });
-          renderAll(); break;
-        }
-        state.thread.push({ id: uid++, kind:"exchange", ask: raw, cmd: r.cmd, warn: !!r.warn,
-          warnText: r.warnText, tokens: r.tokens || [], fromLib: r.fromLib, status:"draft" });
-        renderAll(); break;
+        var eid = uid++;
+        // Le vrai traducteur répond de façon asynchrone (Pyodide) : on pose
+        // tout de suite une entrée "réflexion en cours", puis on la met à
+        // jour avec le résultat réel — jamais de résultat inventé pour
+        // combler l'attente.
+        state.thread.push({ id: eid, kind:"exchange", ask: raw, cmd: null,
+          status:"thinking", tokens: [], time: nowTime() });
+        renderAll();
+        askEngine(eid, raw, {});
+        break;
       }
 
       case "chip:toggle":
@@ -1029,6 +1099,37 @@
         }
         renderAll(); break;
       }
+
+      // ---- répondre à une question du vrai traducteur ----
+      case "answer:pick": {
+        e = findEx(d.id); if (!e || !e.question) break;
+        var opt = e.question.options.filter(function (o) { return o.cle === d.choice; })[0];
+        if (!opt) break;
+        if (opt.demande_valeur) {
+          // Cette option demande une précision en plus (des numéros de
+          // circuits, par exemple) : on montre le champ avant de renvoyer.
+          e.pendingChoice = opt.cle;
+          renderAll();
+          var vi = document.getElementById("answer-value-" + e.id);
+          if (vi) vi.focus();
+          break;
+        }
+        submitAnswer(e, opt.cle);
+        break;
+      }
+
+      case "answer:value-submit": {
+        e = findEx(d.id); if (!e || !e.pendingChoice) break;
+        var vinput = document.getElementById("answer-value-" + e.id);
+        var val = vinput ? vinput.value.trim() : "";
+        if (!val) break;
+        submitAnswer(e, { cle: e.pendingChoice, valeur: val });
+        break;
+      }
+
+      case "answer:cancel":
+        e = findEx(d.id); if (e) e.pendingChoice = null;
+        renderAll(); break;
 
       case "send":
         e = findEx(d.id); if (!e) break;
@@ -1219,6 +1320,10 @@
     if (ev.target && ev.target.id === "composer-input" && ev.key === "Enter" && !ev.shiftKey) {
       ev.preventDefault();
       handle("ask", ev.target);
+    }
+    if (ev.target && /^answer-value-/.test(ev.target.id || "") && ev.key === "Enter") {
+      ev.preventDefault();
+      handle("answer:value-submit", ev.target);
     }
   });
 
