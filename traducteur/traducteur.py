@@ -139,6 +139,7 @@ class Traducteur:
         self._outils = set(self.lex["mots_outils"])
         self._mots_plage = set(self.lex["plage"]["mots"])
         self._objets = self._indexer(self.lex["objets"])
+        self._objets_cible = self._indexer(self.lex["objets_cible"])
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
         self._cue_cibles = self._indexer(self.lex["cue_cibles"])
@@ -343,6 +344,10 @@ class Traducteur:
             "regler_intensite": self._regler_intensite,
             "enregistrer_cue": self._enregistrer_cue,
             "aller_a_cue": self._aller_a_cue,
+            "enregistrer_sub": self._enregistrer_sub,
+            "appliquer_effet": self._appliquer_effet,
+            "arreter_effet": self._arreter_effet,
+            "bump_sub": self._bump_sub,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -623,15 +628,175 @@ class Traducteur:
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
 
+    # -- intention : enregistrer une sélection dans un submaster ------------
+    def _enregistrer_sub(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Même schéma que `_enregistrer_cue` : le mot-clé cible d'abord (ici
+        # « sub », résolu dans `self._objets_cible`, jamais `self._objets` —
+        # voir le commentaire de `objets_cible` dans lexique.yaml), qui sépare
+        # dans la phrase le numéro de sub (après) de la sélection (ailleurs).
+        i_sub = self._indice_objet_cle("Sub", toks, pris, index=self._objets_cible)
+        if i_sub is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun submaster désigné — le mot « sub » est requis."])
+
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_sub:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de sub trouvé après « sub »."])
+
+        objet = self._objet(toks, pris) or "Chan"
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+
+        ir = [{"selection": selection, "action": {"type": "record_sub", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : appliquer un effet à une sélection ----------------------
+    def _appliquer_effet(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        i_effet = self._indice_mot(toks, pris, {"effet", "effets"})
+        if i_effet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun effet désigné — le mot « effet » est requis."])
+
+        # Le numéro d'effet se lit juste après « effet », avant la sélection —
+        # même logique positionnelle que le numéro de cue dans `_enregistrer_cue`.
+        numero = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_effet:
+                numero, _ = valeur, pris.add(i)
+                break
+        if numero is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro d'effet trouvé après « effet »."])
+
+        objet = self._objet(toks, pris) or "Chan"
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+
+        ir = [{"selection": selection,
+               "action": {"type": "appliquer_effet", "numero": numero}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : arrêter un effet ----------------------------------------
+    def _arreter_effet(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        i_effet = self._indice_mot(toks, pris, {"effet", "effets"})
+        if i_effet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun effet désigné — le mot « effet » est requis."])
+
+        # « tous les effets » dispense d'un numéro : `Stop Effect Enter` sans
+        # argument arrête tout ce qui tourne (manuel §18).
+        if self._indice_mot(toks, pris, {"tous", "toutes", "tout"}) is not None:
+            ir = [{"action": {"type": "arreter_effet"}}]
+            return Traduction(statut="compris", ir=ir,
+                              non_reconnus=self._non_reconnus(toks, pris))
+
+        numero = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_effet:
+                numero, _ = valeur, pris.add(i)
+                break
+        if numero is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro d'effet trouvé — préciser lequel, ou dire "
+                "« tous les effets »."])
+
+        ir = [{"action": {"type": "arreter_effet", "numero": numero}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : bump d'un submaster (haut / bas) ------------------------
+    def _bump_sub(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        i_sub = self._indice_objet_cle("Sub", toks, pris, index=self._objets_cible)
+        if i_sub is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun submaster désigné — le mot « sub » est requis."])
+
+        libres = self._nombres(toks, pris)
+        if not libres:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de sub trouvé."])
+        i, numero = libres[0]
+        pris.add(i)
+
+        direction = None
+        if self._indice_mot(toks, pris, {"haut", "up"}) is not None:
+            direction = "haut"
+        elif self._indice_mot(toks, pris, {"bas", "down"}) is not None:
+            direction = "bas"
+        elif reponses.get("bump_direction") in ("haut", "bas"):
+            direction = reponses["bump_direction"]
+
+        # Aucune source du dépôt ne documente ce que « haut »/« bas » font
+        # fonctionnellement (voir lexique.yaml, note de `bump_sub`) — sans
+        # marqueur dans la phrase, c'est une question, jamais un choix par défaut.
+        if direction is None:
+            return Traduction(statut="a_preciser",
+                              questions=[self._question_bump_direction()])
+
+        type_action = "sub_bump_haut" if direction == "haut" else "sub_bump_bas"
+        ir = [{"action": {"type": type_action, "numero": numero}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    def _question_bump_direction(self) -> Question:
+        modele = self.lex["questions"]["bump_direction"]
+        return Question(
+            id="bump_direction",
+            texte=modele["texte"],
+            pourquoi=" ".join(modele["pourquoi"].split()),
+            options=[Option(cle=o["cle"], libelle=o["libelle"],
+                            detail=" ".join(o.get("detail", "").split()))
+                     for o in modele["options"]],
+        )
+
     # -- petits extracteurs partagés ---------------------------------------
-    def _indice_objet_cle(self, cle_cible: str, toks: list[str], pris: set[int]) -> int | None:
-        """Comme `_objet`, mais cherche UN objet précis (ex. `Cue`) et rend son
-        index — nécessaire quand la phrase distingue par position deux jeux de
-        nombres (la cible d'un `Record Cue`, et la sélection qui l'enregistre)."""
+    def _indice_mot(self, toks: list[str], pris: set[int],
+                    mots: set[str]) -> int | None:
+        """Index du premier jeton libre appartenant littéralement à `mots`,
+        marqué pris. Sert aux mots-clés qui ne sont ni un objet (`self._objets`)
+        ni une couleur ni une cible de cue — juste un déclencheur littéral
+        (« effet », « tous », direction d'un bump…)."""
         for i, tok in enumerate(toks):
             if i in pris:
                 continue
-            cle, _ = self._resoudre(tok, self._objets)
+            if tok in mots:
+                pris.add(i)
+                return i
+        return None
+
+    def _indice_objet_cle(self, cle_cible: str, toks: list[str], pris: set[int],
+                          index: dict[str, str] | None = None) -> int | None:
+        """Comme `_objet`, mais cherche UN objet précis (ex. `Cue`) et rend son
+        index — nécessaire quand la phrase distingue par position deux jeux de
+        nombres (la cible d'un `Record Cue`, et la sélection qui l'enregistre).
+
+        `index` permet de chercher dans un autre lexique que `self._objets`
+        (ex. `self._objets_cible` pour `Sub`, qui n'est délibérément pas une
+        cible de sélection générique — voir le commentaire dans lexique.yaml)."""
+        index = self._objets if index is None else index
+        for i, tok in enumerate(toks):
+            if i in pris:
+                continue
+            cle, _ = self._resoudre(tok, index)
             if cle == cle_cible:
                 pris.add(i)
                 return i

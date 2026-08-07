@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.1",
-    "maj": "2026-08-06"
+    "version": "0.2",
+    "maj": "2026-08-07"
   },
   "normalisation": {
     "minuscules": true,
@@ -92,6 +92,19 @@
         "sequence"
       ],
       "source": "objets.Cue du modèle. « mémoire » est le terme français traditionnel du métier pour une cue — conservé parce que la saisie vocale le produira.\n"
+    }
+  },
+  "objets_cible": {
+    "Sub": {
+      "alias": [
+        "sub",
+        "subs",
+        "submaster",
+        "submasters",
+        "sousmaster",
+        "sousmasters"
+      ],
+      "source": "objets.Sub du modèle (grammar/modele.yaml) ; manuel §20 Submasters"
     }
   },
   "nuanciers": {
@@ -445,6 +458,117 @@
       },
       "exemple_nl": "aller à la cue 5",
       "origine": "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts"
+    },
+    "enregistrer_sub": {
+      "description": "enregistrer une sélection de circuits dans un submaster",
+      "declencheurs": {
+        "verbe": [
+          "enregistrer",
+          "enregistre",
+          "record",
+          "sauver",
+          "sauve",
+          "graver",
+          "grave"
+        ],
+        "sub": [
+          "sub",
+          "subs",
+          "submaster",
+          "submasters",
+          "sousmaster",
+          "sousmasters"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "enregistrer les circuits 1 à 5 dans le sub 3",
+      "origine": "manuel §20 « Recording a Submaster », confiance A. Même structure que `enregistrer_cue` : la sélection est exigée dans la phrase elle-même, jamais devinée depuis un état de la console (règle 5, `REGLES_POUR_UI.md`).\n",
+      "note": "Sur un sub déjà rempli, cet enregistrement FUSIONNE au lieu de remplacer (manuel §20) — le traducteur ne le signale pas encore en note, seul le générateur le documente dans le modèle.\n"
+    },
+    "appliquer_effet": {
+      "description": "appliquer un effet existant à une sélection de circuits",
+      "declencheurs": {
+        "verbe": [
+          "lancer",
+          "lance",
+          "appliquer",
+          "applique",
+          "demarrer",
+          "demarre",
+          "jouer",
+          "joue"
+        ],
+        "objet_effet": [
+          "effet",
+          "effets"
+        ],
+        "cible": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "lance l'effet 3 sur les circuits 1 à 10",
+      "origine": "manuel §18 « Apply an Existing Effect », confiance A. La sélection est exigée dans la phrase — l'app ne traduit jamais « sur ce qui est actuellement sélectionné », un état qu'elle ne contrôle pas.\n"
+    },
+    "arreter_effet": {
+      "description": "arrêter un effet précis, ou tous les effets en cours",
+      "declencheurs": {
+        "verbe": [
+          "arreter",
+          "arrete",
+          "stopper",
+          "stoppe",
+          "stop"
+        ],
+        "objet_effet": [
+          "effet",
+          "effets"
+        ]
+      },
+      "exemple_nl": "arrête l'effet 3 ; arrête tous les effets",
+      "origine": "manuel §18 « Assigning a Stop Effect Command », confiance A. `Stop Effect Enter` (sans numéro) arrête tous les effets en cours ; `Stop Effect <n> Enter` un effet précis. La variante posée sur une sélection de circuits (« pose une instruction d'arrêt ») n'est pas couverte ici : distinguer dans la phrase un numéro d'effet d'un numéro de circuit demanderait de trancher une ambiguïté sans marqueur fiable — laissé de côté plutôt que deviné.\n"
+    },
+    "bump_sub": {
+      "description": "appuyer sur la touche de bump d'un submaster (haut ou bas)",
+      "declencheurs": {
+        "verbe": [
+          "bump"
+        ],
+        "sub": [
+          "sub",
+          "subs",
+          "submaster",
+          "submasters",
+          "sousmaster",
+          "sousmasters"
+        ]
+      },
+      "exemple_nl": "bump haut le sub 5 ; bump bas sub 12",
+      "origine": "`eosKeys.ts` : `subdown`→SUB_BUMP_DOWN, `subup`→SUB_BUMP_UP, confiance A sur l'existence des touches. L'ORDRE des tokens (`SubUp <n> Enter`) est seulement confiance B/C (corpus #026) — voir `grammar/modele.yaml`, le générateur porte déjà l'avertissement, pas dupliqué ici.\n",
+      "note": "Aucune source du dépôt ne documente ce que « haut »/« bas » font fonctionnellement sur le plateau (montée/descente, marquage, etc.) — seuls les NOMS des deux touches sont sourcés. Le traducteur ne les explique donc pas ; si la phrase ne précise pas laquelle, il pose une question plutôt que de choisir.\n"
     }
   },
   "questions": {
@@ -472,6 +596,23 @@
       "texte": "Quelle nuance exactement ?",
       "pourquoi": "Le mot français reconnu recouvre plusieurs teintes franchement différentes au catalogue Lee. Choisir au hasard produirait une macro valide, acceptée par la console, et la mauvaise couleur sur scène — le pire des trois échecs possibles parce qu'il est silencieux.\n",
       "source": "`reference/lee_filters_theatre.md`, catalogue officiel Lee"
+    },
+    "bump_direction": {
+      "texte": "Bump vers le haut ou vers le bas ?",
+      "pourquoi": "Eos distingue deux touches nommées, SubUp et SubDown, et la phrase ne dit pas laquelle. Aucune source du dépôt ne documente ce que chacune fait concrètement sur le plateau — le traducteur ne peut donc pas deviner, seulement transmettre le nom exact de la touche demandée.\n",
+      "source": "`reference/eosKeys.ts` (subup/subdown) ; `grammar/modele.yaml` § actions.sub_bump_bas/haut",
+      "options": [
+        {
+          "cle": "haut",
+          "libelle": "Bump haut (SubUp)",
+          "detail": "Touche `SubUp`, confiance A sur son existence, B sur l'ordre des tokens en macro."
+        },
+        {
+          "cle": "bas",
+          "libelle": "Bump bas (SubDown)",
+          "detail": "Touche `SubDown`, confiance A sur son existence, B sur l'ordre des tokens en macro."
+        }
+      ]
     }
   }
 }

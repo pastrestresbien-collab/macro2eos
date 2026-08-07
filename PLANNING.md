@@ -24,6 +24,15 @@ encodage UTF-8 cassé faute de `<meta charset>`). Testé de bout en bout avec
 Playwright : le round-trip complet (question posée, réponse, macro finale)
 reproduit exactement `traducteur/test_traducteur.py`.
 
+**Deuxième nouveauté du 2026-08-07** : `traducteur/` passe de 5 à 9 intentions
+(v0.2) — submasters (enregistrement sélectif, bump haut/bas) et effets
+(application, arrêt). Voir « Fait — v0.2 » dans l'axe B ci-dessous pour le détail
+et un garde-fou de conception qui mérite d'être connu : `Sub` n'a volontairement
+**pas** été ajouté à l'index générique d'objets du traducteur, pour empêcher
+structurellement qu'une phrase comme « sub 3 à 50 % » ne produise `Sub 3 At 50` —
+une commande que `grammar/modele.yaml` déclare invalide au niveau de confiance le
+plus haut du projet (S).
+
 ---
 
 ## Où en est le projet
@@ -62,7 +71,7 @@ recopiée verbatim dans les tests avec ses fautes de frappe.
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.1 — 5 intentions, 25 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.2 — 9 intentions, 39 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 36 points recensés au backlog (#34, #35 et #36 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -497,8 +506,33 @@ Trois constats de cette tranche valent d'être retenus :
   n'utilise plus que des correspondances exactes ; la tolérance reste réservée au
   remplissage d'un créneau déjà choisi.
 
-**Reste à couvrir** : submasters, effets, Query, macros — la majeure partie des 79 actions
-du modèle. Le lexique se remplira par tranches, comme le modèle l'a été.
+**Fait — v0.2 (2026-08-07)** : submasters (enregistrement sélectif, bump haut/bas) et
+effets (application, arrêt). 4 nouvelles intentions, 14 nouveaux cas de non-régression
+(39 au total). Choisies pour cette tranche parce qu'elles sont les extensions les plus
+naturelles à formuler en français et que `grammar/` les couvre déjà avec de bonnes règles
+sourcées (manuel §18 et §20, confiance A sur la syntaxe centrale).
+
+Le constat qui vaut d'être retenu ne vient pas d'une nouvelle zone d'ombre de la console,
+mais d'un risque de conception trouvé en préparant cette tranche : le modèle interdit
+explicitement `Sub + intensite` (confiance S — « le pilotage de niveau d'un sub passe par
+le fader ou les bumps, pas par `At` »). Si `Sub` avait été ajouté à l'index générique
+d'objets déjà utilisé par `regler_intensite` (comme `Chan`/`Group`/`Cue` le sont), une
+phrase telle que « sub 3 à 50 % » aurait pu produire `Sub 3 At 50 Enter` — une commande
+techniquement générée, chargée d'un avertissement du générateur, mais qu'on **sait déjà**
+fausse avant même de l'émettre. Corrigé en amont plutôt qu'au générateur : `Sub` vit dans
+un second index (`objets_cible`), consulté uniquement par les deux intentions dédiées aux
+submasters (`enregistrer_sub`, `bump_sub`), jamais par les intentions génériques de
+sélection. La phrase « sub 3 à 50 % » ne déclenche donc aucune intention et reste
+`incompris` — vérifié par un cas de non-régression dédié.
+
+Deuxième point, plus modeste : les touches `SubUp`/`SubDown` (bump haut/bas) sont sourcées
+sur leur existence (`eosKeys.ts`, A) mais aucune source du dépôt ne documente ce qu'elles
+font fonctionnellement sur le plateau. Le traducteur ne l'invente pas — si la phrase ne
+précise pas la direction, il pose une question (« Bump vers le haut ou vers le bas ? »)
+plutôt que de choisir, sur le modèle déjà en place pour les couleurs ambiguës.
+
+**Reste à couvrir** : Query, macros, presets — la majeure partie des 79 actions du
+modèle. Le lexique se remplira par tranches, comme le modèle l'a été.
 
 ### C. Valider au banc réel
 

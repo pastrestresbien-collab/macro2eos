@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.1)
+## Portée actuelle (v0.2)
 
 | Intention | Exemple |
 |---|---|
@@ -110,13 +110,35 @@ non-régression.
 | régler une intensité | « circuits 1 à 5 à 50 % », « circuits 1 à 5 de 10 à 50 % » |
 | enregistrer une cue (sélectif) | « enregistrer les circuits 1 à 5 dans la cue 4 » |
 | aller à une cue | « aller à la cue 5 », « va au noir », « va à la suivante » |
+| enregistrer un submaster (sélectif) | « enregistrer les circuits 6 à 10 dans le sub 3 » |
+| bump d'un submaster (haut/bas) | « bump haut le sub 5 », « bump bas sub 12 » |
+| appliquer un effet à une sélection | « lance l'effet 1 sur les circuits 1 à 10 » |
+| arrêter un effet | « arrête l'effet 3 », « arrête tous les effets » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
 
-**Ce qui n'est pas couvert** et devra l'être : submasters, effets, Query, macros — soit la
-majeure partie des 79 actions du modèle. Le lexique se remplit par tranches, comme le
-modèle l'a été.
+**Sub n'est délibérément pas un objet de sélection générique.** `grammar/modele.yaml`
+interdit `Sub + intensite` au niveau de confiance le plus haut du projet (S : « le
+pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At` »). `Sub` vit
+dans un index séparé (`objets_cible`, distinct de `objets`) consulté seulement par
+`enregistrer_sub` et `bump_sub` — jamais par `regler_intensite` ou `colorer_selection`.
+Une phrase comme « sub 3 à 50 % » ne peut donc structurellement pas produire la commande
+qu'on sait déjà fausse ; elle reste `incompris`, vérifié par test.
+
+**Bump de submaster : les noms des touches sont sourcés, pas leur effet.** `SubUp`/
+`SubDown` existent bel et bien (`eosKeys.ts`, confiance A sur l'existence, B sur l'ordre
+des tokens — corpus #026), mais aucune source du dépôt ne documente ce que « haut »/« bas »
+font concrètement sur le plateau. Le traducteur ne l'explique donc pas et pose une
+question plutôt que de choisir quand la phrase ne précise pas la direction.
+
+**Effets : la portée « poser un arrêt sur une sélection » n'est pas couverte.** Le modèle
+documente trois portées pour `Stop Effect` (tout, un effet précis, ou une instruction posée
+sur des channels), mais distinguer dans une phrase un numéro d'effet d'un numéro de circuit
+demanderait un marqueur qui n'existe pas de façon fiable — laissé de côté plutôt que deviné.
+
+**Ce qui n'est pas couvert** et devra l'être : Query, macros, presets — soit la majeure
+partie des 79 actions du modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
 
 ## Deux règles de peuplement du lexique
 
