@@ -5,7 +5,24 @@ qui coexistaient et divergeaient (corpus « PRIORITÉS BANC », corpus « ZONES 
 OUVERTES », grammaire consolidée §15) — celles-ci restent en place comme trace d'audit
 mais ne sont plus à mettre à jour.
 
-Dernière mise à jour : 2026-08-06.
+Dernière mise à jour : 2026-08-07.
+
+**Une seule branche de travail désormais : `claude/macro2eos-app-design-autk7k`.**
+Elle portait le prototype d'interface, développé séparément le temps que le
+traducteur existe ; les deux ont divergé, puis ont été fusionnés le 2026-08-07
+(voir le commit de fusion). L'ancienne branche `claude/extend-grammar-modele-legvkj`
+est superflue à partir de maintenant — toute nouvelle session doit repartir d'ici,
+pas de là-bas, pour éviter de recréer la même divergence.
+
+**Nouveauté du 2026-08-07** : `app/prototype.html` n'utilise plus un moteur de
+traduction de démonstration — il fait tourner le vrai `traducteur/` (et
+`grammar/generateur.py`) directement dans le navigateur, via Pyodide (Python
+compilé en WebAssembly, vendu dans `app/vendor/pyodide/`, pas chargé depuis un
+CDN). Voir `app/engine.js` pour le détail et les deux bugs réels trouvés en le
+testant dans un vrai navigateur (import PyYAML qui plantait Pyodide inutilement,
+encodage UTF-8 cassé faute de `<meta charset>`). Testé de bout en bout avec
+Playwright : le round-trip complet (question posée, réponse, macro finale)
+reproduit exactement `traducteur/test_traducteur.py`.
 
 ---
 
