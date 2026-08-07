@@ -1134,6 +1134,19 @@ palettes:
         changements » n'a pas de traduction référencée — il faut tout
         réenregistrer, ou passer par les palettes qu'il contient.
     effets: "un effet peut être stocké dans un preset (manuel §18)"
+    options:
+      confiance: A
+      source: "manuel §11 « Preset Options » — mêmes trois softkeys que les palettes"
+      note: >
+        {By Type}, {Absolute}, {Locked} : identiques en forme et en piège à
+        `palettes.options` ci-dessus. En particulier {By Type} PORTE LE MÊME
+        PIÈGE : "the lowest number channel of each fixture type will be the
+        default channel [...] you will want only one channel of each fixture
+        type in use. Any additional channels in that fixture type will be
+        recorded with discrete data" (manuel §11 « Storing a By Type Preset »,
+        formulation identique au mot près à celle du §10 pour les palettes).
+        Trouvé le 2026-08-06 en vérifiant `REGLES_POUR_UI.md` — non encore
+        répercuté dans `traducteur/` (les presets n'y sont pas encore modélisés).
 
 # --------------------------------------------------------------------------
 # GROUPES — un ordre, pas seulement un ensemble

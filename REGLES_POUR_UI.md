@@ -19,17 +19,19 @@ l'interface affiche, et sa régularité conditionne ce qu'on peut en montrer.
 
 ## ⚠️ Avant de lire : ce document a déjà véhiculé des erreurs
 
-**Première version le 2026-08-06. Relue le même jour contre le manuel officiel et les
-workbooks — deux erreurs trouvées, dont une avait déjà produit une macro fausse livrée
-comme correcte** (voir `PLANNING.md` #35 et #36). Les deux venaient de la même cause :
-des affirmations écrites de mémoire ou reprises d'une synthèse, présentées avec la même
-assurance qu'un fait vérifié.
+**Première version le 2026-08-06. Deux passes de relecture le même jour, contre le manuel
+officiel, les workbooks et le corpus — quatre erreurs trouvées, dont une avait déjà
+produit une macro fausse livrée comme correcte** (voir `PLANNING.md` #35, #36, #37, #38).
+Toutes venaient de la même cause : des affirmations écrites de mémoire, ou recopiées d'une
+synthèse sans remonter à sa propre source, présentées avec la même assurance qu'un fait
+vérifié. La plus instructive (#37) était une confiance « S » — la plus haute du projet —
+copiée d'un autre document du dépôt qui la portait déjà à tort.
 
 D'où la règle de lecture de ce document :
 
 > **En cas de contradiction entre ce document et le manuel officiel, le manuel a raison.**
-> Signaler l'écart plutôt que de le contourner — c'est ainsi que #35 et #36 ont été
-> trouvées.
+> Signaler l'écart plutôt que de le contourner — c'est ainsi que ces quatre erreurs ont
+> été trouvées, et il y en a probablement d'autres dans les parties encore marquées 📄.
 
 ### Marqueur de confiance sur chaque affirmation
 
@@ -215,9 +217,16 @@ répartition. `1 Thru 10 At 10 Thru 30 Enter` fane déjà, sans qu'aucun mot ne 
 
 ## 📄 On assemble des tokens, jamais du texte
 
-Observation terrain (corpus #060, confiance S — pas une phrase du manuel) : une commande
-construite par concaténation de chaînes — `"Go_To_Cue_" + str(n)` — **tronque les
-décimales** sur console réelle. `Go To Cue 5.5` devient `Go To Cue 5`.
+⚠️ Report de forum (corpus #060, **confiance C** — hypothèse d'un contributeur, cohérente
+et précise, mais non confirmée par ETC dans le fil, et non recoupée par le manuel) : une
+commande construite par concaténation de chaînes — `"Go_To_Cue_" + str(n)` —
+**tronquerait les décimales** sur console réelle. `Go To Cue 5.5` deviendrait
+`Go To Cue 5`.
+**Corrigé le 2026-08-06** : la version précédente de cette ligne citait « confiance S »,
+la confiance la plus haute du projet, pour une source que le corpus lui-même qualifie de
+C. La règle de conception qui en découle (tokens plutôt que concaténation) reste saine —
+c'est une bonne pratique générale, pas seulement une parade à ce cas précis — mais elle ne
+doit pas être présentée comme s'appuyant sur une observation confirmée au banc.
 
 > **→ Pour l'UI.** Si l'interface propose un jour de retoucher une macro générée, elle doit
 > éditer l'**IR** (la représentation structurée) et la faire re-rendre, **jamais** éditer la
@@ -489,34 +498,48 @@ l'utilisateur ait à connaître la console.
 
 ## 6. Certaines intentions n'ont pas de traduction — l'app doit savoir dire non
 
-**La règle.** Absences structurelles de la plateforme, reprises de §12 de la grammaire
-consolidée. ⚠️ **Aucune n'a été re-vérifiée dans cette passe**, et trois d'entre elles ne
-viennent pas du manuel mais de réponses ETC en forum ou support — une absence est par
-nature difficile à sourcer dans une documentation :
+**La règle.** Absences structurelles de la plateforme. **Vérifiées le 2026-08-06** — cinq
+sur huit contre le manuel directement, avec de bons résultats ; les trois qui reposent sur
+une réponse ETC en forum restent, par nature, invérifiables contre une documentation
+puisqu'une absence ne s'y écrit jamais explicitement :
 
 - 📄 **Pas de variables ni de formules natives** (réponse ETC, demande sans suite depuis
   2010). L'indirection macro-dans-macro est le seul palliatif de la plateforme.
-- 📄 **Pas d'auto-palette native** (réponse ETC, choix de conception assumé).
+  Invérifiable contre le manuel par nature — une absence de fonctionnalité n'y est jamais
+  déclarée comme telle.
+- 📄 **Pas d'auto-palette native** (réponse ETC, choix de conception assumé). Même réserve.
 - 📄 **Pas de négation hors du sous-système Query** (réponse directe du support ETC).
-  Toute intention « tout sauf… » passe par Query, ou n'a pas de traduction.
-- 📄 **Un preset ne peut pas en référencer un autre.** « Le preset B, plus deux
-  changements » n'a pas de traduction référencée.
-- 📄 **Les channels à marquer sont obligatoires** : « Eos will not assume all automated
-  fixtures apply to any given mark ». « Marque les asservis » n'a pas de traduction.
+  Toute intention « tout sauf… » passe par Query, ou n'a pas de traduction. Même réserve.
+- ✅ **Un preset ne peut pas en référencer un autre.** Manuel §11, phrase exacte : « Presets
+  can **not** refer to other presets. » « Le preset B, plus deux changements » n'a donc pas
+  de traduction référencée.
+  Trouvé dans la même vérification : les presets partagent les trois mêmes options que les
+  palettes — `{By Type}`, `{Absolute}`, `{Locked}` — donc **le même piège que la règle 4**
+  (`{By Type}` sur une sélection large fige les channels surnuméraires) s'applique
+  identiquement aux presets. Non encore répercuté dans le lexique du traducteur — à faire.
+- ✅ **Les channels à marquer sont obligatoires.** Manuel §9, citation exacte : « Eos will
+  not assume all automated fixtures apply to any given mark. » « Marque les asservis » n'a
+  donc pas de traduction.
 
-⚠️ **Avant de bâtir un écran « ceci est impossible » sur l'une de ces cinq lignes, la
-re-vérifier.** Se tromper sur une absence est plus grave que se tromper sur une syntaxe :
-l'app refuserait une demande parfaitement légitime, et l'utilisateur n'aurait aucun moyen
-de savoir que l'app a tort.
+⚠️ **Avant de bâtir un écran « ceci est impossible » sur les trois premières lignes
+(marquées 📄), la re-vérifier.** Se tromper sur une absence est plus grave que se tromper
+sur une syntaxe : l'app refuserait une demande parfaitement légitime, et l'utilisateur
+n'aurait aucun moyen de savoir que l'app a tort. Les deux marquées ✅ sont solides.
 
-S'y ajoutent des limites de l'outil, pas de la console :
+S'y ajoutent des limites de l'outil, pas de la console — toutes trois vérifiées :
 
-- 📄 **La voie ASCII n'est pas générable** (#32) : sa spécification est absente du dépôt.
-  « Injection OSC ou ASCII » doit se lire « injection OSC ». L'export ASCII est de toute
-  façon une navigation dans le Browser, sans commande ni touche OSC.
-- 📄 **Sept conditions Query n'ont pas de touche OSC** (#15) — atteignables au doigt
-  seulement, potentiellement hors de portée de l'app.
-- 📄 **`{Emergency Mark}` n'est pas générable** : c'est un réglage de Setup.
+- ✅ **La voie ASCII n'est pas générable** (#32). Manuel §3, deux confirmations distinctes :
+  l'export est une navigation Browser pure (« navigate within the Browser to: File > Export
+  > USITT ASCII »), sans commande ni touche OSC ; et une CAUTION prévient explicitement
+  « **not all data (such as effects and macros) may be imported**. This varies by
+  product. » — l'objet même que ce projet produit.
+- ✅ **Sept conditions Query n'ont pas de touche OSC** (#15). Recoupé directement contre
+  `reference/eosKeys.ts` (1155 entrées) : aucune des sept — `Broken Mark`, `Marking`,
+  `Up Moves`, `Down Moves`, `Live Moves`, `Dark Moves`, `Autoblock` — n'y figure comme
+  condition de Query adressable (seule `autoblock_clean`/`AUTOBLOCK_CLEANUP` apparaît, sans
+  rapport). Atteignables au doigt seulement, hors de portée d'une injection `/eos/key/`.
+- ✅ **`{Emergency Mark}` n'est pas générable** : c'est un réglage de Setup (manuel §5,
+  section « Emergency Mark »), pas un token de ligne de commande.
 
 **→ Pour l'UI.** Un chemin « ceci n'est pas possible » de plein droit, distinct du refus
 de la console et distinct du « je n'ai pas compris ». Avec, quand elle existe, la raison
@@ -545,30 +568,51 @@ passe**, donc à re-vérifier avant d'en faire un texte affiché à l'utilisateu
 
 ## 8. Le transport impose ses propres règles
 
-📄 **La règle.** Contraintes établies, non négociables (détail : `APP.md` § Contraintes
-techniques, et §11 de la grammaire consolidée). ⚠️ **Aucune n'a été re-vérifiée dans cette
-passe** — elles proviennent du journal terrain (S) et de tickets ETC rapportés par le
-corpus (B), sources solides mais de seconde main ici :
+**La règle.** Contraintes de transport — détail : `APP.md` § Contraintes techniques, §11
+de la grammaire consolidée. Vérifiées individuellement le 2026-08-06, avec des résultats
+inégaux : certaines sont du niveau A, une était sur-cotée d'un cran entier.
 
-- OSC sur TCP, port 3032. Ligne de commande via `/eos/cmd` ou `/eos/newcmd`.
-- **User# dédié et fixe**, assigné dès la connexion, pour ne pas interférer avec
-  l'opérateur travaillant sur la console.
-- **Burst d'état initial** émis à la connexion : à absorber avant tout envoi.
-- **Une commande envoyée mais non acquittée n'est jamais rejouée automatiquement** — le
-  double déclenchement en pleine représentation est pire que l'absence d'effet.
-- `Send_String` toujours en **dernière position** d'une macro multi-lignes [EOS-55864] ;
+- ✅ **OSC sur TCP, port 3032.** Manuel OSC officiel, textuel : « Eos will listen for
+  incoming TCP connections on **Port 3032**. » Confiance A.
+- 📄 **User# dédié et fixe**, assigné dès la connexion. Corpus #066, **confiance B**
+  (réponse détaillée en forum, non testée) — pas une phrase du manuel. Raison donnée : à la
+  connexion, un client OSC hérite par défaut du User# de la console primaire, et le suit si
+  elle en change ; réserver un User# propre évite l'interférence avec l'opérateur.
+- ✅ **Burst d'état initial** à la connexion. Corpus #137, **confiance S** (observé
+  directement) : ~40 messages rejoués systématiquement en ~130 ms (show/name, user, cues
+  active/previous/pending, softkeys, wheel, color, pantilt...). C'est la source la plus
+  solide de toute cette règle 8.
+- ⚠️ **Une commande envoyée mais non acquittée n'est jamais rejouée automatiquement.**
+  Ceci n'est **pas un fait console** — c'est une décision de conception du projet, prise
+  et actée dans `APP.md` (table de décisions, 2026-08-01). Le risque qu'elle évite (double
+  déclenchement en pleine représentation) est en revanche bien réel et découle
+  directement de la règle 2.
+- 📄 `Send_String` toujours en **dernière position** d'une macro multi-lignes [EOS-55864] ;
   `Macro_Wait` entre plusieurs `Send_String` déclenchés depuis un Client [EOS-53576].
-- **Risque de corruption silencieuse (S)** : déclencher une macro pendant qu'une édition
-  de macro est en cours sur la console insère les commandes dans l'édition au lieu de les
-  exécuter. L'app ne peut pas détecter cet état.
+  Corpus #106/#107, **confiance B** (tickets ETC rapportés en forum, pas consultés
+  directement par ce projet).
+- 📄 **Risque de corruption silencieuse** : déclencher une macro pendant qu'une édition de
+  macro est en cours sur la console insère les commandes dans l'édition au lieu de les
+  exécuter. Corpus #067, **confiance C** — « décrit avec précision, non résolu dans le fil
+  consulté », pas une observation confirmée.
+  **Corrigé le 2026-08-06** : ce point était cité « (S) » dans la version précédente de ce
+  document — la confiance la plus haute du projet, empruntée sans vérification à
+  `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` §10.6, qui porte le **même** sur-cotage
+  depuis sa rédaction (« confirmé S, corpus #067 ») alors que l'entrée #067 du corpus
+  elle-même dit C. Signalé au backlog (`PLANNING.md` #37) pour correction de la grammaire
+  consolidée — ce document-ci ne peut pas se corriger seul si sa source amont reste fausse.
+  L'app ne peut de toute façon pas détecter cet état, ce qui reste vrai quel que soit le
+  niveau de confiance du risque.
 
 Deux incertitudes qui peuvent changer la stratégie d'injection, pas seulement la syntaxe :
 
-- **Les accolades `{…}` n'ont jamais été observées dans une chaîne `/eos/cmd`** (#18). Or
-  toute commande portant un modificateur ou un style de Fan en contient. Si elles ne
+- 📄 **Les accolades `{…}` n'ont jamais été observées dans une chaîne `/eos/cmd`** (#18,
+  absence de preuve dans le corpus et le manuel — vérifiable, pas vérifiée à nouveau ici).
+  Or toute commande portant un modificateur ou un style de Fan en contient. Si elles ne
   passent pas, il faudra décomposer en `/eos/key/<nom>` séparés.
-- **`Go To Cue` en macro est non déterministe** (#14) selon Foreground/Background et le
-  timing.
+- ⚠️ **`Go To Cue` en macro serait non déterministe** (#14). Corpus #061, **confiance C**
+  — témoignage technique avec logs, non résolu dans le fil, non confirmé par ETC. Sérieux
+  (les logs sont précis) mais pas au niveau de preuve du burst initial ci-dessus.
 
 **→ Pour l'UI.** L'état de connexion s'affiche en permanence (déjà décidé). Ce qui en
 découle pour la conception : une commande **en attente d'acquittement** est un état visuel
@@ -610,7 +654,7 @@ Deux conséquences visuelles déjà actées dans `APP.md`, à respecter :
 
 ## État de vérification — à lire avant de bâtir dessus
 
-Passe du 2026-08-06, contre le manuel officiel v3.2.0 et les workbooks.
+Deux passes, 2026-08-06, contre le manuel officiel v3.2.0, les workbooks et le corpus.
 
 | Partie | État |
 |---|---|
@@ -618,23 +662,34 @@ Passe du 2026-08-06, contre le manuel officiel v3.2.0 et les workbooks.
 | Règle 1 — états invisibles | ✅ 3 des 5 vérifiés mot à mot ; 📄 patch et filtres non re-vérifiés |
 | Règle 2 — refus / acceptation | ⚠️ doctrine du projet, appuyée sur des faits vérifiés |
 | Règle 3 — Blind | ✅ vérifié cinq fois, cinq chapitres |
-| Règle 4 — erreurs silencieuses | ✅ 7 items vérifiés (dont 3 ajoutés par cette passe) ; 📄 3 non re-vérifiés |
+| Règle 4 — erreurs silencieuses | ✅ 8 items vérifiés (dont 3 ajoutés) ; 📄 3 non re-vérifiés |
 | Règle 5 — trois issues | ✅ le fait qui la fonde est vérifié ; ⚠️ le découpage est un choix de conception |
-| Règle 6 — absences | ⚠️ **aucune re-vérifiée** — la partie la plus fragile du document |
+| Règle 6 — absences | ✅ 5 des 8 vérifiées mot à mot ; 📄 3 invérifiables par nature (réponses ETC en forum) |
 | Règle 7 — numéros propres à une conduite | ⚠️ évidence de conception ; 📄 la note sur `Group` reste à confirmer |
-| Règle 8 — transport | 📄 aucune re-vérifiée dans cette passe |
+| Règle 8 — transport | ✅ 2 des 7 au niveau A/S ; 📄 4 documentées B/C ; ⚠️ 1 reclassée décision produit |
 | Règle 9 — avertissements = données | ✅ vérifiable directement dans `grammar/` |
 
-**Ce que cette passe a changé.** Trois items nouveaux en règle 4 (enregistrement sélectif
-qui n'isole pas, `Mark` en interrupteur, marque créant une cue), deux affirmations
-**élargies** parce qu'elles étaient trop étroites (le zéro implicite vaut pour tout
-paramètre, pas seulement après `At` ; `Q Only/Track` n'a pas un sens variable mais un sens
-**inversé**), et une affirmation **restreinte** parce qu'elle était trop large (l'ordre des
-créneaux n'est pas une règle publiée).
+**Passe 1 — ce qu'elle a changé.** Trois items nouveaux en règle 4 (enregistrement
+sélectif qui n'isole pas, `Mark` en interrupteur, marque créant une cue), deux
+affirmations **élargies** parce qu'elles étaient trop étroites (le zéro implicite vaut
+pour tout paramètre, pas seulement après `At` ; `Q Only/Track` n'a pas un sens variable
+mais un sens **inversé**), une affirmation **restreinte** (l'ordre des créneaux n'est pas
+une règle publiée).
 
-**Ce qui reste à faire.** Les règles 6 et 8 n'ont pas été re-vérifiées à la source. La
-règle 6 est la plus risquée des deux : une absence mal établie fait refuser à l'app une
-demande légitime, et rien dans l'interface ne permettrait de s'en apercevoir.
+**Passe 2 — ce qu'elle a changé.** Les règles 6 et 8 vérifiées. **Deux erreurs de
+confiance trouvées** (#37) : deux affirmations citaient « confiance S » — la plus haute du
+projet — pour des sources que le corpus lui-même étiquette C. L'une était **empruntée
+sans contrôle** à `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` §10.6, qui portait la même
+erreur depuis sa rédaction : corrigée aux deux endroits. Une troisième affirmation
+reclassée : « une commande non acquittée n'est jamais rejouée » n'est pas un fait console,
+c'est une décision de conception du projet (`APP.md`). Et un piège de la règle 4
+(`{By Type}` fige les channels surnuméraires) s'est révélé identique pour les presets
+— trouvé en vérifiant une ligne de règle 6, corrigé dans `grammar/modele.yaml` (#38).
+
+**Ce que ces deux passes montrent ensemble.** L'erreur la plus coûteuse n'était pas une
+absence de vérification, mais une confiance **copiée d'un document à l'autre sans
+remonter à la source primaire**. Un futur contrôle devrait toujours vérifier contre le
+corpus lui-même, jamais contre un document qui le résume.
 
 ---
 

@@ -512,6 +512,35 @@ que de disparaître — le numéro reste citable dans l'historique de `grammar/m
 
 ### Résolu
 
+37. **✅ Confiance sur-cotée dans `GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` §10.6 — corpus #067
+    cité « S » alors qu'il est C.** Trouvé le 2026-08-06 en poursuivant la vérification
+    de `REGLES_POUR_UI.md` (règle 8, transport). Le corpus lui-même étiquette #067 :
+    « BUG CONFIRMÉ : fuite de commandes d'une macro background vers la fenêtre d'édition
+    d'une autre macro **(C, décrit avec précision, non résolu)** ». La grammaire
+    consolidée affirmait pourtant « confirmé S » — la confiance la plus haute du projet,
+    réservée à l'observation terrain protocolée, pour un témoignage de forum non résolu.
+    **Propagé sans contrôle dans `REGLES_POUR_UI.md`** lors de sa rédaction initiale, qui
+    citait la même source amont sans remonter au corpus. Deuxième citation erronée trouvée
+    dans la même passe : le corpus #060 (concaténation de chaînes tronquant les décimales)
+    était cité « confiance S » dans `REGLES_POUR_UI.md` alors que le corpus l'étiquette C
+    (« hypothèse plausible d'un contributeur, non confirmée par ETC »).
+    **Corrigé** dans les deux fichiers : `GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` §10.6 porte
+    désormais « confiance C » avec une note d'audit, `REGLES_POUR_UI.md` cite C pour les
+    deux points avec renvoi explicite à cette entrée.
+    **Leçon générale** : une confiance mal cotée peut se propager de document en document
+    sans qu'aucun ne la questionne — le contrôle doit remonter jusqu'à la source primaire
+    (ici le corpus), pas s'arrêter au premier document qui cite un niveau de confiance.
+
+38. **✅ Presets — le piège `{By Type}` de la règle 4 (UI) s'applique identiquement,
+    non encodé dans le modèle.** Trouvé dans la même passe : le manuel §11 « Storing a By
+    Type Preset » reprend au mot près l'avertissement du §10 sur les palettes — un seul
+    channel par type devient le défaut, les autres sont figés en données discrètes.
+    `grammar/modele.yaml` documentait déjà ce piège pour `palettes.options.{By Type}`
+    mais pas pour `presets` (aucune section `options` n'existait). **Corrigé** :
+    `presets.options` ajouté, avec renvoi au texte exact du manuel. Sans conséquence
+    immédiate sur `traducteur/` — les presets n'y sont pas encore modélisés (v0.1 ne
+    couvre que les palettes de couleur) — mais à respecter dès qu'ils le seront.
+
 35. **✅ Une sélection ne survit pas à un `Record` — et le modèle l'ignorait.**
     Trouvé le 2026-08-06 en vérifiant `REGLES_POUR_UI.md` contre le manuel plutôt que
     contre la mémoire de la session. Le manuel §6 « Deselecting Channels » l'énonce
