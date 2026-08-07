@@ -1,5 +1,5 @@
 # artefacts compilés — régénérables par `python3 grammar/build.py`
 dist/
 
-# bytecode Python
+# bytecode Python — versionné par erreur jusqu'en v0.1
 __pycache__/
