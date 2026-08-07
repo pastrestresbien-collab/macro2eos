@@ -106,6 +106,36 @@
     color: var(--page-muted);
   }
 
+  .note-outdated {
+    max-width: 62ch;
+    border: 1px solid rgba(224, 168, 60, 0.4);
+    background: rgba(224, 168, 60, 0.1);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .note-outdated .tag {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #a5760f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .note-outdated .tag { color: #e0a83c; }
+  }
+  :root[data-theme="dark"] .note-outdated .tag { color: #e0a83c; }
+  .note-outdated p { margin: 0; font-size: 13.5px; color: var(--page-ink); line-height: 1.5; }
+  .note-outdated code {
+    font-family: var(--mono);
+    background: var(--page-surface);
+    border: 1px solid var(--page-line);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
   /* ---------- grille des écrans ---------- */
   .screens {
     display: grid;
@@ -625,6 +655,23 @@
       Traduction langage naturel → macro ETC&nbsp;Eos, injection OSC vers la console.
       Maquette d'intention : lecture des dispositions et de la hiérarchie, pas des pixels définitifs.
     </p>
+    <div class="note-outdated">
+      <span class="tag">⚠ Périmée depuis le 2026-08-06</span>
+      <p>
+        Cette maquette décrit encore la navigation à trois écrans parallèles
+        (saisie / favoris / paramètres, historique en sous-écran des paramètres).
+        Elle a été remplacée par un modèle à deux surfaces — <b>Atelier</b> (le fil de
+        conversation avec la console, qui intègre désormais l'historique) et
+        <b>Conduite</b> (la grille de jeu) — voir <code>APP.md</code>, section
+        « Navigation », et le prototype interactif à jour :
+        <code>app/prototype.html</code>.
+      </p>
+      <p>
+        Conservée telle quelle comme trace de conception : les cas limites qu'elle
+        détaille (refus, reconnexion, import inter-spectacle) restent pertinents même si
+        leur habillage a changé.
+      </p>
+    </div>
     <p class="note-theme">
       L'écran de l'app reste sombre quelle que soit votre préférence système. Ce n'est pas
       un oubli : l'app s'utilise en salle noire, un aplat clair éblouit et détruit
