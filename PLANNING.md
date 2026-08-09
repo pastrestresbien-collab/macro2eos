@@ -59,13 +59,13 @@ légalité**, compilé en JSON, avec un générateur qui produit trois sorties d
 la majorité sont des exemples chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 13 intentions, 65 cas de non-régression, portée détaillée dans
+générateur rend ensuite — 15 intentions, 74 cas de non-régression, portée détaillée dans
 son propre README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.4 — 13 intentions, 65 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.5 — 15 intentions, 74 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -126,15 +126,27 @@ exécutable. Sans cette issue, un traducteur n'a d'autre choix que de deviner, e
 couleur devinée produit une macro valide, acceptée par la console, et la mauvaise teinte
 sur scène : le pire des trois échecs possibles parce qu'il est **silencieux**.
 
-**Portée actuelle et détail des tranches v0.1 → v0.4** : `traducteur/README.md` (portée
+**Portée actuelle et détail des tranches v0.1 → v0.5** : `traducteur/README.md` (portée
 à jour) et `PLANNING_HISTORIQUE.md` section « Axe B » (récit et constats de chaque
 tranche).
 
-**Reste à couvrir** : cue lists multiples, cues multipart, patch, mark, park, filtres,
-courbes, snapshots, magic sheets, show control, contrôle partitionné — la majeure partie
-des 79 actions du modèle. Query n'est couvert que pour trois cibles (Color Palette,
-Preset, Cue) et une seule condition à la fois — voir `traducteur/README.md` pour le
-périmètre exact. Le lexique se remplira par tranches, comme le modèle l'a été.
+**Reste à couvrir** : cue lists multiples, cues multipart, patch, filtres, courbes,
+snapshots, magic sheets, show control, contrôle partitionné — la majeure partie des 79
+actions du modèle. Mark et Park (v0.5) ne couvrent chacun qu'une forme restreinte —
+voir `traducteur/README.md` pour le détail exact des limites assumées. Query n'est
+couvert que pour trois cibles (Color Palette, Preset, Cue) et une seule condition à la
+fois. Le lexique se remplira par tranches, comme le modèle l'a été.
+
+**Bug connu, non corrigé (trouvé le 2026-08-09 en construisant `parquer`)** :
+`_regler_intensite` échoue silencieusement (`incompris`) sur une phrase à un seul circuit
+suivie d'un niveau avec un seul « à » — « circuit 4 à 50 % » — parce que `_plage` la lit
+comme la plage de circuits 4 à 50 avant que le niveau ne soit examiné. Fonctionne
+seulement quand la phrase contient deux « à » (« circuits 1 à 5 à 50 % ») ou un marqueur
+sans « à » (« circuits 1 à 5 intensité 50 »). `_parquer` contourne le problème (voir
+ci-dessus, et `PLANNING_HISTORIQUE.md` § Axe B v0.5) en se limitant à un seul circuit sans
+jamais passer par `_plage` ; `regler_intensite` reste affecté. Corriger `_plage` elle-même
+toucherait tous les handlers qui s'en servent — à faire avec la suite de tests complète
+sous la main, pas en même temps qu'une autre tranche.
 
 ### C. Valider au banc réel
 

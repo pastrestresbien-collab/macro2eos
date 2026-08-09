@@ -514,11 +514,37 @@ couverture complète de Query (25 conditions au total dans le modèle) :
 - Une seule condition par requête ; les Query composées à plusieurs conditions (manuel
   §15, `{Can Be} X {Isn't In} Y`) restent hors périmètre de cette tranche.
 
-Les tranches v0.3 et v0.4 ont été développées en autonomie (session du 2026-08-07,
-« travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention testée
-unitairement (Python) et de bout en bout dans un vrai navigateur contre le vrai moteur
-avant commit, aucune n'attend de validation utilisateur bloquante — cohérent avec le
-principe déjà établi que seules les zones réellement ambiguës doivent l'être.
+**Fait — v0.5 (2026-08-09)** : Mark et Park. Deux intentions (`marquer`, `parquer`), chacune
+volontairement restreinte à sa forme la moins ambiguë plutôt qu'à sa couverture complète.
+
+`marquer` (manuel §9, confiance A) réutilise `self._objet` pour choisir Chan/Group/Cue selon
+le mot présent — « marque la cue 10 » pose le drapeau M, « marque les circuits 1 à 5 »
+désigne la cue source où sont stockés les mouvements NP, deux usages distincts de la même
+touche `Mark` que le traducteur ne cherche pas à départager. `Mark Cue <n>` et `Mark
+Earliest` restent hors périmètre. C'est le générateur, pas le traducteur, qui porte
+l'avertissement AutoMark/marques référencées (#24, réglage de Setup sans commande de
+lecture).
+
+`parquer` (manuel §19, confiance A) a mis au jour un bug réel dans un mécanisme *existant*
+partagé avec `regler_intensite` : `self._plage` cherche partout dans la phrase un motif
+« chiffre, mot de plage, chiffre » et le traite comme une plage de circuits, sans savoir
+qu'un seul « à » peut aussi introduire un niveau (« circuit 4 à 50 % »). `regler_intensite`
+évite le piège seulement parce que ses phrases attendues portent DEUX « à » (un pour la
+plage, un pour le niveau — voir le commentaire dans son code). Une phrase à un seul circuit
+suivi d'un niveau («  circuit 4 à 50 % ») échoue donc silencieusement en `incompris` même
+pour `regler_intensite`, jamais remarqué faute de test sur cette forme précise. Plutôt que
+de retoucher `_plage`, utilisée par de nombreux handlers déjà testés, `_parquer` contourne
+le problème à la racine : il ne couvre qu'un seul circuit ou groupe, jamais une plage,
+supprimant l'ambiguïté au lieu de la deviner. Le bug plus général dans `regler_intensite`
+reste ouvert, noté ici plutôt que corrigé sous pression — une correction de `_plage`
+mériterait sa propre vérification contre toute la suite de tests existante.
+
+Les tranches v0.3, v0.4 et v0.5 ont été développées en autonomie (sessions du 2026-08-07 et
+2026-08-09, « travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention
+testée unitairement (Python) et, pour v0.3/v0.4, de bout en bout dans un vrai navigateur
+contre le vrai moteur avant commit, aucune n'attend de validation utilisateur bloquante —
+cohérent avec le principe déjà établi que seules les zones réellement ambiguës doivent
+l'être.
 
 ---
 

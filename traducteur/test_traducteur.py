@@ -561,6 +561,70 @@ CAS = [
         "phrase": "sélectionne ce qui est dans le truc",
         "statut": "incompris",
     },
+
+    # -------------------------------------------------------------- Mark
+    {
+        # Reprend l'exemple chiffré du manuel §9 recopié dans
+        # test_generateur.py — le drapeau M sur la cue elle-même.
+        "nom": "marquer une cue — pose le drapeau M",
+        "phrase": "marque la cue 10",
+        "statut": "compris",
+        "rendu": "Cue 10 Mark Enter",
+    },
+    {
+        # Deuxième usage de la même touche : la cue SOURCE où sont stockés
+        # les mouvements NP, désignée par ses channels.
+        "nom": "marquer des channels — cue source des mouvements NP",
+        "phrase": "marque les circuits 1 à 10",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 10 Mark Enter",
+    },
+    {
+        "nom": "marquer un groupe",
+        "phrase": "marque le groupe 2",
+        "statut": "compris",
+        "rendu": "Group 2 Mark Enter",
+    },
+    {
+        "nom": "marquer sans cible — refus assumé",
+        "phrase": "marque",
+        "statut": "incompris",
+    },
+
+    # -------------------------------------------------------------- Park
+    {
+        # Reprend l'exemple chiffré du manuel §19 recopié dans
+        # test_generateur.py, forme absolue et déterministe.
+        "nom": "parquer un circuit à un niveau explicite",
+        "phrase": "parque le circuit 2 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 2 At 50 Park Enter",
+    },
+    {
+        # Le zéro de tête (résolu ex-#29) s'applique aussi au parquage.
+        "nom": "parquer — zéro de tête sous 10 %",
+        "phrase": "parque le circuit 2 à 5 %",
+        "statut": "compris",
+        "rendu": "Chan 2 At 05 Park Enter",
+    },
+    {
+        "nom": "parquer un groupe",
+        "phrase": "parque le groupe 7 à 100 %",
+        "statut": "compris",
+        "rendu": "Group 7 At 100 Park Enter",
+    },
+    {
+        # Sans marqueur de niveau, « circuit 3 à 45 » ne doit jamais être lu
+        # comme la plage 3 à 45 : refus assumé plutôt qu'une mésinterprétation.
+        "nom": "parquer sans marqueur de niveau — refus assumé",
+        "phrase": "parque le circuit 3 à 45",
+        "statut": "incompris",
+    },
+    {
+        "nom": "parquer sans niveau du tout — refus assumé (bascule non générée)",
+        "phrase": "parque le circuit 3",
+        "statut": "incompris",
+    },
 ]
 
 

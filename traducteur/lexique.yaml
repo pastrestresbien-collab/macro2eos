@@ -331,6 +331,48 @@ intentions:
     exemple_nl: "circuits 10 à 20 en Lee 195"
     origine: "patron `selection_plage_couleur` (grammar/patrons.yaml), confiance A"
 
+  parquer:
+    description: "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub"
+    declencheurs:
+      verbe: [parquer, parque]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "parque le circuit 3 à 45 %"
+    origine: >
+      manuel §19 Park, confiance A (`grammar/modele.yaml`, section `park`).
+      Déclaré AVANT `regler_intensite` dans ce fichier : sans cette
+      priorité, une phrase qui contient à la fois un objet et un marqueur de
+      niveau (« % », « intensité »…) déclencherait l'intensité au lieu du
+      parquage, puisque `regler_intensite` ne demande aucun verbe pour se
+      déclencher — c'est la même précaution que celle documentée dans
+      `traducteur/README.md` (« la tolérance aux fautes n'a pas le droit de
+      vote sur l'intention »), appliquée ici à l'ORDRE plutôt qu'à la
+      tolérance elle-même.
+    note: >
+      Cette première tranche ne couvre QUE la forme absolue et déterministe
+      `<chan> At <n> Park Enter` sur un SEUL circuit ou groupe, jamais une
+      plage — volontairement, pas par oubli. « circuit 4 à 50 % » contient
+      un seul « à » qui sert à la fois de séparateur possible de plage et de
+      préposition introduisant le niveau ; sans un second marqueur de
+      position pour trancher (contrairement à `regler_intensite`, qui ne
+      rencontre l'ambiguïté qu'avec DEUX « à » dans la phrase — un pour la
+      plage, un pour le niveau), `self._plage` lirait « 4 à 50 » comme une
+      plage de circuits 4 à 50, jamais comme un circuit et un niveau. Se
+      limiter à un seul circuit/groupe élimine l'ambiguïté à la racine :
+      le numéro qui suit l'objet est toujours celui du circuit, jamais
+      d'une plage. Le niveau réutilise le même extracteur que
+      `regler_intensite` (`self._niveau`, marqueur « % »/« pourcent »/
+      « intensité »/« niveau » requis, pas optionnel).
+      Le manuel documente aussi une forme bascule, `<chan> At Park Enter`
+      (parque si non parqué, déparque si parqué) — jamais générée ici, car
+      son résultat dépend d'un état console que le traducteur ne peut pas
+      lire (même refus de principe que pour `bump_direction`, où deviner un
+      état console produirait une macro valide et un résultat imprévisible
+      sur scène). Sans marqueur de niveau dans la phrase, la traduction
+      reste `incompris` plutôt que de choisir la forme bascule ou de
+      mésinterpréter un numéro comme une plage. L'échelle (`At /
+      <pourcentage> Park`) et le parquage d'adresse (`Address <n> At
+      <niveau> Park`) restent hors périmètre de cette tranche.
+
   regler_intensite:
     description: "donner un niveau d'intensité à une sélection"
     declencheurs:
@@ -505,6 +547,35 @@ intentions:
       couvrir que mal distinguer. Ne couvre qu'une plage/numéro simple, pas
       les Query composées à plusieurs conditions (`{Can Be} X {Isn't In} Y`,
       manuel §15) — hors périmètre de cette première tranche.
+
+  marquer:
+    description: >
+      poser un drapeau Mark — sur une cue (le drapeau lui-même) ou sur des
+      channels (la cue SOURCE où sont stockés les mouvements NP)
+    declencheurs:
+      verbe: [marquer, marque]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj,
+              groupe, groupes, group, cue, cues, memoire, memoires, sequence]
+    exemple_nl: "marque les circuits 1 à 5 ; marque la cue 10"
+    origine: >
+      manuel §9 « Setting Referenced Mark Flags », confiance A
+      (`grammar/modele.yaml`, section `mark.referencee`). Deux usages
+      distincts de la même touche : `Cue <n> Mark Enter` pose le drapeau M
+      sur la cue marquée ; `<channels> Mark Enter` désigne, dans la cue
+      source, les channels dont les mouvements NP seront stockés. Le
+      traducteur ne distingue pas les deux cas — c'est `self._objet` qui
+      choisit Chan/Group/Cue selon le mot présent dans la phrase, exactement
+      comme pour les autres intentions de sélection.
+    note: >
+      Ne fonctionne qu'en marques référencées, jamais avec AutoMark actif, et
+      le générateur ne peut pas savoir lequel des deux mécanismes est en
+      vigueur (PLANNING #24) — c'est lui, pas le traducteur, qui porte cet
+      avertissement à chaque rendu. Le manuel exige des channels désignés
+      explicitement dans la cue source (« Eos will not assume all automated
+      fixtures apply to any given mark ») — jamais une sélection implicite
+      héritée d'un état console, cohérent avec le refus général de deviner un
+      état console. `Mark Cue <n>` (marquer vers une cue antérieure) et
+      `Mark Earliest` restent hors périmètre de cette première tranche.
 
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible

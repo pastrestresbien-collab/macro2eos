@@ -371,6 +371,8 @@ class Traducteur:
             "rappeler_preset": self._rappeler_preset,
             "appel_macro": self._appel_macro,
             "selectionner_query": self._selectionner_query,
+            "marquer": self._marquer,
+            "parquer": self._parquer,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -663,6 +665,42 @@ class Traducteur:
                 pris.update({i, i + 1})
                 return {"valeur": int(toks[i + 1])}
         return None
+
+    # -- intention : parquer (Park, un seul circuit/groupe, forme absolue) --
+    def _parquer(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Volontairement PAS `_selection_de` : sa détection de plage
+        # (`_plage`) lirait « circuit 4 à 50 » comme la plage 4 à 50, jamais
+        # comme un circuit et un niveau — le même mot « à » sert aux deux
+        # rôles, et rien ici ne permet de trancher avant coup (contrairement
+        # à `_regler_intensite`, qui ne rencontre l'ambiguïté qu'avec DEUX
+        # « à » dans la phrase). Le seul exemple sourcé de Park porte sur un
+        # circuit unique (`grammar/modele.yaml`, section `park`) : cette
+        # tranche se limite donc à un seul circuit/groupe, jamais une plage,
+        # ce qui élimine l'ambiguïté à la racine plutôt que de la deviner.
+        objet = self._objet(toks, pris) or "Chan"
+        libres = self._nombres(toks, pris)
+        if not libres:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+        i_objet, numero = libres[0]
+        pris.add(i_objet)
+        selection = {"objet": objet, "numero": numero}
+
+        # Un dégradé (« de/a ») n'a pas de sens pour Park — une seule valeur,
+        # pas une transition — donc seule la clé `valeur` est acceptée.
+        niveau = self._niveau(toks, pris)
+        if niveau is None or "valeur" not in niveau:
+            return Traduction(statut="incompris", notes=[
+                "Niveau introuvable — préciser « % », « pourcent », « intensité » "
+                "ou « niveau ». Sans valeur, le parquage est un bascule qui dépend "
+                "d'un état console que ce traducteur ne devine pas."])
+
+        ir = [{"selection": selection,
+               "action": {"type": "parquer", "valeur": niveau["valeur"]}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
 
     # -- intention : enregistrer une sélection dans une cue -----------------
     def _enregistrer_cue(self, toks: list[str], reponses: dict) -> Traduction:
@@ -996,6 +1034,30 @@ class Traducteur:
         condition = "Isn't In" if negation else "Is In"
         ir = [{"query": [{"condition": condition,
                           "cible": {"type": type_cible, "numero": cible}}]}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : marquer (drapeau Mark, cue ou channels) -----------------
+    def _marquer(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # `self._objet` choisit Chan/Group/Cue selon le mot présent — le
+        # même mécanisme, réutilisé ici, sert aussi bien « marque la cue 10 »
+        # (le drapeau M) que « marque les circuits 1 à 5 » (la cue source où
+        # sont stockés les mouvements NP) : deux usages distincts de la même
+        # touche `Mark` (manuel §9), que le traducteur ne cherche pas à
+        # départager — c'est le générateur qui porte l'avertissement sur
+        # AutoMark/marques référencées, pas le traducteur.
+        objet = self._objet(toks, pris)
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit, groupe ni cue désigné — le marquage exige une cible explicite."])
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro trouvé pour la cible du marquage."])
+
+        ir = [{"selection": selection, "action": {"type": "marquer"}}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
 

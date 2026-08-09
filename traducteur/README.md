@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.4)
+## Portée actuelle (v0.5)
 
 | Intention | Exemple |
 |---|---|
@@ -118,6 +118,8 @@ non-régression.
 | rappeler un preset sur une sélection | « rappelle le preset 2 sur les circuits 1 à 5 » |
 | lancer une macro | « lance la macro 5 » |
 | sélectionner via Query (Is In / Isn't In) | « sélectionne ce qui est dans la palette couleur 5 », « ... n'est pas dans le preset 3 » |
+| poser un drapeau Mark (cue ou channels) | « marque la cue 10 », « marque les circuits 1 à 5 » |
+| parquer un circuit ou groupe à un niveau | « parque le circuit 2 à 50 % » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
@@ -150,10 +152,28 @@ documente trois portées pour `Stop Effect` (tout, un effet précis, ou une inst
 sur des channels), mais distinguer dans une phrase un numéro d'effet d'un numéro de circuit
 demanderait un marqueur qui n'existe pas de façon fiable — laissé de côté plutôt que deviné.
 
+**Mark : seule la forme la plus simple des deux usages référencés est couverte.**
+`<channels> Mark Enter` (désigner la cue source des mouvements NP) et `Cue <n> Mark Enter`
+(poser le drapeau M) partagent la même touche et le même handler — c'est `self._objet` qui
+choisit Chan/Group/Cue selon le mot présent, sans chercher à distinguer les deux usages.
+`Mark Cue <n>` (marquer vers une cue antérieure) et `Mark Earliest` restent hors périmètre.
+Le générateur, pas le traducteur, porte l'avertissement sur AutoMark vs marques référencées
+(PLANNING #24) : un réglage de Setup sans commande de lecture, donc jamais tranchable ici.
+
+**Park : un seul circuit ou groupe, jamais une plage — restriction volontaire, pas un
+oubli.** Le manuel documente une forme bascule (`<chan> At Park Enter`, dépend d'un état
+console jamais généré ici) et une forme absolue déterministe (`<chan> At <n> Park Enter`),
+seule couverte. Se limiter à un seul circuit élimine à la racine une ambiguïté réelle :
+« circuit 4 à 50 % » ne contient qu'un seul « à », qui sert autant de séparateur de plage
+que de préposition introduisant le niveau — sans un second « à » pour trancher (le cas que
+`regler_intensite` sait résoudre), `self._plage` lirait « 4 à 50 » comme une plage de
+circuits. L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse restent hors
+périmètre.
+
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
-mark, park, filtres, courbes, snapshots, magic sheets, show control, groupes (au-delà
-d'une sélection simple), contrôle partitionné — la majeure partie des 79 actions du
-modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
+filtres, courbes, snapshots, magic sheets, show control, groupes (au-delà d'une sélection
+simple), contrôle partitionné — la majeure partie des 79 actions du modèle. Le lexique se
+remplit par tranches, comme le modèle l'a été.
 
 **Query : périmètre volontairement restreint, pas une couverture complète.** Seules les
 cibles Color Palette, Preset et Cue sont couvertes — les familles déjà modélisées ailleurs
