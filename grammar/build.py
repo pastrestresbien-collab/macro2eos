@@ -42,22 +42,24 @@ def numeros_backlog() -> set[int]:
 
 
 def verifier_refus_non_reportes(modele: dict, refus_terrain: dict) -> list[str]:
-    """Un refus terrain qui tranche un point encore `inconnu` dans le modèle
-    signale que `modele.yaml` a pris du retard sur le banc réel — à corriger
-    avant de compiler, pas après."""
+    """Un constat terrain (refus OU comportement inattendu accepté à tort) qui
+    tranche un point encore `inconnu` dans le modèle signale que `modele.yaml`
+    a pris du retard sur le banc réel — à corriger avant de compiler, pas
+    après. Les deux types de constat partagent les mêmes champs `tranche`,
+    `backlog`, `date`, `diagnostic` — voir refus_terrain.yaml pour le détail."""
     avertissements: list[str] = []
     backlogs_inconnus = {
         r["backlog"] for r in modele["legalite"]
         if r["valide"] == "inconnu" and "backlog" in r
     }
-    for refus in refus_terrain.get("refus", []):
-        if refus.get("tranche") not in ("oui", "non"):
+    for constat in refus_terrain.get("refus", []):
+        if constat.get("tranche") not in ("oui", "non"):
             continue
-        for b in refus.get("backlog", []):
+        for b in constat.get("backlog", []):
             if b in backlogs_inconnus:
                 avertissements.append(
-                    f"refus du {refus['date']} tranche PLANNING #{b} "
-                    f"(« {refus['diagnostic'].strip().splitlines()[0]} » ...) "
+                    f"constat du {constat['date']} tranche PLANNING #{b} "
+                    f"(« {constat['diagnostic'].strip().splitlines()[0]} » ...) "
                     f"mais modele.yaml le porte toujours `inconnu` — à mettre à jour"
                 )
     return avertissements

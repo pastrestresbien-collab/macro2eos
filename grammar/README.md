@@ -26,7 +26,7 @@ aveugle. Chaque validation au banc réel remplit une case.
 | `build.py` | Compile le YAML en JSON (`dist/`) et vérifie la cohérence interne. |
 | `generateur.py` | IR → chaîne de commande Eos, avec avertissements sur les zones non validées. |
 | `test_generateur.py` | Non-régression contre les macros déjà passées au banc de transport. |
-| `refus_terrain.yaml` | Journal des rejets réels observés sur console/nomad — preuve de niveau S. |
+| `refus_terrain.yaml` | Journal des constats réels sur console/nomad (refus ET comportements inattendus) — preuve de niveau S. |
 
 Le YAML est la source (commentaires possibles, diffs Git lisibles) ; `dist/*.json` est
 l'artefact consommé par le code. Le vocabulaire (1155 touches OSC) reste dans
@@ -43,13 +43,17 @@ cd grammar && python3 test_generateur.py
 
 Dépendance unique : `pyyaml`.
 
-## Refus terrain → matrice de légalité
+## Constats terrain → matrice de légalité
 
-Un refus de la console est une preuve de niveau S — la plus haute confiance du projet
-(voir `../APP.md`, « La console fait autorité »). `refus_terrain.yaml` les accumule au
-lieu de les jeter, chacun daté et relié à un numéro `PLANNING.md`.
+Un refus de la console, ou un cas accepté mais qui produit autre chose que prévu, est
+une preuve de niveau S — la plus haute confiance du projet (voir `../APP.md`, « La
+console fait autorité »). `refus_terrain.yaml` les accumule au lieu de les jeter, chacun
+daté et relié à un numéro `PLANNING.md`. Le fichier couvre les deux cas (`type: "refus"`
+ou `type: "comportement_inattendu"`) : un seul mécanisme, pas deux — le second est même
+le plus dangereux des deux, puisque rien ne le signale sur le moment (voir
+`../REGLES_POUR_UI.md`, règle 4).
 
-`build.py` recoupe automatiquement ce journal avec `modele.yaml` : si un refus tranche
+`build.py` recoupe automatiquement ce journal avec `modele.yaml` : si un constat tranche
 un point encore marqué `inconnu`, la compilation affiche un avertissement — le modèle a
 pris du retard sur le banc réel, à corriger avant de committer.
 

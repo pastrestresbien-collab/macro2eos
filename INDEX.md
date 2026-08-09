@@ -80,6 +80,8 @@ méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 - `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
 - `REGLES_POUR_UI.md` — cadrage pour la session qui développe l'interface : les règles
   structurantes de la grammaire Eos et ce que chacune impose à l'UI.
+- `PIPELINE_TRADUCTION.md` — le déroulé en 9 étapes d'une requête, de la saisie NL à
+  l'ajout au corpus (analyse, affichage par paramètre, validation, envoi, constat).
 - `app/` — prototype interactif (`prototype.html`, branché sur le vrai traducteur via
   Pyodide, voir `app/engine.js`) et maquette visuelle (`maquette.html`, périmée).
 - `CLAUDE.md` — règles de travail pour toute session sur ce dépôt.
