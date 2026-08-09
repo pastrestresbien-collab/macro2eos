@@ -32,7 +32,7 @@ l'interface** : les neuf règles de la grammaire qui contraignent l'UI, et pourq
 | Document | Emplacement | Statut |
 |---|---|---|
 | Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande, injection OSC | [`grammar/`](grammar/README.md) | ✅ v0.16 — 79 actions, 164 règles, 113 tests |
-| Traducteur français → IR (lexique, intentions, questions) — entre en amont du générateur | [`traducteur/`](traducteur/README.md) | 🚧 v0.1 — 5 intentions, 9 couleurs, 25 tests. Déterministe, sans IA à l'exécution |
+| Traducteur français → IR (lexique, intentions, questions) — entre en amont du générateur | [`traducteur/`](traducteur/README.md) | 🚧 v0.2 — 9 intentions, 9 couleurs, 39 tests. Déterministe, sans IA à l'exécution |
 
 Le modèle couvre : sélection, Fan, cues (simples, multipart, listes multiples), macros,
 submasters, Query, effets, palettes, presets, groupes, patch, mark, park, filtres, courbes,
@@ -76,7 +76,9 @@ méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 - `SOURCES.md` — URLs officielles vérifiées de chaque document + miroirs.
 - `VERIFICATION.md` — rapport d'intégrité (couverture texte source ↔ Markdown).
 - `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
-  valider au banc réel.
+  valider au banc réel. Volontairement court (relu à chaque session) ; le récit
+  détaillé, daté, tranche par tranche est dans `PLANNING_HISTORIQUE.md` — à consulter
+  sur besoin précis, pas à relire systématiquement.
 - `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
 - `REGLES_POUR_UI.md` — cadrage pour la session qui développe l'interface : les règles
   structurantes de la grammaire Eos et ce que chacune impose à l'UI.

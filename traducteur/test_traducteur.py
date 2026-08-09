@@ -259,6 +259,112 @@ CAS = [
         "phrase": "créer les palettes de couleur 1 à 6",
         "statut": "incompris",
     },
+
+    # -------------------------------------------------------- submasters
+    {
+        # Reprend l'exemple chiffré du manuel §20 recopié dans
+        # test_generateur.py — même macro par deux voies indépendantes.
+        "nom": "enregistrement sélectif dans un submaster",
+        "phrase": "enregistrer les circuits 6 à 10 dans le sub 3",
+        "statut": "compris",
+        "rendu": "Chan 6 Thru 10 Record Sub 3 Enter",
+    },
+    {
+        "nom": "enregistrement dans un submaster — groupe plutôt que circuits",
+        "phrase": "enregistrer le groupe 2 dans le sub 7",
+        "statut": "compris",
+        "rendu": "Group 2 Record Sub 7 Enter",
+    },
+    {
+        "nom": "enregistrer sub sans sélection — refus assumé",
+        "phrase": "enregistrer dans le sub 4",
+        "statut": "incompris",
+    },
+    {
+        # Le cas qui a motivé `objets_cible` plutôt que d'ajouter Sub à
+        # `objets` : le modèle interdit `Sub + intensite` (confiance S,
+        # « le pilotage de niveau d'un sub passe par le fader ou les bumps,
+        # pas par At »). Si « sub » était un objet générique, cette phrase
+        # aurait pu passer par `regler_intensite` et produire une commande
+        # qu'on sait déjà fausse. Elle ne doit reconnaître AUCUNE intention.
+        "nom": "sub + pourcentage — jamais routé vers l'intensité (Sub+At invalide, confiance S)",
+        "phrase": "sub 3 à 50 %",
+        "statut": "incompris",
+    },
+
+    # -------------------------------------------------------------- effets
+    {
+        # Reprend l'exemple chiffré du manuel §18 recopié dans
+        # test_generateur.py.
+        "nom": "appliquer un effet à une plage de circuits",
+        "phrase": "lance l'effet 1 sur les circuits 1 à 10",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 10 Effect 1 Enter",
+    },
+    {
+        "nom": "appliquer un effet à un groupe",
+        "phrase": "applique l'effet 7 au groupe 2",
+        "statut": "compris",
+        "rendu": "Group 2 Effect 7 Enter",
+    },
+    {
+        "nom": "appliquer un effet sans sélection — refus assumé",
+        "phrase": "lance l'effet 3",
+        "statut": "incompris",
+    },
+    {
+        "nom": "arrêter un effet précis",
+        "phrase": "arrête l'effet 3",
+        "statut": "compris",
+        "rendu": "Stop Effect 3 Enter",
+    },
+    {
+        # Reprend le double appui du manuel §18 recopié dans
+        # test_generateur.py — ici la forme simple, sans double appui : `Stop
+        # Effect Enter` sans argument arrête tout ce qui tourne.
+        "nom": "arrêter tous les effets",
+        "phrase": "arrête tous les effets",
+        "statut": "compris",
+        "rendu": "Stop Effect Enter",
+    },
+    {
+        "nom": "arrêter un effet sans numéro ni « tous » — refus assumé",
+        "phrase": "arrête l'effet",
+        "statut": "incompris",
+    },
+
+    # ------------------------------------------------ bump de submaster
+    {
+        # Reprend le corpus #026 recopié dans test_generateur.py (bump de
+        # submaster en macro) — ici en ligne de commande directe.
+        "nom": "bump haut d'un submaster",
+        "phrase": "bump haut le sub 5",
+        "statut": "compris",
+        "rendu": "SubUp 5 Enter",
+    },
+    {
+        "nom": "bump bas d'un submaster",
+        "phrase": "bump bas sub 12",
+        "statut": "compris",
+        "rendu": "SubDown 12 Enter",
+    },
+    {
+        # Aucune source du dépôt ne dit ce que « haut »/« bas » font
+        # fonctionnellement — sans direction dans la phrase, c'est une
+        # question, jamais un choix par défaut.
+        "nom": "bump sans direction — la question est posée",
+        "phrase": "bump le sub 5",
+        "statut": "a_preciser",
+        "questions": ["bump_direction"],
+        "options": ["haut", "bas"],
+    },
+    {
+        "nom": "bump sans direction, puis réponse « bas »",
+        "phrase": "bump le sub 5",
+        "reponses": {"bump_direction": "bas"},
+        "statut": "compris",
+        "rendu": "SubDown 5 Enter",
+    },
 ]
 
 
