@@ -67,6 +67,10 @@
     "    return {'id': q.id, 'texte': q.texte, 'pourquoi': q.pourquoi,",
     "            'options': [_option_vers_dict(o) for o in q.options]}",
     "",
+    "def _hypothese_vers_dict(h):",
+    "    return {'champ': h.champ, 'valeur': h.valeur, 'pourquoi': h.pourquoi,",
+    "            'correction': _question_vers_dict(h.correction)}",
+    "",
     "def traduire_json(phrase, reponses_json):",
     "    reponses = json.loads(reponses_json) if reponses_json else {}",
     "    trad = _trad.traduire(phrase, reponses=reponses)",
@@ -76,6 +80,7 @@
     "        'notes': trad.notes,",
     "        'non_reconnus': trad.non_reconnus,",
     "        'questions': [_question_vers_dict(q) for q in trad.questions],",
+    "        'hypotheses': [_hypothese_vers_dict(h) for h in trad.hypotheses],",
     "        'commande': None,",
     "        'avertissements': [],",
     "    }",
@@ -137,7 +142,7 @@
   }
 
   // API publique : { statut, intention, notes, non_reconnus, questions,
-  //                  commande, avertissements }
+  //                  hypotheses, commande, avertissements }
   // Reflète exactement `traducteur.Traduction` + `generateur.Resultat` —
   // aucun champ n'est inventé ici, tous viennent du vrai code Python.
   window.traduireReel = async function (phrase, reponses) {

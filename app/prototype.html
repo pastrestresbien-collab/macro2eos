@@ -721,11 +721,19 @@
     }
 
     if (e.status === "unknown") {
+      // Le traducteur explique parfois précisément pourquoi (`notes`) —
+      // par ex. « rosco n'est pas un nuancier connu » plutôt qu'un simple
+      // refus muet. Ne jamais l'avaler : sans ça, le message générique
+      // ci-dessous cache la vraie raison, trouvée le 2026-08-07 en testant
+      // une correction vers un fabricant non sourcé.
       var motsInconnus = (e.nonReconnus || []).length
         ? "Mots non reconnus : « " + e.nonReconnus.join(" », « ") + " »."
-        : "Aucun vocabulaire connu dans cette phrase.";
+        : (e.notes && e.notes.length) ? null : "Aucun vocabulaire connu dans cette phrase.";
       out += '<div class="flag flag-bad"><span>?</span><span><b>Je n\'ai pas compris cette formulation.</b> ' +
-        '<span class="txt">' + esc(motsInconnus) + "</span></span></div>";
+        (motsInconnus ? '<span class="txt">' + esc(motsInconnus) + "</span>" : "") + "</span></div>";
+      if (e.notes && e.notes.length) {
+        out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
+      }
       out += '<div class="row-actions"><button class="mini go" data-action="nav" data-screen="biblio">📚 Bibliothèque</button>' +
         '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reformuler</button></div>';
       out += "</div></div>";
@@ -735,6 +743,22 @@
     out += '<div class="macro">' + macroHtml(e) + "</div>";
     if (e.notes && e.notes.length) {
       out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
+    }
+
+    // Hypothèses : une valeur retenue sans marqueur explicite dans la
+    // phrase (aujourd'hui, uniquement le nuancier — Lee est le seul connu).
+    // Ni un blocage (a_preciser) ni un silence (juste une note) : la
+    // traduction part quand même, mais le champ reste visiblement une
+    // supposition, corrigeable en un geste — décidé avec l'utilisateur le
+    // 2026-08-07. Affichées seulement tant que la macro n'a pas été envoyée.
+    if (e.status === "draft" && e.hypotheses && e.hypotheses.length) {
+      e.hypotheses.forEach(function (h) {
+        out += '<div class="flag flag-warn"><span>~</span><span>' +
+          '<b>Supposé — ' + esc(h.champ) + ' : ' + esc(h.valeur) + '.</b> ' +
+          '<span class="txt">' + esc(h.pourquoi) + '</span></span></div>' +
+          '<div class="row-actions"><button class="mini" data-action="hyp:corriger" data-id="' +
+          e.id + '" data-champ="' + esc(h.champ) + '">Corriger « ' + esc(h.champ) + ' »</button></div>';
+      });
     }
 
     if (state.chipOpenId === e.id && e.tokens && e.tokens.length) {
@@ -1009,6 +1033,7 @@
     var e = findEx(exchangeId); if (!e) return;
     e.ask = phrase; e.reponses = reponses; e.pendingChoice = null;
     e.notes = r.notes || []; e.nonReconnus = r.non_reconnus || [];
+    e.hypotheses = r.hypotheses || [];
 
     if (r.statut === "compris") {
       e.cmd = r.commande;
@@ -1101,6 +1126,18 @@
       }
 
       // ---- répondre à une question du vrai traducteur ----
+      case "hyp:corriger": {
+        // Rouvre l'hypothèse comme une vraie question, en réutilisant le
+        // même mécanisme que les questions posées d'emblée (answer:pick /
+        // answer:value-submit ci-dessous) — pas un système séparé.
+        e = findEx(d.id); if (!e || !e.hypotheses) break;
+        var hyp = e.hypotheses.filter(function (h) { return h.champ === d.champ; })[0];
+        if (!hyp) break;
+        e.question = hyp.correction; e.status = "question"; e.pendingChoice = null;
+        renderAll();
+        break;
+      }
+
       case "answer:pick": {
         e = findEx(d.id); if (!e || !e.question) break;
         var opt = e.question.options.filter(function (o) { return o.cle === d.choice; })[0];

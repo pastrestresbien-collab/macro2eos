@@ -68,6 +68,24 @@ class Question:
 
 
 @dataclass
+class Hypothese:
+    """Une valeur retenue SANS marqueur explicite dans la phrase — le
+    traducteur a tranché à la place de l'utilisateur plutôt que de bloquer.
+
+    Ce n'est ni un `compris` plein (rien à confirmer) ni un `a_preciser`
+    (qui bloque tant que la question n'est pas répondue) : la traduction
+    part quand même, mais ce champ précis reste marqué comme une supposition
+    — code couleur orange côté UI — avec de quoi la corriger d'un geste
+    plutôt que de retaper toute la phrase. Décidé avec l'utilisateur en
+    session le 2026-08-07.
+    """
+    champ: str                     # ex. "nuancier"
+    valeur: str                    # ce qui a été retenu, ex. "Lee"
+    pourquoi: str
+    correction: Question           # rejouable via `reponses[correction.id]`
+
+
+@dataclass
 class Traduction:
     statut: str                    # compris | a_preciser | incompris
     ir: list[dict] = field(default_factory=list)
@@ -75,6 +93,7 @@ class Traduction:
     notes: list[str] = field(default_factory=list)
     non_reconnus: list[str] = field(default_factory=list)
     intention: str | None = None
+    hypotheses: list[Hypothese] = field(default_factory=list)
 
     @property
     def compris(self) -> bool:
@@ -353,6 +372,54 @@ class Traducteur:
         trad.intention = intention
         return trad
 
+    # -- nuancier : seul Lee est connu, donc « pas de mot dans la phrase »
+    # veut presque toujours dire Lee — mais c'est une supposition du
+    # traducteur, jamais une confirmation de l'utilisateur. Partagé par
+    # `_creer_palettes_couleur` et `_colorer_selection`, les deux seuls
+    # endroits qui peuvent avoir à deviner le nuancier.
+    def _nuancier_avec_hypothese(
+        self, reponses: dict
+    ) -> tuple[int | None, Hypothese | None, str | None]:
+        """Retourne (numero, hypothese_ou_None, erreur_ou_None).
+
+        `reponses["nuancier"]` déjà répondu ("lee", ou un dict
+        `{cle:"autre", valeur:<texte>}` pour une saisie libre) : résolu et
+        confirmé, aucune hypothèse. Non répondu : Lee retenu par défaut,
+        mais marqué comme HYPOTHÈSE (voir la classe `Hypothese`) — le
+        traducteur ne l'affirme pas, il le suppose. `erreur` n'est renseigné
+        que si l'utilisateur a explicitement demandé un nuancier que le
+        projet ne connaît pas (Rosco, Apollo...) : étape 3bis de
+        `PIPELINE_TRADUCTION.md`, jamais improviser, le dire plutôt.
+        """
+        reponse = reponses.get("nuancier")
+        if reponse is not None:
+            mot = reponse.get("valeur", "") if isinstance(reponse, dict) else reponse
+            cle, _ = self._resoudre(str(mot).strip().lower(), self._nuanciers)
+            if cle is None:
+                return None, None, (
+                    f"« {mot} » n'est pas un nuancier connu de ce projet — seul Lee est "
+                    "sourcé aujourd'hui (voir reference/lee_filters_theatre.md). Il faudrait "
+                    "d'abord l'ajouter au corpus à partir d'un catalogue officiel, pas "
+                    "improviser une correspondance."
+                )
+            return self.lex["nuanciers"][cle]["numero"], None, None
+
+        hypothese = Hypothese(
+            champ="nuancier", valeur="Lee",
+            pourquoi="Aucun nuancier nommé dans la phrase (ex. « lee ») — Lee est le seul "
+                     "connu de ce projet, retenu par défaut plutôt que de bloquer.",
+            correction=Question(
+                id="nuancier", texte="Quel nuancier ?",
+                pourquoi="Rien dans la phrase ne précisait le nuancier — Lee a été supposé, "
+                         "pas confirmé.",
+                options=[
+                    Option(cle="lee", libelle="Lee — confirmer"),
+                    Option(cle="autre", libelle="Un autre nuancier", demande_valeur=True),
+                ],
+            ),
+        )
+        return self.lex["nuanciers"]["lee"]["numero"], hypothese, None
+
     def _non_reconnus(self, toks: list[str], pris: set[int]) -> list[str]:
         """Mots qui ne sont ni consommés, ni outils, ni déclencheurs connus."""
         connus = {m for corps in self.lex["intentions"].values()
@@ -366,13 +433,17 @@ class Traducteur:
         pris: set[int] = set()
         notes: list[str] = []
         questions: list[Question] = []
+        hypotheses: list[Hypothese] = []
 
         # Le nuancier avant les cibles : « lee » précède souvent le numéro de
         # gel, qu'il ne faut pas confondre avec un numéro de palette.
         nuancier, i_nuancier = self._nuancier(toks, pris)
         if nuancier is None:
-            nuancier = self.lex["nuanciers"]["lee"]["numero"]
-            notes.append("Nuancier non précisé — Lee retenu (seul nuancier au lexique).")
+            nuancier, hyp, erreur = self._nuancier_avec_hypothese(reponses)
+            if erreur:
+                return Traduction(statut="incompris", notes=[erreur])
+            if hyp:
+                hypotheses.append(hyp)
 
         cibles = self._cibles(toks, pris)
         couleurs = self._couleurs_de(toks, pris, questions, notes)
@@ -444,7 +515,7 @@ class Traducteur:
             if not couleur["detaillee"]:
                 notes.append(f"{couleur['nom']} → Lee {couleur['gel']:03d} "
                              f"({couleur['nom_lee']})")
-        return Traduction(statut="compris", ir=ir, notes=notes,
+        return Traduction(statut="compris", ir=ir, notes=notes, hypotheses=hypotheses,
                           non_reconnus=self._non_reconnus(toks, pris))
 
     def _question_portee(self) -> Question:
@@ -483,6 +554,7 @@ class Traducteur:
         pris: set[int] = set()
         notes: list[str] = []
         questions: list[Question] = []
+        hypotheses: list[Hypothese] = []
 
         objet = self._objet(toks, pris) or "Chan"
         nuancier, i_nuancier = self._nuancier(toks, pris)
@@ -525,17 +597,19 @@ class Traducteur:
                                       notes=notes + ["Aucune couleur reconnue."])
                 i, teinte = libres[0]
                 pris.add(i)
-                nuancier = self.lex["nuanciers"]["lee"]["numero"]
-                notes.append(f"« {teinte} » interprété comme numéro de gel Lee "
-                             "(aucun mot « lee » dans la phrase, seul nuancier au lexique).")
+                notes.append(f"« {teinte} » interprété comme un numéro de gel "
+                             "(aucun mot de couleur reconnu dans la phrase).")
 
         if nuancier is None:
-            nuancier = self.lex["nuanciers"]["lee"]["numero"]
-            notes.append("Nuancier non précisé — Lee retenu (seul nuancier au lexique).")
+            nuancier, hyp, erreur = self._nuancier_avec_hypothese(reponses)
+            if erreur:
+                return Traduction(statut="incompris", notes=notes + [erreur])
+            if hyp:
+                hypotheses.append(hyp)
 
         ir = [{"selection": selection,
                "action": {"type": "couleur_gel", "nuancier": nuancier, "teinte": teinte}}]
-        return Traduction(statut="compris", ir=ir, notes=notes,
+        return Traduction(statut="compris", ir=ir, notes=notes, hypotheses=hypotheses,
                           non_reconnus=self._non_reconnus(toks, pris))
 
     # -- intention : régler une intensité ----------------------------------

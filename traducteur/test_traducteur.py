@@ -167,6 +167,59 @@ CAS = [
         "statut": "incompris",
     },
 
+    # ---------------------------------------- hypothèses (nuancier supposé)
+    # Décidé avec l'utilisateur le 2026-08-07 : plutôt que de choisir Lee en
+    # silence (une note perdue dans le texte) ou de bloquer par une question
+    # (Lee est la seule vraie réponse possible aujourd'hui), le traducteur
+    # part quand même, mais marque le champ comme une HYPOTHÈSE — code
+    # couleur orange côté UI, corrigeable sans tout retaper.
+    {
+        "nom": "couleur nommée sans nuancier — hypothèse posée, pas de question",
+        "phrase": "groupe 5 en bleu",
+        "statut": "compris",
+        "rendu": "Group 5 Color 3/120 Enter",
+        "hypotheses": ["nuancier"],
+    },
+    {
+        "nom": "numéro de gel via « gel » — hypothèse posée sur le nuancier",
+        "phrase": "groupe 1 a 5 en gel 205",
+        "statut": "compris",
+        "rendu": "Group 1 Thru 5 Color 3/205 Enter",
+        "hypotheses": ["nuancier"],
+    },
+    {
+        "nom": "nuancier explicite « lee » — aucune hypothèse, confirmé par la phrase",
+        "phrase": "circuits 1 à 5 en lee 195",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Color 3/195 Enter",
+        "hypotheses": [],
+    },
+    {
+        "nom": "hypothèse confirmée via reponses — plus d'hypothèse au deuxième appel",
+        "phrase": "groupe 5 en bleu",
+        "reponses": {"nuancier": "lee"},
+        "statut": "compris",
+        "rendu": "Group 5 Color 3/120 Enter",
+        "hypotheses": [],
+    },
+    {
+        # Étape 3bis de PIPELINE_TRADUCTION.md : jamais improviser un
+        # fabricant hors corpus. Rosco n'est sourcé nulle part dans le
+        # dépôt — le dire plutôt que de deviner une correspondance.
+        "nom": "correction vers un nuancier non sourcé — refus explicite, pas d'invention",
+        "phrase": "groupe 5 en bleu",
+        "reponses": {"nuancier": {"cle": "autre", "valeur": "rosco"}},
+        "statut": "incompris",
+    },
+    {
+        "nom": "palette couleur sans nuancier — hypothèse posée (pas de blocage)",
+        "phrase": "créer la palette de couleur 1 en rouge",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Color 3/106 Enter\nChan 1 Thru 5 Record Color Palette 1 Label Rouge Enter",
+        "reponses": {"portee_enregistrement": {"cle": "selection", "valeur": "1 a 5"}},
+        "hypotheses": ["nuancier"],
+    },
+
     # ------------------------------------------------------------------ cues
     {
         # Reprend `record_cue_selectif` (grammar/patrons.yaml, confiance A) et
@@ -424,6 +477,10 @@ def main() -> int:
         if "rendu" in cas:
             ok &= controler(f"{cas['nom']} (rendu)",
                             t.rendre(trad).commande, cas["rendu"])
+
+        if "hypotheses" in cas:
+            ok &= controler(f"{cas['nom']} (hypotheses)",
+                            [h.champ for h in trad.hypotheses], cas["hypotheses"])
 
         # Un mot non reconnu qui passe inaperçu est une traduction partielle
         # présentée comme complète — pire qu'un refus.
