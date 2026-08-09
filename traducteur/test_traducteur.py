@@ -504,6 +504,63 @@ CAS = [
         "phrase": "lance la macro",
         "statut": "incompris",
     },
+
+    # -------------------------------------------------------------- Query
+    {
+        # Reprend l'exemple chiffré du manuel §15 recopié dans
+        # test_generateur.py (sans l'action `At 50` associée).
+        "nom": "Query — sélection positive sur une palette couleur",
+        "phrase": "sélectionne ce qui est dans la palette couleur 5",
+        "statut": "compris",
+        "rendu": "Query {Is In} Color Palette 5 Enter",
+    },
+    {
+        # La seule négation du langage Eos (manuel §15) — vérifie que le
+        # français négatif (« n'est pas ») est bien détecté.
+        "nom": "Query — négation sur une palette couleur",
+        "phrase": "sélectionne ce qui n'est pas dans la palette couleur 5",
+        "statut": "compris",
+        "rendu": "Query {Isn't In} Color Palette 5 Enter",
+    },
+    {
+        "nom": "Query — cible preset",
+        "phrase": "sélectionne ce qui est dans le preset 3",
+        "statut": "compris",
+        "rendu": "Query {Is In} Preset 3 Enter",
+    },
+    {
+        "nom": "Query — négation sur un preset",
+        "phrase": "sélectionne ce qui n'est jamais dans le preset 3",
+        "statut": "compris",
+        "rendu": "Query {Isn't In} Preset 3 Enter",
+    },
+    {
+        "nom": "Query — cible cue",
+        "phrase": "sélectionne ce qui est dans la cue 4",
+        "statut": "compris",
+        "rendu": "Query {Is In} Cue 4 Enter",
+    },
+    {
+        # Périmètre assumé : seule la palette couleur est modélisée ailleurs
+        # dans ce traducteur. Un « palette » nu, sans le mot « couleur »,
+        # reste incompris plutôt que de deviner la famille (Int/Focus/Beam).
+        "nom": "Query — palette sans « couleur » — refus assumé",
+        "phrase": "sélectionne ce qui est dans la palette 5",
+        "statut": "incompris",
+    },
+    {
+        # Group et Sub comme cibles de Query sont hors périmètre — voir la
+        # note de `selectionner_query` dans lexique.yaml. La phrase ne
+        # déclenche même pas l'intention (mot-clé absent des déclencheurs).
+        "nom": "Query — groupe hors périmètre — refus assumé",
+        "phrase": "sélectionne ce qui est dans le groupe 2",
+        "statut": "incompris",
+    },
+    {
+        "nom": "Query — sans cible reconnue — refus assumé",
+        "phrase": "sélectionne ce qui est dans le truc",
+        "statut": "incompris",
+    },
 ]
 
 

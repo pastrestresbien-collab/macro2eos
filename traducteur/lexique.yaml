@@ -94,6 +94,12 @@ mots_outils:
   - moi
   - stp
   - please
+  - ce
+  - qui
+  - est
+  - n
+  - pas
+  - jamais
 
 # --------------------------------------------------------------------------
 # OPÉRATEURS DE PLAGE — « 1 à 6 », « 1 thru 6 », « 1-6 »
@@ -469,6 +475,36 @@ intentions:
       (fiabilité d'exécution seulement C, corpus #070 vs #095, PLANNING #2) :
       cette intention ne produit qu'une ligne de commande isolée, jamais un
       contenu de macro imbriqué.
+
+  selectionner_query:
+    description: >
+      sélectionner les channels actuellement dans, ou explicitement pas
+      dans, une palette couleur / un preset / une cue — via Query, le seul
+      endroit du langage Eos où existe une négation
+    declencheurs:
+      verbe: [selectionner, selectionne]
+      dans: [dans]
+      cible: [palette, palettes, preset, presets, cue, cues, memoire, memoires]
+    exemple_nl: >
+      sélectionne ce qui est dans la palette couleur 5 ; sélectionne ce qui
+      n'est pas dans le preset 3
+    origine: >
+      manuel §15 « Advanced Manual Control », section Query, confiance A.
+      `{Is In}` est facultatif dans la syntaxe officielle (Query seul
+      suffit, manuel §15) mais le générateur l'écrit quand même — une macro
+      se relit, l'implicite y coûte plus cher qu'il ne rapporte (même
+      convention que `Chan`/`Cue` explicites ailleurs dans le projet).
+    note: >
+      Périmètre volontairement restreint à Color Palette, Preset et Cue —
+      les seules familles déjà couvertes ailleurs dans le traducteur
+      (`creer_palettes_couleur`, `enregistrer_preset`, `enregistrer_cue`/
+      `aller_a_cue`). `Group` et `Sub` existent comme cibles de Query dans
+      le modèle mais restent hors périmètre ici : `Query {Is In} Group 2`
+      et `Group 2 Enter` sont deux mécanismes distincts et le risque de
+      confusion entre les deux n'a pas été tranché — mieux vaut ne pas
+      couvrir que mal distinguer. Ne couvre qu'une plage/numéro simple, pas
+      les Query composées à plusieurs conditions (`{Can Be} X {Isn't In} Y`,
+      manuel §15) — hors périmètre de cette première tranche.
 
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible

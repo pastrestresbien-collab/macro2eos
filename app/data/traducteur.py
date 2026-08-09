@@ -370,6 +370,7 @@ class Traducteur:
             "enregistrer_preset": self._enregistrer_preset,
             "rappeler_preset": self._rappeler_preset,
             "appel_macro": self._appel_macro,
+            "selectionner_query": self._selectionner_query,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -939,6 +940,62 @@ class Traducteur:
                 "Aucun numéro de macro trouvé après « macro »."])
 
         ir = [{"action": {"type": "appel_macro", "numero": numero}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : sélectionner via Query (Is In / Isn't In) ---------------
+    def _selectionner_query(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # La négation est le seul endroit du langage Eos qui en offre une
+        # (manuel §15) — « pas »/« jamais » suffisent à la repérer, le
+        # français négatif encadre le verbe plutôt que de le précéder.
+        negation = any(t in ("pas", "jamais") for t in toks)
+
+        # Preset et Cue d'abord : mots-clés univoques, pas d'ambiguïté de
+        # famille contrairement à « palette ». `Cue` est résolu via l'index
+        # générique `self._objets` (même pattern que `_enregistrer_cue`),
+        # `Preset` via `self._objets_cible` (même raison que pour Sub :
+        # jamais une sélection générique — voir lexique.yaml).
+        i_preset = self._indice_objet_cle("Preset", toks, pris, index=self._objets_cible)
+        if i_preset is not None:
+            type_cible = "Preset"
+            i_cible_mot = i_preset
+        else:
+            i_cue = self._indice_objet_cle("Cue", toks, pris)
+            if i_cue is not None:
+                type_cible = "Cue"
+                i_cible_mot = i_cue
+            else:
+                i_palette = self._indice_mot(toks, pris, {"palette", "palettes"})
+                if i_palette is None:
+                    return Traduction(statut="incompris", notes=[
+                        "Aucune cible reconnue — « palette », « preset » ou « cue » est requis."])
+                # Seule la palette couleur est modélisée dans ce projet
+                # (voir `creer_palettes_couleur`) — un « palette » nu, sans
+                # le mot « couleur »/« color », ne doit pas être supposé
+                # être une palette couleur plutôt qu'une autre famille
+                # (Int/Focus/Beam) que ce traducteur ne couvre pas.
+                if not any(t in ("couleur", "couleurs", "color") for t in toks):
+                    return Traduction(statut="incompris", notes=[
+                        "Seule la palette couleur est prise en charge — préciser "
+                        "« couleur » (les autres familles de palette ne sont pas "
+                        "encore couvertes)."])
+                type_cible = "Color Palette"
+                i_cible_mot = i_palette
+
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cible_mot:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro trouvé pour la cible de la requête."])
+
+        condition = "Isn't In" if negation else "Is In"
+        ir = [{"query": [{"condition": condition,
+                          "cible": {"type": type_cible, "numero": cible}}]}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
 
