@@ -101,12 +101,12 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.2)
+## Portée actuelle (v0.4)
 
 | Intention | Exemple |
 |---|---|
 | créer des palettes de couleur | « créer les palettes couleur 1 à 6 en lee, chaud froid r v b j » |
-| colorer une sélection | « circuits 10 à 20 en lee 195 », « groupe 5 en bleu » |
+| colorer une sélection | « circuits 10 à 20 en lee 195 », « groupe 5 en bleu », « groupe 1 à 5 en gel 205 » |
 | régler une intensité | « circuits 1 à 5 à 50 % », « circuits 1 à 5 de 10 à 50 % » |
 | enregistrer une cue (sélectif) | « enregistrer les circuits 1 à 5 dans la cue 4 » |
 | aller à une cue | « aller à la cue 5 », « va au noir », « va à la suivante » |
@@ -114,9 +114,22 @@ non-régression.
 | bump d'un submaster (haut/bas) | « bump haut le sub 5 », « bump bas sub 12 » |
 | appliquer un effet à une sélection | « lance l'effet 1 sur les circuits 1 à 10 » |
 | arrêter un effet | « arrête l'effet 3 », « arrête tous les effets » |
+| enregistrer un preset (sélectif) | « enregistrer les circuits 1 à 5 dans le preset 2 » |
+| rappeler un preset sur une sélection | « rappelle le preset 2 sur les circuits 1 à 5 » |
+| lancer une macro | « lance la macro 5 » |
+| sélectionner via Query (Is In / Isn't In) | « sélectionne ce qui est dans la palette couleur 5 », « ... n'est pas dans le preset 3 » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
+
+**Hypothèses — un champ supposé n'est ni un blocage ni un silence.** Quand le traducteur
+choisit une valeur sans marqueur explicite dans la phrase (aujourd'hui : le nuancier, Lee
+étant le seul connu), il ne pose pas de question bloquante ni ne devine en silence — il
+répond `compris` mais marque le champ comme hypothèse (`Traduction.hypotheses`), avec une
+question de correction toute prête. Décidé avec l'utilisateur le 2026-08-07 ; voir
+`Hypothese` dans `traducteur.py`. Corriger vers une valeur non sourcée (un fabricant hors
+corpus, par exemple) ne devine jamais une correspondance : ça redevient `incompris` avec
+l'explication.
 
 **Sub n'est délibérément pas un objet de sélection générique.** `grammar/modele.yaml`
 interdit `Sub + intensite` au niveau de confiance le plus haut du projet (S : « le
@@ -137,8 +150,18 @@ documente trois portées pour `Stop Effect` (tout, un effet précis, ou une inst
 sur des channels), mais distinguer dans une phrase un numéro d'effet d'un numéro de circuit
 demanderait un marqueur qui n'existe pas de façon fiable — laissé de côté plutôt que deviné.
 
-**Ce qui n'est pas couvert** et devra l'être : Query, macros, presets — soit la majeure
-partie des 79 actions du modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
+**Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
+mark, park, filtres, courbes, snapshots, magic sheets, show control, groupes (au-delà
+d'une sélection simple), contrôle partitionné — la majeure partie des 79 actions du
+modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
+
+**Query : périmètre volontairement restreint, pas une couverture complète.** Seules les
+cibles Color Palette, Preset et Cue sont couvertes — les familles déjà modélisées ailleurs
+dans le traducteur. `Group` et `Sub` existent comme cibles de Query dans le modèle mais
+restent hors périmètre : `Query {Is In} Group 2` et `Group 2 Enter` sont deux mécanismes
+distincts, et le risque de confusion entre les deux n'a pas été tranché. Une seule
+condition par requête ; les Query composées (`{Can Be} X {Isn't In} Y`, manuel §15)
+restent hors périmètre.
 
 ## Deux règles de peuplement du lexique
 

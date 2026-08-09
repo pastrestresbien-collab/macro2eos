@@ -55,17 +55,17 @@ utile est dans le dépôt.
 
 [`grammar/`](grammar/README.md) porte un modèle typé de **79 actions et 164 règles de
 légalité**, compilé en JSON, avec un générateur qui produit trois sorties distinctes
-(ligne de commande, contenu de macro, paquets OSC) et **113 cas de non-régression**, dont
+(ligne de commande, contenu de macro, paquets OSC) et **114 cas de non-régression**, dont
 la majorité sont des exemples chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 9 intentions, 39 cas de non-régression, portée détaillée dans
+générateur rend ensuite — 13 intentions, 65 cas de non-régression, portée détaillée dans
 son propre README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.2 — 9 intentions, 39 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.4 — 13 intentions, 65 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -126,12 +126,15 @@ exécutable. Sans cette issue, un traducteur n'a d'autre choix que de deviner, e
 couleur devinée produit une macro valide, acceptée par la console, et la mauvaise teinte
 sur scène : le pire des trois échecs possibles parce qu'il est **silencieux**.
 
-**Portée actuelle et détail des tranches v0.1/v0.2** : `traducteur/README.md` (portée
+**Portée actuelle et détail des tranches v0.1 → v0.4** : `traducteur/README.md` (portée
 à jour) et `PLANNING_HISTORIQUE.md` section « Axe B » (récit et constats de chaque
 tranche).
 
-**Reste à couvrir** : Query, macros, presets — la majeure partie des 79 actions du
-modèle. Le lexique se remplira par tranches, comme le modèle l'a été.
+**Reste à couvrir** : cue lists multiples, cues multipart, patch, mark, park, filtres,
+courbes, snapshots, magic sheets, show control, contrôle partitionné — la majeure partie
+des 79 actions du modèle. Query n'est couvert que pour trois cibles (Color Palette,
+Preset, Cue) et une seule condition à la fois — voir `traducteur/README.md` pour le
+périmètre exact. Le lexique se remplira par tranches, comme le modèle l'a été.
 
 ### C. Valider au banc réel
 

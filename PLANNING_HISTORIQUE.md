@@ -383,7 +383,7 @@ cue lists multiples §14, Park §19, Filtres §13, Courbes §22, Snapshots §23,
 
 ---
 
-## Axe B — écrire le traducteur : le journal des tranches (v0.1 → v0.2)
+## Axe B — écrire le traducteur : le journal des tranches (v0.1 → v0.4)
 
 État courant, chiffres à jour et portée détaillée : voir `PLANNING.md` et
 [`traducteur/README.md`](traducteur/README.md). L'approche retenue (traducteur
@@ -452,6 +452,73 @@ testant dans un vrai navigateur (import PyYAML qui plantait Pyodide inutilement,
 encodage UTF-8 cassé faute de `<meta charset>`). Testé de bout en bout avec
 Playwright : le round-trip complet (question posée, réponse, macro finale)
 reproduit exactement `traducteur/test_traducteur.py`.
+
+**Correctif du 2026-08-07 (sans bump de version — amélioration de v0.2)** : un numéro de
+gel après « gel »/« gélatine » (pas seulement « lee ») déclenchait déjà l'intention
+`colorer_selection` mais le numéro qui suivait n'était jamais lu — seule la présence du
+mot-clé nuancier « lee » faisait chercher un numéro après lui. Trouvé en testant l'app
+avec une vraie phrase de l'utilisateur (« groupe 1 à 5 en 205 »), pas une phrase écrite
+pour le traducteur. Corrigé dans `_colorer_selection` : un numéro resté libre après
+extraction de la sélection ne peut plus désigner que le gel. Limite assumée, pas
+corrigée : un numéro sans AUCUN mot de la famille couleur reste incompris — trop ambigu
+pour être deviné sans aucun repère dans la phrase.
+
+**Nouveauté du 2026-08-07 : les hypothèses (code couleur vert/orange/rouge)**, décidée
+avec l'utilisateur en session. Quand le traducteur choisit une valeur sans marqueur
+explicite dans la phrase (aujourd'hui : le nuancier, Lee étant le seul connu du projet),
+il ne bloque plus par une question ni ne devine en silence — nouveau champ `hypotheses`
+sur `Traduction` (classe `Hypothese` : champ, valeur, pourquoi, `correction`). La
+traduction part quand même (orange côté UI), mais le champ reste visiblement une
+supposition, avec une vraie question de correction toute prête plutôt qu'un texte figé.
+Corriger vers une valeur non sourcée (un fabricant hors corpus, Rosco par exemple)
+renvoie `incompris` avec l'explication — jamais d'invention, étape 3bis de
+`PIPELINE_TRADUCTION.md`. Bonus trouvé en testant ce correctif : l'écran « incompris »
+du prototype avalait les `notes` explicatives du traducteur derrière un message
+générique — corrigé au passage dans `app/prototype.html`.
+
+**Fait — v0.3 (2026-08-07)** : presets et macros. 3 nouvelles intentions
+(`enregistrer_preset`, `rappeler_preset`, `appel_macro`), sourcées manuel §11 (Presets)
+et §24 (Macros), confiance A sur la syntaxe centrale. Même garde-fou que pour `Sub` en
+v0.2 : `Preset` vit dans `objets_cible`, jamais dans `objets` — un preset ne peut pas en
+référencer un autre (manuel §11, « Presets can not refer to other presets »), donc aucune
+autre intention ne peut s'en servir comme sélection générique.
+
+Corrigé au passage dans `grammar/generateur.py` (pas seulement le traducteur) :
+`record_preset`/`record_only_preset` ne rendaient pas les options (`{By Type}`,
+`{Absolute}`, `{Locked}`), alors que le manuel §11 confirme que les presets partagent
+exactement les mêmes trois softkeys que les palettes — gap documenté depuis PLANNING #38
+(résolu le 2026-08-06) mais jamais corrigé côté générateur faute de code qui l'exerçait.
+
+Point mineur relevé, non corrigé : `Group + record_preset` / `Group + rappeler_preset`
+n'a pas d'entrée dans la matrice de légalité (seuls `Chan` et `selection_courante` y
+figurent) — le générateur le signale honnêtement comme non vérifiable plutôt que
+d'injecter en aveugle, exactement le comportement voulu. Aucune source manuel trouvée
+pour trancher dans le temps disponible ; à vérifier au banc comme le reste du backlog.
+
+**Fait — v0.4 (2026-08-07)** : Query. Une intention (`selectionner_query`) : « sélectionne
+ce qui est/n'est pas dans » une palette couleur, un preset ou une cue — via Query, le seul
+endroit du langage Eos où existe une négation (manuel §15, confiance A).
+
+Périmètre volontairement restreint, et documenté comme tel plutôt que présenté comme une
+couverture complète de Query (25 conditions au total dans le modèle) :
+- Cibles couvertes : Color Palette, Preset, Cue — les seules familles déjà modélisées
+  ailleurs dans le traducteur. Int/Focus/Beam Palette, Group et Sub existent comme cibles
+  de Query dans `grammar/modele.yaml` mais restent hors périmètre.
+- Un « palette » nu, sans le mot « couleur », reste explicitement `incompris` plutôt que
+  de deviner la famille — jamais d'invention silencieuse, même dans un cas qui aurait pu
+  sembler sans conséquence (une seule famille de palette existe dans le traducteur).
+- Group et Sub comme cibles de Query ne sont pas couverts du tout : le risque de
+  confusion avec une simple sélection (`Group 2 Enter` ≠ `Query {Is In} Group 2 Enter`,
+  deux mécanismes distincts) n'a pas été tranché — mieux vaut ne pas couvrir que mal
+  distinguer.
+- Une seule condition par requête ; les Query composées à plusieurs conditions (manuel
+  §15, `{Can Be} X {Isn't In} Y`) restent hors périmètre de cette tranche.
+
+Les tranches v0.3 et v0.4 ont été développées en autonomie (session du 2026-08-07,
+« travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention testée
+unitairement (Python) et de bout en bout dans un vrai navigateur contre le vrai moteur
+avant commit, aucune n'attend de validation utilisateur bloquante — cohérent avec le
+principe déjà établi que seules les zones réellement ambiguës doivent l'être.
 
 ---
 
