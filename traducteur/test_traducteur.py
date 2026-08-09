@@ -139,6 +139,33 @@ CAS = [
         "statut": "compris",
         "rendu": "Group 5 Color 3/120 Enter",
     },
+    {
+        # Trouvé le 2026-08-07 en testant l'app avec une phrase réelle, pas
+        # écrite pour le traducteur : « gel »/« gélatine » déclenchaient déjà
+        # l'intention (mots du lexique), mais le numéro qui suivait n'était
+        # jamais lu — seul le mot-clé nuancier « lee » l'était. La sélection
+        # ayant déjà consommé ses propres nombres, un numéro resté libre à ce
+        # stade ne peut plus désigner que le gel.
+        "nom": "numéro de gel après « gel » plutôt que « lee »",
+        "phrase": "groupe 1 a 5 en gel 205",
+        "statut": "compris",
+        "rendu": "Group 1 Thru 5 Color 3/205 Enter",
+    },
+    {
+        "nom": "numéro de gel après « gélatine »",
+        "phrase": "circuits 10 a 20 en gelatine 195",
+        "statut": "compris",
+        "rendu": "Chan 10 Thru 20 Color 3/195 Enter",
+    },
+    {
+        # La limite délibérée du correctif ci-dessus : un numéro SANS aucun
+        # mot de la famille couleur (lee/gel/gelatine/couleur/color) ne
+        # déclenche même pas l'intention — trop ambigu pour être deviné sans
+        # aucun repère dans la phrase. Refus assumé, pas un oubli.
+        "nom": "numéro de gel sans aucun mot-clé — refus assumé",
+        "phrase": "groupe 1 a 5 en 205",
+        "statut": "incompris",
+    },
 
     # ------------------------------------------------------------------ cues
     {

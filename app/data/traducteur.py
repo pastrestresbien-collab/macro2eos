@@ -505,13 +505,29 @@ class Traducteur:
             couleurs = self._couleurs_de(toks, pris, questions, notes)
             if couleurs is None:
                 return Traduction(statut="a_preciser", questions=questions, notes=notes)
-            if not couleurs:
-                return Traduction(statut="incompris",
-                                  non_reconnus=self._non_reconnus(toks, pris),
-                                  notes=notes + ["Aucune couleur reconnue."])
-            teinte = couleurs[0]["gel"]
-            notes.append(f"{couleurs[0]['nom']} → Lee {teinte:03d} "
-                         f"({couleurs[0]['nom_lee']})")
+            if couleurs:
+                teinte = couleurs[0]["gel"]
+                notes.append(f"{couleurs[0]['nom']} → Lee {teinte:03d} "
+                             f"({couleurs[0]['nom_lee']})")
+            else:
+                # Aucun mot de couleur, aucun « lee » : un numéro resté libre
+                # ICI a déjà survécu à l'extraction de la sélection (qui a
+                # pris ses propres nombres en premier, voir `_selection_de`
+                # ci-dessus) — il ne peut donc plus désigner que le gel.
+                # Sans ce repli, « groupe 1 à 5 en 205 » restait injustement
+                # incompris faute du mot « lee » — trouvé le 2026-08-07 en
+                # testant l'app avec une phrase réelle, pas écrite pour le
+                # traducteur.
+                libres = self._nombres(toks, pris)
+                if not libres:
+                    return Traduction(statut="incompris",
+                                      non_reconnus=self._non_reconnus(toks, pris),
+                                      notes=notes + ["Aucune couleur reconnue."])
+                i, teinte = libres[0]
+                pris.add(i)
+                nuancier = self.lex["nuanciers"]["lee"]["numero"]
+                notes.append(f"« {teinte} » interprété comme numéro de gel Lee "
+                             "(aucun mot « lee » dans la phrase, seul nuancier au lexique).")
 
         if nuancier is None:
             nuancier = self.lex["nuanciers"]["lee"]["numero"]
