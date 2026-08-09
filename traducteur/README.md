@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.8)
+## Portée actuelle (v0.9)
 
 | Intention | Exemple |
 |---|---|
@@ -123,6 +123,7 @@ non-régression.
 | assert (cue, circuit ou groupe) | « assert la cue 5 », « assert le groupe 6 » |
 | effacer tous les filtres actifs | « efface les filtres » |
 | enregistrer / rappeler un snapshot | « enregistre le snapshot 1 », « rappelle le snapshot 5 » |
+| appliquer / retirer une courbe sur une cue | « applique la courbe 4 à la cue 5 », « retire la courbe de la cue 5 » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
@@ -195,8 +196,16 @@ jamais l'état lumineux du plateau (manuel §23) : une confusion ici produirait 
 ne fait pas ce que l'utilisateur croit. L'édition exclusive dans la liste des snapshots
 (activer un élément désactive tous les autres) reste hors périmètre.
 
+**Courbes : seule la cible Cue est couverte.** Le manuel documente une portée différente
+selon la cible (patch, cue, part de cue, ventilateur de scroller) — patch et part restent
+hors périmètre, le traducteur ne distinguant pas encore ces contextes dans une phrase. Le
+numéro de courbe et le numéro de cue sont chacun extraits par leur propre marqueur (le
+nombre après « courbe », le nombre après « cue »), jamais par position : l'ordre naturel
+place souvent la courbe avant la cue, l'inverse de ce qu'un extracteur positionnel
+attendrait — vérifié par test dans les deux ordres.
+
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
-courbes, magic sheets, show control, groupes (au-delà d'une sélection simple), contrôle
+magic sheets, show control, groupes (au-delà d'une sélection simple), contrôle
 partitionné — la majeure partie des 79 actions du modèle. Le lexique se remplit par
 tranches, comme le modèle l'a été.
 

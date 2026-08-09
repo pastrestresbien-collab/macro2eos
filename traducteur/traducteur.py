@@ -377,6 +377,8 @@ class Traducteur:
             "effacer_filtres": self._effacer_filtres,
             "enregistrer_snapshot": self._enregistrer_snapshot,
             "rappeler_snapshot": self._rappeler_snapshot,
+            "appliquer_courbe": self._appliquer_courbe,
+            "retirer_courbe": self._retirer_courbe,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -1129,6 +1131,64 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de snapshot trouvé après « snapshot »."])
         ir = [{"action": {"type": "rappeler_snapshot", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : appliquer une courbe à une cue --------------------------
+    def _appliquer_courbe(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Chaque numéro par son propre marqueur, jamais par position : l'ordre
+        # naturel place souvent la courbe avant la cue (« la courbe 4 à la
+        # cue 5 »), l'inverse de ce qu'un extracteur positionnel attendrait.
+        i_courbe = self._indice_mot(toks, pris, {"courbe", "courbes"})
+        if i_courbe is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune courbe désignée — le mot « courbe » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_courbe:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de courbe trouvé après « courbe »."])
+
+        i_cue = self._indice_objet_cle("Cue", toks, pris)
+        if i_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
+        numero_cue = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cue:
+                numero_cue, _ = valeur, pris.add(i)
+                break
+        if numero_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue trouvé après « cue »."])
+
+        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+               "action": {"type": "appliquer_courbe", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : retirer la courbe d'une cue (idiome `Curve At`) --------
+    def _retirer_courbe(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+        i_cue = self._indice_objet_cle("Cue", toks, pris)
+        if i_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
+        numero_cue = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cue:
+                numero_cue, _ = valeur, pris.add(i)
+                break
+        if numero_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue trouvé après « cue »."])
+        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+               "action": {"type": "retirer_courbe"}}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
 

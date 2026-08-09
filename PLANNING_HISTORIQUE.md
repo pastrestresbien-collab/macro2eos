@@ -567,7 +567,18 @@ exige aussi son propre mot-clé de cible), aucun risque de collision d'intention
 exclusive dans la liste des snapshots (activer un élément désactive tous les autres,
 manuel §23) reste hors périmètre.
 
-Les tranches v0.3 à v0.8 ont été développées en autonomie (sessions du 2026-08-07 et
+**Fait — v0.9 (2026-08-09)** : Courbes. Deux intentions (`appliquer_courbe`,
+`retirer_courbe`, manuel §22, confiance A), limitées à la cible Cue — l'usage documenté et
+testé le plus courant, le manuel documentant une portée différente selon la cible (patch,
+cue, part de cue, ventilateur de scroller) que le traducteur ne distingue pas encore.
+Point technique notable : le numéro de courbe et le numéro de cue sont extraits chacun par
+leur PROPRE marqueur (le nombre après « courbe », le nombre après « cue »), jamais par
+position dans la phrase — contrairement à la plupart des autres intentions à deux nombres.
+L'ordre naturel place souvent la courbe avant la cue (« la courbe 4 à la cue 5 »), l'inverse
+de ce qu'un extracteur positionnel comme celui de `enregistrer_cue` attendrait ; vérifié par
+test dans les deux ordres de phrase.
+
+Les tranches v0.3 à v0.9 ont été développées en autonomie (sessions du 2026-08-07 et
 2026-08-09, « travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention
 testée unitairement (Python) et, pour v0.3/v0.4, de bout en bout dans un vrai navigateur
 contre le vrai moteur avant commit, aucune n'attend de validation utilisateur bloquante —

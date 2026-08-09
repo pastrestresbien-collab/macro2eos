@@ -696,6 +696,34 @@ CAS = [
         "statut": "compris",
         "rendu": "Snapshot 5 Enter",
     },
+
+    # -------------------------------------------------------------- Courbes
+    {
+        # Reprend l'exemple chiffré du manuel §22 recopié dans
+        # test_generateur.py — la courbe précède la cue dans la phrase,
+        # l'inverse de l'ordre attendu par un extracteur positionnel.
+        "nom": "appliquer une courbe à une cue",
+        "phrase": "applique la courbe 4 à la cue 5",
+        "statut": "compris",
+        "rendu": "Cue 5 Curve 4 Enter",
+    },
+    {
+        "nom": "appliquer une courbe — ordre inversé dans la phrase",
+        "phrase": "applique à la cue 5 la courbe 4",
+        "statut": "compris",
+        "rendu": "Cue 5 Curve 4 Enter",
+    },
+    {
+        "nom": "appliquer une courbe sans numéro de cue — refus assumé",
+        "phrase": "applique la courbe 4",
+        "statut": "incompris",
+    },
+    {
+        "nom": "retirer la courbe d'une cue",
+        "phrase": "retire la courbe de la cue 5",
+        "statut": "compris",
+        "rendu": "Cue 5 Curve At Enter",
+    },
 ]
 
 

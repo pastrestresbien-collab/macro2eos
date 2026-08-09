@@ -655,6 +655,40 @@ intentions:
       « au mieux de ses capacités » — résultat non garanti identique, mais
       hors de portée du traducteur (dépend du matériel, pas de la phrase).
 
+  appliquer_courbe:
+    description: "appliquer une courbe de fondu à une cue"
+    declencheurs:
+      verbe: [appliquer, applique]
+      courbe: [courbe, courbes]
+      cue: [cue, cues, memoire, memoires, sequence]
+    exemple_nl: "applique la courbe 4 à la cue 5"
+    origine: >
+      manuel §22 Curves, confiance A (`grammar/modele.yaml`, section
+      `courbes`/`appliquer_courbe`). Le numéro de courbe et le numéro de cue
+      sont extraits chacun par leur propre marqueur (le nombre après
+      « courbe », le nombre après « cue »), jamais par position dans la
+      phrase — l'ordre naturel place souvent la courbe avant la cue
+      (« applique la courbe 4 à la cue 5 »), l'inverse de l'ordre attendu
+      par un extracteur positionnel comme celui de `enregistrer_cue`.
+    note: >
+      Cette tranche ne couvre que la cible Cue, l'usage documenté et testé
+      le plus courant. Le manuel documente une portée différente selon la
+      cible (patch, cue, part de cue, ventilateur de scroller) — patch et
+      part restent hors périmètre, le traducteur ne distinguant pas encore
+      ces contextes. Le générateur porte déjà l'avertissement sur la portée
+      variable ; le traducteur ne le répète pas.
+
+  retirer_courbe:
+    description: "retirer la courbe de fondu d'une cue (idiome `Curve At`)"
+    declencheurs:
+      verbe: [retirer, retire, enlever, enleve, supprimer, supprime]
+      courbe: [courbe, courbes]
+      cue: [cue, cues, memoire, memoires, sequence]
+    exemple_nl: "retire la courbe de la cue 5"
+    origine: >
+      manuel §22 : « [Cue] [5] {Attributes} {Curve} [At] [Enter] », confiance
+      A. Idiome `Curve At` sans valeur — retirer, pas régler à zéro.
+
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible
 #
