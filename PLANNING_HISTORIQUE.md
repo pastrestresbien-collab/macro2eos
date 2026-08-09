@@ -556,7 +556,18 @@ rien dans le dépôt ne confirme que cet accord se reproduit fidèlement en OSC 
 Sans la pose, l'app ne peut pas non plus dire quel filtre est actif avant l'effacement —
 un effacement à l'aveugle, assumé comme tel plutôt que caché.
 
-Les tranches v0.3 à v0.7 ont été développées en autonomie (sessions du 2026-08-07 et
+**Fait — v0.8 (2026-08-09)** : Snapshots. Deux intentions (`enregistrer_snapshot`,
+`rappeler_snapshot`, manuel §23, confiance A), déclencheur volontairement limité au seul
+mot « snapshot » — aucun synonyme français générique — car un snapshot capture la surface
+de contrôle et les moniteurs, jamais l'état lumineux du plateau : un utilisateur qui dit
+« enregistre cet état » veut presque toujours une cue, un preset ou une palette, et
+confondre les deux produirait une macro qui ne fait pas ce que l'utilisateur croit. Sans
+mot dédié partagé avec `enregistrer_cue`/`enregistrer_sub`/`enregistrer_preset` (chacun
+exige aussi son propre mot-clé de cible), aucun risque de collision d'intention. L'édition
+exclusive dans la liste des snapshots (activer un élément désactive tous les autres,
+manuel §23) reste hors périmètre.
+
+Les tranches v0.3 à v0.8 ont été développées en autonomie (sessions du 2026-08-07 et
 2026-08-09, « travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention
 testée unitairement (Python) et, pour v0.3/v0.4, de bout en bout dans un vrai navigateur
 contre le vrai moteur avant commit, aucune n'attend de validation utilisateur bloquante —

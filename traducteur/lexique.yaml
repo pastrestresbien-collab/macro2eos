@@ -622,6 +622,39 @@ intentions:
       n'est pas confirmée en OSC (#27) ; ce traducteur ne couvre que
       l'effacement.
 
+  enregistrer_snapshot:
+    description: >
+      enregistrer un snapshot — état de la SURFACE DE CONTRÔLE et des
+      moniteurs, jamais un état lumineux du plateau
+    declencheurs:
+      verbe: [enregistrer, enregistre, sauver, sauve]
+      snapshot: [snapshot, snapshots]
+    exemple_nl: "enregistre le snapshot 3"
+    origine: >
+      manuel §23 Snapshots, confiance A (`grammar/modele.yaml`, section
+      `snapshots`). Déclencheur volontairement limité au mot « snapshot » —
+      pas de synonyme français générique — car « enregistre cet état »
+      désigne presque toujours une cue, un preset ou une palette : le
+      snapshot ne conserve aucune donnée de channel, une confusion ici
+      produirait une macro qui ne fait pas ce que l'utilisateur croit.
+    note: >
+      L'édition dans la liste des snapshots est exclusive, pas additive
+      (manuel §23 : activer un élément désactive tous les autres) — hors de
+      portée de cette intention, qui ne couvre que l'enregistrement initial.
+
+  rappeler_snapshot:
+    description: "rappeler un snapshot déjà enregistré"
+    declencheurs:
+      verbe: [rappeler, rappelle, charger, charge]
+      snapshot: [snapshot, snapshots]
+    exemple_nl: "rappelle le snapshot 3"
+    origine: >
+      manuel §23 « Recalling Snapshots », confiance A. Les snapshots sont
+      globaux (rappelables depuis n'importe quel appareil sauf les RFR
+      Net3) ; rappelé sur un appareil de disposition différente, Eos mappe
+      « au mieux de ses capacités » — résultat non garanti identique, mais
+      hors de portée du traducteur (dépend du matériel, pas de la phrase).
+
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible
 #

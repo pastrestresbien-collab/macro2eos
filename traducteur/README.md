@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.7)
+## Portée actuelle (v0.8)
 
 | Intention | Exemple |
 |---|---|
@@ -122,6 +122,7 @@ non-régression.
 | parquer un circuit ou groupe à un niveau | « parque le circuit 2 à 50 % » |
 | assert (cue, circuit ou groupe) | « assert la cue 5 », « assert le groupe 6 » |
 | effacer tous les filtres actifs | « efface les filtres » |
+| enregistrer / rappeler un snapshot | « enregistre le snapshot 1 », « rappelle le snapshot 5 » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
@@ -187,10 +188,17 @@ de confirmation que cet accord se reproduit fidèlement en OSC (backlog #27). Sa
 filtre couverte, l'app ne peut pas non plus dire à l'utilisateur quel filtre est actif
 avant l'effacement — c'est un effacement à l'aveugle, assumé comme tel.
 
+**Snapshot : jamais confondu avec une cue, un preset ou une palette.** Le déclencheur est
+volontairement limité au mot « snapshot » — pas de synonyme français générique comme
+« enregistre cet état » — car un snapshot capture la surface de contrôle et les moniteurs,
+jamais l'état lumineux du plateau (manuel §23) : une confusion ici produirait une macro qui
+ne fait pas ce que l'utilisateur croit. L'édition exclusive dans la liste des snapshots
+(activer un élément désactive tous les autres) reste hors périmètre.
+
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
-courbes, snapshots, magic sheets, show control, groupes (au-delà d'une sélection simple),
-contrôle partitionné — la majeure partie des 79 actions du modèle. Le lexique se remplit
-par tranches, comme le modèle l'a été.
+courbes, magic sheets, show control, groupes (au-delà d'une sélection simple), contrôle
+partitionné — la majeure partie des 79 actions du modèle. Le lexique se remplit par
+tranches, comme le modèle l'a été.
 
 **Query : périmètre volontairement restreint, pas une couverture complète.** Seules les
 cibles Color Palette, Preset et Cue sont couvertes — les familles déjà modélisées ailleurs

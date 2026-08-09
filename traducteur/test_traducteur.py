@@ -675,6 +675,27 @@ CAS = [
         "statut": "compris",
         "rendu": "Clear Filters Enter",
     },
+
+    # ------------------------------------------------------------ Snapshots
+    {
+        # Reprend l'exemple chiffré du manuel §23 recopié dans
+        # test_generateur.py.
+        "nom": "enregistrer un snapshot",
+        "phrase": "enregistre le snapshot 1",
+        "statut": "compris",
+        "rendu": "Record Snapshot 1 Enter",
+    },
+    {
+        "nom": "enregistrer un snapshot sans numéro — refus assumé",
+        "phrase": "enregistre le snapshot",
+        "statut": "incompris",
+    },
+    {
+        "nom": "rappeler un snapshot",
+        "phrase": "rappelle le snapshot 5",
+        "statut": "compris",
+        "rendu": "Snapshot 5 Enter",
+    },
 ]
 
 

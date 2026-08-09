@@ -375,6 +375,8 @@ class Traducteur:
             "parquer": self._parquer,
             "asserter": self._asserter,
             "effacer_filtres": self._effacer_filtres,
+            "enregistrer_snapshot": self._enregistrer_snapshot,
+            "rappeler_snapshot": self._rappeler_snapshot,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -1091,6 +1093,44 @@ class Traducteur:
         ir = [{"action": {"type": "effacer_filtres"}}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, set()))
+
+    # -- intention : enregistrer un snapshot ---------------------------------
+    def _enregistrer_snapshot(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+        i_snap = self._indice_mot(toks, pris, {"snapshot", "snapshots"})
+        if i_snap is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun snapshot désigné — le mot « snapshot » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_snap:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de snapshot trouvé après « snapshot »."])
+        ir = [{"action": {"type": "record_snapshot", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : rappeler un snapshot ------------------------------------
+    def _rappeler_snapshot(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+        i_snap = self._indice_mot(toks, pris, {"snapshot", "snapshots"})
+        if i_snap is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun snapshot désigné — le mot « snapshot » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_snap:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de snapshot trouvé après « snapshot »."])
+        ir = [{"action": {"type": "rappeler_snapshot", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
 
     # -- petits extracteurs partagés ---------------------------------------
     def _indice_mot(self, toks: list[str], pris: set[int],
