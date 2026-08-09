@@ -548,7 +548,15 @@ objet et reste `incompris` — cohérent avec le constat de banc (S, backlog #26
 notation de cue list explicite (`Cue x/y Assert`, manuel §14) reste hors périmètre, comme
 tout ce qui touche aux cue lists multiples dans ce traducteur.
 
-Les tranches v0.3 à v0.6 ont été développées en autonomie (sessions du 2026-08-07 et
+**Fait — v0.7 (2026-08-09)** : Filtres. Une intention (`effacer_filtres`, manuel §13,
+confiance A) : effacer tous les filtres actifs (`Clear Filters`), sans sélection ni cible —
+le seul geste de filtre à disposer d'une touche OSC propre et dédiée. Poser un filtre par
+accord maintenu (`{Filter}` + touches de paramètre, tenu puis relâché) reste hors périmètre :
+rien dans le dépôt ne confirme que cet accord se reproduit fidèlement en OSC (backlog #27).
+Sans la pose, l'app ne peut pas non plus dire quel filtre est actif avant l'effacement —
+un effacement à l'aveugle, assumé comme tel plutôt que caché.
+
+Les tranches v0.3 à v0.7 ont été développées en autonomie (sessions du 2026-08-07 et
 2026-08-09, « travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention
 testée unitairement (Python) et, pour v0.3/v0.4, de bout en bout dans un vrai navigateur
 contre le vrai moteur avant commit, aucune n'attend de validation utilisateur bloquante —

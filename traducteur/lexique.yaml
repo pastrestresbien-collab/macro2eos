@@ -602,6 +602,26 @@ intentions:
       paramètre, l'assert seul n'est que posé, pas stocké : le manuel exige
       ensuite un `Record`/`Update` séparé, jamais généré automatiquement ici.
 
+  effacer_filtres:
+    description: "effacer tous les filtres actifs (Clear Filters)"
+    declencheurs:
+      verbe: [effacer, efface, vider, vide, supprimer, supprime]
+      filtre: [filtre, filtres]
+    exemple_nl: "efface les filtres"
+    origine: >
+      manuel §13 Filters, confiance A pour l'existence d'une touche dédiée
+      `{Clear Filters}` (`grammar/modele.yaml`, section `filtres.effacer`) —
+      le seul geste de filtre à disposer d'une touche OSC propre. Poser un
+      filtre par accord maintenu (`{Filter}` + touches de paramètre, tenu
+      puis relâché) reste hors périmètre : rien ne confirme que cet accord
+      se reproduit fidèlement en OSC (backlog #27).
+    note: >
+      Ne prend aucune sélection ni cible — « Clear Filters » efface TOUS
+      les filtres actifs, sans distinction ni portée réglable. Le générateur
+      rappelle à chaque rendu que la pose de filtre par accord maintenu
+      n'est pas confirmée en OSC (#27) ; ce traducteur ne couvre que
+      l'effacement.
+
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible
 #

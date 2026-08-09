@@ -59,13 +59,13 @@ légalité**, compilé en JSON, avec un générateur qui produit trois sorties d
 la majorité sont des exemples chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 16 intentions, 79 cas de non-régression, portée détaillée dans
+générateur rend ensuite — 17 intentions, 81 cas de non-régression, portée détaillée dans
 son propre README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.6 — 16 intentions, 79 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.7 — 17 intentions, 81 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -126,13 +126,13 @@ exécutable. Sans cette issue, un traducteur n'a d'autre choix que de deviner, e
 couleur devinée produit une macro valide, acceptée par la console, et la mauvaise teinte
 sur scène : le pire des trois échecs possibles parce qu'il est **silencieux**.
 
-**Portée actuelle et détail des tranches v0.1 → v0.6** : `traducteur/README.md` (portée
+**Portée actuelle et détail des tranches v0.1 → v0.7** : `traducteur/README.md` (portée
 à jour) et `PLANNING_HISTORIQUE.md` section « Axe B » (récit et constats de chaque
 tranche).
 
-**Reste à couvrir** : cue lists multiples, cues multipart, patch, filtres, courbes,
-snapshots, magic sheets, show control, contrôle partitionné — la majeure partie des 79
-actions du modèle. Mark, Park et Assert (v0.5/v0.6) ne couvrent chacun qu'une forme
+**Reste à couvrir** : cue lists multiples, cues multipart, patch, courbes, snapshots,
+magic sheets, show control, contrôle partitionné — la majeure partie des 79 actions du
+modèle. Mark, Park, Assert et Filtres (v0.5/v0.6/v0.7) ne couvrent chacun qu'une forme
 restreinte — voir `traducteur/README.md` pour le détail exact des limites assumées.
 Query n'est couvert que pour trois cibles (Color Palette, Preset, Cue) et une seule
 condition à la fois. Le lexique se remplira par tranches, comme le modèle l'a été.

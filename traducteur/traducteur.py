@@ -374,6 +374,7 @@ class Traducteur:
             "marquer": self._marquer,
             "parquer": self._parquer,
             "asserter": self._asserter,
+            "effacer_filtres": self._effacer_filtres,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -1083,6 +1084,13 @@ class Traducteur:
         ir = [{"selection": selection, "action": {"type": "asserter"}}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : effacer tous les filtres (Clear Filters) ---------------
+    def _effacer_filtres(self, toks: list[str], reponses: dict) -> Traduction:
+        # Aucune sélection, aucune cible : « Clear Filters » agit globalement.
+        ir = [{"action": {"type": "effacer_filtres"}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, set()))
 
     # -- petits extracteurs partagés ---------------------------------------
     def _indice_mot(self, toks: list[str], pris: set[int],

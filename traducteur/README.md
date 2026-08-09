@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.6)
+## Portée actuelle (v0.7)
 
 | Intention | Exemple |
 |---|---|
@@ -121,6 +121,7 @@ non-régression.
 | poser un drapeau Mark (cue ou channels) | « marque la cue 10 », « marque les circuits 1 à 5 » |
 | parquer un circuit ou groupe à un niveau | « parque le circuit 2 à 50 % » |
 | assert (cue, circuit ou groupe) | « assert la cue 5 », « assert le groupe 6 » |
+| effacer tous les filtres actifs | « efface les filtres » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
@@ -179,10 +180,17 @@ objet et reste `incompris`, cohérent avec le constat de banc (S) que `Sub <n> A
 manuel §14) reste hors périmètre — les cue lists multiples ne sont pas modélisées dans le
 traducteur dans son ensemble.
 
+**Filtres : seul l'effacement global est couvert, jamais la pose.** `Clear Filters` est le
+seul geste de filtre à disposer d'une touche OSC propre et dédiée (confiance A) ; poser un
+filtre par accord maintenu (`{Filter}` + touches de paramètre) reste hors périmètre, faute
+de confirmation que cet accord se reproduit fidèlement en OSC (backlog #27). Sans pose de
+filtre couverte, l'app ne peut pas non plus dire à l'utilisateur quel filtre est actif
+avant l'effacement — c'est un effacement à l'aveugle, assumé comme tel.
+
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
-filtres, courbes, snapshots, magic sheets, show control, groupes (au-delà d'une sélection
-simple), contrôle partitionné — la majeure partie des 79 actions du modèle. Le lexique se
-remplit par tranches, comme le modèle l'a été.
+courbes, snapshots, magic sheets, show control, groupes (au-delà d'une sélection simple),
+contrôle partitionné — la majeure partie des 79 actions du modèle. Le lexique se remplit
+par tranches, comme le modèle l'a été.
 
 **Query : périmètre volontairement restreint, pas une couverture complète.** Seules les
 cibles Color Palette, Preset et Cue sont couvertes — les familles déjà modélisées ailleurs

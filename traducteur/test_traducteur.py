@@ -659,6 +659,22 @@ CAS = [
         "phrase": "assert",
         "statut": "incompris",
     },
+
+    # -------------------------------------------------------------- Filtres
+    {
+        # Reprend l'exemple chiffré du manuel §13 recopié dans
+        # test_generateur.py — seul le geste d'effacement est couvert.
+        "nom": "effacer les filtres",
+        "phrase": "efface les filtres",
+        "statut": "compris",
+        "rendu": "Clear Filters Enter",
+    },
+    {
+        "nom": "effacer les filtres — verbe « vider »",
+        "phrase": "vide les filtres",
+        "statut": "compris",
+        "rendu": "Clear Filters Enter",
+    },
 ]
 
 
