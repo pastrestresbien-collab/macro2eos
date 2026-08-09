@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.5)
+## Portée actuelle (v0.6)
 
 | Intention | Exemple |
 |---|---|
@@ -120,6 +120,7 @@ non-régression.
 | sélectionner via Query (Is In / Isn't In) | « sélectionne ce qui est dans la palette couleur 5 », « ... n'est pas dans le preset 3 » |
 | poser un drapeau Mark (cue ou channels) | « marque la cue 10 », « marque les circuits 1 à 5 » |
 | parquer un circuit ou groupe à un niveau | « parque le circuit 2 à 50 % » |
+| assert (cue, circuit ou groupe) | « assert la cue 5 », « assert le groupe 6 » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
@@ -169,6 +170,14 @@ que de préposition introduisant le niveau — sans un second « à » pour tran
 `regler_intensite` sait résoudre), `self._plage` lirait « 4 à 50 » comme une plage de
 circuits. L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse restent hors
 périmètre.
+
+**Assert : une cue, un circuit ou un groupe — jamais un submaster, jamais une cue list
+explicite.** `Sub` n'existe pas dans `self._objets` (même garde-fou que pour
+`enregistrer_sub`/`bump_sub`/Park) : une phrase « assert le sub 3 » ne trouve donc aucun
+objet et reste `incompris`, cohérent avec le constat de banc (S) que `Sub <n> Assert`
+échoue en erreur de syntaxe. La notation `Cue x/y` (assert sur une cue list précise,
+manuel §14) reste hors périmètre — les cue lists multiples ne sont pas modélisées dans le
+traducteur dans son ensemble.
 
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
 filtres, courbes, snapshots, magic sheets, show control, groupes (au-delà d'une sélection

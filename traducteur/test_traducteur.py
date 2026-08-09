@@ -625,6 +625,40 @@ CAS = [
         "phrase": "parque le circuit 3",
         "statut": "incompris",
     },
+
+    # -------------------------------------------------------------- Assert
+    {
+        # Reprend l'exemple chiffré du manuel §14 recopié dans
+        # test_generateur.py (sans la notation de cue list `x/y`).
+        "nom": "assert sur une cue",
+        "phrase": "assert la cue 5",
+        "statut": "compris",
+        "rendu": "Cue 5 Assert Enter",
+    },
+    {
+        "nom": "assert sur un groupe",
+        "phrase": "assert le groupe 6",
+        "statut": "compris",
+        "rendu": "Group 6 Assert Enter",
+    },
+    {
+        "nom": "assert sur des circuits — verbe « asserter »",
+        "phrase": "asserter les circuits 1 à 5",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Assert Enter",
+    },
+    {
+        # Sub vit dans objets_cible, jamais dans objets — même garde-fou
+        # structurel que « sub 3 à 50 % » pour l'intensité.
+        "nom": "assert sur un submaster — jamais déclenché (Sub hors objets)",
+        "phrase": "assert le sub 3",
+        "statut": "incompris",
+    },
+    {
+        "nom": "assert sans cible — refus assumé",
+        "phrase": "assert",
+        "statut": "incompris",
+    },
 ]
 
 

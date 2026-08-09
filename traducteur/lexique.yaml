@@ -577,6 +577,31 @@ intentions:
       état console. `Mark Cue <n>` (marquer vers une cue antérieure) et
       `Mark Earliest` restent hors périmètre de cette première tranche.
 
+  asserter:
+    description: >
+      réaffirmer l'autorité d'une cue, d'un channel ou d'un paramètre sur le
+      plateau (Assert)
+    declencheurs:
+      verbe: [asserter, assert]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj,
+              groupe, groupes, group, cue, cues, memoire, memoires, sequence]
+    exemple_nl: "assert la cue 5 ; assert le groupe 6"
+    origine: >
+      manuel §14 « Using Assert », confiance A. S'applique à une cue, une cue
+      list, un channel ou un paramètre — jamais à un submaster, qui échoue en
+      erreur de syntaxe au banc réel (confiance S, `grammar/modele.yaml`
+      section `asserter`). `Sub` vit dans `objets_cible`, jamais dans
+      `objets` (même raison que pour `enregistrer_sub`/`bump_sub`) : une
+      phrase « assert le sub 3 » ne déclenche donc structurellement pas
+      cette intention — elle ne trouve aucun objet reconnu, comme prévu.
+    note: >
+      Cette tranche ne couvre que la forme la plus simple : un seul circuit,
+      groupe ou cue (liste 1 implicite), sans la notation de cue list
+      explicite (`Cue x/y`, manuel §14) — les cue lists multiples restent
+      hors périmètre du traducteur dans son ensemble. Sur un channel ou un
+      paramètre, l'assert seul n'est que posé, pas stocké : le manuel exige
+      ensuite un `Record`/`Update` séparé, jamais généré automatiquement ici.
+
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible
 #

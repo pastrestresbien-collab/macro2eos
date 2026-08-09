@@ -539,7 +539,16 @@ supprimant l'ambiguïté au lieu de la deviner. Le bug plus général dans `regl
 reste ouvert, noté ici plutôt que corrigé sous pression — une correction de `_plage`
 mériterait sa propre vérification contre toute la suite de tests existante.
 
-Les tranches v0.3, v0.4 et v0.5 ont été développées en autonomie (sessions du 2026-08-07 et
+**Fait — v0.6 (2026-08-09)** : Assert. Une intention (`asserter`, manuel §14, confiance A) :
+réaffirmer l'autorité d'une cue, d'un circuit ou d'un groupe sur le plateau. Même garde-fou
+que pour Sub ailleurs dans le traducteur (`enregistrer_sub`, `bump_sub`, Park) : `Sub`
+n'existe pas dans `self._objets`, donc « assert le sub 3 » ne trouve structurellement aucun
+objet et reste `incompris` — cohérent avec le constat de banc (S, backlog #26) que
+`Sub <n> Assert` échoue en erreur de syntaxe, contrairement aux cues et channels. La
+notation de cue list explicite (`Cue x/y Assert`, manuel §14) reste hors périmètre, comme
+tout ce qui touche aux cue lists multiples dans ce traducteur.
+
+Les tranches v0.3 à v0.6 ont été développées en autonomie (sessions du 2026-08-07 et
 2026-08-09, « travaille sur les tâches dont tu n'as pas besoin de moi ») : chaque intention
 testée unitairement (Python) et, pour v0.3/v0.4, de bout en bout dans un vrai navigateur
 contre le vrai moteur avant commit, aucune n'attend de validation utilisateur bloquante —

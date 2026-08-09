@@ -373,6 +373,7 @@ class Traducteur:
             "selectionner_query": self._selectionner_query,
             "marquer": self._marquer,
             "parquer": self._parquer,
+            "asserter": self._asserter,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -1058,6 +1059,28 @@ class Traducteur:
                 "Aucun numéro trouvé pour la cible du marquage."])
 
         ir = [{"selection": selection, "action": {"type": "marquer"}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : asserter (réaffirmer l'autorité d'une cue/sélection) ---
+    def _asserter(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # `self._objet` ne connaît que Chan/Group/Cue (jamais Sub, qui vit
+        # dans `objets_cible`) : une phrase « assert le sub 3 » ne trouve
+        # donc structurellement aucun objet et reste `incompris`, cohérent
+        # avec le constat de banc (S) que `Sub <n> Assert` échoue en erreur
+        # de syntaxe (grammar/modele.yaml, section `asserter`).
+        objet = self._objet(toks, pris)
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit, groupe ni cue désigné — l'assert exige une cible explicite."])
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro trouvé pour la cible de l'assert."])
+
+        ir = [{"selection": selection, "action": {"type": "asserter"}}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
 
