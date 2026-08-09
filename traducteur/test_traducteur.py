@@ -445,6 +445,65 @@ CAS = [
         "statut": "compris",
         "rendu": "SubDown 5 Enter",
     },
+
+    # ------------------------------------------------------------ presets
+    {
+        # Reprend l'exemple chiffré du manuel §11 recopié dans
+        # test_generateur.py.
+        "nom": "enregistrement d'un preset",
+        "phrase": "enregistrer les circuits 1 à 5 dans le preset 2",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Record Preset 2 Enter",
+    },
+    {
+        "nom": "enregistrer preset sans sélection — refus assumé",
+        "phrase": "enregistrer dans le preset 4",
+        "statut": "incompris",
+    },
+    {
+        # Même raison que pour Sub : Preset vit dans objets_cible, jamais
+        # dans objets — un preset ne peut structurellement pas devenir la
+        # cible de colorer_selection.
+        "nom": "preset + couleur — jamais routé vers colorer_selection",
+        "phrase": "preset 3 en rouge",
+        "statut": "incompris",
+    },
+    {
+        "nom": "rappel d'un preset sur une plage de circuits",
+        "phrase": "rappelle le preset 2 sur les circuits 1 à 5",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Preset 2 Enter",
+    },
+    {
+        "nom": "rappel d'un preset — verbe « appliquer »",
+        "phrase": "applique le preset 9 aux circuits 10 à 20",
+        "statut": "compris",
+        "rendu": "Chan 10 Thru 20 Preset 9 Enter",
+    },
+    {
+        "nom": "rappeler preset sans sélection — refus assumé",
+        "phrase": "rappelle le preset 2",
+        "statut": "incompris",
+    },
+
+    # -------------------------------------------------------------- macros
+    {
+        "nom": "lancer une macro par numéro",
+        "phrase": "lance la macro 5",
+        "statut": "compris",
+        "rendu": "Macro 5 Enter",
+    },
+    {
+        "nom": "lancer une macro — verbe « exécuter »",
+        "phrase": "execute la macro 12",
+        "statut": "compris",
+        "rendu": "Macro 12 Enter",
+    },
+    {
+        "nom": "lancer une macro sans numéro — refus assumé",
+        "phrase": "lance la macro",
+        "statut": "incompris",
+    },
 ]
 
 

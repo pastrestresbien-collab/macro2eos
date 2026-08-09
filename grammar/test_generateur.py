@@ -899,6 +899,18 @@ CAS = [
         "avertissements": 0,
     },
     {
+        # PLANNING #38 : les presets partagent les mêmes options que les
+        # palettes ({By Type}, {Absolute}, {Locked}) — pas encore couvert
+        # par un cas de non-régression jusqu'ici.
+        "nom": "manuel §11 — enregistrement d'un preset {By Type}",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 99},
+             "action": {"type": "record_preset", "cible": 6, "options": ["{By Type}"]}},
+        ],
+        "attendu": "Chan 99 Record Preset 6 {By Type} Enter",
+        "avertissements": 0,
+    },
+    {
         "nom": "manuel §11 — rappel d'un preset sur une liste de channels",
         # [Channel List] [Preset] [2] [Enter]
         "ir": [

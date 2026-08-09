@@ -140,6 +140,16 @@ objets_cible:
     # si), donc « sous-master » ne matcherait jamais comme un seul jeton.
     alias: [sub, subs, submaster, submasters, sousmaster, sousmasters]
     source: "objets.Sub du modèle (grammar/modele.yaml) ; manuel §20 Submasters"
+  Preset:
+    # Même raisonnement que Sub : `Preset` n'est jamais une sélection
+    # générique. La matrice de légalité (grammar/modele.yaml) déclare
+    # `Preset + rappeler_preset` INVALIDE (confiance A, manuel §11 : « Presets
+    # can not refer to other presets ») — un preset ne référence jamais un
+    # autre preset. Le mélanger à `objets` laisserait une phrase comme
+    # « preset 3 en rouge » passer par `colorer_selection` sans que rien ne
+    # la bloque avant le générateur.
+    alias: [preset, presets]
+    source: "objets.Preset du modèle (grammar/modele.yaml) ; manuel §11 Presets"
 
 # --------------------------------------------------------------------------
 # NUANCIERS — bibliothèques de gélatines
@@ -412,6 +422,53 @@ intentions:
       seuls les NOMS des deux touches sont sourcés. Le traducteur ne les
       explique donc pas ; si la phrase ne précise pas laquelle, il pose une
       question plutôt que de choisir.
+
+  enregistrer_preset:
+    description: "enregistrer une sélection de circuits dans un preset"
+    declencheurs:
+      verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
+      preset: [preset, presets]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "enregistrer les circuits 1 à 5 dans le preset 2"
+    origine: >
+      manuel §11 « Storing Presets Using [Record] », confiance A. Même
+      structure que `enregistrer_sub`/`enregistrer_cue` : la sélection est
+      exigée dans la phrase elle-même, jamais devinée depuis un état de la
+      console (règle 5, `REGLES_POUR_UI.md`).
+    note: >
+      Un preset ne peut pas en référencer un autre (manuel §11, « Presets
+      can not refer to other presets ») — `Preset` vit dans `objets_cible`,
+      jamais dans `objets`, pour qu'aucune autre intention ne puisse s'en
+      servir comme sélection. Le piège `{By Type}` (PLANNING #38) s'applique
+      identiquement aux presets qu'aux palettes — pas encore exposé comme
+      option ici, seule la forme simple est couverte pour l'instant.
+
+  rappeler_preset:
+    description: "appliquer un preset existant à une sélection de circuits"
+    declencheurs:
+      verbe: [rappeler, rappelle, appliquer, applique, charger, charge]
+      preset: [preset, presets]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "rappelle le preset 2 sur les circuits 1 à 5"
+    origine: >
+      manuel §11 « Recalling Presets », confiance A. Même exigence de
+      sélection explicite que `enregistrer_preset` — le manuel documente
+      `Preset Enter` sans numéro (rappelle le dernier preset sélectionné)
+      mais le traducteur ne produit jamais cette forme implicite,
+      cohérent avec le refus général de deviner un état console.
+
+  appel_macro:
+    description: "lancer une macro par son numéro, depuis la ligne de commande"
+    declencheurs:
+      verbe: [lancer, lance, executer, execute, jouer, joue, demarrer, demarre, appeler, appelle]
+      macro: [macro, macros]
+    exemple_nl: "lance la macro 5"
+    origine: >
+      manuel §24 « Play a Macro », confiance A — `Macro <n> Enter` depuis
+      Live. Ne couvre que l'appel direct, jamais le chaînage macro-dans-macro
+      (fiabilité d'exécution seulement C, corpus #070 vs #095, PLANNING #2) :
+      cette intention ne produit qu'une ligne de commande isolée, jamais un
+      contenu de macro imbriqué.
 
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible

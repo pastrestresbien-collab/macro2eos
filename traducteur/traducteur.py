@@ -367,6 +367,9 @@ class Traducteur:
             "appliquer_effet": self._appliquer_effet,
             "arreter_effet": self._arreter_effet,
             "bump_sub": self._bump_sub,
+            "enregistrer_preset": self._enregistrer_preset,
+            "rappeler_preset": self._rappeler_preset,
+            "appel_macro": self._appel_macro,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -857,6 +860,87 @@ class Traducteur:
                             detail=" ".join(o.get("detail", "").split()))
                      for o in modele["options"]],
         )
+
+    # -- intention : enregistrer une sélection dans un preset ----------------
+    def _enregistrer_preset(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Même schéma que `_enregistrer_sub` : le mot-clé cible d'abord (ici
+        # « preset », résolu dans `self._objets_cible`, jamais `self._objets`
+        # — un preset ne peut pas en référencer un autre, manuel §11).
+        i_preset = self._indice_objet_cle("Preset", toks, pris, index=self._objets_cible)
+        if i_preset is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun preset désigné — le mot « preset » est requis."])
+
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_preset:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de preset trouvé après « preset »."])
+
+        objet = self._objet(toks, pris) or "Chan"
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+
+        ir = [{"selection": selection, "action": {"type": "record_preset", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : rappeler un preset sur une sélection ---------------------
+    def _rappeler_preset(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        i_preset = self._indice_objet_cle("Preset", toks, pris, index=self._objets_cible)
+        if i_preset is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun preset désigné — le mot « preset » est requis."])
+
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_preset:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de preset trouvé après « preset »."])
+
+        objet = self._objet(toks, pris) or "Chan"
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+
+        ir = [{"selection": selection, "action": {"type": "rappeler_preset", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : lancer une macro -----------------------------------------
+    def _appel_macro(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        i_macro = self._indice_mot(toks, pris, {"macro", "macros"})
+        if i_macro is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune macro désignée — le mot « macro » est requis."])
+
+        numero = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_macro:
+                numero, _ = valeur, pris.add(i)
+                break
+        if numero is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de macro trouvé après « macro »."])
+
+        ir = [{"action": {"type": "appel_macro", "numero": numero}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
 
     # -- petits extracteurs partagés ---------------------------------------
     def _indice_mot(self, toks: list[str], pris: set[int],

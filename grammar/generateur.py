@@ -404,7 +404,20 @@ class Generateur:
             return " ".join(morceaux)
 
         if t in ("record_preset", "record_only_preset", "rappeler_preset"):
-            out = mot if "cible" not in act else f"{mot} {act['cible']}"
+            morceaux = [mot] if "cible" not in act else [mot, str(act["cible"])]
+            if t != "rappeler_preset":
+                # Les presets partagent les mêmes trois softkeys que les
+                # palettes ({By Type}, {Absolute}, {Locked}) — manuel §11
+                # « Preset Options », formulation identique au mot près à
+                # celle du §10 pour les palettes (voir
+                # `palettes.presets.options` dans le modèle). Validées
+                # contre le même dict que les palettes : ce sont les mêmes
+                # touches, pas une famille séparée.
+                for option in act.get("options", []):
+                    if option not in self.modele["palettes"]["options"]:
+                        avert.append(f"option de preset `{option}` absente du modèle")
+                    morceaux.append(option)
+            out = " ".join(morceaux)
             if act.get("label"):
                 out += f" Label {act['label']}"
                 self._verifier_label(act["label"], avert)
