@@ -246,13 +246,19 @@ class Traducteur:
 
     # -- couleurs ----------------------------------------------------------
     def _couleurs_de(self, toks: list[str], pris: set[int],
-                     questions: list[Question], notes: list[str]) -> list[dict] | None:
+                     questions: list[Question], notes: list[str],
+                     reponses: dict | None = None) -> list[dict] | None:
         """Résout les mots de couleur restants, dans l'ordre de la phrase.
 
         Retourne None si une couleur est ambiguë — dans ce cas la question est
-        déjà empilée. Une teinte devinée serait le pire des échecs : macro
-        valide, console d'accord, mauvaise couleur sur scène.
+        déjà empilée, À MOINS que `reponses` ne porte déjà une réponse valide
+        pour cette question précise (`couleur:<mot>`), auquel cas elle est
+        consommée ici plutôt que reposée — c'est le contrat documenté par
+        `traduire()` (« le même appel, relancé avec la réponse, doit reprendre
+        où il s'était arrêté »). Une teinte devinée serait le pire des
+        échecs : macro valide, console d'accord, mauvaise couleur sur scène.
         """
+        reponses = reponses or {}
         trouvees: list[dict] = []
         for i, tok in enumerate(toks):
             if i in pris or tok.isdigit() or tok in self._outils:
@@ -260,14 +266,36 @@ class Traducteur:
             cle, exaequo = self._resoudre(tok, self._couleurs)
             if cle is None:
                 if exaequo:
-                    questions.append(self._question_couleur(tok, exaequo))
-                    return None
-                continue
+                    reponse = reponses.get(f"couleur:{tok}")
+                    if reponse in exaequo:
+                        cle = reponse
+                    else:
+                        questions.append(self._question_couleur(tok, exaequo))
+                        return None
+                else:
+                    continue
+            if cle not in self.lex["couleurs"]:
+                # `reponse` validé contre `exaequo` mais pas une clé connue —
+                # ne devrait pas arriver, mais ne jamais planter dessus.
+                questions.append(self._question_couleur(tok, exaequo))
+                return None
             pris.add(i)
             corps = self.lex["couleurs"][cle]
             if corps.get("ambigu"):
-                questions.append(self._question_couleur_ambigue(cle, corps))
-                return None
+                reponse = reponses.get(f"couleur:{cle}")
+                candidat = None
+                if reponse is not None:
+                    try:
+                        gel_choisi = int(reponse)
+                    except (TypeError, ValueError):
+                        gel_choisi = None
+                    candidat = next((c for c in corps["candidats"] if c["gel"] == gel_choisi), None)
+                if candidat is None:
+                    questions.append(self._question_couleur_ambigue(cle, corps))
+                    return None
+                trouvees.append({"nom": cle, "gel": candidat["gel"],
+                                 "nom_lee": candidat["nom_lee"], "detaillee": False})
+                continue
             detaillee = bool(corps.get("note_utilisateur"))
             trouvees.append({"nom": cle, "gel": corps["gel"],
                              "nom_lee": corps["nom_lee"], "detaillee": detaillee})
@@ -459,7 +487,7 @@ class Traducteur:
                 hypotheses.append(hyp)
 
         cibles = self._cibles(toks, pris)
-        couleurs = self._couleurs_de(toks, pris, questions, notes)
+        couleurs = self._couleurs_de(toks, pris, questions, notes, reponses)
 
         if couleurs is None:                       # une couleur ambiguë
             return Traduction(statut="a_preciser", questions=questions, notes=notes)
@@ -587,7 +615,7 @@ class Traducteur:
                 "Aucun circuit ni groupe désigné dans la phrase."])
 
         if teinte is None:
-            couleurs = self._couleurs_de(toks, pris, questions, notes)
+            couleurs = self._couleurs_de(toks, pris, questions, notes, reponses)
             if couleurs is None:
                 return Traduction(statut="a_preciser", questions=questions, notes=notes)
             if couleurs:
@@ -1345,6 +1373,82 @@ class Traducteur:
         return Traduction(statut="incompris", notes=[
             f"« {' '.join(gauche)} » n'est pas reconnu comme quelque chose à remplacer "
             "(objet de sélection circuit/groupe, ou un numéro déjà présent dans la macro)."])
+
+    # -- interpréter une réponse LLM (moteur flou) ---------------------------
+    def interpreter_flou(self, phrase: str, sortie_llm: dict | None,
+                         reponses: dict | None = None) -> Traduction:
+        """Utilise l'interprétation d'un LLM externe pour compléter une
+        traduction que le lexique seul n'a pas pu terminer.
+
+        Ne touche JAMAIS le réseau : `sortie_llm` est un dict déjà produit
+        (par un appel LLM réel côté navigateur) et déjà validé contre le
+        vocabulaire fermé exporté par `traducteur/build_vocabulaire_llm.py`
+        — c'est ce qui rend cette méthode testable de façon aussi
+        déterministe que le reste du traducteur, avec un `sortie_llm` écrit
+        à la main dans les tests.
+
+        Le lexique déterministe (`traduire()`) reste la seule autorité :
+
+          - un résultat déjà `compris` par le lexique seul n'est **jamais**
+            remplacé par l'avis du LLM — un mot littéral reconnu prime
+            toujours sur une supposition.
+          - une question déjà posée (`a_preciser`) peut être complétée par
+            une réponse du LLM, à la STRICTE condition qu'elle corresponde à
+            l'une des `Option.cle` déjà proposées par cette question — donc
+            déjà membre du vocabulaire fermé du lexique. Une valeur hors de
+            ce vocabulaire est silencieusement ignorée pour ce champ (jamais
+            acceptée), et la question reste posée telle quelle.
+          - `sortie_llm["reponses"]` est un dict `{question_id: cle}` (une
+            seule proposition confiante) ou `{question_id: [cle, ...]}`
+            (plusieurs candidats de confiance comparable — "propose
+            plusieurs choses"). Plusieurs candidats valides réduisent la
+            question à ces seules options plutôt que de choisir à la place
+            de l'utilisateur ; c'est le même mécanisme que la question
+            `couleur_ambigue` déjà posée par le lexique seul, jamais une
+            nouvelle forme d'UI.
+          - un `incompris` complet (aucune intention reconnue par les mots
+            littéraux de la phrase) N'EST PAS rescapé ici : router vers une
+            intention sur la seule foi du LLM demanderait de modifier
+            `_intention()` elle-même — hors périmètre de cette tranche
+            (voir PLANNING.md, moteur flou).
+        """
+        base = self.traduire(phrase, reponses=reponses)
+        if base.statut != "a_preciser" or not base.questions:
+            return base
+
+        reponses_llm = (sortie_llm or {}).get("reponses") or {}
+        reponses_completees = dict(reponses or {})
+        questions_restantes: list[Question] = []
+        toutes_resolues = True
+
+        for question in base.questions:
+            cles_valides = {o.cle for o in question.options}
+            propose = reponses_llm.get(question.id)
+            candidats = propose if isinstance(propose, list) else ([propose] if propose else [])
+            candidats_valides = [c for c in candidats if c in cles_valides]
+
+            if len(candidats_valides) == 1:
+                reponses_completees[question.id] = candidats_valides[0]
+            elif len(candidats_valides) > 1:
+                options_filtrees = [o for o in question.options if o.cle in candidats_valides]
+                questions_restantes.append(Question(
+                    id=question.id, texte=question.texte, pourquoi=question.pourquoi,
+                    options=options_filtrees, contexte=question.contexte))
+                toutes_resolues = False
+            else:
+                questions_restantes.append(question)
+                toutes_resolues = False
+
+        if toutes_resolues:
+            return self.traduire(phrase, reponses=reponses_completees)
+        if questions_restantes != base.questions:
+            # Au moins une question a été réduite à des candidats validés
+            # par le LLM, même si elle reste ouverte — renvoyer la version
+            # affinée plutôt que la question d'origine, non filtrée.
+            return Traduction(statut="a_preciser", questions=questions_restantes,
+                              intention=base.intention, notes=base.notes,
+                              non_reconnus=base.non_reconnus)
+        return base
 
     # -- confort : traduire puis rendre ------------------------------------
     def rendre(self, traduction: Traduction, **kwargs):

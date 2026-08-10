@@ -1,0 +1,233 @@
+{
+  "objets": [
+    {
+      "cle": "Chan"
+    },
+    {
+      "cle": "Group"
+    },
+    {
+      "cle": "Cue"
+    }
+  ],
+  "objets_cible": [
+    {
+      "cle": "Sub"
+    },
+    {
+      "cle": "Preset"
+    }
+  ],
+  "nuanciers": [
+    {
+      "cle": "lee"
+    }
+  ],
+  "couleurs": [
+    {
+      "cle": "rouge"
+    },
+    {
+      "cle": "vert"
+    },
+    {
+      "cle": "bleu"
+    },
+    {
+      "cle": "jaune"
+    },
+    {
+      "cle": "orange"
+    },
+    {
+      "cle": "magenta"
+    },
+    {
+      "cle": "violet"
+    },
+    {
+      "cle": "chaud"
+    },
+    {
+      "cle": "froid"
+    },
+    {
+      "cle": "ambre"
+    },
+    {
+      "cle": "rose"
+    }
+  ],
+  "cue_cibles": [
+    {
+      "cle": "Out"
+    },
+    {
+      "cle": "Next"
+    },
+    {
+      "cle": "Last"
+    },
+    {
+      "cle": "Home"
+    }
+  ],
+  "intentions": {
+    "creer_palettes_couleur": {
+      "description": "créer une ou plusieurs palettes de couleur à partir de gélatines",
+      "champs": [
+        "verbe",
+        "objet",
+        "famille"
+      ]
+    },
+    "colorer_selection": {
+      "description": "mettre une sélection de circuits dans une couleur de nuancier",
+      "champs": [
+        "objet",
+        "famille"
+      ]
+    },
+    "parquer": {
+      "description": "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub",
+      "champs": [
+        "verbe",
+        "objet"
+      ]
+    },
+    "regler_intensite": {
+      "description": "donner un niveau d'intensité à une sélection",
+      "champs": [
+        "objet",
+        "niveau"
+      ]
+    },
+    "enregistrer_cue": {
+      "description": "enregistrer une sélection de circuits dans une cue existante",
+      "champs": [
+        "verbe",
+        "cue",
+        "objet"
+      ]
+    },
+    "aller_a_cue": {
+      "description": "aller à une cue (Go To Cue)",
+      "champs": [
+        "verbe",
+        "cible"
+      ]
+    },
+    "enregistrer_sub": {
+      "description": "enregistrer une sélection de circuits dans un submaster",
+      "champs": [
+        "verbe",
+        "sub",
+        "objet"
+      ]
+    },
+    "appliquer_effet": {
+      "description": "appliquer un effet existant à une sélection de circuits",
+      "champs": [
+        "verbe",
+        "objet_effet",
+        "cible"
+      ]
+    },
+    "arreter_effet": {
+      "description": "arrêter un effet précis, ou tous les effets en cours",
+      "champs": [
+        "verbe",
+        "objet_effet"
+      ]
+    },
+    "bump_sub": {
+      "description": "appuyer sur la touche de bump d'un submaster (haut ou bas)",
+      "champs": [
+        "verbe",
+        "sub"
+      ]
+    },
+    "enregistrer_preset": {
+      "description": "enregistrer une sélection de circuits dans un preset",
+      "champs": [
+        "verbe",
+        "preset",
+        "objet"
+      ]
+    },
+    "rappeler_preset": {
+      "description": "appliquer un preset existant à une sélection de circuits",
+      "champs": [
+        "verbe",
+        "preset",
+        "objet"
+      ]
+    },
+    "appel_macro": {
+      "description": "lancer une macro par son numéro, depuis la ligne de commande",
+      "champs": [
+        "verbe",
+        "macro"
+      ]
+    },
+    "selectionner_query": {
+      "description": "sélectionner les channels actuellement dans, ou explicitement pas dans, une palette couleur / un preset / une cue — via Query, le seul endroit du langage Eos où existe une négation\n",
+      "champs": [
+        "verbe",
+        "dans",
+        "cible"
+      ]
+    },
+    "marquer": {
+      "description": "poser un drapeau Mark — sur une cue (le drapeau lui-même) ou sur des channels (la cue SOURCE où sont stockés les mouvements NP)\n",
+      "champs": [
+        "verbe",
+        "objet"
+      ]
+    },
+    "asserter": {
+      "description": "réaffirmer l'autorité d'une cue, d'un channel ou d'un paramètre sur le plateau (Assert)\n",
+      "champs": [
+        "verbe",
+        "objet"
+      ]
+    },
+    "effacer_filtres": {
+      "description": "effacer tous les filtres actifs (Clear Filters)",
+      "champs": [
+        "verbe",
+        "filtre"
+      ]
+    },
+    "enregistrer_snapshot": {
+      "description": "enregistrer un snapshot — état de la SURFACE DE CONTRÔLE et des moniteurs, jamais un état lumineux du plateau\n",
+      "champs": [
+        "verbe",
+        "snapshot"
+      ]
+    },
+    "rappeler_snapshot": {
+      "description": "rappeler un snapshot déjà enregistré",
+      "champs": [
+        "verbe",
+        "snapshot"
+      ]
+    },
+    "appliquer_courbe": {
+      "description": "appliquer une courbe de fondu à une cue",
+      "champs": [
+        "verbe",
+        "courbe",
+        "cue"
+      ]
+    },
+    "retirer_courbe": {
+      "description": "retirer la courbe de fondu d'une cue (idiome `Curve At`)",
+      "champs": [
+        "verbe",
+        "courbe",
+        "cue"
+      ]
+    }
+  }
+}

@@ -369,6 +369,32 @@
       "exemple_nl": "circuits 10 à 20 en Lee 195",
       "origine": "patron `selection_plage_couleur` (grammar/patrons.yaml), confiance A"
     },
+    "parquer": {
+      "description": "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub",
+      "declencheurs": {
+        "verbe": [
+          "parquer",
+          "parque"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "parque le circuit 3 à 45 %",
+      "origine": "manuel §19 Park, confiance A (`grammar/modele.yaml`, section `park`). Déclaré AVANT `regler_intensite` dans ce fichier : sans cette priorité, une phrase qui contient à la fois un objet et un marqueur de niveau (« % », « intensité »…) déclencherait l'intensité au lieu du parquage, puisque `regler_intensite` ne demande aucun verbe pour se déclencher — c'est la même précaution que celle documentée dans `traducteur/README.md` (« la tolérance aux fautes n'a pas le droit de vote sur l'intention »), appliquée ici à l'ORDRE plutôt qu'à la tolérance elle-même.\n",
+      "note": "Cette première tranche ne couvre QUE la forme absolue et déterministe `<chan> At <n> Park Enter` sur un SEUL circuit ou groupe, jamais une plage — volontairement, pas par oubli. « circuit 4 à 50 % » contient un seul « à » qui sert à la fois de séparateur possible de plage et de préposition introduisant le niveau ; sans un second marqueur de position pour trancher (contrairement à `regler_intensite`, qui ne rencontre l'ambiguïté qu'avec DEUX « à » dans la phrase — un pour la plage, un pour le niveau), `self._plage` lirait « 4 à 50 » comme une plage de circuits 4 à 50, jamais comme un circuit et un niveau. Se limiter à un seul circuit/groupe élimine l'ambiguïté à la racine : le numéro qui suit l'objet est toujours celui du circuit, jamais d'une plage. Le niveau réutilise le même extracteur que `regler_intensite` (`self._niveau`, marqueur « % »/« pourcent »/ « intensité »/« niveau » requis, pas optionnel). Le manuel documente aussi une forme bascule, `<chan> At Park Enter` (parque si non parqué, déparque si parqué) — jamais générée ici, car son résultat dépend d'un état console que le traducteur ne peut pas lire (même refus de principe que pour `bump_direction`, où deviner un état console produirait une macro valide et un résultat imprévisible sur scène). Sans marqueur de niveau dans la phrase, la traduction reste `incompris` plutôt que de choisir la forme bascule ou de mésinterpréter un numéro comme une plage. L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse (`Address <n> At <niveau> Park`) restent hors périmètre de cette tranche.\n"
+    },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "declencheurs": {
@@ -698,6 +724,172 @@
       "exemple_nl": "sélectionne ce qui est dans la palette couleur 5 ; sélectionne ce qui n'est pas dans le preset 3\n",
       "origine": "manuel §15 « Advanced Manual Control », section Query, confiance A. `{Is In}` est facultatif dans la syntaxe officielle (Query seul suffit, manuel §15) mais le générateur l'écrit quand même — une macro se relit, l'implicite y coûte plus cher qu'il ne rapporte (même convention que `Chan`/`Cue` explicites ailleurs dans le projet).\n",
       "note": "Périmètre volontairement restreint à Color Palette, Preset et Cue — les seules familles déjà couvertes ailleurs dans le traducteur (`creer_palettes_couleur`, `enregistrer_preset`, `enregistrer_cue`/ `aller_a_cue`). `Group` et `Sub` existent comme cibles de Query dans le modèle mais restent hors périmètre ici : `Query {Is In} Group 2` et `Group 2 Enter` sont deux mécanismes distincts et le risque de confusion entre les deux n'a pas été tranché — mieux vaut ne pas couvrir que mal distinguer. Ne couvre qu'une plage/numéro simple, pas les Query composées à plusieurs conditions (`{Can Be} X {Isn't In} Y`, manuel §15) — hors périmètre de cette première tranche.\n"
+    },
+    "marquer": {
+      "description": "poser un drapeau Mark — sur une cue (le drapeau lui-même) ou sur des channels (la cue SOURCE où sont stockés les mouvements NP)\n",
+      "declencheurs": {
+        "verbe": [
+          "marquer",
+          "marque"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group",
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence"
+        ]
+      },
+      "exemple_nl": "marque les circuits 1 à 5 ; marque la cue 10",
+      "origine": "manuel §9 « Setting Referenced Mark Flags », confiance A (`grammar/modele.yaml`, section `mark.referencee`). Deux usages distincts de la même touche : `Cue <n> Mark Enter` pose le drapeau M sur la cue marquée ; `<channels> Mark Enter` désigne, dans la cue source, les channels dont les mouvements NP seront stockés. Le traducteur ne distingue pas les deux cas — c'est `self._objet` qui choisit Chan/Group/Cue selon le mot présent dans la phrase, exactement comme pour les autres intentions de sélection.\n",
+      "note": "Ne fonctionne qu'en marques référencées, jamais avec AutoMark actif, et le générateur ne peut pas savoir lequel des deux mécanismes est en vigueur (PLANNING #24) — c'est lui, pas le traducteur, qui porte cet avertissement à chaque rendu. Le manuel exige des channels désignés explicitement dans la cue source (« Eos will not assume all automated fixtures apply to any given mark ») — jamais une sélection implicite héritée d'un état console, cohérent avec le refus général de deviner un état console. `Mark Cue <n>` (marquer vers une cue antérieure) et `Mark Earliest` restent hors périmètre de cette première tranche.\n"
+    },
+    "asserter": {
+      "description": "réaffirmer l'autorité d'une cue, d'un channel ou d'un paramètre sur le plateau (Assert)\n",
+      "declencheurs": {
+        "verbe": [
+          "asserter",
+          "assert"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group",
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence"
+        ]
+      },
+      "exemple_nl": "assert la cue 5 ; assert le groupe 6",
+      "origine": "manuel §14 « Using Assert », confiance A. S'applique à une cue, une cue list, un channel ou un paramètre — jamais à un submaster, qui échoue en erreur de syntaxe au banc réel (confiance S, `grammar/modele.yaml` section `asserter`). `Sub` vit dans `objets_cible`, jamais dans `objets` (même raison que pour `enregistrer_sub`/`bump_sub`) : une phrase « assert le sub 3 » ne déclenche donc structurellement pas cette intention — elle ne trouve aucun objet reconnu, comme prévu.\n",
+      "note": "Cette tranche ne couvre que la forme la plus simple : un seul circuit, groupe ou cue (liste 1 implicite), sans la notation de cue list explicite (`Cue x/y`, manuel §14) — les cue lists multiples restent hors périmètre du traducteur dans son ensemble. Sur un channel ou un paramètre, l'assert seul n'est que posé, pas stocké : le manuel exige ensuite un `Record`/`Update` séparé, jamais généré automatiquement ici.\n"
+    },
+    "effacer_filtres": {
+      "description": "effacer tous les filtres actifs (Clear Filters)",
+      "declencheurs": {
+        "verbe": [
+          "effacer",
+          "efface",
+          "vider",
+          "vide",
+          "supprimer",
+          "supprime"
+        ],
+        "filtre": [
+          "filtre",
+          "filtres"
+        ]
+      },
+      "exemple_nl": "efface les filtres",
+      "origine": "manuel §13 Filters, confiance A pour l'existence d'une touche dédiée `{Clear Filters}` (`grammar/modele.yaml`, section `filtres.effacer`) — le seul geste de filtre à disposer d'une touche OSC propre. Poser un filtre par accord maintenu (`{Filter}` + touches de paramètre, tenu puis relâché) reste hors périmètre : rien ne confirme que cet accord se reproduit fidèlement en OSC (backlog #27).\n",
+      "note": "Ne prend aucune sélection ni cible — « Clear Filters » efface TOUS les filtres actifs, sans distinction ni portée réglable. Le générateur rappelle à chaque rendu que la pose de filtre par accord maintenu n'est pas confirmée en OSC (#27) ; ce traducteur ne couvre que l'effacement.\n"
+    },
+    "enregistrer_snapshot": {
+      "description": "enregistrer un snapshot — état de la SURFACE DE CONTRÔLE et des moniteurs, jamais un état lumineux du plateau\n",
+      "declencheurs": {
+        "verbe": [
+          "enregistrer",
+          "enregistre",
+          "sauver",
+          "sauve"
+        ],
+        "snapshot": [
+          "snapshot",
+          "snapshots"
+        ]
+      },
+      "exemple_nl": "enregistre le snapshot 3",
+      "origine": "manuel §23 Snapshots, confiance A (`grammar/modele.yaml`, section `snapshots`). Déclencheur volontairement limité au mot « snapshot » — pas de synonyme français générique — car « enregistre cet état » désigne presque toujours une cue, un preset ou une palette : le snapshot ne conserve aucune donnée de channel, une confusion ici produirait une macro qui ne fait pas ce que l'utilisateur croit.\n",
+      "note": "L'édition dans la liste des snapshots est exclusive, pas additive (manuel §23 : activer un élément désactive tous les autres) — hors de portée de cette intention, qui ne couvre que l'enregistrement initial.\n"
+    },
+    "rappeler_snapshot": {
+      "description": "rappeler un snapshot déjà enregistré",
+      "declencheurs": {
+        "verbe": [
+          "rappeler",
+          "rappelle",
+          "charger",
+          "charge"
+        ],
+        "snapshot": [
+          "snapshot",
+          "snapshots"
+        ]
+      },
+      "exemple_nl": "rappelle le snapshot 3",
+      "origine": "manuel §23 « Recalling Snapshots », confiance A. Les snapshots sont globaux (rappelables depuis n'importe quel appareil sauf les RFR Net3) ; rappelé sur un appareil de disposition différente, Eos mappe « au mieux de ses capacités » — résultat non garanti identique, mais hors de portée du traducteur (dépend du matériel, pas de la phrase).\n"
+    },
+    "appliquer_courbe": {
+      "description": "appliquer une courbe de fondu à une cue",
+      "declencheurs": {
+        "verbe": [
+          "appliquer",
+          "applique"
+        ],
+        "courbe": [
+          "courbe",
+          "courbes"
+        ],
+        "cue": [
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence"
+        ]
+      },
+      "exemple_nl": "applique la courbe 4 à la cue 5",
+      "origine": "manuel §22 Curves, confiance A (`grammar/modele.yaml`, section `courbes`/`appliquer_courbe`). Le numéro de courbe et le numéro de cue sont extraits chacun par leur propre marqueur (le nombre après « courbe », le nombre après « cue »), jamais par position dans la phrase — l'ordre naturel place souvent la courbe avant la cue (« applique la courbe 4 à la cue 5 »), l'inverse de l'ordre attendu par un extracteur positionnel comme celui de `enregistrer_cue`.\n",
+      "note": "Cette tranche ne couvre que la cible Cue, l'usage documenté et testé le plus courant. Le manuel documente une portée différente selon la cible (patch, cue, part de cue, ventilateur de scroller) — patch et part restent hors périmètre, le traducteur ne distinguant pas encore ces contextes. Le générateur porte déjà l'avertissement sur la portée variable ; le traducteur ne le répète pas.\n"
+    },
+    "retirer_courbe": {
+      "description": "retirer la courbe de fondu d'une cue (idiome `Curve At`)",
+      "declencheurs": {
+        "verbe": [
+          "retirer",
+          "retire",
+          "enlever",
+          "enleve",
+          "supprimer",
+          "supprime"
+        ],
+        "courbe": [
+          "courbe",
+          "courbes"
+        ],
+        "cue": [
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence"
+        ]
+      },
+      "exemple_nl": "retire la courbe de la cue 5",
+      "origine": "manuel §22 : « [Cue] [5] {Attributes} {Curve} [At] [Enter] », confiance A. Idiome `Curve At` sans valeur — retirer, pas régler à zéro.\n"
     }
   },
   "questions": {

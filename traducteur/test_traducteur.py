@@ -322,6 +322,18 @@ CAS = [
         "questions": ["couleur:rose"],
         "options": ["157", "2", "107", "128"],
     },
+    {
+        # Bug trouvé en construisant `interpreter_flou` (moteur flou) :
+        # `_couleurs_de` ne consultait jamais `reponses`, donc répondre à la
+        # question `couleur:ambre` la reposait indéfiniment au lieu de
+        # reprendre où le traducteur s'était arrêté — contrat pourtant
+        # documenté par `traduire()`. Corrigé.
+        "nom": "couleur ambiguë — la réponse est bien consommée, pas reposée",
+        "phrase": "groupe 5 en lee ambre",
+        "reponses": {"couleur:ambre": "102"},
+        "statut": "compris",
+        "rendu": "Group 5 Color 3/102 Enter",
+    },
 
     # -------------------------------------------------------------- refus
     {

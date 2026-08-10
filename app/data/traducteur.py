@@ -35,6 +35,7 @@ AUCUNE IA À L'EXÉCUTION, et c'est délibéré :
 """
 from __future__ import annotations
 
+import copy
 import re
 import sys
 import unicodedata
@@ -245,13 +246,19 @@ class Traducteur:
 
     # -- couleurs ----------------------------------------------------------
     def _couleurs_de(self, toks: list[str], pris: set[int],
-                     questions: list[Question], notes: list[str]) -> list[dict] | None:
+                     questions: list[Question], notes: list[str],
+                     reponses: dict | None = None) -> list[dict] | None:
         """Résout les mots de couleur restants, dans l'ordre de la phrase.
 
         Retourne None si une couleur est ambiguë — dans ce cas la question est
-        déjà empilée. Une teinte devinée serait le pire des échecs : macro
-        valide, console d'accord, mauvaise couleur sur scène.
+        déjà empilée, À MOINS que `reponses` ne porte déjà une réponse valide
+        pour cette question précise (`couleur:<mot>`), auquel cas elle est
+        consommée ici plutôt que reposée — c'est le contrat documenté par
+        `traduire()` (« le même appel, relancé avec la réponse, doit reprendre
+        où il s'était arrêté »). Une teinte devinée serait le pire des
+        échecs : macro valide, console d'accord, mauvaise couleur sur scène.
         """
+        reponses = reponses or {}
         trouvees: list[dict] = []
         for i, tok in enumerate(toks):
             if i in pris or tok.isdigit() or tok in self._outils:
@@ -259,14 +266,36 @@ class Traducteur:
             cle, exaequo = self._resoudre(tok, self._couleurs)
             if cle is None:
                 if exaequo:
-                    questions.append(self._question_couleur(tok, exaequo))
-                    return None
-                continue
+                    reponse = reponses.get(f"couleur:{tok}")
+                    if reponse in exaequo:
+                        cle = reponse
+                    else:
+                        questions.append(self._question_couleur(tok, exaequo))
+                        return None
+                else:
+                    continue
+            if cle not in self.lex["couleurs"]:
+                # `reponse` validé contre `exaequo` mais pas une clé connue —
+                # ne devrait pas arriver, mais ne jamais planter dessus.
+                questions.append(self._question_couleur(tok, exaequo))
+                return None
             pris.add(i)
             corps = self.lex["couleurs"][cle]
             if corps.get("ambigu"):
-                questions.append(self._question_couleur_ambigue(cle, corps))
-                return None
+                reponse = reponses.get(f"couleur:{cle}")
+                candidat = None
+                if reponse is not None:
+                    try:
+                        gel_choisi = int(reponse)
+                    except (TypeError, ValueError):
+                        gel_choisi = None
+                    candidat = next((c for c in corps["candidats"] if c["gel"] == gel_choisi), None)
+                if candidat is None:
+                    questions.append(self._question_couleur_ambigue(cle, corps))
+                    return None
+                trouvees.append({"nom": cle, "gel": candidat["gel"],
+                                 "nom_lee": candidat["nom_lee"], "detaillee": False})
+                continue
             detaillee = bool(corps.get("note_utilisateur"))
             trouvees.append({"nom": cle, "gel": corps["gel"],
                              "nom_lee": corps["nom_lee"], "detaillee": detaillee})
@@ -371,6 +400,14 @@ class Traducteur:
             "rappeler_preset": self._rappeler_preset,
             "appel_macro": self._appel_macro,
             "selectionner_query": self._selectionner_query,
+            "marquer": self._marquer,
+            "parquer": self._parquer,
+            "asserter": self._asserter,
+            "effacer_filtres": self._effacer_filtres,
+            "enregistrer_snapshot": self._enregistrer_snapshot,
+            "rappeler_snapshot": self._rappeler_snapshot,
+            "appliquer_courbe": self._appliquer_courbe,
+            "retirer_courbe": self._retirer_courbe,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -450,7 +487,7 @@ class Traducteur:
                 hypotheses.append(hyp)
 
         cibles = self._cibles(toks, pris)
-        couleurs = self._couleurs_de(toks, pris, questions, notes)
+        couleurs = self._couleurs_de(toks, pris, questions, notes, reponses)
 
         if couleurs is None:                       # une couleur ambiguë
             return Traduction(statut="a_preciser", questions=questions, notes=notes)
@@ -578,7 +615,7 @@ class Traducteur:
                 "Aucun circuit ni groupe désigné dans la phrase."])
 
         if teinte is None:
-            couleurs = self._couleurs_de(toks, pris, questions, notes)
+            couleurs = self._couleurs_de(toks, pris, questions, notes, reponses)
             if couleurs is None:
                 return Traduction(statut="a_preciser", questions=questions, notes=notes)
             if couleurs:
@@ -663,6 +700,42 @@ class Traducteur:
                 pris.update({i, i + 1})
                 return {"valeur": int(toks[i + 1])}
         return None
+
+    # -- intention : parquer (Park, un seul circuit/groupe, forme absolue) --
+    def _parquer(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Volontairement PAS `_selection_de` : sa détection de plage
+        # (`_plage`) lirait « circuit 4 à 50 » comme la plage 4 à 50, jamais
+        # comme un circuit et un niveau — le même mot « à » sert aux deux
+        # rôles, et rien ici ne permet de trancher avant coup (contrairement
+        # à `_regler_intensite`, qui ne rencontre l'ambiguïté qu'avec DEUX
+        # « à » dans la phrase). Le seul exemple sourcé de Park porte sur un
+        # circuit unique (`grammar/modele.yaml`, section `park`) : cette
+        # tranche se limite donc à un seul circuit/groupe, jamais une plage,
+        # ce qui élimine l'ambiguïté à la racine plutôt que de la deviner.
+        objet = self._objet(toks, pris) or "Chan"
+        libres = self._nombres(toks, pris)
+        if not libres:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+        i_objet, numero = libres[0]
+        pris.add(i_objet)
+        selection = {"objet": objet, "numero": numero}
+
+        # Un dégradé (« de/a ») n'a pas de sens pour Park — une seule valeur,
+        # pas une transition — donc seule la clé `valeur` est acceptée.
+        niveau = self._niveau(toks, pris)
+        if niveau is None or "valeur" not in niveau:
+            return Traduction(statut="incompris", notes=[
+                "Niveau introuvable — préciser « % », « pourcent », « intensité » "
+                "ou « niveau ». Sans valeur, le parquage est un bascule qui dépend "
+                "d'un état console que ce traducteur ne devine pas."])
+
+        ir = [{"selection": selection,
+               "action": {"type": "parquer", "valeur": niveau["valeur"]}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
 
     # -- intention : enregistrer une sélection dans une cue -----------------
     def _enregistrer_cue(self, toks: list[str], reponses: dict) -> Traduction:
@@ -999,6 +1072,155 @@ class Traducteur:
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
 
+    # -- intention : marquer (drapeau Mark, cue ou channels) -----------------
+    def _marquer(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # `self._objet` choisit Chan/Group/Cue selon le mot présent — le
+        # même mécanisme, réutilisé ici, sert aussi bien « marque la cue 10 »
+        # (le drapeau M) que « marque les circuits 1 à 5 » (la cue source où
+        # sont stockés les mouvements NP) : deux usages distincts de la même
+        # touche `Mark` (manuel §9), que le traducteur ne cherche pas à
+        # départager — c'est le générateur qui porte l'avertissement sur
+        # AutoMark/marques référencées, pas le traducteur.
+        objet = self._objet(toks, pris)
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit, groupe ni cue désigné — le marquage exige une cible explicite."])
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro trouvé pour la cible du marquage."])
+
+        ir = [{"selection": selection, "action": {"type": "marquer"}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : asserter (réaffirmer l'autorité d'une cue/sélection) ---
+    def _asserter(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # `self._objet` ne connaît que Chan/Group/Cue (jamais Sub, qui vit
+        # dans `objets_cible`) : une phrase « assert le sub 3 » ne trouve
+        # donc structurellement aucun objet et reste `incompris`, cohérent
+        # avec le constat de banc (S) que `Sub <n> Assert` échoue en erreur
+        # de syntaxe (grammar/modele.yaml, section `asserter`).
+        objet = self._objet(toks, pris)
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit, groupe ni cue désigné — l'assert exige une cible explicite."])
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro trouvé pour la cible de l'assert."])
+
+        ir = [{"selection": selection, "action": {"type": "asserter"}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : effacer tous les filtres (Clear Filters) ---------------
+    def _effacer_filtres(self, toks: list[str], reponses: dict) -> Traduction:
+        # Aucune sélection, aucune cible : « Clear Filters » agit globalement.
+        ir = [{"action": {"type": "effacer_filtres"}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, set()))
+
+    # -- intention : enregistrer un snapshot ---------------------------------
+    def _enregistrer_snapshot(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+        i_snap = self._indice_mot(toks, pris, {"snapshot", "snapshots"})
+        if i_snap is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun snapshot désigné — le mot « snapshot » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_snap:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de snapshot trouvé après « snapshot »."])
+        ir = [{"action": {"type": "record_snapshot", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : rappeler un snapshot ------------------------------------
+    def _rappeler_snapshot(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+        i_snap = self._indice_mot(toks, pris, {"snapshot", "snapshots"})
+        if i_snap is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun snapshot désigné — le mot « snapshot » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_snap:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de snapshot trouvé après « snapshot »."])
+        ir = [{"action": {"type": "rappeler_snapshot", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : appliquer une courbe à une cue --------------------------
+    def _appliquer_courbe(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+
+        # Chaque numéro par son propre marqueur, jamais par position : l'ordre
+        # naturel place souvent la courbe avant la cue (« la courbe 4 à la
+        # cue 5 »), l'inverse de ce qu'un extracteur positionnel attendrait.
+        i_courbe = self._indice_mot(toks, pris, {"courbe", "courbes"})
+        if i_courbe is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune courbe désignée — le mot « courbe » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_courbe:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de courbe trouvé après « courbe »."])
+
+        i_cue = self._indice_objet_cle("Cue", toks, pris)
+        if i_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
+        numero_cue = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cue:
+                numero_cue, _ = valeur, pris.add(i)
+                break
+        if numero_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue trouvé après « cue »."])
+
+        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+               "action": {"type": "appliquer_courbe", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : retirer la courbe d'une cue (idiome `Curve At`) --------
+    def _retirer_courbe(self, toks: list[str], reponses: dict) -> Traduction:
+        pris: set[int] = set()
+        i_cue = self._indice_objet_cle("Cue", toks, pris)
+        if i_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
+        numero_cue = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cue:
+                numero_cue, _ = valeur, pris.add(i)
+                break
+        if numero_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue trouvé après « cue »."])
+        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+               "action": {"type": "retirer_courbe"}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
     # -- petits extracteurs partagés ---------------------------------------
     def _indice_mot(self, toks: list[str], pris: set[int],
                     mots: set[str]) -> int | None:
@@ -1063,6 +1285,170 @@ class Traducteur:
             pris.add(i)
             return {"objet": objet, "numero": valeur}
         return None
+
+    # -- corriger une IR déjà produite, en langage naturel -------------------
+    def corriger(self, ir: list[dict], instruction: str) -> Traduction:
+        """« remplace X par Y » (ou « change X en Y ») appliqué à une IR déjà
+        produite par `traduire()` — jamais une retraduction depuis zéro.
+        Pensé pour l'usage « à la manière d'un LLM » : plutôt que de taper sur
+        un champ dans l'interface, on écrit la correction en une phrase
+        courte, adressée à la dernière macro proposée.
+
+        Portée volontairement restreinte à deux cas, chacun sans ambiguïté
+        possible :
+
+          - **objet de sélection, Chan <-> Group uniquement** — les deux
+            seuls objets génériques de ce traducteur (voir
+            `traducteur/README.md`). Cue/Sub/Preset ne sont jamais des cibles
+            de remplacement : les proposer inviterait à deviner une intention
+            entièrement différente plutôt qu'une simple retouche — ce ne
+            serait plus une correction, ce serait une nouvelle traduction
+            déguisée.
+          - **un numéro déjà présent dans l'IR**, seulement s'il apparaît à
+            un seul endroit (sélection ou cible d'action). S'il apparaît à
+            plusieurs endroits, corriger le mauvais serait pire que ne rien
+            corriger — la traduction reste `incompris` plutôt que de choisir.
+
+        Ne mute jamais l'IR reçue : travaille sur une copie, pour que
+        l'appelant garde l'original si la correction échoue.
+        """
+        if not ir or not isinstance(ir, list) or not ir[0]:
+            return Traduction(statut="incompris", notes=[
+                "Aucune macro en cours à corriger."])
+        etape = copy.deepcopy(ir[0])
+
+        toks = tokeniser(normaliser(instruction, self._ponctuation))
+        i_sep = next((i for i, tok in enumerate(toks) if tok in ("par", "en")), None)
+        if i_sep is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun « par » ou « en » trouvé — dire par exemple « remplace groupe par circuit »."])
+
+        verbes = {"remplace", "remplacer", "change", "changer"}
+        gauche = [t for t in toks[:i_sep] if t not in verbes and t not in self._outils]
+        droite = [t for t in toks[i_sep + 1:] if t not in self._outils]
+        if not gauche or not droite:
+            return Traduction(statut="incompris", notes=[
+                "Rien à corriger de part et d'autre de « par »/« en »."])
+
+        # -- cas 1 : objet de sélection (Chan <-> Group uniquement) ---------
+        OBJETS_REMPLACABLES = {"Chan", "Group"}
+        cle_gauche, _ = self._resoudre(gauche[0], self._objets)
+        cle_droite, _ = self._resoudre(droite[0], self._objets)
+        if cle_gauche in OBJETS_REMPLACABLES or cle_droite in OBJETS_REMPLACABLES:
+            if cle_droite not in OBJETS_REMPLACABLES:
+                return Traduction(statut="incompris", notes=[
+                    f"« {droite[0]} » n'est pas une cible de remplacement prise en charge "
+                    "(seuls circuit et groupe le sont)."])
+            selection = etape.get("selection")
+            objet_actuel = selection.get("objet") if selection else None
+            if not selection or objet_actuel != cle_gauche:
+                return Traduction(statut="incompris", notes=[
+                    f"La macro actuelle ne contient pas « {gauche[0]} »"
+                    + (f" — elle contient « {objet_actuel} »." if objet_actuel else ".")])
+            selection["objet"] = cle_droite
+            return Traduction(statut="compris", ir=[etape], intention="corriger")
+
+        # -- cas 2 : un numéro déjà présent, à un seul endroit ---------------
+        if gauche[0].isdigit() and droite[0].isdigit():
+            valeur_gauche, valeur_droite = int(gauche[0]), int(droite[0])
+            candidats = []
+            for cle_conteneur in ("selection", "action"):
+                conteneur = etape.get(cle_conteneur)
+                if not isinstance(conteneur, dict):
+                    continue
+                for cle, val in conteneur.items():
+                    if isinstance(val, int) and not isinstance(val, bool) and val == valeur_gauche:
+                        candidats.append((conteneur, cle))
+            if not candidats:
+                return Traduction(statut="incompris", notes=[
+                    f"Le numéro {valeur_gauche} n'apparaît nulle part dans cette macro."])
+            if len(candidats) > 1:
+                return Traduction(statut="incompris", notes=[
+                    f"Le numéro {valeur_gauche} apparaît à plusieurs endroits de cette macro — "
+                    "trop ambigu pour savoir lequel corriger."])
+            conteneur, cle = candidats[0]
+            conteneur[cle] = valeur_droite
+            return Traduction(statut="compris", ir=[etape], intention="corriger")
+
+        return Traduction(statut="incompris", notes=[
+            f"« {' '.join(gauche)} » n'est pas reconnu comme quelque chose à remplacer "
+            "(objet de sélection circuit/groupe, ou un numéro déjà présent dans la macro)."])
+
+    # -- interpréter une réponse LLM (moteur flou) ---------------------------
+    def interpreter_flou(self, phrase: str, sortie_llm: dict | None,
+                         reponses: dict | None = None) -> Traduction:
+        """Utilise l'interprétation d'un LLM externe pour compléter une
+        traduction que le lexique seul n'a pas pu terminer.
+
+        Ne touche JAMAIS le réseau : `sortie_llm` est un dict déjà produit
+        (par un appel LLM réel côté navigateur) et déjà validé contre le
+        vocabulaire fermé exporté par `traducteur/build_vocabulaire_llm.py`
+        — c'est ce qui rend cette méthode testable de façon aussi
+        déterministe que le reste du traducteur, avec un `sortie_llm` écrit
+        à la main dans les tests.
+
+        Le lexique déterministe (`traduire()`) reste la seule autorité :
+
+          - un résultat déjà `compris` par le lexique seul n'est **jamais**
+            remplacé par l'avis du LLM — un mot littéral reconnu prime
+            toujours sur une supposition.
+          - une question déjà posée (`a_preciser`) peut être complétée par
+            une réponse du LLM, à la STRICTE condition qu'elle corresponde à
+            l'une des `Option.cle` déjà proposées par cette question — donc
+            déjà membre du vocabulaire fermé du lexique. Une valeur hors de
+            ce vocabulaire est silencieusement ignorée pour ce champ (jamais
+            acceptée), et la question reste posée telle quelle.
+          - `sortie_llm["reponses"]` est un dict `{question_id: cle}` (une
+            seule proposition confiante) ou `{question_id: [cle, ...]}`
+            (plusieurs candidats de confiance comparable — "propose
+            plusieurs choses"). Plusieurs candidats valides réduisent la
+            question à ces seules options plutôt que de choisir à la place
+            de l'utilisateur ; c'est le même mécanisme que la question
+            `couleur_ambigue` déjà posée par le lexique seul, jamais une
+            nouvelle forme d'UI.
+          - un `incompris` complet (aucune intention reconnue par les mots
+            littéraux de la phrase) N'EST PAS rescapé ici : router vers une
+            intention sur la seule foi du LLM demanderait de modifier
+            `_intention()` elle-même — hors périmètre de cette tranche
+            (voir PLANNING.md, moteur flou).
+        """
+        base = self.traduire(phrase, reponses=reponses)
+        if base.statut != "a_preciser" or not base.questions:
+            return base
+
+        reponses_llm = (sortie_llm or {}).get("reponses") or {}
+        reponses_completees = dict(reponses or {})
+        questions_restantes: list[Question] = []
+        toutes_resolues = True
+
+        for question in base.questions:
+            cles_valides = {o.cle for o in question.options}
+            propose = reponses_llm.get(question.id)
+            candidats = propose if isinstance(propose, list) else ([propose] if propose else [])
+            candidats_valides = [c for c in candidats if c in cles_valides]
+
+            if len(candidats_valides) == 1:
+                reponses_completees[question.id] = candidats_valides[0]
+            elif len(candidats_valides) > 1:
+                options_filtrees = [o for o in question.options if o.cle in candidats_valides]
+                questions_restantes.append(Question(
+                    id=question.id, texte=question.texte, pourquoi=question.pourquoi,
+                    options=options_filtrees, contexte=question.contexte))
+                toutes_resolues = False
+            else:
+                questions_restantes.append(question)
+                toutes_resolues = False
+
+        if toutes_resolues:
+            return self.traduire(phrase, reponses=reponses_completees)
+        if questions_restantes != base.questions:
+            # Au moins une question a été réduite à des candidats validés
+            # par le LLM, même si elle reste ouverte — renvoyer la version
+            # affinée plutôt que la question d'origine, non filtrée.
+            return Traduction(statut="a_preciser", questions=questions_restantes,
+                              intention=base.intention, notes=base.notes,
+                              non_reconnus=base.non_reconnus)
+        return base
 
     # -- confort : traduire puis rendre ------------------------------------
     def rendre(self, traduction: Traduction, **kwargs):

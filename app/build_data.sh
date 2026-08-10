@@ -15,7 +15,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 python3 -c "
-import json, yaml
+import json, sys, yaml
 from pathlib import Path
 for paquet in ('grammar', 'traducteur'):
     src = Path(paquet) / ('modele.yaml' if paquet == 'grammar' else 'lexique.yaml')
@@ -24,6 +24,16 @@ for paquet in ('grammar', 'traducteur'):
     dst = Path('app/data') / nom
     dst.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(f'  {src} -> {dst}')
+
+# Vocabulaire fermé pour le moteur flou (LLM) — réutilise le même
+# constructeur que traducteur/build_vocabulaire_llm.py, jamais une
+# deuxième description écrite à la main.
+sys.path.insert(0, 'traducteur')
+from build_vocabulaire_llm import construire
+lexique = yaml.safe_load(Path('traducteur/lexique.yaml').read_text(encoding='utf-8'))
+vocab_dst = Path('app/data/vocabulaire_llm.json')
+vocab_dst.write_text(json.dumps(construire(lexique), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+print(f'  traducteur/lexique.yaml -> {vocab_dst} (vocabulaire moteur flou)')
 "
 
 cp grammar/generateur.py app/data/generateur.py
