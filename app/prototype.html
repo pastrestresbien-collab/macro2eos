@@ -556,6 +556,7 @@
     dropArmed: false,
     draft: "",
     chipOpenId: null,
+    chipChamp: null,
     keepFormId: null,
     puiserChoice: null,
     resetAsk: false,
@@ -767,13 +768,63 @@
       '<span style="font-family:var(--mono); font-size:10.5px; margin-left:4px;">' + esc(e.time) + "</span></div>";
   }
 
+  // Correction ciblée par champ (APP.md, 2026-08-03) : chaque élément reconnu
+  // par le traducteur (type de cible, numéro) reste identifiable et
+  // corrigible individuellement, sans retaper la phrase — en complément de
+  // « Reprendre », jamais en remplacement. Calculé depuis `e.ir`, la vraie IR
+  // renvoyée par le moteur, jamais reconstruit en devinant dans le texte.
+  //
+  // Chan/Group sont les deux seuls objets génériques de sélection dans le
+  // lexique (`traducteur/README.md`) : la bascule circuit/groupe est donc
+  // toujours structurellement légale. Cue/Sub/Preset ne sont PAS proposés en
+  // alternative — le modèle les traite différemment (Sub et Preset ne sont
+  // même jamais des objets de sélection génériques) et cette tranche ne
+  // tranche pas la liste complète des alternatives plausibles par champ
+  // (dépend de l'axe A, voir `APP.md` § Ouvert).
+  var OBJETS_SWAP = { Chan: "Circuit", Group: "Groupe" };
+
+  function calculerChips(e) {
+    if (!e.ir || !e.ir.length || !e.ir[0] || !e.ir[0].selection) return [];
+    var sel = e.ir[0].selection;
+    if (typeof sel.objet !== "string") return [];
+    var chips = [], pos = 0;
+    if (OBJETS_SWAP.hasOwnProperty(sel.objet)) {
+      chips.push({ champ: "objet", texte: sel.objet, start: pos, end: pos + sel.objet.length });
+    }
+    pos += sel.objet.length + 1;
+    if (sel.de !== undefined && sel.a !== undefined) {
+      var deTxt = String(sel.de);
+      chips.push({ champ: "de", texte: deTxt, start: pos, end: pos + deTxt.length });
+      pos += deTxt.length + 6; // " Thru "
+      var aTxt = String(sel.a);
+      chips.push({ champ: "a", texte: aTxt, start: pos, end: pos + aTxt.length });
+    } else if (sel.numero !== undefined) {
+      var numTxt = String(sel.numero);
+      chips.push({ champ: "numero", texte: numTxt, start: pos, end: pos + numTxt.length });
+    }
+    // Défense : si le calcul de position ne correspond pas au texte rendu
+    // (structure inattendue — ex. une IR à base de Query, sans sélection en
+    // tête de ligne), aucun chip plutôt qu'un chip mal placé.
+    var ok = e.cmd != null && chips.every(function (c) { return e.cmd.slice(c.start, c.end) === c.texte; });
+    return ok ? chips : [];
+  }
+
   function macroHtml(e) {
-    if (!e.tokens || !e.tokens.length) return esc(e.cmd);
-    var t = e.tokens[0], i = e.cmd.indexOf(t.match);
-    if (i < 0) return esc(e.cmd);
-    var cls = "chip" + (state.chipOpenId === e.id ? " active" : "");
-    return esc(e.cmd.slice(0, i)) + '<span class="' + cls + '" data-action="chip:toggle" data-id="' + e.id + '">' +
-      esc(t.match) + "</span>" + esc(e.cmd.slice(i + t.match.length));
+    // Correction ciblée par champ seulement avant envoi (APP.md, § Écran 1) —
+    // même règle que les hypothèses : une fois la macro envoyée, la console a
+    // déjà statué, il n'y a plus rien à corriger sur place ici.
+    var chips = e.status === "draft" ? calculerChips(e) : [];
+    if (!chips.length) return esc(e.cmd);
+    var out = "", cursor = 0;
+    chips.forEach(function (c) {
+      out += esc(e.cmd.slice(cursor, c.start));
+      var cls = "chip" + (state.chipOpenId === e.id && state.chipChamp === c.champ ? " active" : "");
+      out += '<span class="' + cls + '" data-action="chip:toggle" data-id="' + e.id +
+        '" data-champ="' + c.champ + '">' + esc(c.texte) + "</span>";
+      cursor = c.end;
+    });
+    out += esc(e.cmd.slice(cursor));
+    return out;
   }
 
   function renderExchange(e) {
@@ -864,13 +915,21 @@
       });
     }
 
-    if (state.chipOpenId === e.id && e.tokens && e.tokens.length) {
-      var tk = e.tokens[0];
-      out += '<div class="menu">' + tk.alternatives.map(function (a) {
-        var sel = a === tk.selected;
-        return '<button class="opt' + (sel ? " sel" : "") + '" data-action="chip:pick" data-id="' + e.id + '" data-choice="' + esc(a) + '">' +
-          esc(a) + (sel ? "<span>✓ reconnu</span>" : "") + "</button>";
-      }).join("") + "</div>";
+    if (e.status === "draft" && state.chipOpenId === e.id && state.chipChamp) {
+      var chipActive = calculerChips(e).filter(function (c) { return c.champ === state.chipChamp; })[0];
+      if (chipActive && chipActive.champ === "objet") {
+        out += '<div class="menu">' + Object.keys(OBJETS_SWAP).map(function (k) {
+          var sel = k === chipActive.texte;
+          return '<button class="opt' + (sel ? " sel" : "") + '" data-action="chip:objet" data-id="' + e.id +
+            '" data-choice="' + k + '">' + OBJETS_SWAP[k] + " (" + k + ")" + (sel ? "<span>✓ reconnu</span>" : "") + "</button>";
+        }).join("") + "</div>";
+      } else if (chipActive) {
+        out += '<div class="menu" style="padding:8px;">' +
+          '<input type="number" id="chip-numero-input" value="' + esc(chipActive.texte) + '" style="width:100%; box-sizing:border-box;" />' +
+          '<div class="btn-row" style="margin-top:8px;">' +
+          '<button class="btn btn-primary btn-sm" data-action="chip:numero" data-id="' + e.id + '" data-champ="' + chipActive.champ + '">Corriger</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="chip:cancel">Annuler</button></div></div>';
+      }
     }
 
     if (e.status === "draft") {
@@ -1213,6 +1272,7 @@
 
     if (r.statut === "compris") {
       e.cmd = r.commande;
+      e.ir = r.ir || [];
       e.warn = (r.avertissements || []).length > 0;
       e.warnText = e.warn ? r.avertissements.join(" · ") : null;
       e.question = null; e.status = "draft"; e.tokens = [];
@@ -1229,6 +1289,27 @@
     var e = findEx(exchangeId); if (!e) return;
     e.status = "engine-error"; e.errorText = message;
     renderAll();
+  }
+
+  // Re-rend une IR retouchée par une correction ciblée par champ (chip) —
+  // repasse par le VRAI générateur (`window.rendreIrReel`), jamais une
+  // resynthèse devinée côté JS : la syntaxe reste la propriété exclusive du
+  // modèle, ici comme partout ailleurs dans ce prototype.
+  function reRenderIr(exchangeId) {
+    var e = findEx(exchangeId); if (!e || !e.ir) return;
+    if (typeof window.rendreIrReel !== "function") {
+      showToast("Le moteur réel n'est pas chargé — correction impossible.");
+      return;
+    }
+    window.rendreIrReel(e.ir).then(function (res) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.cmd = res.commande;
+      e2.warn = (res.avertissements || []).length > 0;
+      e2.warnText = e2.warn ? res.avertissements.join(" · ") : null;
+      renderAll();
+    }).catch(function (err) {
+      showToast("Correction impossible : " + ((err && err.message) || String(err)));
+    });
   }
 
   function commit(e) {
@@ -1293,19 +1374,35 @@
       }
 
       case "chip:toggle":
-        state.chipOpenId = state.chipOpenId == d.id ? null : Number(d.id);
-        renderAll(); break;
-
-      case "chip:pick": {
-        e = findEx(d.id); if (!e) break;
-        e.tokens[0].selected = d.choice;
-        state.chipOpenId = null;
-        if (d.choice === "Circuit") {
-          e.cmd = e.cmd.replace(/^Group (\d+)/, "Chan $1");
-          e.warn = false; e.warnText = null; e.tokens = [];
+        if (state.chipOpenId == d.id && state.chipChamp === d.champ) {
+          state.chipOpenId = null; state.chipChamp = null;
+        } else {
+          state.chipOpenId = Number(d.id); state.chipChamp = d.champ;
         }
-        renderAll(); break;
+        renderAll();
+        setTimeout(function () { var ni = document.getElementById("chip-numero-input"); if (ni) { ni.focus(); ni.select(); } }, 0);
+        break;
+
+      case "chip:objet": {
+        e = findEx(d.id); if (!e || !e.ir || !e.ir[0] || !e.ir[0].selection) break;
+        e.ir[0].selection.objet = d.choice;
+        state.chipOpenId = null; state.chipChamp = null;
+        reRenderIr(e.id);
+        break;
       }
+
+      case "chip:numero": {
+        e = findEx(d.id); if (!e || !e.ir || !e.ir[0] || !e.ir[0].selection) break;
+        var niEl = document.getElementById("chip-numero-input");
+        var val = niEl ? parseInt(niEl.value, 10) : NaN;
+        if (isNaN(val) || val < 0) { showToast("Numéro invalide."); break; }
+        e.ir[0].selection[d.champ] = val;
+        state.chipOpenId = null; state.chipChamp = null;
+        reRenderIr(e.id);
+        break;
+      }
+
+      case "chip:cancel": state.chipOpenId = null; state.chipChamp = null; renderAll(); break;
 
       // ---- répondre à une question du vrai traducteur ----
       case "hyp:corriger": {

@@ -81,6 +81,7 @@
     "        'non_reconnus': trad.non_reconnus,",
     "        'questions': [_question_vers_dict(q) for q in trad.questions],",
     "        'hypotheses': [_hypothese_vers_dict(h) for h in trad.hypotheses],",
+    "        'ir': trad.ir,",
     "        'commande': None,",
     "        'avertissements': [],",
     "    }",
@@ -89,6 +90,15 @@
     "        out['commande'] = rendu.commande",
     "        out['avertissements'] = rendu.avertissements",
     "    return json.dumps(out, ensure_ascii=False)",
+    "",
+    "# Re-rend une IR déjà produite (éventuellement retouchée par une correction",
+    "# ciblée par champ côté UI) sans repasser par la traduction — c'est",
+    "# `Generateur.rendre` seul, la même fonction que `traduire_json` appelle,",
+    "# jamais une resynthèse inventée côté JS.",
+    "def rendre_ir_json(ir_json):",
+    "    ir = json.loads(ir_json)",
+    "    rendu = _gen.rendre(ir)",
+    "    return json.dumps({'commande': rendu.commande, 'avertissements': rendu.avertissements}, ensure_ascii=False)",
     "",
   ].join("\n");
 
@@ -128,7 +138,7 @@
       // il faut que le nom soit directement dans les globals Python pour que
       // `pyodide.globals.get("traduire_json")` le trouve depuis JS.
       pyodide.runPython(
-        "import sys\nsys.path.insert(0, '/app')\nfrom py_bridge import traduire_json\n"
+        "import sys\nsys.path.insert(0, '/app')\nfrom py_bridge import traduire_json, rendre_ir_json\n"
       );
 
       window.MACRO2EOS_ENGINE_READY = true;
@@ -142,7 +152,7 @@
   }
 
   // API publique : { statut, intention, notes, non_reconnus, questions,
-  //                  hypotheses, commande, avertissements }
+  //                  hypotheses, ir, commande, avertissements }
   // Reflète exactement `traducteur.Traduction` + `generateur.Resultat` —
   // aucun champ n'est inventé ici, tous viennent du vrai code Python.
   window.traduireReel = async function (phrase, reponses) {
@@ -150,6 +160,19 @@
     var fn = pyodide.globals.get("traduire_json");
     try {
       var out = fn(phrase, JSON.stringify(reponses || {}));
+      return JSON.parse(out);
+    } finally {
+      fn.destroy();
+    }
+  };
+
+  // Re-rend une IR (possiblement retouchée par une correction ciblée par
+  // champ) sans repasser par la traduction. Retourne { commande, avertissements }.
+  window.rendreIrReel = async function (ir) {
+    var pyodide = await bootEngine();
+    var fn = pyodide.globals.get("rendre_ir_json");
+    try {
+      var out = fn(JSON.stringify(ir || []));
       return JSON.parse(out);
     } finally {
       fn.destroy();
