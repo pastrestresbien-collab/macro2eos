@@ -308,6 +308,15 @@
                             border-left:2px solid var(--app-accent); border-radius:10px; padding:12px; }
   .confirm-full .actions { display:flex; flex-direction:column; gap:9px; }
 
+  /* ---------- overlay : export du fil (texte à copier) ---------- */
+  .export-fil { flex:1; display:flex; flex-direction:column; gap:12px; padding:20px 16px; overflow:hidden; }
+  .export-fil h3 { margin:0; font-size:16px; }
+  .export-fil p { margin:0; color:var(--app-muted); font-size:12.5px; }
+  .export-fil textarea { flex:1; width:100%; box-sizing:border-box; resize:none; font-family:var(--mono);
+    font-size:11.5px; line-height:1.5; background:#070B10; color:var(--app-ink);
+    border:1px solid var(--app-line); border-radius:10px; padding:12px; }
+  .export-fil .actions { display:flex; flex-direction:column; gap:9px; }
+
   .toast { position:absolute; left:14px; right:14px; bottom:82px; z-index:8;
            background:var(--app-surface-hi); border:1px solid var(--app-line); color:var(--app-ink);
            font-size:12.5px; padding:10px 13px; border-radius:10px; text-align:center;
@@ -946,7 +955,8 @@
       '<div class="row click" data-action="nav" data-screen="tabs"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + " onglets</span></div></div>";
     out += '<div class="group"><div class="label">Sauvegarde</div>' +
       '<div class="row click" data-action="export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
-      '<div class="row click" data-action="nav" data-screen="importer"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div></div>';
+      '<div class="row click" data-action="nav" data-screen="importer"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div>' +
+      '<div class="row click" data-action="fil:export"><span class="k">Copier le fil (pour analyse)</span><span class="v">' + state.thread.filter(function (x) { return x.kind === "exchange"; }).length + ' échange(s)</span></div></div>';
     out += '<div class="group"><div class="label">Saisie</div>' +
       '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
     out += '<div class="group"><div class="label">Prototype</div>';
@@ -998,11 +1008,44 @@
         '<div class="actions"><button class="btn btn-warn" data-action="confirm:yes" data-id="' + e.id + '">J\'ai vérifié — envoyer</button>' +
         '<button class="btn btn-ghost" data-action="confirm:no">Annuler</button></div></div></div>';
     }
+    if (state.overlay && state.overlay.kind === "export-fil") {
+      return '<div class="overlay"><div class="export-fil">' +
+        '<h3>Copier le fil</h3>' +
+        '<p>Tout le texte ci-dessous est sélectionné — colle-le (Ctrl/Cmd+V) où tu veux l\'envoyer. ' +
+        'Rien ne quitte cet appareil tant que tu ne colles pas toi-même : ce fil vit uniquement dans ' +
+        'ce navigateur (stockage local), il n\'y a aucun serveur qui le voit.</p>' +
+        '<textarea id="export-fil-text" readonly>' + esc(state.overlay.text) + '</textarea>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="fil:copier">Copier dans le presse-papiers</button>' +
+        '<button class="btn btn-ghost" data-action="fil:fermer">Fermer</button></div></div></div>';
+    }
     return "";
   }
 
   // ---------- actions ----------
   function findEx(id) { return state.thread.filter(function (e) { return e.id == id; })[0]; }
+
+  // Sérialise le fil en texte brut, pensé pour être collé tel quel dans une
+  // conversation — pas un format d'échange machine, juste la trace lisible
+  // de ce qui a été tapé et de ce que le moteur a répondu.
+  function serialiserFil() {
+    var exs = state.thread.filter(function (e) { return e.kind === "exchange"; });
+    if (!exs.length) return "(fil vide — aucune phrase testée pour l'instant)";
+    var lignes = [];
+    exs.forEach(function (e) {
+      lignes.push("[" + (e.time || "?") + "] " + (e.ask || ""));
+      if (e.cmd) lignes.push("  -> " + e.cmd);
+      lignes.push("  statut : " + e.status);
+      if (e.question && e.question.texte) lignes.push("  question posée : " + e.question.texte);
+      if (e.hypotheses && e.hypotheses.length) {
+        e.hypotheses.forEach(function (h) { lignes.push("  hypothèse : " + h.champ + " = " + h.valeur); });
+      }
+      if (e.nonReconnus && e.nonReconnus.length) lignes.push("  mots non reconnus : " + e.nonReconnus.join(", "));
+      if (e.notes && e.notes.length) lignes.push("  notes : " + e.notes.join(" / "));
+      if (e.warnText) lignes.push("  avertissement : " + e.warnText);
+      lignes.push("");
+    });
+    return lignes.join("\n").trim();
+  }
 
   // ---------- pont vers le vrai traducteur (app/engine.js) ----------
 
@@ -1321,6 +1364,33 @@
       }
 
       case "export": showToast("Export généré (démo) — texte + fichier."); break;
+      case "fil:export":
+        state.overlay = { kind: "export-fil", text: serialiserFil() };
+        renderAll();
+        // Sélection auto au rendu suivant, pour que Ctrl/Cmd+C marche même
+        // si l'API clipboard est bloquée dans ce contexte (Artifact/iframe).
+        setTimeout(function () {
+          var ta = document.getElementById("export-fil-text");
+          if (ta) { ta.focus(); ta.select(); }
+        }, 30);
+        break;
+      case "fil:copier": {
+        var ta2 = document.getElementById("export-fil-text");
+        var texte = ta2 ? ta2.value : (state.overlay && state.overlay.text) || "";
+        if (ta2) { ta2.focus(); ta2.select(); }
+        var okCopie = false;
+        try { okCopie = document.execCommand && document.execCommand("copy"); } catch (err) {}
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texte).then(
+            function () { showToast("Fil copié — colle-le où tu veux."); },
+            function () { showToast(okCopie ? "Fil copié — colle-le où tu veux." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C."); }
+          );
+        } else {
+          showToast(okCopie ? "Fil copié — colle-le où tu veux." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C.");
+        }
+        break;
+      }
+      case "fil:fermer": state.overlay = null; renderAll(); break;
       case "import:ok": {
         var tb2 = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
         state.favoris.push(
