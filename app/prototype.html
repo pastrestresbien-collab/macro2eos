@@ -266,6 +266,27 @@
               border-radius:20px; padding:8px 14px 8px 11px; cursor:pointer; }
   .back-btn .arrow { color:var(--app-accent); font-size:15px; line-height:1; }
 
+  /* ---------- Atelier : en-tête de session ---------- */
+  .atelier-head { display:flex; align-items:center; gap:8px; padding:10px 14px 6px; flex-shrink:0; }
+  .atelier-title { flex:1; min-width:0; display:flex; align-items:center; gap:6px; background:none;
+                    border:none; color:var(--app-ink); font-size:14.5px; font-weight:650; text-align:left;
+                    cursor:pointer; padding:6px 4px; }
+  .atelier-title .chevron { color:var(--app-accent); font-size:16px; line-height:1; flex-shrink:0; }
+  .atelier-title .ttl { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* ---------- Sessions : liste ---------- */
+  .session-row { display:flex; align-items:center; gap:6px; padding:11px 4px; border-bottom:1px solid var(--app-line); }
+  .session-row .main { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; background:none;
+                        border:none; color:inherit; text-align:left; cursor:pointer; padding:2px 4px; }
+  .session-row .main .k { font-size:14px; font-weight:620; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .session-row .main .v { font-size:11.5px; color:var(--app-muted); }
+  .session-row .icon-btn { background:none; border:none; color:var(--app-muted); font-size:15px;
+                            padding:6px; cursor:pointer; line-height:1; }
+  .session-row .icon-btn:hover { color:var(--app-ink); }
+  .badge-current { display:inline-block; font-size:10px; font-weight:620; letter-spacing:.03em;
+                    text-transform:uppercase; color:var(--app-accent-ink); background:var(--app-accent);
+                    border-radius:5px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
+
   .lib-item { display:flex; flex-direction:column; gap:6px; background:var(--app-surface);
               border:1px solid var(--app-line); border-radius:10px; padding:12px 13px;
               text-align:left; cursor:pointer; color:inherit; width:100%; }
@@ -479,7 +500,12 @@
     // une source pour une action précise, depuis l'écran qui la demande.
     puiser:    { label:"Puiser",   role:"satellite", parent:"conduite", title:"Reprendre un envoi accepté" },
     tabs:      { label:"Onglets",  role:"satellite", parent:"reglages", title:"Onglets de favoris" },
-    importer:  { label:"Importer", role:"satellite", parent:"reglages", title:"Importer des favoris" }
+    importer:  { label:"Importer", role:"satellite", parent:"reglages", title:"Importer des favoris" },
+    // Sessions : chaque session porte son propre fil de recherche/construction
+    // de macro — distinct des favoris (macros validées, archivées). Satellite
+    // de l'Atelier pour la mise en avant dans la nav du bas, mais c'est aussi
+    // l'écran de démarrage de l'app (voir tout en bas du fichier).
+    sessions:  { label:"Sessions", role:"satellite", parent:"atelier", title:"Sessions" }
   };
 
   function backTarget(id) {
@@ -488,9 +514,41 @@
     return c.parent || "atelier";
   }
 
+  function activeSession() {
+    return state.sessions.filter(function (s) { return s.id === state.activeSessionId; })[0] || null;
+  }
+  // Le fil de la session active — jamais copié, la référence exacte du
+  // tableau porté par la session, pour que push()/filter()-réassignation
+  // restent visibles immédiatement.
+  function curThread() {
+    var s = activeSession();
+    return s ? s.thread : [];
+  }
+  function touchSession(s) { if (s) s.updatedAt = Date.now(); }
+  // Toutes les sessions confondues — un envoi accepté à reprendre en favori
+  // (Puiser) peut venir de n'importe quelle session passée, pas seulement de
+  // celle actuellement ouverte : les favoris eux-mêmes sont globaux, hors
+  // sessions.
+  function tousLesEchanges() {
+    var out = [];
+    state.sessions.forEach(function (s) { out = out.concat(s.thread); });
+    return out;
+  }
+  function titreDepuisPhrase(phrase) {
+    var t = (phrase || "").trim().replace(/\s+/g, " ");
+    if (!t) return "Nouvelle session";
+    return t.length > 42 ? t.slice(0, 42).trim() + "…" : t;
+  }
+
   var uid = 100;
+  // Sessions : distinctes des favoris. Un favori est une macro déjà validée,
+  // archivée pour un rappel immédiat en Conduite. Une session est un fil de
+  // recherche/construction en cours — l'espace où on cherche et affine une
+  // macro avant, éventuellement, de la garder en favori. Chaque session a
+  // son propre fil, isolé des autres.
+  var SEED_TIME = Date.now() - 2 * 60 * 60 * 1000;
   var state = {
-    screen: "atelier",
+    screen: "sessions",
     returnTo: "atelier",
     playMode: false,
     connected: true,
@@ -512,26 +570,39 @@
       { id: uid++, name:"Face seule", cmd:"Group 3 At 85 Enter", tab:"Cyrano" },
       { id: uid++, name:"Rappel saluts", cmd:"Macro 12 Enter", tab:"Général" }
     ],
-    // LE FIL. Chaque entrée est un échange complet, ou un événement.
-    //   kind: 'exchange' — ask -> proposition -> verdict
-    //   kind: 'event'    — envoi d'un favori
-    thread: [
-      { id: uid++, kind:"exchange", time:"19:50", ask:"Bump le sub 3 pour la durée de l'effet en cours",
-        fromLib:"corpus communautaire · C", cmd:"SubDown 3 Enter SubUp 3 Enter",
-        status:"ok", tokens:[] },
-      { id: uid++, kind:"exchange", time:"20:58", ask:"circuits 10 a 20 en lee 195",
-        cmd:"Chan 10 Thru 20 Color 3/195 Enter", status:"fixed",
-        wasRefused:true, tokens:[] }
+    renamingSessionId: null,
+    deletingSessionId: null,
+    activeSessionId: null, // fixé juste après la définition de `state`, une fois `sessions` prêt
+    sessions: [
+      {
+        id: uid++, title: "Bump sub + rattrapage couleur", createdAt: SEED_TIME, updatedAt: SEED_TIME,
+        // LE FIL de cette session. Chaque entrée est un échange complet, ou un événement.
+        //   kind: 'exchange' — ask -> proposition -> verdict
+        //   kind: 'event'    — envoi d'un favori
+        thread: [
+          { id: uid++, kind:"exchange", time:"19:50", ask:"Bump le sub 3 pour la durée de l'effet en cours",
+            fromLib:"corpus communautaire · C", cmd:"SubDown 3 Enter SubUp 3 Enter",
+            status:"ok", tokens:[] },
+          { id: uid++, kind:"exchange", time:"20:58", ask:"circuits 10 a 20 en lee 195",
+            cmd:"Chan 10 Thru 20 Color 3/195 Enter", status:"fixed",
+            wasRefused:true, tokens:[] }
+        ]
+      }
     ],
     toast: null
   };
+  state.activeSessionId = state.sessions[0].id;
 
-  var STORE_KEY = "macro2eos.prototypeB.v1";
+  // v2 : le fil unique devient plusieurs sessions. Une donnée v1 (`thread`
+  // seul, pas de `sessions`) n'est pas migrée au hasard — elle reste sous
+  // l'ancienne clé, ignorée, et l'app repart des sessions d'exemple plutôt
+  // que de deviner comment fragmenter un fil en sessions.
+  var STORE_KEY = "macro2eos.prototypeB.v2";
   function save() {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         uid:uid, tabs:state.tabs, activeTab:state.activeTab, favoris:state.favoris,
-        favMode:state.favMode, thread:state.thread
+        favMode:state.favMode, sessions:state.sessions, activeSessionId:state.activeSessionId
       }));
     } catch (e) {}
   }
@@ -541,7 +612,11 @@
       var d = JSON.parse(raw);
       if (!d || !Array.isArray(d.tabs) || !Array.isArray(d.favoris)) return false;
       uid = d.uid || uid; state.tabs = d.tabs; state.favoris = d.favoris;
-      state.thread = Array.isArray(d.thread) ? d.thread : state.thread;
+      if (Array.isArray(d.sessions) && d.sessions.length) {
+        state.sessions = d.sessions;
+        state.activeSessionId = state.sessions.some(function (s) { return s.id === d.activeSessionId; })
+          ? d.activeSessionId : state.sessions[0].id;
+      }
       state.favMode = d.favMode === "confirm" ? "confirm" : "immediate";
       state.activeTab = d.tabs.indexOf(d.activeTab) >= 0 ? d.activeTab : d.tabs[0];
       return true;
@@ -557,6 +632,17 @@
   function nowTime() {
     var d = new Date();
     return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+  function depuisTemps(ts) {
+    if (!ts) return "";
+    var s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (s < 60) return "à l'instant";
+    var m = Math.round(s / 60);
+    if (m < 60) return "il y a " + m + " min";
+    var h = Math.round(m / 60);
+    if (h < 24) return "il y a " + h + " h";
+    var j = Math.round(h / 24);
+    return "il y a " + j + " j";
   }
   function esc(s) { return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
   function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim(); }
@@ -634,6 +720,7 @@
     else if (state.screen === "reglages") body = '<div class="pad">' + screenHeader("reglages") + screenReglages() + "</div>";
     else if (state.screen === "tabs") body = '<div class="pad">' + screenHeader("tabs") + screenTabs() + "</div>";
     else if (state.screen === "importer") body = '<div class="pad">' + screenHeader("importer") + screenImport() + "</div>";
+    else if (state.screen === "sessions") body = '<div class="pad">' + screenHeader("sessions") + screenSessions() + "</div>";
     else body = screenAtelier();
     el.innerHTML = body + overlayHtml() + toastHtml();
     var th = document.getElementById("thread");
@@ -648,13 +735,20 @@
 
   // ===================== L'ATELIER : le fil =====================
   function screenAtelier() {
-    var out = '<div class="thread" id="thread">';
-    if (!state.thread.length) {
+    var s = activeSession();
+    var out = '<div class="atelier-head">' +
+      '<button class="atelier-title" data-action="nav" data-screen="sessions">' +
+      '<span class="chevron">‹</span><span class="ttl">' + esc(s ? s.title : "Session") + '</span></button>' +
+      '<button class="cbtn" data-action="session:new" aria-label="Nouvelle session">+</button></div>';
+
+    out += '<div class="thread" id="thread">';
+    var th = curThread();
+    if (!th.length) {
       out += '<div class="thread-empty">Décrivez ce que vous voulez faire.<br>' +
              "Ce que vous envoyez restera ici, avec la réponse de la console.</div>";
     } else {
       out += '<div class="day">Aujourd\'hui</div>';
-      state.thread.forEach(function (e) { out += e.kind === "event" ? renderEvent(e) : renderExchange(e); });
+      th.forEach(function (e) { out += e.kind === "event" ? renderEvent(e) : renderExchange(e); });
     }
     out += "</div>";
 
@@ -903,7 +997,7 @@
   function screenPuiser() {
     var kept = {};
     state.favoris.forEach(function (f) { if (f.threadId != null) kept[f.threadId] = true; });
-    var ok = state.thread.filter(function (e) {
+    var ok = tousLesEchanges().filter(function (e) {
       return e.kind === "exchange" && (e.status === "ok" || e.status === "doute" || e.status === "fixed");
     });
     if (!ok.length) {
@@ -911,7 +1005,7 @@
         '<span style="font-size:11.5px;">Envoyez d\'abord une macro depuis l\'Atelier.</span></div>';
     }
     if (state.puiserChoice != null) {
-      var ch = state.thread.filter(function (e) { return e.id === state.puiserChoice; })[0];
+      var ch = tousLesEchanges().filter(function (e) { return e.id === state.puiserChoice; })[0];
       if (ch) {
         return '<div class="ask" style="align-self:stretch; max-width:none;">' + esc(ch.ask) + "</div>" +
           '<div class="reply" style="max-width:none;"><div class="macro">' + esc(ch.cmd) + "</div></div>" +
@@ -943,6 +1037,41 @@
     }).join("");
   }
 
+  // Liste des sessions — écran de démarrage de l'app (comme ChatGPT/Claude).
+  // Une session = un fil de recherche/construction de macro, distinct des
+  // favoris (macros déjà validées). Titrage automatique sur le premier
+  // échange, renommage et suppression manuels ici.
+  function screenSessions() {
+    var out = '<button class="btn btn-primary" data-action="session:new" style="width:100%; margin-bottom:14px;">+ Nouvelle session</button>';
+    if (!state.sessions.length) {
+      out += '<div class="thread-empty">Aucune session pour l\'instant.</div>';
+      return out;
+    }
+    var list = state.sessions.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
+    list.forEach(function (s) {
+      if (state.renamingSessionId === s.id) {
+        out += '<div class="session-row"><div style="flex:1; display:flex; flex-direction:column; gap:6px;">' +
+          '<input type="text" id="session-rename" value="' + esc(s.title) + '" />' +
+          '<div class="btn-row"><button class="btn btn-primary btn-sm" data-action="session:rename:save" data-id="' + s.id + '">Enregistrer</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="session:rename:cancel">Annuler</button></div></div></div>';
+      } else if (state.deletingSessionId === s.id) {
+        out += '<div class="card card-danger" style="margin:6px 0;"><strong>Supprimer « ' + esc(s.title) + ' » ?</strong>' +
+          '<p>Le fil de cette session sera définitivement effacé.</p>' +
+          '<div class="btn-row" style="margin-top:8px;"><button class="btn btn-danger btn-sm" data-action="session:delete:ok" data-id="' + s.id + '">Supprimer</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="session:delete:no">Annuler</button></div></div>';
+      } else {
+        var n = s.thread.filter(function (e) { return e.kind === "exchange"; }).length;
+        out += '<div class="session-row">' +
+          '<button class="main" data-action="session:open" data-id="' + s.id + '">' +
+          '<span class="k">' + esc(s.title) + (s.id === state.activeSessionId ? '<span class="badge-current">en cours</span>' : '') + '</span>' +
+          '<span class="v">' + n + ' échange(s)' + (s.updatedAt ? ' · ' + depuisTemps(s.updatedAt) : '') + '</span></button>' +
+          '<button class="icon-btn" data-action="session:rename" data-id="' + s.id + '" aria-label="Renommer">✎</button>' +
+          '<button class="icon-btn" data-action="session:delete" data-id="' + s.id + '" aria-label="Supprimer">🗑</button></div>';
+      }
+    });
+    return out;
+  }
+
   function screenReglages() {
     var out = '<div class="group"><div class="label">Console</div>' +
       '<div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>' +
@@ -956,7 +1085,7 @@
     out += '<div class="group"><div class="label">Sauvegarde</div>' +
       '<div class="row click" data-action="export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
       '<div class="row click" data-action="nav" data-screen="importer"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div>' +
-      '<div class="row click" data-action="fil:export"><span class="k">Copier le fil (pour analyse)</span><span class="v">' + state.thread.filter(function (x) { return x.kind === "exchange"; }).length + ' échange(s)</span></div></div>';
+      '<div class="row click" data-action="fil:export"><span class="k">Copier le fil (pour analyse)</span><span class="v">' + curThread().filter(function (x) { return x.kind === "exchange"; }).length + ' échange(s) · session en cours</span></div></div>';
     out += '<div class="group"><div class="label">Saisie</div>' +
       '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
     out += '<div class="group"><div class="label">Prototype</div>';
@@ -1000,7 +1129,7 @@
 
   function overlayHtml() {
     if (state.overlay && state.overlay.kind === "confirm") {
-      var e = state.thread.filter(function (x) { return x.id === state.overlay.id; })[0];
+      var e = curThread().filter(function (x) { return x.id === state.overlay.id; })[0];
       if (!e) return "";
       return '<div class="overlay"><div class="confirm-full"><div class="warn-icon">⚠</div>' +
         "<h3>Syntaxe jamais vérifiée sur console</h3><p>" + esc(e.warnText || "") + "</p>" +
@@ -1022,13 +1151,17 @@
   }
 
   // ---------- actions ----------
-  function findEx(id) { return state.thread.filter(function (e) { return e.id == id; })[0]; }
+  // Cherche dans TOUTES les sessions, pas seulement la session active : une
+  // réponse asynchrone du moteur peut arriver après que l'utilisateur a
+  // changé de session, et l'échange qui attendait cette réponse doit quand
+  // même la recevoir plutôt que la perdre silencieusement.
+  function findEx(id) { return tousLesEchanges().filter(function (e) { return e.id == id; })[0]; }
 
   // Sérialise le fil en texte brut, pensé pour être collé tel quel dans une
   // conversation — pas un format d'échange machine, juste la trace lisible
   // de ce qui a été tapé et de ce que le moteur a répondu.
   function serialiserFil() {
-    var exs = state.thread.filter(function (e) { return e.kind === "exchange"; });
+    var exs = curThread().filter(function (e) { return e.kind === "exchange"; });
     if (!exs.length) return "(fil vide — aucune phrase testée pour l'instant)";
     var lignes = [];
     exs.forEach(function (e) {
@@ -1142,11 +1275,17 @@
         if (!raw.trim()) break;
         state.draft = "";
         var eid = uid++;
+        var sAsk = activeSession();
+        // Titrage automatique : seulement au tout premier échange de la
+        // session, jamais ensuite — comme ChatGPT/Claude, le titre capture
+        // la demande d'ouverture, pas la dernière en date.
+        if (sAsk && !curThread().length) sAsk.title = titreDepuisPhrase(raw);
+        touchSession(sAsk);
         // Le vrai traducteur répond de façon asynchrone (Pyodide) : on pose
         // tout de suite une entrée "réflexion en cours", puis on la met à
         // jour avec le résultat réel — jamais de résultat inventé pour
         // combler l'attente.
-        state.thread.push({ id: eid, kind:"exchange", ask: raw, cmd: null,
+        curThread().push({ id: eid, kind:"exchange", ask: raw, cmd: null,
           status:"thinking", tokens: [], time: nowTime() });
         renderAll();
         askEngine(eid, raw, {});
@@ -1222,7 +1361,7 @@
       case "confirm:no": state.overlay = null; renderAll(); break;
 
       case "discard":
-        state.thread = state.thread.filter(function (x) { return x.id != d.id; });
+        (function () { var sDisc = activeSession(); if (sDisc) sDisc.thread = sDisc.thread.filter(function (x) { return x.id != d.id; }); })();
         renderAll(); break;
 
       case "fix": {
@@ -1282,7 +1421,7 @@
         break;
       case "puiser:back": state.puiserChoice = null; renderAll(); break;
       case "puiser:tab": {
-        e = state.thread.filter(function (x) { return x.id === state.puiserChoice; })[0];
+        e = tousLesEchanges().filter(function (x) { return x.id === state.puiserChoice; })[0];
         if (!e) break;
         var pn = document.getElementById("puiser-name");
         var pname = (pn && pn.value.trim()) || e.cmd.split(" ").slice(0,2).join(" ");
@@ -1311,7 +1450,8 @@
           break;
         }
         state.tileConfirmId = null;
-        state.thread.push({ id: uid++, kind:"event", name: t2.name, cmd: t2.cmd, time: nowTime() });
+        touchSession(activeSession());
+        curThread().push({ id: uid++, kind:"event", name: t2.name, cmd: t2.cmd, time: nowTime() });
         showToast("Envoyé : " + t2.cmd);
         break;
       }
@@ -1391,6 +1531,50 @@
         break;
       }
       case "fil:fermer": state.overlay = null; renderAll(); break;
+
+      // ---- sessions ----
+      case "session:new": {
+        var newSid = uid++;
+        state.sessions.push({ id: newSid, title: "Nouvelle session", createdAt: Date.now(), updatedAt: Date.now(), thread: [] });
+        state.activeSessionId = newSid;
+        state.screen = "atelier";
+        renderAll(); break;
+      }
+      case "session:open":
+        state.activeSessionId = Number(d.id);
+        state.screen = "atelier";
+        renderAll(); break;
+      case "session:rename":
+        state.renamingSessionId = Number(d.id);
+        renderAll();
+        setTimeout(function () { var elRen = document.getElementById("session-rename"); if (elRen) { elRen.focus(); elRen.select(); } }, 0);
+        break;
+      case "session:rename:save": {
+        var elSave = document.getElementById("session-rename");
+        var sRen = state.sessions.filter(function (x) { return x.id === state.renamingSessionId; })[0];
+        if (sRen && elSave && elSave.value.trim()) sRen.title = elSave.value.trim();
+        state.renamingSessionId = null;
+        renderAll(); break;
+      }
+      case "session:rename:cancel": state.renamingSessionId = null; renderAll(); break;
+      case "session:delete": state.deletingSessionId = Number(d.id); renderAll(); break;
+      case "session:delete:no": state.deletingSessionId = null; renderAll(); break;
+      case "session:delete:ok": {
+        var delSid = Number(d.id);
+        state.sessions = state.sessions.filter(function (x) { return x.id !== delSid; });
+        if (!state.sessions.length) {
+          // Toujours au moins une session — l'Atelier a toujours besoin d'une
+          // session active, jamais d'un état « aucune destination ».
+          state.sessions.push({ id: uid++, title: "Nouvelle session", createdAt: Date.now(), updatedAt: Date.now(), thread: [] });
+        }
+        if (state.activeSessionId === delSid) {
+          var nextS = state.sessions.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); })[0];
+          state.activeSessionId = nextS.id;
+        }
+        state.deletingSessionId = null;
+        showToast("Session supprimée.");
+        renderAll(); break;
+      }
       case "import:ok": {
         var tb2 = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
         state.favoris.push(
@@ -1457,7 +1641,10 @@
 
   document.getElementById("open-browser").href = window.location.href;
 
-  if (load()) state.screen = "conduite";
+  // La liste des sessions est désormais l'écran de démarrage, avec ou sans
+  // état sauvegardé — plus de saut direct vers Conduite au retour, cohérent
+  // avec le choix ChatGPT/Claude : on choisit ou reprend une session d'abord.
+  load();
   renderAll();
 })();
 </script>
