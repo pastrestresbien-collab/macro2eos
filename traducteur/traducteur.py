@@ -35,6 +35,7 @@ AUCUNE IA À L'EXÉCUTION, et c'est délibéré :
 """
 from __future__ import annotations
 
+import copy
 import re
 import sys
 import unicodedata
@@ -1256,6 +1257,94 @@ class Traducteur:
             pris.add(i)
             return {"objet": objet, "numero": valeur}
         return None
+
+    # -- corriger une IR déjà produite, en langage naturel -------------------
+    def corriger(self, ir: list[dict], instruction: str) -> Traduction:
+        """« remplace X par Y » (ou « change X en Y ») appliqué à une IR déjà
+        produite par `traduire()` — jamais une retraduction depuis zéro.
+        Pensé pour l'usage « à la manière d'un LLM » : plutôt que de taper sur
+        un champ dans l'interface, on écrit la correction en une phrase
+        courte, adressée à la dernière macro proposée.
+
+        Portée volontairement restreinte à deux cas, chacun sans ambiguïté
+        possible :
+
+          - **objet de sélection, Chan <-> Group uniquement** — les deux
+            seuls objets génériques de ce traducteur (voir
+            `traducteur/README.md`). Cue/Sub/Preset ne sont jamais des cibles
+            de remplacement : les proposer inviterait à deviner une intention
+            entièrement différente plutôt qu'une simple retouche — ce ne
+            serait plus une correction, ce serait une nouvelle traduction
+            déguisée.
+          - **un numéro déjà présent dans l'IR**, seulement s'il apparaît à
+            un seul endroit (sélection ou cible d'action). S'il apparaît à
+            plusieurs endroits, corriger le mauvais serait pire que ne rien
+            corriger — la traduction reste `incompris` plutôt que de choisir.
+
+        Ne mute jamais l'IR reçue : travaille sur une copie, pour que
+        l'appelant garde l'original si la correction échoue.
+        """
+        if not ir or not isinstance(ir, list) or not ir[0]:
+            return Traduction(statut="incompris", notes=[
+                "Aucune macro en cours à corriger."])
+        etape = copy.deepcopy(ir[0])
+
+        toks = tokeniser(normaliser(instruction, self._ponctuation))
+        i_sep = next((i for i, tok in enumerate(toks) if tok in ("par", "en")), None)
+        if i_sep is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun « par » ou « en » trouvé — dire par exemple « remplace groupe par circuit »."])
+
+        verbes = {"remplace", "remplacer", "change", "changer"}
+        gauche = [t for t in toks[:i_sep] if t not in verbes and t not in self._outils]
+        droite = [t for t in toks[i_sep + 1:] if t not in self._outils]
+        if not gauche or not droite:
+            return Traduction(statut="incompris", notes=[
+                "Rien à corriger de part et d'autre de « par »/« en »."])
+
+        # -- cas 1 : objet de sélection (Chan <-> Group uniquement) ---------
+        OBJETS_REMPLACABLES = {"Chan", "Group"}
+        cle_gauche, _ = self._resoudre(gauche[0], self._objets)
+        cle_droite, _ = self._resoudre(droite[0], self._objets)
+        if cle_gauche in OBJETS_REMPLACABLES or cle_droite in OBJETS_REMPLACABLES:
+            if cle_droite not in OBJETS_REMPLACABLES:
+                return Traduction(statut="incompris", notes=[
+                    f"« {droite[0]} » n'est pas une cible de remplacement prise en charge "
+                    "(seuls circuit et groupe le sont)."])
+            selection = etape.get("selection")
+            objet_actuel = selection.get("objet") if selection else None
+            if not selection or objet_actuel != cle_gauche:
+                return Traduction(statut="incompris", notes=[
+                    f"La macro actuelle ne contient pas « {gauche[0]} »"
+                    + (f" — elle contient « {objet_actuel} »." if objet_actuel else ".")])
+            selection["objet"] = cle_droite
+            return Traduction(statut="compris", ir=[etape], intention="corriger")
+
+        # -- cas 2 : un numéro déjà présent, à un seul endroit ---------------
+        if gauche[0].isdigit() and droite[0].isdigit():
+            valeur_gauche, valeur_droite = int(gauche[0]), int(droite[0])
+            candidats = []
+            for cle_conteneur in ("selection", "action"):
+                conteneur = etape.get(cle_conteneur)
+                if not isinstance(conteneur, dict):
+                    continue
+                for cle, val in conteneur.items():
+                    if isinstance(val, int) and not isinstance(val, bool) and val == valeur_gauche:
+                        candidats.append((conteneur, cle))
+            if not candidats:
+                return Traduction(statut="incompris", notes=[
+                    f"Le numéro {valeur_gauche} n'apparaît nulle part dans cette macro."])
+            if len(candidats) > 1:
+                return Traduction(statut="incompris", notes=[
+                    f"Le numéro {valeur_gauche} apparaît à plusieurs endroits de cette macro — "
+                    "trop ambigu pour savoir lequel corriger."])
+            conteneur, cle = candidats[0]
+            conteneur[cle] = valeur_droite
+            return Traduction(statut="compris", ir=[etape], intention="corriger")
+
+        return Traduction(statut="incompris", notes=[
+            f"« {' '.join(gauche)} » n'est pas reconnu comme quelque chose à remplacer "
+            "(objet de sélection circuit/groupe, ou un numéro déjà présent dans la macro)."])
 
     # -- confort : traduire puis rendre ------------------------------------
     def rendre(self, traduction: Traduction, **kwargs):

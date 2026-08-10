@@ -100,6 +100,26 @@
     "    rendu = _gen.rendre(ir)",
     "    return json.dumps({'commande': rendu.commande, 'avertissements': rendu.avertissements}, ensure_ascii=False)",
     "",
+    "# Correction en langage naturel d'une IR déjà produite (« remplace X par Y »)",
+    "# — voir `Traducteur.corriger` pour la portée exacte et pourquoi elle est",
+    "# restreinte. Rend la commande tout de suite si la correction est comprise,",
+    "# pour éviter un aller-retour JS supplémentaire.",
+    "def corriger_json(ir_json, instruction):",
+    "    ir = json.loads(ir_json)",
+    "    corr = _trad.corriger(ir, instruction)",
+    "    out = {",
+    "        'statut': corr.statut,",
+    "        'notes': corr.notes,",
+    "        'ir': corr.ir,",
+    "        'commande': None,",
+    "        'avertissements': [],",
+    "    }",
+    "    if corr.compris:",
+    "        rendu = _trad.rendre(corr)",
+    "        out['commande'] = rendu.commande",
+    "        out['avertissements'] = rendu.avertissements",
+    "    return json.dumps(out, ensure_ascii=False)",
+    "",
   ].join("\n");
 
   var _enginePromise = null;
@@ -138,7 +158,7 @@
       // il faut que le nom soit directement dans les globals Python pour que
       // `pyodide.globals.get("traduire_json")` le trouve depuis JS.
       pyodide.runPython(
-        "import sys\nsys.path.insert(0, '/app')\nfrom py_bridge import traduire_json, rendre_ir_json\n"
+        "import sys\nsys.path.insert(0, '/app')\nfrom py_bridge import traduire_json, rendre_ir_json, corriger_json\n"
       );
 
       window.MACRO2EOS_ENGINE_READY = true;
@@ -173,6 +193,22 @@
     var fn = pyodide.globals.get("rendre_ir_json");
     try {
       var out = fn(JSON.stringify(ir || []));
+      return JSON.parse(out);
+    } finally {
+      fn.destroy();
+    }
+  };
+
+  // Corrige une IR en langage naturel (« remplace X par Y »), « à la manière
+  // d'un LLM » plutôt qu'en tapant sur un champ. Retourne
+  // { statut, notes, ir, commande, avertissements } — voir
+  // `Traducteur.corriger` pour la portée exacte (Chan/Group uniquement,
+  // numéros non ambigus uniquement).
+  window.corrigerReel = async function (ir, instruction) {
+    var pyodide = await bootEngine();
+    var fn = pyodide.globals.get("corriger_json");
+    try {
+      var out = fn(JSON.stringify(ir || []), instruction);
       return JSON.parse(out);
     } finally {
       fn.destroy();

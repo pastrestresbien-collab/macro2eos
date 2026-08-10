@@ -895,6 +895,19 @@
     }
 
     out += '<div class="macro">' + macroHtml(e) + "</div>";
+
+    // Journal des corrections en langage naturel (« remplace X par Y »),
+    // « à la manière d'un LLM » — chaque instruction reste visible, réussie
+    // ou non, plutôt que de réécrire la macro en silence.
+    if (e.corrections && e.corrections.length) {
+      e.corrections.forEach(function (c) {
+        out += '<div class="flag' + (c.ok ? "" : " flag-warn") + '"><span>' + (c.ok ? "↺" : "✕") + '</span>' +
+          '<span><b>' + esc(c.texte) + '</b>' +
+          (c.ok ? "" : ' <span class="txt">' + esc(c.raison || "Non reconnue.") + "</span>") +
+          "</span></div>";
+      });
+    }
+
     if (e.notes && e.notes.length) {
       out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
     }
@@ -1253,6 +1266,36 @@
     });
   }
 
+  // Correction en langage naturel d'une macro déjà proposée (« remplace X
+  // par Y »), « à la manière d'un LLM » — adressée à la dernière macro en
+  // attente d'envoi plutôt que de retaper toute la phrase. Voir
+  // `Traducteur.corriger` pour la portée exacte de ce qui est reconnu.
+  function askCorrection(exchangeId, instruction) {
+    var e = findEx(exchangeId); if (!e) return;
+    if (typeof window.corrigerReel !== "function") {
+      showToast("Le moteur réel n'est pas chargé — correction impossible.");
+      return;
+    }
+    window.corrigerReel(e.ir, instruction).then(function (res) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.corrections = e2.corrections || [];
+      if (res.statut === "compris") {
+        e2.ir = res.ir;
+        e2.cmd = res.commande;
+        e2.warn = (res.avertissements || []).length > 0;
+        e2.warnText = e2.warn ? res.avertissements.join(" · ") : null;
+        e2.corrections.push({ texte: instruction, ok: true });
+        touchSession(activeSession());
+      } else {
+        e2.corrections.push({ texte: instruction, ok: false,
+          raison: (res.notes && res.notes[0]) || "Correction non reconnue." });
+      }
+      renderAll();
+    }).catch(function (err) {
+      showToast("Correction impossible : " + ((err && err.message) || String(err)));
+    });
+  }
+
   // Rejoue une question déjà répondue avec une réponse de plus — c'est ainsi
   // que le traducteur reprend là où il s'était arrêté sans redemander le
   // reste (voir traducteur/README.md).
@@ -1355,6 +1398,26 @@
         var raw = ta ? ta.value : "";
         if (!raw.trim()) break;
         state.draft = "";
+
+        // « remplace X par Y » / « change X en Y » adressé à la dernière
+        // macro encore en attente d'envoi dans cette session : une
+        // correction, pas une nouvelle demande — voir `askCorrection`.
+        // Le déclencheur reste les verbes de correction, jamais « en » seul
+        // (bien trop courant dans une phrase normale, ex. « ... en lee
+        // 195 ») pour ne pas détourner une vraie nouvelle demande.
+        var thAsk = curThread();
+        var dernierDraft = null;
+        for (var iDraft = thAsk.length - 1; iDraft >= 0; iDraft--) {
+          if (thAsk[iDraft].kind === "exchange" && thAsk[iDraft].status === "draft") {
+            dernierDraft = thAsk[iDraft]; break;
+          }
+        }
+        if (dernierDraft && /\b(remplace|remplacer|change|changer)\b/i.test(raw)) {
+          askCorrection(dernierDraft.id, raw);
+          renderAll();
+          break;
+        }
+
         var eid = uid++;
         var sAsk = activeSession();
         // Titrage automatique : seulement au tout premier échange de la

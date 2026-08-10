@@ -727,6 +727,73 @@ CAS = [
 ]
 
 
+# ----------------------------------------------------------------------------
+# Correction en langage naturel (`Traducteur.corriger`) — « à la manière d'un
+# LLM » : une instruction courte retouche l'IR déjà produite, plutôt que de
+# retraduire depuis zéro. Chaque cas part d'une phrase traduite normalement,
+# puis applique une instruction de correction.
+# ----------------------------------------------------------------------------
+CAS_CORRECTION = [
+    {
+        "nom": "remplacer l'objet de sélection — groupe par circuit",
+        "phrase": "groupe 5 en lee 195",
+        "instruction": "remplace groupe par circuit",
+        "statut": "compris",
+        "rendu": "Chan 5 Color 3/195 Enter",
+    },
+    {
+        "nom": "remplacer l'objet de sélection — verbe « change »/« en »",
+        "phrase": "circuit 5 en lee 195",
+        "instruction": "change circuit en groupe",
+        "statut": "compris",
+        "rendu": "Group 5 Color 3/195 Enter",
+    },
+    {
+        "nom": "remplacer un numéro déjà présent, sans ambiguïté",
+        "phrase": "groupe 5 en lee 195",
+        "instruction": "remplace 5 par 12",
+        "statut": "compris",
+        "rendu": "Group 12 Color 3/195 Enter",
+    },
+    {
+        "nom": "cible de remplacement non prise en charge — sub jamais proposé",
+        "phrase": "groupe 5 en lee 195",
+        "instruction": "remplace groupe par sub",
+        "statut": "incompris",
+    },
+    {
+        "nom": "objet absent de la macro actuelle — refus assumé",
+        "phrase": "groupe 5 en lee 195",
+        "instruction": "remplace circuit par groupe",
+        "statut": "incompris",
+    },
+    {
+        "nom": "numéro absent de la macro — refus assumé",
+        "phrase": "groupe 5 en lee 195",
+        "instruction": "remplace 99 par 1",
+        "statut": "incompris",
+    },
+    {
+        "nom": "numéro ambigu — présent à plusieurs endroits, refus assumé",
+        "phrase": "circuit 1 intensite 1",
+        "instruction": "remplace 1 par 7",
+        "statut": "incompris",
+    },
+    {
+        "nom": "instruction sans « par » ni « en » — refus assumé",
+        "phrase": "groupe 5 en lee 195",
+        "instruction": "groupe vers circuit",
+        "statut": "incompris",
+    },
+    {
+        "nom": "aucune macro à corriger — IR vide",
+        "phrase": None,
+        "instruction": "remplace groupe par circuit",
+        "statut": "incompris",
+    },
+]
+
+
 def controler(nom: str, obtenu, attendu) -> bool:
     if obtenu == attendu:
         return True
@@ -771,10 +838,23 @@ def main() -> int:
         echecs += not ok
 
     total = len(CAS)
-    if echecs:
-        print(f"\n{echecs} cas en échec sur {total}.")
+
+    echecs_correction = 0
+    for cas in CAS_CORRECTION:
+        ir_depart = [] if cas["phrase"] is None else t.traduire(cas["phrase"]).ir
+        corr = t.corriger(ir_depart, cas["instruction"])
+        ok = controler(f"{cas['nom']} (statut correction)", corr.statut, cas["statut"])
+        if "rendu" in cas:
+            ok &= controler(f"{cas['nom']} (rendu après correction)",
+                            t.rendre(corr).commande, cas["rendu"])
+        echecs_correction += not ok
+
+    total_correction = len(CAS_CORRECTION)
+    if echecs or echecs_correction:
+        print(f"\n{echecs} cas de traduction en échec sur {total}, "
+              f"{echecs_correction} cas de correction en échec sur {total_correction}.")
         return 1
-    print(f"{total} cas de traduction — tous conformes.")
+    print(f"{total} cas de traduction, {total_correction} cas de correction — tous conformes.")
     return 0
 
 
