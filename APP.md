@@ -11,7 +11,7 @@ neuf règles de la grammaire Eos qui contraignent l'UI, et ce que chacune impose
 fichier-ci dit *quoi construire* ; celui-là dit *pourquoi ça ne peut pas être construit
 autrement*.
 
-Dernière mise à jour : 2026-08-06.
+Dernière mise à jour : 2026-08-11.
 
 ---
 
@@ -43,6 +43,7 @@ Dernière mise à jour : 2026-08-06.
 | 2026-08-06 | **L'historique n'est pas un écran, c'est le plan de travail.** L'atelier devient un fil de conversation avec la console ; consulter le passé et préparer la suite sont le même geste. | Structure |
 | 2026-08-06 | **Deux surfaces** : *Atelier* (le fil) et *Conduite* (la grille de jeu). Réglages redevient une icône d'angle. | Navigation |
 | 2026-08-10 | **Multi-session, façon ChatGPT/Claude — nuance la décision du 2026-08-06.** Un fil unique ne suffit plus dès qu'on veut mener plusieurs recherches de macro en parallèle (un spectacle, un filage, une improvisation) sans les mélanger. L'Atelier porte désormais plusieurs **sessions**, chacune son propre fil isolé ; un écran « Sessions » (satellite de l'Atelier) liste, titre automatiquement (sur le premier message), permet de renommer et de supprimer. Explicitement distinct des favoris : un favori est une macro déjà validée et archivée pour un rappel immédiat en Conduite ; une session est l'espace où on cherche et affine une macro avant, éventuellement, de la garder en favori. La décision du 2026-08-06 reste vraie **à l'intérieur d'une session** — le fil y est toujours le plan de travail, jamais un historique à parcourir ; ce qui change, c'est qu'il peut désormais y en avoir plusieurs, cloisonnés. L'app s'ouvre sur la liste des sessions. | Structure / Navigation |
+| 2026-08-11 | **Moteur flou : un LLM (clé personnelle, BYOK) vient trancher les questions déjà posées par le traducteur déterministe, jamais deviner à sa place.** Le lexique reste seul à décider ce qui est ambigu (`Traducteur.traduire`) ; le LLM ne choisit qu'entre les options *déjà* listées pour une question donnée — jamais une valeur hors du vocabulaire du corpus (`traducteur/build_vocabulaire_llm.py`, revalidé en JS avant tout passage à Python). Motif décisif : au pupitre, le téléphone est connecté au Wi-Fi de la console, **donc sans Internet** (le Wi-Fi coupe la 4G/5G même sans accès réseau) — le LLM n'est donc utile qu'en préparation, jamais en direct. Repli **silencieux** sur le moteur déterministe seul dès le moindre échec (pas de clé, hors réseau, timeout, réponse hors vocabulaire) : aucun indicateur de mode, aucun message d'erreur — ce qui est déjà le comportement normal en régie doit rester invisible. Champ clé API + bascule (désactivée par défaut) + choix du modèle (`claude-sonnet-5` par défaut) en Réglages, clé jamais mêlée à l'export du fil ni au reset. | Traduction / Réglages |
 
 **Conséquence de conception à ne pas perdre** : la voix arrivera plus tard sur la même
 chaîne. La couche de compréhension ne doit donc jamais supposer une entrée propre — la

@@ -148,6 +148,24 @@ jamais passer par `_plage` ; `regler_intensite` reste affecté. Corriger `_plage
 toucherait tous les handlers qui s'en servent — à faire avec la suite de tests complète
 sous la main, pas en même temps qu'une autre tranche.
 
+**Moteur flou (2026-08-11) : un LLM en renfort, jamais en remplacement — phases 1 et 2
+terminées.** Le traducteur ci-dessus reste seul à décider ce qui est ambigu ; un LLM
+(Claude, clé API personnelle) ne fait que choisir parmi les options *déjà* proposées par
+une question `a_preciser`, jamais deviner une intention depuis rien. Voir
+`traducteur/build_vocabulaire_llm.py` (vocabulaire fermé exporté du même `lexique.yaml`),
+`Traducteur.interpreter_flou` (`traducteur/traducteur.py`, ne touche jamais le réseau,
+testé dans `traducteur/test_interpreter_flou.py`), `app/llm_bridge.js` (appel réseau réel,
+revalidation stricte contre les options de la question avant tout passage à Python, testé
+sans réseau dans `app/test_llm_bridge.js`) et `askEngineFlou` (`app/prototype.html`).
+Raison du périmètre restreint : au pupitre, le téléphone est sur le Wi-Fi de la console —
+donc **sans Internet**, le Wi-Fi coupant la 4G/5G même sans accès réseau — le LLM n'est
+donc utilisable qu'en préparation ; tout échec (hors réseau, timeout, clé absente/invalide,
+réponse hors vocabulaire) retombe silencieusement sur le moteur déterministe seul, sans
+indicateur de mode. Phase 3 (journal de renforcement `observations_llm.yaml`) et phase 4
+(polish multi-candidats) restent à faire ; rescaper un `incompris` complet (aucune
+intention reconnue du tout) est explicitement hors périmètre, proposé comme phase 5
+séparée.
+
 ### C. Valider au banc réel
 
 Une session sur console/nomad réel lèverait d'un coup la majorité des incertitudes

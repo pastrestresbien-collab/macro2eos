@@ -120,6 +120,31 @@
     "        out['avertissements'] = rendu.avertissements",
     "    return json.dumps(out, ensure_ascii=False)",
     "",
+    "# Moteur flou (phase 2) — `sortie_llm_json` est déjà validée côté",
+    "# app/llm_bridge.js (chaque valeur existe dans vocabulaire_llm.json) avant",
+    "# d'arriver ici : ce pont ne fait que désérialiser et appeler",
+    "# `Traducteur.interpreter_flou`, jamais de logique de validation dupliquée.",
+    "def interpreter_flou_json(phrase, sortie_llm_json, reponses_json):",
+    "    sortie_llm = json.loads(sortie_llm_json) if sortie_llm_json else None",
+    "    reponses = json.loads(reponses_json) if reponses_json else {}",
+    "    trad = _trad.interpreter_flou(phrase, sortie_llm, reponses=reponses)",
+    "    out = {",
+    "        'statut': trad.statut,",
+    "        'intention': trad.intention,",
+    "        'notes': trad.notes,",
+    "        'non_reconnus': trad.non_reconnus,",
+    "        'questions': [_question_vers_dict(q) for q in trad.questions],",
+    "        'hypotheses': [_hypothese_vers_dict(h) for h in trad.hypotheses],",
+    "        'ir': trad.ir,",
+    "        'commande': None,",
+    "        'avertissements': [],",
+    "    }",
+    "    if trad.compris:",
+    "        rendu = _trad.rendre(trad)",
+    "        out['commande'] = rendu.commande",
+    "        out['avertissements'] = rendu.avertissements",
+    "    return json.dumps(out, ensure_ascii=False)",
+    "",
   ].join("\n");
 
   var _enginePromise = null;
@@ -158,7 +183,7 @@
       // il faut que le nom soit directement dans les globals Python pour que
       // `pyodide.globals.get("traduire_json")` le trouve depuis JS.
       pyodide.runPython(
-        "import sys\nsys.path.insert(0, '/app')\nfrom py_bridge import traduire_json, rendre_ir_json, corriger_json\n"
+        "import sys\nsys.path.insert(0, '/app')\nfrom py_bridge import traduire_json, rendre_ir_json, corriger_json, interpreter_flou_json\n"
       );
 
       window.MACRO2EOS_ENGINE_READY = true;
@@ -209,6 +234,26 @@
     var fn = pyodide.globals.get("corriger_json");
     try {
       var out = fn(JSON.stringify(ir || []), instruction);
+      return JSON.parse(out);
+    } finally {
+      fn.destroy();
+    }
+  };
+
+  // Moteur flou (phase 2) — `sortieLlm` est déjà validée par
+  // app/llm_bridge.js (chaque valeur désignée existe dans vocabulaire_llm.json)
+  // avant d'arriver ici. `sortieLlm` peut être null (ex. appelant qui veut
+  // juste rejouer `traduire()` avec de nouvelles réponses). Retourne le même
+  // format que `traduireReel`.
+  window.interpreterFlouReel = async function (phrase, sortieLlm, reponses) {
+    var pyodide = await bootEngine();
+    var fn = pyodide.globals.get("interpreter_flou_json");
+    try {
+      var out = fn(
+        phrase,
+        sortieLlm ? JSON.stringify(sortieLlm) : "",
+        JSON.stringify(reponses || {})
+      );
       return JSON.parse(out);
     } finally {
       fn.destroy();

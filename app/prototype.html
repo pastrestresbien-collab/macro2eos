@@ -470,6 +470,7 @@
 
 <script src="vendor/pyodide/pyodide.js"></script>
 <script src="engine.js"></script>
+<script src="llm_bridge.js"></script>
 <script>
 (function () {
   "use strict";
@@ -573,6 +574,10 @@
     ],
     renamingSessionId: null,
     deletingSessionId: null,
+    // Moteur flou (LLM, phase 2) — désactivé par défaut, clé personnelle de
+    // l'utilisateur uniquement (voir app/llm_bridge.js et le plan moteur
+    // flou). Stocké séparément de `sessions`/`favoris` (voir `saveLlmConfig`).
+    llmConfig: { actif: false, apiKey: "", model: "claude-sonnet-5" },
     activeSessionId: null, // fixé juste après la définition de `state`, une fois `sessions` prêt
     sessions: [
       {
@@ -622,6 +627,26 @@
       state.activeTab = d.tabs.indexOf(d.activeTab) >= 0 ? d.activeTab : d.tabs[0];
       return true;
     } catch (e) { return false; }
+  }
+
+  // Clé API + réglages du moteur flou : volontairement dans une clé
+  // localStorage séparée de STORE_KEY, jamais mêlée aux sessions/favoris —
+  // un « Repartir de zéro » (reset:ok, qui n'efface que STORE_KEY) ne doit
+  // pas emporter une clé API sans que ce soit explicitement demandé, et
+  // l'export du fil (fil:export) ne doit jamais pouvoir y toucher.
+  var LLM_STORE_KEY = "macro2eos.llmConfig.v1";
+  function saveLlmConfig() {
+    try { localStorage.setItem(LLM_STORE_KEY, JSON.stringify(state.llmConfig)); } catch (e) {}
+  }
+  function loadLlmConfig() {
+    try {
+      var raw = localStorage.getItem(LLM_STORE_KEY); if (!raw) return;
+      var d = JSON.parse(raw);
+      if (!d || typeof d !== "object") return;
+      state.llmConfig.actif = d.actif === true;
+      state.llmConfig.apiKey = typeof d.apiKey === "string" ? d.apiKey : "";
+      state.llmConfig.model = typeof d.model === "string" && d.model ? d.model : "claude-sonnet-5";
+    } catch (e) {}
   }
 
   var toastTimer = null;
@@ -1144,6 +1169,35 @@
     return out;
   }
 
+  // Moteur flou (LLM, phase 2) : désactivé par défaut, clé personnelle de
+  // l'utilisateur uniquement (BYOK — voir Décisions tranchées du plan moteur
+  // flou). Volontairement AUCUN indicateur de « mode console / mode
+  // préparation » — l'app tente simplement l'appel à chaque phrase ambiguë
+  // et retombe sur le moteur déterministe seul en silence, y compris quand
+  // le téléphone est connecté au Wi-Fi de la console (donc sans Internet).
+  function screenReglagesMoteurFlou() {
+    var c = state.llmConfig;
+    var out = '<div class="group"><div class="label">Moteur flou (LLM, en préparation)</div>';
+    out += '<div class="row"><span class="k">Activé</span><span class="seg">' +
+      '<button class="' + (c.actif ? "on" : "") + '" data-action="llm:actif" data-val="on">Oui</button>' +
+      '<button class="' + (!c.actif ? "on" : "") + '" data-action="llm:actif" data-val="off">Non</button></span></div>';
+    out += '<div class="row" style="flex-direction:column; align-items:stretch; gap:6px;">' +
+      '<span class="k">Clé API (personnelle, jamais transmise ailleurs qu\'à api.anthropic.com)</span>' +
+      '<input type="password" id="llm-apikey" placeholder="sk-ant-…" value="' + esc(c.apiKey || "") + '" ' +
+      'style="background:var(--app-surface); border:1px solid var(--app-line); border-radius:9px; color:var(--app-ink); padding:9px 11px; font-family:var(--mono); font-size:12.5px;" /></div>';
+    out += '<div class="row"><span class="k">Modèle</span><span class="seg">' +
+      ["claude-sonnet-5", "claude-opus-5", "claude-haiku-4-5-20251001"].map(function (m) {
+        var lbl = m === "claude-sonnet-5" ? "Sonnet 5" : (m === "claude-opus-5" ? "Opus 5" : "Haiku 4.5");
+        return '<button class="' + (c.model === m ? "on" : "") + '" data-action="llm:model" data-val="' + m + '">' + lbl + "</button>";
+      }).join("") + "</span></div>";
+    out += '<p class="play-note">Utilisé uniquement en préparation, jamais au pupitre : dès que le ' +
+      "téléphone rejoint le Wi-Fi de la console, il perd sa connexion 4G/5G et l'appel échoue " +
+      'silencieusement — le moteur déterministe seul prend le relais sans rien signaler, comme ' +
+      "aujourd'hui sans moteur flou. Rien n'est jamais inventé : le LLM ne peut choisir que parmi " +
+      "des valeurs déjà connues du corpus.</p></div>";
+    return out;
+  }
+
   function screenReglages() {
     var out = '<div class="group"><div class="label">Console</div>' +
       '<div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>' +
@@ -1160,6 +1214,7 @@
       '<div class="row click" data-action="fil:export"><span class="k">Copier le fil (pour analyse)</span><span class="v">' + curThread().filter(function (x) { return x.kind === "exchange"; }).length + ' échange(s) · session en cours</span></div></div>';
     out += '<div class="group"><div class="label">Saisie</div>' +
       '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
+    out += screenReglagesMoteurFlou();
     out += '<div class="group"><div class="label">Prototype</div>';
     if (state.resetAsk) {
       out += '<div class="card card-danger"><strong>Tout remettre à zéro ?</strong><p>Le fil, les favoris et les onglets de test seront effacés.</p></div>' +
@@ -1261,6 +1316,47 @@
     }
     window.traduireReel(phrase, reponses).then(function (r) {
       applyRealResult(exchangeId, phrase, r, reponses);
+    }).catch(function (err) {
+      applyRealError(exchangeId, (err && err.message) || String(err));
+    });
+  }
+
+  // Moteur flou (phase 2) — point d'entrée du premier passage sur une
+  // nouvelle phrase (voir le plan moteur flou, § Flux). Le lexique
+  // déterministe tourne TOUJOURS en premier, en local : s'il comprend déjà
+  // la phrase ou ne reconnaît RIEN du tout, le LLM n'a rien à apporter (voir
+  // `Traducteur.interpreter_flou` — un `incompris` complet n'est pas rescapé
+  // dans cette tranche) et on s'arrête là, identique à `askEngine` seul.
+  //
+  // Le LLM n'est donc consulté QUE pour trancher une question déjà posée par
+  // le lexique — jamais pour deviner une intention depuis rien. Toute panne
+  // (pas activé, pas de clé, hors réseau — le cas normal une fois connecté
+  // au Wi-Fi de la console, timeout, JSON invalide, valeur hors vocabulaire)
+  // retombe SILENCIEUSEMENT sur le résultat déterministe déjà obtenu :
+  // aucun indicateur de mode, aucun message d'erreur — voir Décisions
+  // tranchées #3 du plan.
+  function askEngineFlou(exchangeId, phrase, reponses) {
+    if (typeof window.traduireReel !== "function") {
+      applyRealError(exchangeId, "Le moteur réel (app/engine.js) n'est pas chargé.");
+      return;
+    }
+    window.traduireReel(phrase, reponses).then(function (base) {
+      var rienAAppporter = base.statut !== "a_preciser" || !base.questions || !base.questions.length;
+      var flouIndisponible = !state.llmConfig.actif || !state.llmConfig.apiKey || typeof window.interpreterLlm !== "function";
+      if (rienAAppporter || flouIndisponible) {
+        applyRealResult(exchangeId, phrase, base, reponses);
+        return;
+      }
+      window.interpreterLlm(phrase, base.questions, {
+        apiKey: state.llmConfig.apiKey,
+        model: state.llmConfig.model,
+      }).then(function (sortieLlm) {
+        return window.interpreterFlouReel(phrase, sortieLlm, reponses);
+      }).then(function (r) {
+        applyRealResult(exchangeId, phrase, r, reponses);
+      }).catch(function () {
+        applyRealResult(exchangeId, phrase, base, reponses);
+      });
     }).catch(function (err) {
       applyRealError(exchangeId, (err && err.message) || String(err));
     });
@@ -1432,7 +1528,7 @@
         curThread().push({ id: eid, kind:"exchange", ask: raw, cmd: null,
           status:"thinking", tokens: [], time: nowTime() });
         renderAll();
-        askEngine(eid, raw, {});
+        askEngineFlou(eid, raw, {});
         break;
       }
 
@@ -1648,6 +1744,13 @@
 
       case "favmode": state.favMode = d.mode; renderAll(); break;
 
+      case "llm:actif":
+        state.llmConfig.actif = d.val === "on";
+        saveLlmConfig(); renderAll(); break;
+      case "llm:model":
+        state.llmConfig.model = d.val;
+        saveLlmConfig(); renderAll(); break;
+
       case "tabs:add": {
         var el3 = document.getElementById("new-tab");
         if (el3 && el3.value.trim()) { state.tabs.push(el3.value.trim()); renderAll(); }
@@ -1766,6 +1869,10 @@
       state.draft = ev.target.value;
       autoGrow(ev.target);
     }
+    if (ev.target && ev.target.id === "llm-apikey") {
+      state.llmConfig.apiKey = ev.target.value;
+      saveLlmConfig();
+    }
   });
   vp.addEventListener("keydown", function (ev) {
     if (ev.target && ev.target.id === "composer-input" && ev.key === "Enter" && !ev.shiftKey) {
@@ -1805,6 +1912,7 @@
   // état sauvegardé — plus de saut direct vers Conduite au retour, cohérent
   // avec le choix ChatGPT/Claude : on choisit ou reprend une session d'abord.
   load();
+  loadLlmConfig();
   renderAll();
 })();
 </script>
