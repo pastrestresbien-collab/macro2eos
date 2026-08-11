@@ -585,6 +585,35 @@ contre le vrai moteur avant commit, aucune n'attend de validation utilisateur bl
 cohérent avec le principe déjà établi que seules les zones réellement ambiguës doivent
 l'être.
 
+**Corrigé — 2026-08-11** : le bug `_plage`/`regler_intensite` documenté depuis le
+2026-08-09 (voir `_parquer`, v0.5 ci-dessus) — « circuit 4 à 50 % » échouait en
+`incompris` faute de niveau trouvé, `self._plage` lisant « 4 à 50 » comme une plage de
+circuits avant que `_niveau` ait la chance d'examiner le niveau. Corrigé avec la suite de
+tests complète en main, comme prévu : `_plage` refuse désormais un nombre immédiatement
+suivi d'un marqueur POSTFIXE de niveau (`MARQUEURS_NIVEAU_POSTFIXES` — seulement `%`/
+`pourcent`) comme borne haute de plage. Une première version plus large de ce correctif
+(excluant aussi « intensité »/« niveau ») cassait la forme déjà correcte « circuits 1 à 5
+intensité 50 » — rattrapée par le test de non-régression ajouté pour ce cas précis avant
+de resserrer le correctif au strict nécessaire.
+
+**Fait — v0.10 (2026-08-11)** : Contrôle partitionné, sélection et suppression d'une
+partition. Deux intentions (`selectionner_partition`, `supprimer_partition`, manuel §28,
+confiance A), les deux seuls actes documentés sans second numéro implicite à deviner —
+celui d'une partition déjà active, nécessaire pour l'idiome `+`/`-` (ajouter/retirer des
+channels à la partition courante) et pour l'assignation d'une partition à une cue list
+précise, tous deux laissés hors périmètre de cette tranche. Le modèle (Axe A) couvrait
+déjà le contrôle partitionné depuis v0.16 ; c'est la première tranche du traducteur (Axe
+B) à s'appuyer sur une famille d'actions déjà entièrement modélisée et testée côté
+générateur sans qu'aucun handler NL n'existe encore.
+
+Point de sécurité ajouté au passage, pas seulement au traducteur : le générateur ne
+vérifiait pas que la cible d'une suppression de partition n'était pas l'une des quatre
+partitions préprogrammées (0, 901, 902, 903), qui refusent `Delete Partition` (manuel §28,
+« Deleting Partitions », confiance A) — un avertissement sourcé existait dans
+`modele.yaml` mais n'était câblé nulle part côté rendu. Ajouté dans `generateur.py`
+(`_verifier_partition_preprogrammee`) avant même d'écrire le handler du traducteur, pour
+qu'aucun nouveau chemin NL ne puisse produire cette macro sans avertissement.
+
 ---
 
 ## Backlog résolu — détail complet

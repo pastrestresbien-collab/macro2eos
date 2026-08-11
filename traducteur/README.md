@@ -101,7 +101,7 @@ Le résultat, après réponse à la question de portée, est exactement la macro
 écrite à la main en session avant que ce module existe. Elle sert donc doublement de
 non-régression.
 
-## Portée actuelle (v0.9)
+## Portée actuelle (v0.10)
 
 | Intention | Exemple |
 |---|---|
@@ -124,6 +124,7 @@ non-régression.
 | effacer tous les filtres actifs | « efface les filtres » |
 | enregistrer / rappeler un snapshot | « enregistre le snapshot 1 », « rappelle le snapshot 5 » |
 | appliquer / retirer une courbe sur une cue | « applique la courbe 4 à la cue 5 », « retire la courbe de la cue 5 » |
+| sélectionner / supprimer une partition (contrôle partitionné) | « sélectionne la partition 902 », « supprime la partition 5 » |
 
 Neuf couleurs nommées, deux couleurs ambiguës déclarées comme telles, un nuancier (Lee),
 quatre cibles symboliques de cue (Out/Next/Last/Home).
@@ -214,10 +215,20 @@ nombre après « courbe », le nombre après « cue »), jamais par position : l
 place souvent la courbe avant la cue, l'inverse de ce qu'un extracteur positionnel
 attendrait — vérifié par test dans les deux ordres.
 
+**Contrôle partitionné : seulement sélectionner et supprimer une partition (v0.10).** Les
+deux seuls actes du manuel §28 sans second numéro implicite à deviner — celui d'une
+partition déjà active. L'idiome `+`/`-` (ajouter/retirer des channels à la partition
+*courante*, sans qu'aucun numéro de partition n'apparaisse dans la phrase elle-même) et
+l'assignation/retrait d'une partition sur une cue list précise (`Cue x/ Partition n`)
+restent hors périmètre — les deux demandent de désambiguïser une cible implicite que cette
+tranche ne tranche pas encore. Suppression d'une partition préprogrammée (0, 901, 902,
+903) : le traducteur traduit quand même — la console fait autorité sur le refus, pas le
+traducteur (`APP.md`) — mais le générateur porte l'avertissement sourcé (manuel §28,
+« Deleting Partitions », confiance A).
+
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
-magic sheets, show control, groupes (au-delà d'une sélection simple), contrôle
-partitionné — la majeure partie des 79 actions du modèle. Le lexique se remplit par
-tranches, comme le modèle l'a été.
+magic sheets, show control, groupes (au-delà d'une sélection simple) — la majeure partie
+des 79 actions du modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
 
 **Query : périmètre volontairement restreint, pas une couverture complète.** Seules les
 cibles Color Palette, Preset et Cue sont couvertes — les familles déjà modélisées ailleurs

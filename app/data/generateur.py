@@ -131,6 +131,16 @@ class Generateur:
             f"non observé (PLANNING #{backlog})"
         )
 
+    # Les quatre partitions préprogrammées (manuel §28, « Deleting
+    # Partitions ») refusent `Delete Partition` — confiance A, portée par
+    # `modele.yaml` (actions/supprimer_partition/avertissement), jamais
+    # dupliquée ici en texte libre.
+    _PARTITIONS_PREPROGRAMMEES = frozenset({0, 901, 902, 903})
+
+    def _verifier_partition_preprogrammee(self, cible: int, avert: list[str]) -> None:
+        if cible in self._PARTITIONS_PREPROGRAMMEES:
+            avert.append(self.modele["actions"]["supprimer_partition"]["avertissement"])
+
     # -- rendu : sélection --------------------------------------------------
     def _rendre_sous_groupes(self, blocs: list) -> str:
         """`( 1 Thru 4 ) ( 5 Thru 8 )` — chaque parenthèse comptera pour UN seul
@@ -553,6 +563,8 @@ class Generateur:
             return f"{mot} {act['cible' if t == 'marquer_vers_cue' else 'valeur']}"
 
         if t in ("selectionner_partition", "supprimer_partition"):
+            if t == "supprimer_partition":
+                self._verifier_partition_preprogrammee(act["cible"], avert)
             return f"{mot} {act['cible']}"
 
         if t in ("partition_ajouter", "partition_retirer"):

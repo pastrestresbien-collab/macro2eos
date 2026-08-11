@@ -716,6 +716,18 @@ CAS = [
         "avertissements": 0,
     },
     {
+        # Les quatre partitions préprogrammées (0, 901, 902, 903) refusent
+        # `Delete Partition` (manuel §28, « Deleting Partitions ») — le
+        # générateur produit quand même la commande (la console fait
+        # autorité sur le refus, pas le générateur), mais avertit.
+        "nom": "manuel §28 — suppression d'une partition préprogrammée refuse",
+        "ir": [
+            {"action": {"type": "supprimer_partition", "cible": 902}},
+        ],
+        "attendu": "Delete Partition 902 Enter",
+        "avertissements": 1,
+    },
+    {
         "nom": "manuel §28 — assigner une partition à une cue list",
         # [Cue] [n] [/] {Partition} [n] [Enter]
         "ir": [

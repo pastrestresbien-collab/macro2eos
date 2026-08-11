@@ -765,6 +765,41 @@ CAS = [
         "statut": "compris",
         "rendu": "Cue 5 Curve At Enter",
     },
+
+    # ------------------------------------------------- Contrôle partitionné
+    {
+        "nom": "sélectionner une partition préprogrammée",
+        "phrase": "sélectionne la partition 902",
+        "statut": "compris",
+        "rendu": "Partition 902 Enter",
+    },
+    {
+        "nom": "sélectionner une partition — autre verbe sourcé (utiliser)",
+        "phrase": "utilise la partition 5",
+        "statut": "compris",
+        "rendu": "Partition 5 Enter",
+    },
+    {
+        "nom": "sélectionner une partition sans numéro — refus assumé",
+        "phrase": "sélectionne la partition",
+        "statut": "incompris",
+    },
+    {
+        "nom": "supprimer une partition",
+        "phrase": "supprime la partition 5",
+        "statut": "compris",
+        "rendu": "Delete Partition 5 Enter",
+    },
+    {
+        # Le générateur porte l'avertissement (refuse sur les 4 partitions
+        # préprogrammées) — le traducteur ne le répète pas, mais la
+        # traduction doit rester `compris` (la console fait autorité sur le
+        # refus, pas le traducteur, voir APP.md).
+        "nom": "supprimer une partition préprogrammée — traduit quand même, le générateur avertit",
+        "phrase": "supprime la partition 902",
+        "statut": "compris",
+        "rendu": "Delete Partition 902 Enter",
+    },
 ]
 
 

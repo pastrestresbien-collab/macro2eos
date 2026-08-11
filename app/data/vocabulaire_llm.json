@@ -228,6 +228,20 @@
         "courbe",
         "cue"
       ]
+    },
+    "selectionner_partition": {
+      "description": "sélectionner une partition préprogrammée du contrôle partitionné",
+      "champs": [
+        "verbe",
+        "partition"
+      ]
+    },
+    "supprimer_partition": {
+      "description": "supprimer une partition préprogrammée",
+      "champs": [
+        "verbe",
+        "partition"
+      ]
     }
   }
 }

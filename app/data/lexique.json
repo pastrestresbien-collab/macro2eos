@@ -890,6 +890,45 @@
       },
       "exemple_nl": "retire la courbe de la cue 5",
       "origine": "manuel §22 : « [Cue] [5] {Attributes} {Curve} [At] [Enter] », confiance A. Idiome `Curve At` sans valeur — retirer, pas régler à zéro.\n"
+    },
+    "selectionner_partition": {
+      "description": "sélectionner une partition préprogrammée du contrôle partitionné",
+      "declencheurs": {
+        "verbe": [
+          "selectionne",
+          "selectionner",
+          "utilise",
+          "utiliser",
+          "active",
+          "activer",
+          "choisis",
+          "choisir"
+        ],
+        "partition": [
+          "partition",
+          "partitions"
+        ]
+      },
+      "exemple_nl": "sélectionne la partition 902",
+      "origine": "manuel §28 Partitioned Control, confiance A (`grammar/modele.yaml`, section `actions`/`selectionner_partition`) : « {Partition} [902] [Enter] ». Rend le résultat de la sélection courante = le contenu de cette partition (remplacement, pas fusion — voir `note` ci-dessous).\n",
+      "note": "Cette tranche ne couvre que la sélection et la suppression d'une partition, les deux seuls actes du manuel sans second numéro implicite (celui d'une partition déjà active) à deviner. L'idiome `+`/`-` (ajouter/retirer des channels à la partition courante, `partition_ajouter`/`partition_retirer` dans le modèle) et l'assignation d'une partition à une cue list précise (`partition_cue_list`) restent hors périmètre — voir traducteur/README.md.\n"
+    },
+    "supprimer_partition": {
+      "description": "supprimer une partition préprogrammée",
+      "declencheurs": {
+        "verbe": [
+          "supprimer",
+          "supprime",
+          "effacer",
+          "efface"
+        ],
+        "partition": [
+          "partition",
+          "partitions"
+        ]
+      },
+      "exemple_nl": "supprime la partition 5",
+      "origine": "manuel §28, confiance A (`grammar/modele.yaml`, section `actions`/`supprimer_partition`) : « [Delete] {Partition} [5] [Enter] [Enter] » (double confirmation portée par le générateur, pas répétée ici). Refuse sur les quatre partitions préprogrammées (0, 901, 902, 903) — avertissement porté par le générateur (`_verifier_partition_preprogrammee`), pas répété ici.\n"
     }
   },
   "questions": {

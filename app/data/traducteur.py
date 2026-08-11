@@ -440,6 +440,8 @@ class Traducteur:
             "rappeler_snapshot": self._rappeler_snapshot,
             "appliquer_courbe": self._appliquer_courbe,
             "retirer_courbe": self._retirer_courbe,
+            "selectionner_partition": self._selectionner_partition,
+            "supprimer_partition": self._supprimer_partition,
         }[intention]
         trad = handler(toks, reponses)
         trad.intention = intention
@@ -1252,6 +1254,39 @@ class Traducteur:
                "action": {"type": "retirer_courbe"}}]
         return Traduction(statut="compris", ir=ir,
                           non_reconnus=self._non_reconnus(toks, pris))
+
+    # -- intention : contrôle partitionné, sélectionner/supprimer une partition
+    # Volontairement limité à `selectionner_partition`/`supprimer_partition` :
+    # les deux seuls actes du manuel §28 sans second numéro implicite (celui
+    # d'une partition déjà active) à deviner. `partition_ajouter`/
+    # `partition_retirer` (l'idiome `+`/`-`) et `partition_cue_list`
+    # (assigner/retirer une partition d'une cue list précise) restent hors
+    # périmètre de cette tranche — voir traducteur/README.md. Les deux
+    # intentions partagent la même extraction (un numéro après « partition »),
+    # seul le type d'action change — factorisé pour ne jamais diverger.
+    def _partition(self, toks: list[str], type_action: str) -> Traduction:
+        pris: set[int] = set()
+        i_partition = self._indice_mot(toks, pris, {"partition", "partitions"})
+        if i_partition is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune partition désignée — le mot « partition » est requis."])
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_partition:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de partition trouvé après « partition »."])
+        ir = [{"action": {"type": type_action, "cible": cible}}]
+        return Traduction(statut="compris", ir=ir,
+                          non_reconnus=self._non_reconnus(toks, pris))
+
+    def _selectionner_partition(self, toks: list[str], reponses: dict) -> Traduction:
+        return self._partition(toks, "selectionner_partition")
+
+    def _supprimer_partition(self, toks: list[str], reponses: dict) -> Traduction:
+        return self._partition(toks, "supprimer_partition")
 
     # -- petits extracteurs partagés ---------------------------------------
     def _indice_mot(self, toks: list[str], pris: set[int],
