@@ -578,6 +578,10 @@
     // l'utilisateur uniquement (voir app/llm_bridge.js et le plan moteur
     // flou). Stocké séparément de `sessions`/`favoris` (voir `saveLlmConfig`).
     llmConfig: { actif: false, apiKey: "", model: "claude-sonnet-5" },
+    // Journal de renforcement (phase 3) — file locale des trous de vocabulaire
+    // rencontrés par le moteur flou, jamais promus automatiquement (voir
+    // traducteur/observations_llm.yaml et `pushObservationLlm`).
+    obsLlmQueue: [],
     activeSessionId: null, // fixé juste après la définition de `state`, une fois `sessions` prêt
     sessions: [
       {
@@ -647,6 +651,65 @@
       state.llmConfig.apiKey = typeof d.apiKey === "string" ? d.apiKey : "";
       state.llmConfig.model = typeof d.model === "string" && d.model ? d.model : "claude-sonnet-5";
     } catch (e) {}
+  }
+
+  // Journal de renforcement (phase 3, voir traducteur/observations_llm.yaml)
+  // — file locale elle aussi séparée, pour la même raison : ni le reset ni
+  // l'export du fil ne doivent la toucher. Bornée à 200 entrées, pas pour une
+  // raison de format mais parce qu'une file qui grossit sans jamais être
+  // exportée/vidée signale qu'elle a cessé d'être utile telle quelle.
+  var OBS_LLM_STORE_KEY = "macro2eos.observationsLlm.v1";
+  var OBS_LLM_MAX = 200;
+  function saveObsLlmQueue() {
+    try { localStorage.setItem(OBS_LLM_STORE_KEY, JSON.stringify(state.obsLlmQueue)); } catch (e) {}
+  }
+  function loadObsLlmQueue() {
+    try {
+      var raw = localStorage.getItem(OBS_LLM_STORE_KEY); if (!raw) return;
+      var d = JSON.parse(raw);
+      if (Array.isArray(d)) state.obsLlmQueue = d;
+    } catch (e) {}
+  }
+  // N'enregistre jamais rien si le moteur flou n'a pas été explicitement
+  // activé (state.llmConfig.actif) — pas de collecte en arrière-plan pour un
+  // usage qui n'a jamais consenti à la fonctionnalité elle-même.
+  function pushObservationLlm(type, phrase, sortieLlmBrute, motOuExpression) {
+    if (!state.llmConfig.actif) return;
+    state.obsLlmQueue.push({
+      type: type,
+      date: new Date().toISOString().slice(0, 10),
+      phrase: phrase,
+      sortie_llm_brute: sortieLlmBrute,
+      mot_ou_expression: motOuExpression,
+      diagnostic: "",
+      promu: "non",
+      lexique_entree: null,
+    });
+    if (state.obsLlmQueue.length > OBS_LLM_MAX) {
+      state.obsLlmQueue = state.obsLlmQueue.slice(state.obsLlmQueue.length - OBS_LLM_MAX);
+    }
+    saveObsLlmQueue();
+  }
+
+  // Sérialise la file en YAML prêt à coller sous `observations:` dans
+  // traducteur/observations_llm.yaml — jamais un format à part : le champ
+  // `diagnostic` reste volontairement vide, à remplir en revue humaine, et
+  // `promu` reste "non" — jamais mis à "oui" depuis l'app (voir le fichier).
+  function serialiserObservationsLlm() {
+    if (!state.obsLlmQueue.length) return "(aucune observation en attente)";
+    var lignes = [];
+    state.obsLlmQueue.forEach(function (o) {
+      lignes.push('  - type: "' + o.type + '"');
+      lignes.push("    date: " + o.date);
+      lignes.push('    phrase: "' + String(o.phrase || "").replace(/"/g, '\\"') + '"');
+      lignes.push("    sortie_llm_brute: " + (o.sortie_llm_brute == null ? "null" : JSON.stringify(o.sortie_llm_brute)));
+      lignes.push('    mot_ou_expression: "' + String(o.mot_ou_expression || "").replace(/"/g, '\\"') + '"');
+      lignes.push('    diagnostic: ""');
+      lignes.push('    promu: "non"');
+      lignes.push("    lexique_entree: null");
+      lignes.push("");
+    });
+    return lignes.join("\n").trim();
   }
 
   var toastTimer = null;
@@ -1194,7 +1257,12 @@
       "téléphone rejoint le Wi-Fi de la console, il perd sa connexion 4G/5G et l'appel échoue " +
       'silencieusement — le moteur déterministe seul prend le relais sans rien signaler, comme ' +
       "aujourd'hui sans moteur flou. Rien n'est jamais inventé : le LLM ne peut choisir que parmi " +
-      "des valeurs déjà connues du corpus.</p></div>";
+      "des valeurs déjà connues du corpus.</p>";
+    out += '<div class="row click" data-action="obsllm:export"><span class="k">Exporter les observations</span>' +
+      '<span class="v">' + state.obsLlmQueue.length + ' en attente</span></div>';
+    out += '<p class="play-note">Chaque fois que le moteur flou bute sur un mot ou une intention qu\'il ne ' +
+      "connaît pas, un constat s'accumule ici, sans jamais rien changer au corpus tout seul — voir " +
+      'traducteur/observations_llm.yaml. À exporter et coller à la main après revue.</p></div>';
     return out;
   }
 
@@ -1274,6 +1342,18 @@
         '<div class="actions"><button class="btn btn-primary" data-action="fil:copier">Copier dans le presse-papiers</button>' +
         '<button class="btn btn-ghost" data-action="fil:fermer">Fermer</button></div></div></div>';
     }
+    if (state.overlay && state.overlay.kind === "export-obs") {
+      return '<div class="overlay"><div class="export-fil">' +
+        '<h3>Copier les observations</h3>' +
+        '<p>Prêt à coller sous <code style="font-family:var(--mono)">observations:</code> dans ' +
+        '<code style="font-family:var(--mono)">traducteur/observations_llm.yaml</code>, après revue — rien ' +
+        "n'est promu automatiquement, `promu` reste \"non\" tant qu'un humain ne l'a pas changé à la main. " +
+        'Rien ne quitte cet appareil tant que tu ne colles pas toi-même.</p>' +
+        '<textarea id="export-obs-text" readonly>' + esc(state.overlay.text) + '</textarea>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="obsllm:copier">Copier dans le presse-papiers</button>' +
+        '<button class="btn btn-danger" data-action="obsllm:vider">Vider la file</button>' +
+        '<button class="btn btn-ghost" data-action="obsllm:fermer">Fermer</button></div></div></div>';
+    }
     return "";
   }
 
@@ -1343,6 +1423,18 @@
     window.traduireReel(phrase, reponses).then(function (base) {
       var rienAAppporter = base.statut !== "a_preciser" || !base.questions || !base.questions.length;
       var flouIndisponible = !state.llmConfig.actif || !state.llmConfig.apiKey || typeof window.interpreterLlm !== "function";
+
+      // Journal de renforcement (phase 3) : un `incompris` complet est un
+      // vrai trou de vocabulaire/intention, qu'on n'a pas les moyens de
+      // rescaper dans cette tranche (voir `Traducteur.interpreter_flou`),
+      // mais qu'on garde comme signal plutôt que de le jeter — voir
+      // `traducteur/observations_llm.yaml`. `pushObservationLlm` n'écrit
+      // rien tant que le moteur flou n'est pas explicitement activé.
+      if (base.statut === "incompris") {
+        pushObservationLlm("intention_manquee", phrase, null,
+          (base.non_reconnus && base.non_reconnus.length) ? base.non_reconnus.join(" ") : phrase);
+      }
+
       if (rienAAppporter || flouIndisponible) {
         applyRealResult(exchangeId, phrase, base, reponses);
         return;
@@ -1351,10 +1443,16 @@
         apiKey: state.llmConfig.apiKey,
         model: state.llmConfig.model,
       }).then(function (sortieLlm) {
+        (sortieLlm.mots_hors_lexique || []).forEach(function (mot) {
+          pushObservationLlm("vocabulaire_manquant", phrase, sortieLlm, mot);
+        });
         return window.interpreterFlouReel(phrase, sortieLlm, reponses);
       }).then(function (r) {
         applyRealResult(exchangeId, phrase, r, reponses);
-      }).catch(function () {
+      }).catch(function (err) {
+        if (err && err.observation) {
+          pushObservationLlm(err.observation.type, phrase, err.observation.sortieLlmBrute, err.observation.motOuExpression);
+        }
         applyRealResult(exchangeId, phrase, base, reponses);
       });
     }).catch(function (err) {
@@ -1795,6 +1893,39 @@
       }
       case "fil:fermer": state.overlay = null; renderAll(); break;
 
+      // ---- journal de renforcement du moteur flou (phase 3) ----
+      case "obsllm:export":
+        state.overlay = { kind: "export-obs", text: serialiserObservationsLlm() };
+        renderAll();
+        setTimeout(function () {
+          var taObs = document.getElementById("export-obs-text");
+          if (taObs) { taObs.focus(); taObs.select(); }
+        }, 30);
+        break;
+      case "obsllm:copier": {
+        var taObs2 = document.getElementById("export-obs-text");
+        var texteObs = taObs2 ? taObs2.value : (state.overlay && state.overlay.text) || "";
+        if (taObs2) { taObs2.focus(); taObs2.select(); }
+        var okCopieObs = false;
+        try { okCopieObs = document.execCommand && document.execCommand("copy"); } catch (err) {}
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texteObs).then(
+            function () { showToast("Observations copiées."); },
+            function () { showToast(okCopieObs ? "Observations copiées." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C."); }
+          );
+        } else {
+          showToast(okCopieObs ? "Observations copiées." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C.");
+        }
+        break;
+      }
+      case "obsllm:vider":
+        state.obsLlmQueue = [];
+        saveObsLlmQueue();
+        state.overlay = null;
+        showToast("File d'observations vidée.");
+        renderAll(); break;
+      case "obsllm:fermer": state.overlay = null; renderAll(); break;
+
       // ---- sessions ----
       case "session:new": {
         var newSid = uid++;
@@ -1913,6 +2044,7 @@
   // avec le choix ChatGPT/Claude : on choisit ou reprend une session d'abord.
   load();
   loadLlmConfig();
+  loadObsLlmQueue();
   renderAll();
 })();
 </script>

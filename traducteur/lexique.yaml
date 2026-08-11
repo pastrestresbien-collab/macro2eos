@@ -10,7 +10,13 @@
 # Celle-ci mesure la fiabilité d'une *commande console*. Ici on mesure autre chose :
 # « ce mot français désigne-t-il bien ce concept ? ». Chaque entrée porte donc soit
 # une `source` (d'où vient le rattachement), soit un `choix` (décision assumée du
-# projet, faute de correspondance évidente).
+# projet, faute de correspondance évidente), soit — depuis le moteur flou —
+# une `source_llm` : le rattachement vient d'une observation LLM promue après
+# revue humaine (voir traducteur/observations_llm.yaml), jamais automatiquement.
+# `source_llm` reste distincte de `source`/`choix` : elle documente l'origine
+# honnêtement (« un humain a validé une suggestion du LLM »), sans jamais
+# prétendre au S/A/B/C/D du reste du projet, qui mesure autre chose (la
+# fiabilité d'une commande console, pas si un mot désigne bien un concept).
 
 meta:
   version: "0.2"

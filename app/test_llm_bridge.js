@@ -60,17 +60,19 @@ async function main() {
 
   controler("validation — candidat unique valide",
     window._llmBridgeInterne.validerReponses({ bump_direction: "haut" }, questions),
-    { bump_direction: "haut" });
+    { ok: true, reponses: { bump_direction: "haut" } });
 
-  controler("validation — hors vocabulaire de la question -> rejet entier (null)",
-    window._llmBridgeInterne.validerReponses({ bump_direction: "gauche" }, questions), null);
+  controler("validation — hors vocabulaire de la question -> rejet détaillé",
+    window._llmBridgeInterne.validerReponses({ bump_direction: "gauche" }, questions),
+    { ok: false, questionId: "bump_direction", candidat: "gauche" });
 
-  controler("validation — question jamais posée par le lexique -> rejet entier (null)",
-    window._llmBridgeInterne.validerReponses({ inconnue: "x" }, questions), null);
+  controler("validation — question jamais posée par le lexique -> rejet détaillé",
+    window._llmBridgeInterne.validerReponses({ inconnue: "x" }, questions),
+    { ok: false, questionId: "inconnue", candidat: "x" });
 
   controler("validation — plusieurs candidats valides, tous conservés",
     window._llmBridgeInterne.validerReponses({ bump_direction: ["haut", "bas"] }, questions),
-    { bump_direction: ["haut", "bas"] });
+    { ok: true, reponses: { bump_direction: ["haut", "bas"] } });
 
   const sortie = await window.interpreterLlm("bump le sub 5 vers le haut", questions, {
     apiKey: "sk-test",
@@ -80,9 +82,22 @@ async function main() {
       });
     },
   });
-  controler("interpreterLlm — bout en bout, réponse valide", sortie, { reponses: { bump_direction: "haut" } });
+  controler("interpreterLlm — bout en bout, réponse valide", sortie,
+    { reponses: { bump_direction: "haut" }, mots_hors_lexique: [] });
 
-  let rejeteeHorsVocab = false;
+  const sortieAvecTrou = await window.interpreterLlm("bump le sub 5 en douceur cuivrée", questions, {
+    apiKey: "sk-test",
+    appelReseau: function () {
+      return Promise.resolve({
+        content: [{ type: "tool_use", name: "resoudre_ambiguites",
+          input: { reponses: { bump_direction: "haut" }, mots_hors_lexique: ["cuivrée"] } }],
+      });
+    },
+  });
+  controler("interpreterLlm — signale un mot hors vocabulaire sans jamais l'inventer comme réponse",
+    sortieAvecTrou, { reponses: { bump_direction: "haut" }, mots_hors_lexique: ["cuivrée"] });
+
+  let rejeteeHorsVocab = false, observationRejet = null;
   try {
     await window.interpreterLlm("bump le sub 5", questions, {
       apiKey: "sk-test",
@@ -92,8 +107,10 @@ async function main() {
         });
       },
     });
-  } catch (e) { rejeteeHorsVocab = true; }
+  } catch (e) { rejeteeHorsVocab = true; observationRejet = e.observation; }
   controler("interpreterLlm — valeur hors vocabulaire -> rejeté (repli attendu côté appelant)", rejeteeHorsVocab, true);
+  controler("interpreterLlm — rejet hors vocabulaire porte une observation exploitable (journal de renforcement)",
+    observationRejet && observationRejet.type, "candidat_rejete");
 
   let appele = false, rejeteeSansCle = false;
   try {
@@ -114,7 +131,7 @@ async function main() {
   controler("interpreterLlm — panne réseau -> rejet propagé (repli côté appelant, cas normal en régie)",
     reseauEnPanne, true);
 
-  const total = 9;
+  const total = 11;
   if (echecs) {
     console.log("\n" + echecs + " cas en échec sur " + total + ".");
     process.exitCode = 1;

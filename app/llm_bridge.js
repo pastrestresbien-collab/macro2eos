@@ -70,7 +70,11 @@
       "propose plusieurs clés plutôt que d'en choisir une seule au hasard — un",
       "humain tranchera. Si aucune option ne correspond, n'inclus simplement pas",
       "cette question dans ta réponse : ne force jamais une clé qui ne convient",
-      "pas.",
+      "pas. Si un mot précis de la phrase semblait pertinent pour répondre à une",
+      "question mais qu'aucune option ne le couvre (ex. une couleur ou un style",
+      "que tu ne reconnais pas parmi les clés proposées), liste-le dans",
+      "`mots_hors_lexique` — ça aide à repérer les trous du vocabulaire, ce",
+      "n'est jamais une clé inventée.",
     ].join(" ");
   }
 
@@ -108,6 +112,11 @@
           properties: proprietes,
           additionalProperties: false,
         },
+        mots_hors_lexique: {
+          type: "array",
+          items: { type: "string" },
+          description: "Mots de la phrase pertinents pour une question mais absents des options fournies — jamais une clé inventée, un simple signal de trou de vocabulaire.",
+        },
       },
       required: ["reponses"],
     };
@@ -117,6 +126,11 @@
   // chaque question (jamais contre le vocabulaire général) — c'est la seule
   // source de vérité sur ce qui est acceptable, exactement celle que
   // `Traducteur.interpreter_flou` réutilisera côté Python.
+  //
+  // Retourne soit `{ ok: true, reponses }`, soit `{ ok: false, questionId,
+  // candidat }` — le détail du rejet sert à construire une observation pour
+  // le journal de renforcement (voir `traducteur/observations_llm.yaml`),
+  // jamais à assouplir la validation elle-même.
   function validerReponses(reponsesLlm, questions) {
     var parId = {};
     questions.forEach(function (q) {
@@ -127,16 +141,18 @@
     for (var id in reponsesLlm) {
       if (!Object.prototype.hasOwnProperty.call(reponsesLlm, id)) continue;
       var clesValides = parId[id];
-      if (!clesValides) return null; // question inconnue — jamais vue, réponse suspecte
+      if (!clesValides) return { ok: false, questionId: id, candidat: reponsesLlm[id] }; // question inconnue — jamais vue, réponse suspecte
 
       var propose = reponsesLlm[id];
       var candidats = Array.isArray(propose) ? propose : [propose];
       for (var i = 0; i < candidats.length; i++) {
-        if (clesValides.indexOf(candidats[i]) === -1) return null; // hors vocabulaire de CETTE question
+        if (clesValides.indexOf(candidats[i]) === -1) {
+          return { ok: false, questionId: id, candidat: candidats[i] }; // hors vocabulaire de CETTE question
+        }
       }
       out[id] = propose;
     }
-    return out;
+    return { ok: true, reponses: out };
   }
 
   async function appelReseauParDefaut(requete, apiKey, timeoutMs) {
@@ -209,11 +225,25 @@
       throw new Error("réponse LLM sans sortie structurée exploitable");
     }
 
-    var reponsesValidees = validerReponses(blocOutil.input.reponses, questions);
-    if (!reponsesValidees) {
-      throw new Error("valeur hors vocabulaire dans la réponse LLM");
+    var validation = validerReponses(blocOutil.input.reponses, questions);
+    if (!validation.ok) {
+      var erreur = new Error("valeur hors vocabulaire dans la réponse LLM : " + JSON.stringify(validation.candidat));
+      // Détail structuré pour le journal de renforcement (§ Réglages →
+      // « Exporter les observations ») — l'appelant peut l'ignorer et se
+      // contenter du repli silencieux habituel, `catch (e) {}` reste valide.
+      erreur.observation = {
+        type: "candidat_rejete",
+        sortieLlmBrute: blocOutil.input,
+        motOuExpression: String(validation.candidat),
+      };
+      throw erreur;
     }
-    return { reponses: reponsesValidees };
+
+    var motsHorsLexique = Array.isArray(blocOutil.input.mots_hors_lexique)
+      ? blocOutil.input.mots_hors_lexique.filter(function (m) { return typeof m === "string" && m; })
+      : [];
+
+    return { reponses: validation.reponses, mots_hors_lexique: motsHorsLexique };
   };
 
   // Exposé pour les tests uniquement (construction de requête isolée du réseau).
