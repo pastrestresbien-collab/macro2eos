@@ -137,16 +137,21 @@ restreinte — voir `traducteur/README.md` pour le détail exact des limites ass
 Query n'est couvert que pour trois cibles (Color Palette, Preset, Cue) et une seule
 condition à la fois. Le lexique se remplira par tranches, comme le modèle l'a été.
 
-**Bug connu, non corrigé (trouvé le 2026-08-09 en construisant `parquer`)** :
-`_regler_intensite` échoue silencieusement (`incompris`) sur une phrase à un seul circuit
-suivie d'un niveau avec un seul « à » — « circuit 4 à 50 % » — parce que `_plage` la lit
-comme la plage de circuits 4 à 50 avant que le niveau ne soit examiné. Fonctionne
-seulement quand la phrase contient deux « à » (« circuits 1 à 5 à 50 % ») ou un marqueur
-sans « à » (« circuits 1 à 5 intensité 50 »). `_parquer` contourne le problème (voir
-ci-dessus, et `PLANNING_HISTORIQUE.md` § Axe B v0.5) en se limitant à un seul circuit sans
-jamais passer par `_plage` ; `regler_intensite` reste affecté. Corriger `_plage` elle-même
-toucherait tous les handlers qui s'en servent — à faire avec la suite de tests complète
-sous la main, pas en même temps qu'une autre tranche.
+**Bug corrigé (2026-08-11, trouvé le 2026-08-09 en construisant `parquer`)** :
+`_regler_intensite` échouait silencieusement (`incompris`) sur une phrase à un seul
+circuit suivie d'un niveau avec un seul « à » — « circuit 4 à 50 % » — parce que `_plage`
+la lisait comme la plage de circuits 4 à 50 avant que le niveau ne soit examiné.
+Fonctionnait déjà quand la phrase contenait deux « à » (« circuits 1 à 5 à 50 % ») ou un
+marqueur sans « à » (« circuits 1 à 5 intensité 50 »). Corrigé directement dans `_plage`,
+avec la suite de tests complète en main comme prévu : un nombre immédiatement suivi d'un
+marqueur *postfixe* de niveau (`MARQUEURS_NIVEAU_POSTFIXES` — seulement `%`/`pourcent`,
+« intensité »/« niveau » en sont délibérément exclus car eux s'emploient aussi en préfixe
+d'un niveau qui suit) n'est plus jamais lu comme la borne haute d'une plage. Trois cas de
+non-régression ajoutés à `test_traducteur.py` (le cas cassé, sa variante sous 10 % pour le
+zéro de tête, et la forme « intensité » déjà correcte, pour vérifier qu'elle ne casse pas).
+`_parquer` continue de bypasser `_plage` entièrement pour sa propre raison (voir
+ci-dessus, et `PLANNING_HISTORIQUE.md` § Axe B v0.5) — inchangé, toujours limité à un seul
+circuit/groupe.
 
 **Moteur flou (2026-08-11) : un LLM en renfort, jamais en remplacement — phases 1 à 4
 terminées.** Le traducteur ci-dessus reste seul à décider ce qui est ambigu ; un LLM

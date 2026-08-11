@@ -302,6 +302,35 @@ CAS = [
         "phrase": "circuits 1 à 5 à 50",
         "statut": "incompris",
     },
+    {
+        # Bug documenté dans PLANNING.md (trouvé le 2026-08-09 en construisant
+        # `_parquer`) : avec un seul objet et un seul « à », `_plage` lisait
+        # « 4 à 50 » comme la plage de circuits 4 à 50, laissant `_niveau` sans
+        # rien à trouver — `incompris` silencieux. Corrigé dans `_plage` :
+        # un nombre suivi immédiatement d'un marqueur de niveau (`%` ici)
+        # n'est plus jamais lu comme la borne haute d'une plage.
+        "nom": "intensité sur un seul circuit — un seul « à », plus d'ambiguïté (bug _plage corrigé)",
+        "phrase": "circuit 4 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 4 At 50 Enter",
+    },
+    {
+        # Même correctif, avec le zéro de tête (résolu ex-#29) en plus —
+        # les deux pièges ne doivent pas interagir mal l'un avec l'autre.
+        "nom": "intensité sur un seul circuit, sous 10 % — zéro de tête conservé",
+        "phrase": "circuit 4 à 5 %",
+        "statut": "compris",
+        "rendu": "Chan 4 At 05 Enter",
+    },
+    {
+        # Forme déjà valide avant le correctif (« intensité » remplace le
+        # second « à ») — non-régression : doit continuer à marcher à
+        # l'identique une fois `_plage` modifiée.
+        "nom": "intensité sur une plage — marqueur « intensité » au lieu d'un second « à »",
+        "phrase": "circuits 1 à 5 intensité 50",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
 
     # ------------------------------------------ questions plutôt que devinettes
     {

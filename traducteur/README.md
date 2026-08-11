@@ -167,12 +167,22 @@ Le générateur, pas le traducteur, porte l'avertissement sur AutoMark vs marque
 **Park : un seul circuit ou groupe, jamais une plage — restriction volontaire, pas un
 oubli.** Le manuel documente une forme bascule (`<chan> At Park Enter`, dépend d'un état
 console jamais généré ici) et une forme absolue déterministe (`<chan> At <n> Park Enter`),
-seule couverte. Se limiter à un seul circuit élimine à la racine une ambiguïté réelle :
-« circuit 4 à 50 % » ne contient qu'un seul « à », qui sert autant de séparateur de plage
-que de préposition introduisant le niveau — sans un second « à » pour trancher (le cas que
-`regler_intensite` sait résoudre), `self._plage` lirait « 4 à 50 » comme une plage de
-circuits. L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse restent hors
-périmètre.
+seule couverte. Se limiter à un seul circuit reste justifié même après la correction de
+l'ambiguïté de `self._plage` (2026-08-11, voir plus bas et `PLANNING.md`) : le seul exemple
+sourcé de Park porte sur un circuit unique (`grammar/modele.yaml`, section `park`), donc
+rien ne confirme la forme plage. `_parquer` continue par prudence de contourner
+`self._selection_de`/`self._plage` entièrement plutôt que de s'appuyer sur la correction.
+L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse restent hors périmètre.
+
+**`self._plage` : un nombre suivi d'un `%`/`pourcent` n'est plus jamais lu comme la borne
+haute d'une plage (corrigé le 2026-08-11).** « circuit 4 à 50 % » ne contenait qu'un seul
+« à », qui servait autant de séparateur de plage que de préposition introduisant le
+niveau — `self._plage` lisait « 4 à 50 » comme une plage de circuits, laissant
+`regler_intensite` échouer en `incompris` faute de niveau trouvé. Un nombre immédiatement
+suivi de `%`/`pourcent` n'est désormais plus jamais lu comme une borne de plage — voir
+`MARQUEURS_NIVEAU_POSTFIXES` (`traducteur/traducteur.py`) pour le détail, dont
+l'exclusion volontaire de « intensité »/« niveau » (ces deux mots s'emploient aussi en
+préfixe d'un niveau qui suit, forme déjà correcte à ne pas casser).
 
 **Assert : une cue, un circuit ou un groupe — jamais un submaster, jamais une cue list
 explicite.** `Sub` n'existe pas dans `self._objets` (même garde-fou que pour

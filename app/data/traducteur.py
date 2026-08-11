@@ -140,6 +140,22 @@ def distance(a: str, b: str) -> int:
     return precedente[-1]
 
 
+# Marqueurs qui introduisent un niveau (`_niveau`).
+MARQUEURS_NIVEAU = ("%", "pourcent", "intensite", "niveau")
+
+# Sous-ensemble de `MARQUEURS_NIVEAU` qui ne s'emploie qu'en POSTFIXE en
+# français naturel — la valeur est toujours le nombre qui les précède
+# immédiatement (« 50 % », « 50 pourcent »), jamais l'inverse. `_plage` s'en
+# sert pour éviter de lire ce nombre comme la borne haute d'une plage (voir
+# `_plage`). « intensité »/« niveau » en sont volontairement exclus : ces deux
+# mots s'emploient aussi, et même surtout, en PRÉFIXE d'un niveau qui suit
+# (« intensité 50 » — la forme déjà déclarée sourcée pour lever l'ambiguïté
+# du second « à », voir `_regler_intensite`) ; le nombre qui les précède dans
+# ce cas est un endpoint de plage légitime, pas la valeur d'un niveau, et les
+# traiter comme `%`/`pourcent` casserait cette forme déjà correcte.
+MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
+
+
 # --------------------------------------------------------------------------
 class Traducteur:
     def __init__(self, lex: dict | None = None, generateur: object | None = None) -> None:
@@ -221,11 +237,27 @@ class Traducteur:
                 if i not in pris and t.isdigit()]
 
     def _plage(self, toks: list[str], pris: set[int]) -> tuple[int, int] | None:
-        """`10 a 20`, `10 thru 20`, `10-20` → (10, 20). Marque les jetons pris."""
+        """`10 a 20`, `10 thru 20`, `10-20` → (10, 20). Marque les jetons pris.
+
+        Un nombre immédiatement suivi d'un marqueur POSTFIXE de niveau
+        (`MARQUEURS_NIVEAU_POSTFIXES` — `%`, `pourcent`) n'est jamais lu comme
+        la borne haute d'une plage : c'est la valeur d'un niveau, et le mot de
+        plage juste avant (« à », le plus souvent) joue alors le rôle d'« à
+        quel niveau », pas celui de séparateur de plage. Sans cette exclusion,
+        « circuit 4 à 50 % » (un seul « à » dans la phrase) se lisait comme la
+        plage 4 à 50, laissant `_niveau` sans rien à trouver — bug trouvé le
+        2026-08-09 en construisant `_parquer`, corrigé ici avec la suite de
+        tests complète en main (voir PLANNING.md). Fonctionnait déjà quand la
+        phrase porte DEUX « à » (« circuits 1 à 5 à 50 % ») : le second « à »
+        n'est jamais suivi d'un marqueur immédiatement après sa borne haute,
+        donc ce cas n'est pas affecté par cette exclusion — et « intensité »/
+        « niveau » en sont délibérément exclus, voir `MARQUEURS_NIVEAU_POSTFIXES`."""
         for i in range(len(toks) - 2):
             if i in pris or i + 2 in pris:
                 continue
             if toks[i].isdigit() and toks[i + 1] in self._mots_plage and toks[i + 2].isdigit():
+                if i + 3 < len(toks) and toks[i + 3] in MARQUEURS_NIVEAU_POSTFIXES:
+                    continue
                 pris.update({i, i + 1, i + 2})
                 return int(toks[i]), int(toks[i + 2])
         return None
@@ -686,7 +718,7 @@ class Traducteur:
     def _niveau(self, toks: list[str], pris: set[int]) -> dict | None:
         """`50 %` → {valeur: 50}. `10 a 50 %` → dégradé {de: 10, a: 50}."""
         for i, tok in enumerate(toks):
-            if tok not in ("%", "pourcent", "intensite", "niveau"):
+            if tok not in MARQUEURS_NIVEAU:
                 continue
             # dégradé : `10 a 50 %`
             if i >= 3 and toks[i - 1].isdigit() and toks[i - 2] in self._mots_plage \
