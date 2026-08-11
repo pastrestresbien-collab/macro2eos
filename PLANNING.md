@@ -148,7 +148,7 @@ jamais passer par `_plage` ; `regler_intensite` reste affecté. Corriger `_plage
 toucherait tous les handlers qui s'en servent — à faire avec la suite de tests complète
 sous la main, pas en même temps qu'une autre tranche.
 
-**Moteur flou (2026-08-11) : un LLM en renfort, jamais en remplacement — phases 1, 2 et 3
+**Moteur flou (2026-08-11) : un LLM en renfort, jamais en remplacement — phases 1 à 4
 terminées.** Le traducteur ci-dessus reste seul à décider ce qui est ambigu ; un LLM
 (Claude, clé API personnelle) ne fait que choisir parmi les options *déjà* proposées par
 une question `a_preciser`, jamais deviner une intention depuis rien. Voir
@@ -174,10 +174,19 @@ bloquer) quand un même mot revient au moins deux fois sans avoir été promu ni
 `verifier_observations_llm_recurrentes`, même esprit que
 `grammar.build.verifier_refus_non_reportes`.
 
-Phase 4 (polish multi-candidats) reste à faire ; rescaper un `incompris` complet (aucune
-intention reconnue du tout) est explicitement hors périmètre, proposé comme phase 5
-séparée — un `incompris` alimente déjà le journal de renforcement (`intention_manquee`)
-sans être rescapé pour autant.
+**Phase 4 — badge honnête.** Une traduction `compris` où le LLM a tranché une question
+déjà posée porte désormais un petit indicateur (« Précisé avec l'aide du moteur flou »,
+`app/prototype.html`, visible seulement avant envoi comme les hypothèses) — jamais laissé
+ambigu sur l'origine de la macro : le corpus reste seul à l'avoir écrite, le LLM n'a fait
+que lever l'ambiguïté. Le réemploi `Question`/`Option` pour le cas multi-candidats
+(plusieurs propositions de confiance comparable) était déjà couvert par les tests de la
+phase 1 (`traducteur/test_interpreter_flou.py`) ; la phase 4 confirme qu'il se comporte
+identiquement une fois branché à un vrai (faux, pour le test) appel réseau, sans code
+supplémentaire côté rendu.
+
+Rescaper un `incompris` complet (aucune intention reconnue du tout) reste explicitement
+hors périmètre, proposé comme phase 5 séparée si besoin un jour — un `incompris` alimente
+déjà le journal de renforcement (`intention_manquee`) sans être rescapé pour autant.
 
 ### C. Valider au banc réel
 

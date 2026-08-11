@@ -1006,6 +1006,17 @@
     // traduction part quand même, mais le champ reste visiblement une
     // supposition, corrigeable en un geste — décidé avec l'utilisateur le
     // 2026-08-07. Affichées seulement tant que la macro n'a pas été envoyée.
+    // Badge honnête (phase 4 du moteur flou) : distingue une traduction que
+    // le lexique a comprise seul d'une traduction où le LLM a tranché une
+    // question déjà posée par le lexique — jamais l'inverse. La macro reste
+    // strictement celle du corpus dans les deux cas ; seule l'ambiguïté a
+    // été levée avec l'aide du LLM. Visible seulement avant envoi, comme les
+    // hypothèses juste en dessous.
+    if (e.status === "draft" && e.viaLlm) {
+      out += '<div class="flag"><span>✨</span><span class="txt">Précisé avec l\'aide du moteur flou (LLM) — ' +
+        'la macro reste celle du corpus, seule une question déjà posée a été tranchée avec son aide.</span></div>';
+    }
+
     if (e.status === "draft" && e.hypotheses && e.hypotheses.length) {
       e.hypotheses.forEach(function (h) {
         out += '<div class="flag flag-warn"><span>~</span><span>' +
@@ -1448,7 +1459,7 @@
         });
         return window.interpreterFlouReel(phrase, sortieLlm, reponses);
       }).then(function (r) {
-        applyRealResult(exchangeId, phrase, r, reponses);
+        applyRealResult(exchangeId, phrase, r, reponses, true);
       }).catch(function (err) {
         if (err && err.observation) {
           pushObservationLlm(err.observation.type, phrase, err.observation.sortieLlmBrute, err.observation.motOuExpression);
@@ -1501,11 +1512,16 @@
     askEngine(e.id, e.ask, reponses);
   }
 
-  function applyRealResult(exchangeId, phrase, r, reponses) {
+  // `viaLlm` (phase 4 du moteur flou) : uniquement vrai quand ce résultat
+  // vient de `interpreter_flou` après une résolution LLM réussie — jamais
+  // fixé par défaut à autre chose, pour que le badge « précisé par le moteur
+  // flou » (macroHtml) ne mente jamais sur l'origine de la traduction.
+  function applyRealResult(exchangeId, phrase, r, reponses, viaLlm) {
     var e = findEx(exchangeId); if (!e) return;
     e.ask = phrase; e.reponses = reponses; e.pendingChoice = null;
     e.notes = r.notes || []; e.nonReconnus = r.non_reconnus || [];
     e.hypotheses = r.hypotheses || [];
+    e.viaLlm = !!viaLlm;
 
     if (r.statut === "compris") {
       e.cmd = r.commande;
