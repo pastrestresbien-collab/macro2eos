@@ -691,6 +691,22 @@
     saveObsLlmQueue();
   }
 
+  // Échappe une chaîne pour un scalaire YAML entre doubles guillemets — pas
+  // seulement le guillemet lui-même : l'antislash d'abord (sinon un antislash
+  // déjà présent se ferait doubler par l'échappement du guillemet qui suit),
+  // puis les retours à la ligne et tabulations, qu'un utilisateur peut très
+  // bien avoir tapés (Maj+Entrée insère un saut de ligne dans le composer).
+  // Sans ça, `yaml.safe_load` (traducteur/build.py) refuserait le fichier
+  // collé — voir la sérialisation ci-dessous.
+  function echapperYamlDq(s) {
+    return String(s)
+      .replace(/\\/g, "\\\\")
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, "\\r")
+      .replace(/\n/g, "\\n")
+      .replace(/\t/g, "\\t");
+  }
+
   // Sérialise la file en YAML prêt à coller sous `observations:` dans
   // traducteur/observations_llm.yaml — jamais un format à part : le champ
   // `diagnostic` reste volontairement vide, à remplir en revue humaine, et
@@ -701,9 +717,9 @@
     state.obsLlmQueue.forEach(function (o) {
       lignes.push('  - type: "' + o.type + '"');
       lignes.push("    date: " + o.date);
-      lignes.push('    phrase: "' + String(o.phrase || "").replace(/"/g, '\\"') + '"');
+      lignes.push('    phrase: "' + echapperYamlDq(o.phrase || "") + '"');
       lignes.push("    sortie_llm_brute: " + (o.sortie_llm_brute == null ? "null" : JSON.stringify(o.sortie_llm_brute)));
-      lignes.push('    mot_ou_expression: "' + String(o.mot_ou_expression || "").replace(/"/g, '\\"') + '"');
+      lignes.push('    mot_ou_expression: "' + echapperYamlDq(o.mot_ou_expression || "") + '"');
       lignes.push('    diagnostic: ""');
       lignes.push('    promu: "non"');
       lignes.push("    lexique_entree: null");

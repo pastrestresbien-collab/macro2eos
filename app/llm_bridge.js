@@ -47,11 +47,20 @@
 
   var _vocabPromise = null;
 
+  // Le vocabulaire est mis en cache une fois obtenu (stable tant que
+  // lexique.yaml ne change pas), mais un ÉCHEC n'est jamais mis en cache :
+  // une coupure réseau passagère (le cas normal quand le téléphone rejoint
+  // le Wi-Fi de la console, voir plus haut) ne doit pas condamner le moteur
+  // flou pour le reste de la session — la tentative suivante doit pouvoir
+  // réessayer une fois la connexion revenue.
   function chargerVocabulaire() {
     if (_vocabPromise) return _vocabPromise;
     _vocabPromise = fetch(BASE + "data/vocabulaire_llm.json").then(function (res) {
       if (!res.ok) throw new Error("échec de chargement du vocabulaire (HTTP " + res.status + ")");
       return res.json();
+    }).catch(function (err) {
+      _vocabPromise = null;
+      throw err;
     });
     return _vocabPromise;
   }
