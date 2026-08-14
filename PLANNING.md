@@ -192,9 +192,23 @@ phase 1 (`traducteur/test_interpreter_flou.py`) ; la phase 4 confirme qu'il se c
 identiquement une fois branché à un vrai (faux, pour le test) appel réseau, sans code
 supplémentaire côté rendu.
 
-Rescaper un `incompris` complet (aucune intention reconnue du tout) reste explicitement
-hors périmètre, proposé comme phase 5 séparée si besoin un jour — un `incompris` alimente
-déjà le journal de renforcement (`intention_manquee`) sans être rescapé pour autant.
+**Phase 5 (2026-08-14) — discussion libre à plusieurs tours, pas un routage `_intention()`
+modifié.** L'idée initiale de « rescaper un `incompris` » en touchant `_intention()`
+elle-même (voir plus haut, phases 1-4) n'a pas été retenue — trop invasif pour un
+mécanisme qui n'a jamais besoin de voir l'IR. À la place : quand l'utilisateur le demande
+explicitement (bouton 💬, jamais automatique), un mini-fil de discussion s'ouvre où l'IA
+peut poser des questions et proposer plusieurs formulations françaises sur plusieurs
+tours — mais elle ne produit **jamais** de syntaxe Eos ni ne touche au vocabulaire fermé.
+Chaque `phrase_a_essayer` qu'elle propose repasse par `window.traduireReel`, exactement
+comme si l'utilisateur l'avait tapée lui-même : c'est le vrai traducteur, pas l'IA, qui
+reste seul juge. Voir `app/llm_bridge.js` (`window.discuterLlm`) et
+`app/prototype.html` (`avancerDiscussion`/`demarrerDiscussion`). Contrairement au premier
+passage silencieux d'`askEngineFlou`, un échec ici est **affiché dans le fil**, jamais un
+repli silencieux — l'utilisateur attend activement une réponse à ce qu'il vient de taper.
+Garde-fous ajoutés en revue de code avant commit : les tours d'erreur ne sont jamais
+envoyés à l'API (rôles strictement user/assistant, fusionnés si consécutifs — l'API
+Anthropic attend une alternance stricte), et un double envoi pendant qu'une requête est
+en cours est bloqué (`e.discussionEnCours`), pas juste visuellement désactivé.
 
 ### C. Valider au banc réel
 

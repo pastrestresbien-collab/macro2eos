@@ -131,7 +131,106 @@ async function main() {
   controler("interpreterLlm — panne réseau -> rejet propagé (repli côté appelant, cas normal en régie)",
     reseauEnPanne, true);
 
-  const total = 11;
+  // ---- discuterLlm (discussion libre, plusieurs tours) ----
+
+  controler("messagesDiscussion — rôles user/assistant conservés tels quels",
+    window._llmBridgeInterne.messagesDiscussion([
+      { role: "user", texte: "bump un sub" },
+      { role: "assistant", texte: "lequel, et dans quel sens ?" },
+      { role: "user", texte: "le 5, vers le haut" },
+    ]),
+    [
+      { role: "user", content: "bump un sub" },
+      { role: "assistant", content: "lequel, et dans quel sens ?" },
+      { role: "user", content: "le 5, vers le haut" },
+    ]);
+
+  controler("messagesDiscussion — un rôle inconnu (ex. futur type de tour) est exclu, jamais envoyé à l'API",
+    window._llmBridgeInterne.messagesDiscussion([
+      { role: "user", texte: "bump un sub" },
+      { role: "inconnu", texte: "ceci ne doit jamais atteindre l'API" },
+      { role: "assistant", texte: "lequel ?" },
+    ]),
+    [
+      { role: "user", content: "bump un sub" },
+      { role: "assistant", content: "lequel ?" },
+    ]);
+
+  controler("messagesDiscussion — tour 'erreur' exclu, et deux tours user consécutifs fusionnés",
+    window._llmBridgeInterne.messagesDiscussion([
+      { role: "user", texte: "je veux quelque chose pour l'entracte" },
+      { role: "erreur", texte: "panne réseau — jamais envoyée à l'API" },
+      { role: "user", texte: "un noir sur le sub 9" },
+    ]),
+    [
+      { role: "user", content: "je veux quelque chose pour l'entracte\n\nun noir sur le sub 9" },
+    ]);
+
+  const discussionOk = await window.discuterLlm(
+    [{ role: "user", texte: "je veux quelque chose pour l'entracte" }],
+    {
+      apiKey: "sk-test",
+      appelReseau: function () {
+        return Promise.resolve({
+          content: [{
+            type: "tool_use", name: "repondre_discussion",
+            input: { message: "Tu penses à un noir, ou à un état particulier ?", phrase_a_essayer: null },
+          }],
+        });
+      },
+    }
+  );
+  controler("discuterLlm — question sans phrase à essayer", discussionOk,
+    { message: "Tu penses à un noir, ou à un état particulier ?", phraseAEssayer: null });
+
+  const discussionAvecPhrase = await window.discuterLlm(
+    [
+      { role: "user", texte: "je veux quelque chose pour l'entracte" },
+      { role: "assistant", texte: "Tu penses à un noir, ou à un état particulier ?" },
+      { role: "user", texte: "un noir sur le sub 9" },
+    ],
+    {
+      apiKey: "sk-test",
+      appelReseau: function () {
+        return Promise.resolve({
+          content: [{
+            type: "tool_use", name: "repondre_discussion",
+            input: { message: "Je te propose : « sub 9 à 0 » — c'est bien ça ?", phrase_a_essayer: " sub 9 à 0 " },
+          }],
+        });
+      },
+    }
+  );
+  controler("discuterLlm — phrase à essayer proposée, espaces superflus retirés",
+    discussionAvecPhrase, { message: "Je te propose : « sub 9 à 0 » — c'est bien ça ?", phraseAEssayer: "sub 9 à 0" });
+
+  let discussionSansMessage = false;
+  try {
+    await window.discuterLlm([{ role: "user", texte: "test" }], {
+      apiKey: "sk-test",
+      appelReseau: function () {
+        return Promise.resolve({ content: [{ type: "tool_use", name: "repondre_discussion", input: {} }] });
+      },
+    });
+  } catch (e) { discussionSansMessage = true; }
+  controler("discuterLlm — réponse sans message exploitable -> rejeté", discussionSansMessage, true);
+
+  let discussionAppele = false, discussionRejeteeSansCle = false;
+  try {
+    await window.discuterLlm([{ role: "user", texte: "test" }], {
+      appelReseau: function () { discussionAppele = true; return Promise.resolve({ content: [] }); },
+    });
+  } catch (e) { discussionRejeteeSansCle = true; }
+  controler("discuterLlm — sans clé API -> jamais d'appel réseau",
+    { rejetee: discussionRejeteeSansCle, appele: discussionAppele }, { rejetee: true, appele: false });
+
+  let discussionSansHistorique = false;
+  try {
+    await window.discuterLlm([], { apiKey: "sk-test", appelReseau: function () { return Promise.resolve({ content: [] }); } });
+  } catch (e) { discussionSansHistorique = true; }
+  controler("discuterLlm — historique vide -> rejeté sans appel réseau", discussionSansHistorique, true);
+
+  const total = 19;
   if (echecs) {
     console.log("\n" + echecs + " cas en échec sur " + total + ".");
     process.exitCode = 1;

@@ -857,9 +857,17 @@
     }
     out += "</div>";
 
+    // Le bouton discussion n'apparaît que moteur flou activé + clé configurée
+    // — sans ça, il ouvrirait un fil qui ne peut jamais avancer (voir
+    // demarrerDiscussionDepuisComposer). Toujours en PLUS du bouton d'envoi
+    // normal, jamais à sa place : le traducteur seul reste le chemin par défaut.
+    var boutonDiscuter = (state.llmConfig.actif && state.llmConfig.apiKey)
+      ? '<button class="cbtn" data-action="discussion:demarrer" aria-label="Discuter pour préciser" title="Discuter pour préciser">💬</button>'
+      : "";
     out += '<div class="composer">' +
       '<button class="cbtn" data-action="nav" data-screen="biblio" aria-label="Bibliothèque">📚</button>' +
       '<textarea id="composer-input" rows="1" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195"></textarea>' +
+      boutonDiscuter +
       '<button class="cbtn send" data-action="ask" aria-label="Envoyer la demande">→</button></div>';
 
     out += '<div class="demo-line"><span>Démo · simuler une coupure au prochain envoi</span>' +
@@ -955,6 +963,54 @@
       return out;
     }
 
+    // Discussion libre à plusieurs tours (moteur flou, phase 5) — distincte
+    // du mécanisme Question/Option ci-dessous : ici l'IA ne produit que du
+    // français, jamais une clé du vocabulaire ni de syntaxe Eos. Chaque
+    // « essai » (phrase_a_essayer proposée par l'IA) repasse par le VRAI
+    // traducteur, avec le même statut à trois issues que partout ailleurs —
+    // voir `avancerDiscussion` et `window.discuterLlm` (app/llm_bridge.js).
+    if (e.status === "discussion") {
+      out += '<div class="menu" style="display:flex; flex-direction:column; gap:8px; padding:9px;">';
+      (e.discussion || []).forEach(function (tour, idx) {
+        if (tour.role === "user") {
+          out += '<div class="ask" style="align-self:flex-end; margin:0;">' + esc(tour.texte) + "</div>";
+          return;
+        }
+        if (tour.role === "erreur") {
+          out += '<div class="flag flag-bad"><span>⚠</span><span class="txt">' + esc(tour.texte) + "</span></div>";
+          return;
+        }
+        out += '<div class="reply" style="align-self:flex-start; margin:0; max-width:100%;"><div>' + esc(tour.texte) + "</div>";
+        if (tour.essai) {
+          out += '<div class="fixline" style="margin-top:7px;"><div class="txt">Essai : « ' + esc(tour.essai.phrase) + " »</div>";
+          if (tour.essai.statut === "compris") {
+            out += '<div class="now">' + esc(tour.essai.cmd) + "</div>" +
+              '<div class="row-actions" style="margin-top:6px;"><button class="mini go" data-action="discussion:utiliser" data-id="' +
+              e.id + '" data-tour="' + idx + '">✓ Utiliser cette macro</button></div>';
+          } else if (tour.essai.statut === "a_preciser") {
+            out += '<div class="txt">Reste ambigu' + (tour.essai.question ? " — " + esc(tour.essai.question) : "") + ".</div>";
+          } else {
+            out += '<div class="txt">Toujours pas compris — le vrai traducteur ne reconnaît pas cette formulation.</div>';
+          }
+          out += "</div>";
+        }
+        out += "</div>";
+      });
+      if (e.discussionEnCours) {
+        out += '<div class="flag"><span>…</span><span class="txt">En train de répondre…</span></div>';
+      }
+      out += "</div>";
+      var champDesactive = e.discussionEnCours ? " disabled" : "";
+      out += '<div class="menu" style="margin-top:8px; padding:8px;">' +
+        '<input type="text" id="discussion-reply-' + e.id + '" data-id="' + e.id + '"' + champDesactive +
+        ' placeholder="Réponds, précise, ou demande une autre variante…" /></div>' +
+        '<div class="row-actions"><button class="mini go" data-action="discussion:envoyer" data-id="' + e.id + '"' + champDesactive +
+        '>Envoyer</button><button class="mini" data-action="discussion:fermer" data-id="' + e.id +
+        '">Abandonner la discussion</button></div>';
+      out += "</div></div>";
+      return out;
+    }
+
     if (e.status === "question" && e.question) {
       var q = e.question;
       out += '<div class="flag flag-warn"><span>?</span><span><b>' + esc(q.texte) + '</b>' +
@@ -973,6 +1029,10 @@
             esc(o.libelle) + (o.detail ? '<span class="txt" style="display:block;font-weight:400;">' + esc(o.detail) + "</span>" : "") +
             "</button>";
         }).join("") + "</div>";
+      }
+      if (state.llmConfig.actif && state.llmConfig.apiKey) {
+        out += '<div class="row-actions" style="margin-top:6px;"><button class="mini" data-action="discussion:ouvrir" data-id="' +
+          e.id + '">💬 Discuter plutôt que choisir</button></div>';
       }
       out += "</div></div>";
       return out;
@@ -993,7 +1053,10 @@
         out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
       }
       out += '<div class="row-actions"><button class="mini go" data-action="nav" data-screen="biblio">📚 Bibliothèque</button>' +
-        '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reformuler</button></div>';
+        '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reformuler</button>' +
+        (state.llmConfig.actif && state.llmConfig.apiKey
+          ? '<button class="mini" data-action="discussion:ouvrir" data-id="' + e.id + '">💬 Discuter</button>'
+          : "") + "</div>";
       out += "</div></div>";
       return out;
     }
@@ -1028,7 +1091,11 @@
     // strictement celle du corpus dans les deux cas ; seule l'ambiguïté a
     // été levée avec l'aide du LLM. Visible seulement avant envoi, comme les
     // hypothèses juste en dessous.
-    if (e.status === "draft" && e.viaLlm) {
+    if (e.status === "draft" && e.viaDiscussion) {
+      out += '<div class="flag"><span>💬</span><span class="txt">Précisé par une discussion avec le moteur flou — ' +
+        "la phrase finale a été proposée en français par l'IA, mais la macro elle-même vient du vrai " +
+        'traducteur, exactement comme si tu l\'avais tapée toi-même.</span></div>';
+    } else if (e.status === "draft" && e.viaLlm) {
       out += '<div class="flag"><span>✨</span><span class="txt">Précisé avec l\'aide du moteur flou (LLM) — ' +
         'la macro reste celle du corpus, seule une question déjà posée a été tranchée avec son aide.</span></div>';
     }
@@ -1487,6 +1554,63 @@
     });
   }
 
+  // ---------- discussion libre à plusieurs tours (moteur flou, phase 5) ----------
+  // Différence de nature avec askEngineFlou ci-dessus : là, le LLM ne fait
+  // que trancher une question déjà posée par le lexique, en un seul aller-
+  // retour invisible. Ici, l'utilisateur a explicitement demandé à discuter,
+  // sur plusieurs tours, et voit tout ce qui se passe. Le garde-fou reste le
+  // même malgré cette liberté : le LLM ne produit jamais de syntaxe Eos, il
+  // ne fait que proposer des PHRASES FRANÇAISES (`phrase_a_essayer`) qui
+  // repassent systématiquement par `window.traduireReel` — la même autorité
+  // que pour n'importe quelle phrase tapée à la main. Toute panne ici est
+  // affichée dans le fil (jamais un repli silencieux) : contrairement au
+  // premier passage silencieux d'`askEngineFlou`, l'utilisateur attend
+  // activement une réponse à ce qu'il vient de taper.
+  function avancerDiscussion(exchangeId) {
+    var e = findEx(exchangeId); if (!e) return;
+    if (typeof window.discuterLlm !== "function") {
+      e.discussion.push({ role: "erreur", texte: "Le module de discussion (app/llm_bridge.js) n'est pas chargé." });
+      renderAll();
+      return;
+    }
+    e.discussionEnCours = true;
+    renderAll();
+    window.discuterLlm(e.discussion, {
+      apiKey: state.llmConfig.apiKey,
+      model: state.llmConfig.model,
+    }).then(function (rep) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.discussionEnCours = false;
+      var tour = { role: "assistant", texte: rep.message, essai: null };
+      e2.discussion.push(tour);
+      renderAll();
+      if (!rep.phraseAEssayer || typeof window.traduireReel !== "function") return;
+      window.traduireReel(rep.phraseAEssayer, {}).then(function (r) {
+        var e3 = findEx(exchangeId); if (!e3) return;
+        tour.essai = {
+          phrase: rep.phraseAEssayer, statut: r.statut, cmd: r.commande, ir: r.ir || [],
+          avertissements: r.avertissements || [],
+          question: (r.questions && r.questions[0] && r.questions[0].texte) || null,
+        };
+        renderAll();
+      }).catch(function () { /* l'essai reste simplement absent — pas bloquant pour la discussion */ });
+    }).catch(function (err) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.discussionEnCours = false;
+      e2.discussion.push({ role: "erreur", texte: "La discussion a échoué (" +
+        ((err && err.message) || String(err)) + ") — hors réseau, normal une fois connecté au Wi-Fi de la " +
+        "console. Réessaie une fois reconnecté, ou réponds quand même : le vrai traducteur reste utilisable." });
+      renderAll();
+    });
+  }
+
+  function demarrerDiscussion(exchangeId, phraseInitiale) {
+    var e = findEx(exchangeId); if (!e) return;
+    e.status = "discussion"; e.discussion = [{ role: "user", texte: phraseInitiale }]; e.discussionEnCours = false;
+    renderAll();
+    avancerDiscussion(exchangeId);
+  }
+
   // Correction en langage naturel d'une macro déjà proposée (« remplace X
   // par Y »), « à la manière d'un LLM » — adressée à la dernière macro en
   // attente d'envoi plutôt que de retaper toute la phrase. Voir
@@ -1529,15 +1653,18 @@
   }
 
   // `viaLlm` (phase 4 du moteur flou) : uniquement vrai quand ce résultat
-  // vient de `interpreter_flou` après une résolution LLM réussie — jamais
-  // fixé par défaut à autre chose, pour que le badge « précisé par le moteur
-  // flou » (macroHtml) ne mente jamais sur l'origine de la traduction.
-  function applyRealResult(exchangeId, phrase, r, reponses, viaLlm) {
+  // vient de `interpreter_flou` après une résolution LLM réussie. `viaDiscussion`
+  // (phase 5) : uniquement vrai quand la phrase vient d'un `phrase_a_essayer`
+  // accepté depuis une discussion (voir `handle("discussion:utiliser", …)`).
+  // Jamais fixés par défaut à autre chose, pour que les badges (macroHtml) ne
+  // mentent jamais sur l'origine de la traduction.
+  function applyRealResult(exchangeId, phrase, r, reponses, viaLlm, viaDiscussion) {
     var e = findEx(exchangeId); if (!e) return;
     e.ask = phrase; e.reponses = reponses; e.pendingChoice = null;
     e.notes = r.notes || []; e.nonReconnus = r.non_reconnus || [];
     e.hypotheses = r.hypotheses || [];
     e.viaLlm = !!viaLlm;
+    e.viaDiscussion = !!viaDiscussion;
 
     if (r.statut === "compris") {
       e.cmd = r.commande;
@@ -1659,6 +1786,79 @@
           status:"thinking", tokens: [], time: nowTime() });
         renderAll();
         askEngineFlou(eid, raw, {});
+        break;
+      }
+
+      // Même bouton que "ask", mais démarre directement une discussion à
+      // plusieurs tours au lieu d'un premier passage silencieux — voir
+      // demarrerDiscussion. Visible uniquement moteur flou activé (le bouton
+      // lui-même n'est rendu que dans ce cas, voir screenAtelier).
+      case "discussion:demarrer": {
+        var taD = document.getElementById("composer-input");
+        var rawD = taD ? taD.value : "";
+        if (!rawD.trim()) break;
+        state.draft = "";
+        var eidD = uid++;
+        var sD = activeSession();
+        if (sD && !curThread().length) sD.title = titreDepuisPhrase(rawD);
+        touchSession(sD);
+        curThread().push({ id: eidD, kind: "exchange", ask: rawD, cmd: null,
+          status: "discussion", discussion: [], discussionEnCours: false, tokens: [], time: nowTime() });
+        renderAll();
+        demarrerDiscussion(eidD, rawD);
+        break;
+      }
+
+      // Bascule un échange déjà bloqué (question à choix fixes, ou pas
+      // compris du tout) vers une discussion — reprend la phrase d'origine
+      // comme premier tour, exactement comme si l'utilisateur avait cliqué
+      // 💬 depuis le composer avec cette même phrase.
+      case "discussion:ouvrir": {
+        e = findEx(d.id); if (!e) break;
+        demarrerDiscussion(e.id, e.ask);
+        break;
+      }
+
+      case "discussion:envoyer": {
+        e = findEx(d.id); if (!e || e.status !== "discussion") break;
+        // Jamais deux appels réseau simultanés sur la même discussion — un
+        // double Entrée/clic avant la première réponse enverrait deux
+        // requêtes concurrentes qui écriraient chacune leur propre tour dans
+        // le même fil, sans coordination (trouvé en revue de code).
+        if (e.discussionEnCours) break;
+        var elReply = document.getElementById("discussion-reply-" + e.id);
+        var texteReply = elReply ? elReply.value.trim() : "";
+        if (!texteReply) break;
+        e.discussion.push({ role: "user", texte: texteReply });
+        renderAll();
+        avancerDiscussion(e.id);
+        break;
+      }
+
+      // Promeut l'essai d'un tour de discussion en résultat réel de
+      // l'échange — même chemin que askEngineFlou côté rendu (badge
+      // « viaDiscussion » plutôt que « viaLlm », voir macroHtml), pour que
+      // l'origine reste toujours visible plutôt que mélangée à une traduction
+      // ordinaire.
+      case "discussion:utiliser": {
+        e = findEx(d.id); if (!e || !e.discussion) break;
+        var tourUtilise = e.discussion[Number(d.tour)];
+        if (!tourUtilise || !tourUtilise.essai || tourUtilise.essai.statut !== "compris") break;
+        var essaiUtilise = tourUtilise.essai;
+        applyRealResult(e.id, essaiUtilise.phrase, {
+          statut: "compris", commande: essaiUtilise.cmd, ir: essaiUtilise.ir,
+          avertissements: essaiUtilise.avertissements, notes: [], non_reconnus: [], hypotheses: [],
+        }, {}, false, true);
+        break;
+      }
+
+      // Abandonne la discussion sans résultat — retombe sur « pas compris »,
+      // le même état honnête qu'un incompris ordinaire (Bibliothèque/
+      // Reformuler restent disponibles depuis là).
+      case "discussion:fermer": {
+        e = findEx(d.id); if (!e) break;
+        e.status = "unknown";
+        renderAll();
         break;
       }
 
@@ -2045,6 +2245,10 @@
     if (ev.target && /^answer-value-/.test(ev.target.id || "") && ev.key === "Enter") {
       ev.preventDefault();
       handle("answer:value-submit", ev.target);
+    }
+    if (ev.target && /^discussion-reply-/.test(ev.target.id || "") && ev.key === "Enter") {
+      ev.preventDefault();
+      handle("discussion:envoyer", ev.target);
     }
   });
 

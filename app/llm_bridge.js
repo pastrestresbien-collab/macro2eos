@@ -255,10 +255,143 @@
     return { reponses: validation.reponses, mots_hors_lexique: motsHorsLexique };
   };
 
+  // ---------------------------------------------------------------------
+  // Discussion libre (phase 5 du plan moteur flou) — va-et-vient à plusieurs
+  // tours pour affiner une demande vague, PAS un remplacement du mécanisme
+  // Question/Option strict ci-dessus. Différence de nature, pas de degré :
+  //
+  //   - Ici, le LLM ne touche JAMAIS à l'IR ni à une clé du vocabulaire —
+  //     il ne produit que du FRANÇAIS LIBRE (son message affiché) et,
+  //     optionnellement, une phrase française candidate. Cette phrase
+  //     candidate est traitée EXACTEMENT comme si l'utilisateur l'avait
+  //     tapée lui-même : elle repasse par `window.traduireReel`, qui reste
+  //     seul juge de ce qu'elle veut dire. Rien de nouveau à valider ici —
+  //     c'est ça qui rend cette fonctionnalité sûre malgré sa liberté : la
+  //     confiance accordée au LLM est nulle, la confiance accordée à une
+  //     phrase française ordinaire est celle, déjà éprouvée, du traducteur.
+  //   - Pas de schéma JSON restreint par un vocabulaire fermé : rien ne
+  //     serait sensé à y restreindre, puisque la sortie n'est jamais une clé
+  //     du lexique, juste une conversation.
+  function instructionsDiscussion() {
+    return [
+      "Tu aides un régisseur lumière à préciser une demande en français pour",
+      "une console ETC Eos, par une conversation à plusieurs tours. Tu ne dois",
+      "JAMAIS produire de syntaxe Eos toi-même (jamais de nom de touche, jamais",
+      "une commande) — ton seul rôle est d'aider à formuler une PHRASE FRANÇAISE",
+      "précise que le traducteur déterministe pourra comprendre. Utilise le",
+      "vocabulaire général joint pour savoir ce que le corpus connaît déjà,",
+      "mais ne le récite jamais tel quel : pose des questions naturelles, ou",
+      "propose plusieurs formulations si plusieurs interprétations sont",
+      "plausibles (« tu veux dire A, ou plutôt B ? »).",
+      "",
+      "Dès que tu penses avoir une formulation prête à essayer, mets-la dans",
+      "`phrase_a_essayer` — elle sera immédiatement testée contre le vrai",
+      "traducteur et son résultat (compris, à préciser, ou pas compris) te",
+      "sera donné au tour suivant pour continuer la discussion si besoin.",
+      "N'hésite pas à en proposer plusieurs, à des tours différents, si la",
+      "première ne donne pas ce que l'utilisateur attend.",
+    ].join(" ");
+  }
+
+  // `historique` : [{ role: "user"|"assistant"|"erreur", texte: string }, ...]
+  // — le premier élément est toujours la demande d'origine de l'utilisateur.
+  // Les tours "erreur" (panne réseau affichée dans le fil, voir
+  // `avancerDiscussion` dans app/prototype.html) sont exclus : ce sont des
+  // notices purement côté client, jamais envoyées à l'API. Et l'API Anthropic
+  // attend des rôles strictement alternés (user/assistant) — deux tours
+  // "user" consécutifs (ex. après une panne : la question restée sans
+  // réponse, puis le message suivant de l'utilisateur) sont donc FUSIONNÉS
+  // en un seul message plutôt que rejetés ou coupés en deux appels.
+  function messagesDiscussion(historique) {
+    var out = [];
+    historique.forEach(function (tour) {
+      if (tour.role !== "user" && tour.role !== "assistant") return;
+      var texte = String(tour.texte || "");
+      var dernier = out[out.length - 1];
+      if (dernier && dernier.role === tour.role) {
+        dernier.content += "\n\n" + texte;
+      } else {
+        out.push({ role: tour.role, content: texte });
+      }
+    });
+    return out;
+  }
+
+  var OUTIL_DISCUSSION = "repondre_discussion";
+
+  function construireSchemaDiscussion() {
+    return {
+      type: "object",
+      properties: {
+        message: {
+          type: "string",
+          description: "Réponse en français naturel, affichée telle quelle à l'utilisateur — jamais de syntaxe Eos.",
+        },
+        phrase_a_essayer: {
+          type: ["string", "null"],
+          description: "Une phrase française à tester immédiatement contre le vrai traducteur, ou null si tu préfères d'abord poser ta question.",
+        },
+      },
+      required: ["message"],
+    };
+  }
+
+  // API publique. `historique` construit et maintenu par l'appelant (voir
+  // ci-dessus). `opts` : { apiKey (requis), model, timeoutMs, appelReseau
+  // (injectable, pour les tests) }. Résout vers { message, phraseAEssayer }.
+  // Rejette (throw) sur tout problème réseau — repli visible côté appelant
+  // (pas silencieux ici : contrairement à `interpreterLlm`, l'utilisateur a
+  // explicitement demandé cette réponse, il doit savoir si elle a échoué).
+  window.discuterLlm = async function (historique, opts) {
+    opts = opts || {};
+    if (!opts.apiKey) throw new Error("clé API absente");
+    if (!historique || !historique.length) throw new Error("historique de discussion vide");
+
+    var vocabulaire = await chargerVocabulaire();
+
+    var requete = {
+      model: opts.model || MODELE_DEFAUT,
+      max_tokens: 700,
+      system: [
+        { type: "text", text: instructionsDiscussion() },
+        {
+          type: "text",
+          text: "Vocabulaire général du domaine (contexte, pour comprendre ce que le corpus connaît déjà) :\n" + JSON.stringify(vocabulaire),
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      messages: messagesDiscussion(historique),
+      tools: [{
+        name: OUTIL_DISCUSSION,
+        description: "Restitue la réponse à afficher et, en option, une phrase française à tester tout de suite contre le vrai traducteur.",
+        input_schema: construireSchemaDiscussion(),
+      }],
+      tool_choice: { type: "tool", name: OUTIL_DISCUSSION },
+    };
+
+    var appelReseau = opts.appelReseau || appelReseauParDefaut;
+    var reponseApi = await appelReseau(requete, opts.apiKey, opts.timeoutMs || TIMEOUT_DEFAUT_MS);
+
+    var contenu = reponseApi && reponseApi.content;
+    var blocOutil = Array.isArray(contenu) && contenu.find(function (b) {
+      return b.type === "tool_use" && b.name === OUTIL_DISCUSSION;
+    });
+    if (!blocOutil || !blocOutil.input || typeof blocOutil.input.message !== "string" || !blocOutil.input.message) {
+      throw new Error("réponse LLM sans message exploitable");
+    }
+
+    var phrase = blocOutil.input.phrase_a_essayer;
+    return {
+      message: blocOutil.input.message,
+      phraseAEssayer: typeof phrase === "string" && phrase.trim() ? phrase.trim() : null,
+    };
+  };
+
   // Exposé pour les tests uniquement (construction de requête isolée du réseau).
   window._llmBridgeInterne = {
     construireSchema: construireSchema,
     validerReponses: validerReponses,
     messageUtilisateur: messageUtilisateur,
+    messagesDiscussion: messagesDiscussion,
   };
 })();
