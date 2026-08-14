@@ -1,0 +1,42 @@
+name: Déployer le beta (GitHub Pages)
+
+# Publie app/ tel quel — c'est déjà un site statique autonome (prototype.html,
+# engine.js, llm_bridge.js, vendor/pyodide/, data/*.json). Aucune étape de
+# build : le YAML source (grammar/modele.yaml, traducteur/lexique.yaml) est
+# déjà compilé en JSON dans app/data/ par app/build_data.sh et commité — ce
+# workflow ne fait que publier ce qui existe déjà dans le dépôt.
+#
+# Contrairement à un Artifact Claude (CSP stricte, aucun appel réseau sortant
+# possible), une page GitHub Pages est une page web normale : le moteur flou
+# (LLM, clé personnelle, Réglages) et la discussion à plusieurs tours
+# fonctionnent ici, à condition d'avoir une vraie connexion Internet (donc
+# jamais une fois connecté au Wi-Fi de la console — voir APP.md).
+
+on:
+  push:
+    branches: [claude/macro2eos-app-design-autk7k]
+    paths: ["app/**"]
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+      - id: deployment
+        uses: actions/deploy-pages@v4
