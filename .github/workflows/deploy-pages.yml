@@ -1,0 +1,54 @@
+name: Déployer le beta (GitHub Pages)
+
+# Publie app/ tel quel — c'est déjà un site statique autonome (prototype.html,
+# engine.js, llm_bridge.js, vendor/pyodide/, data/*.json). Aucune étape de
+# build : le YAML source (grammar/modele.yaml, traducteur/lexique.yaml) est
+# déjà compilé en JSON dans app/data/ par app/build_data.sh et commité — ce
+# workflow ne fait que publier ce qui existe déjà dans le dépôt.
+#
+# Contrairement à un Artifact Claude (CSP stricte, aucun appel réseau sortant
+# possible), une page GitHub Pages est une page web normale : le moteur flou
+# (LLM, clé personnelle, Réglages) et la discussion à plusieurs tours
+# fonctionnent ici, à condition d'avoir une vraie connexion Internet (donc
+# jamais une fois connecté au Wi-Fi de la console — voir APP.md).
+#
+# Ce fichier vit délibérément à la fois ici (branche de développement) ET
+# sur la branche par défaut du dépôt : GitHub n'enregistre les déclencheurs
+# `on: push` d'un workflow que depuis la branche par défaut — un fichier qui
+# n'existe que sur une branche non défaut ne se déclenche jamais, même sur
+# un push qui le touche lui-même (limite documentée de GitHub Actions,
+# trouvée le 2026-08-14 : 0 exécution malgré deux push correspondant au
+# filtre). Le `ref:` explicite du checkout ci-dessous garantit que c'est
+# toujours le contenu de la branche de développement qui est publié, jamais
+# celui — différent, plus ancien — de la branche par défaut.
+
+on:
+  push:
+    branches: [claude/macro2eos-app-design-autk7k]
+    paths: ["app/**"]
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/macro2eos-app-design-autk7k
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+      - id: deployment
+        uses: actions/deploy-pages@v4
