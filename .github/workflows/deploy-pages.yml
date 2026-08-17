@@ -11,6 +11,16 @@ name: Déployer le beta (GitHub Pages)
 # (LLM, clé personnelle, Réglages) et la discussion à plusieurs tours
 # fonctionnent ici, à condition d'avoir une vraie connexion Internet (donc
 # jamais une fois connecté au Wi-Fi de la console — voir APP.md).
+#
+# Ce fichier vit délibérément à la fois ici (branche de développement) ET
+# sur la branche par défaut du dépôt : GitHub n'enregistre les déclencheurs
+# `on: push` d'un workflow que depuis la branche par défaut — un fichier qui
+# n'existe que sur une branche non défaut ne se déclenche jamais, même sur
+# un push qui le touche lui-même (limite documentée de GitHub Actions,
+# trouvée le 2026-08-14 : 0 exécution malgré deux push correspondant au
+# filtre). Le `ref:` explicite du checkout ci-dessous garantit que c'est
+# toujours le contenu de la branche de développement qui est publié, jamais
+# celui — différent, plus ancien — de la branche par défaut.
 
 on:
   push:
@@ -34,6 +44,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: claude/macro2eos-app-design-autk7k
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
