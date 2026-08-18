@@ -319,6 +319,15 @@
 
   var OUTIL_DISCUSSION = "repondre_discussion";
 
+  // `type: ["string", "null"]` (union de types) a longtemps semblé la façon
+  // naturelle de coder « optionnel » ici — mais l'API Claude rejette un
+  // `input_schema` de tool avec un `type` en tableau (HTTP 400
+  // invalid_request_error). Jamais détecté avant : toute la suite de tests
+  // (voir test_llm_bridge.js) stubbe `appelReseau`, donc ce schéma n'avait
+  // jamais atteint l'API réelle avant un test en conditions réelles le
+  // 2026-08-18. Corrigé en `string` simple — absence de formulation prête =
+  // chaîne vide, jamais `null` (voir `discuterLlm` plus bas, qui traite déjà
+  // une chaîne vide comme absence de phrase).
   function construireSchemaDiscussion() {
     return {
       type: "object",
@@ -328,8 +337,8 @@
           description: "Réponse en français naturel, affichée telle quelle à l'utilisateur — jamais de syntaxe Eos.",
         },
         phrase_a_essayer: {
-          type: ["string", "null"],
-          description: "Une phrase française à tester immédiatement contre le vrai traducteur, ou null si tu préfères d'abord poser ta question.",
+          type: "string",
+          description: "Une phrase française à tester immédiatement contre le vrai traducteur, ou une chaîne vide si tu préfères d'abord poser ta question.",
         },
       },
       required: ["message"],

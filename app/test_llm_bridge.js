@@ -230,7 +230,45 @@ async function main() {
   } catch (e) { discussionSansHistorique = true; }
   controler("discuterLlm — historique vide -> rejeté sans appel réseau", discussionSansHistorique, true);
 
-  const total = 19;
+  // Garde-fou de non-régression : l'API Claude rejette (HTTP 400) tout
+  // `input_schema` de tool où un `type` est un tableau (ex. `["string",
+  // "null"]`, pourtant du JSON Schema valide) — bug réel trouvé le
+  // 2026-08-18 en testant la discussion en conditions réelles, jamais
+  // détecté avant car aucun test ici ne touchait le réseau. Ce garde-fou
+  // inspecte la VRAIE requête construite (capturée via `appelReseau`
+  // injecté), pas une copie à la main du schéma qui pourrait diverger.
+  function chercherTypeEnTableau(noeud, chemin) {
+    if (Array.isArray(noeud)) {
+      for (let i = 0; i < noeud.length; i++) {
+        const trouve = chercherTypeEnTableau(noeud[i], chemin + "[" + i + "]");
+        if (trouve) return trouve;
+      }
+      return null;
+    }
+    if (noeud && typeof noeud === "object") {
+      if (Array.isArray(noeud.type)) return chemin + ".type";
+      for (const cle in noeud) {
+        if (!Object.prototype.hasOwnProperty.call(noeud, cle)) continue;
+        const trouve = chercherTypeEnTableau(noeud[cle], chemin + "." + cle);
+        if (trouve) return trouve;
+      }
+    }
+    return null;
+  }
+  let requeteDiscussionCapturee = null;
+  await window.discuterLlm([{ role: "user", texte: "test" }], {
+    apiKey: "sk-test",
+    appelReseau: function (requete) {
+      requeteDiscussionCapturee = requete;
+      return Promise.resolve({
+        content: [{ type: "tool_use", name: "repondre_discussion", input: { message: "ok", phrase_a_essayer: "" } }],
+      });
+    },
+  });
+  controler("discuterLlm — aucun `type` en tableau dans le schéma envoyé à l'API (HTTP 400 sinon)",
+    chercherTypeEnTableau(requeteDiscussionCapturee.tools, "tools"), null);
+
+  const total = 20;
   if (echecs) {
     console.log("\n" + echecs + " cas en échec sur " + total + ".");
     process.exitCode = 1;
