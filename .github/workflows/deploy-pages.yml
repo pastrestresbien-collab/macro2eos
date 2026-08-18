@@ -31,6 +31,17 @@ name: Déployer le beta (GitHub Pages)
 # fonctionner (OIDC via `id-token: write` suffit) — il ne sert qu'à afficher
 # l'URL de déploiement dans l'UI GitHub, qu'on perd ici sans conséquence.
 # Trouvé le 2026-08-17 en comparant les runs qui passaient vs échouaient.
+#
+# Cache-bust sur engine.js/llm_bridge.js à chaque déploiement (étape ci-
+# dessous) : un utilisateur avait encore le HTTP 400 de llm_bridge.js
+# longtemps après le correctif — son navigateur mobile servait une copie
+# en cache, sans jamais revalider. `engine.js` et `llm_bridge.js`
+# détectaient déjà un `?...` sur leur propre <script src> (regex
+# `(\?|$)` pour retrouver BASE), pensé pour ça mais jamais branché avant
+# le 2026-08-18. `prototype.html` n'est pas lui-même versionné : GitHub
+# Pages sert le HTML avec un cache court (revalidation fréquente), c'est
+# lui qui doit rester la source de vérité sur QUELLE version des scripts
+# charger.
 
 on:
   push:
@@ -53,6 +64,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: claude/macro2eos-app-design-autk7k
+      - name: Cache-bust engine.js et llm_bridge.js (voir commentaire en tête de fichier)
+        run: |
+          sed -i "s/engine\.js\"/engine.js?v=${{ github.sha }}\"/" app/prototype.html
+          sed -i "s/llm_bridge\.js\"/llm_bridge.js?v=${{ github.sha }}\"/" app/prototype.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
