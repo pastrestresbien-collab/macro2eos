@@ -1,0 +1,79 @@
+# Journal de renforcement du moteur flou — mêmes principes que
+# grammar/refus_terrain.yaml (voir ce fichier pour le patron d'origine) :
+# un journal manuel, jamais auto-promu dans le lexique, qui accumule les
+# endroits où le vocabulaire actuel n'a pas suffi plutôt que de les jeter.
+#
+# Différence de nature avec refus_terrain.yaml : celui-là capture des preuves
+# de niveau S (constat au banc réel, sur la console) sur la LÉGALITÉ d'une
+# syntaxe. Celui-ci capture des trous de VOCABULAIRE côté moteur flou — un mot
+# que le LLM a vu mais que le lexique fermé ne connaissait pas encore, ou une
+# intention que ni le lexique ni le LLM n'ont su router. Ce n'est jamais une
+# preuve de ce que la console accepte ; une entrée promue ici porte donc la
+# balise `source_llm:` (voir traducteur/lexique.yaml), jamais `source: S/A/B/C/D`
+# — cette échelle mesure la fiabilité d'une commande console, pas si un mot
+# désigne bien un concept du lexique.
+#
+# Alimentation : depuis l'app (Réglages → « Exporter les observations »),
+# collectées dans une file localStorage à chaque repli du moteur flou (valeur
+# hors vocabulaire, mot non reconnu du tout par le LLM, intention jamais
+# routée), copiées ici à la main après revue humaine — jamais une écriture
+# automatique. Promotion **toujours humaine** : un humain édite lexique.yaml
+# à la main, ajoute `source_llm:` sur l'entrée créée, puis met à jour `promu`
+# et `lexique_entree` ci-dessous. `promu` n'est jamais mis à "oui" par du code.
+#
+# Champs :
+#   type              - "vocabulaire_manquant" | "candidat_rejete" | "intention_manquee"
+#   date              - AAAA-MM-JJ
+#   phrase            - la phrase de l'utilisateur, verbatim
+#   sortie_llm_brute  - la réponse brute du LLM, verbatim, jamais éditée (peut être null
+#                       pour "intention_manquee" : le lexique n'a même pas posé de question)
+#   mot_ou_expression - le mot/l'expression en cause
+#   diagnostic        - analyse : pourquoi, ce que ça suggère d'ajouter — rempli en revue
+#   promu             - "non" | "oui" | "rejete"
+#   lexique_entree     - clé ajoutée à lexique.yaml si promu "oui", sinon null
+
+meta:
+  version: "0.1"
+  maj: "2026-08-11"
+
+observations: []
+  # Exemple de forme attendue pour un mot hors vocabulaire (à dupliquer, jamais laissé actif) :
+  # - type: "vocabulaire_manquant"
+  #   date: 2026-08-20
+  #   phrase: "groupe 5 en teinte cuivrée"
+  #   sortie_llm_brute: {"reponses": {}}
+  #   mot_ou_expression: "cuivrée"
+  #   diagnostic: >
+  #     Le LLM n'a proposé aucun candidat couleur : "cuivrée" n'est ni une clé
+  #     du nuancier ni une entrée déjà connue. À confirmer au banc avant
+  #     d'ajouter une entrée couleur "cuivre"/"cuivrée".
+  #   promu: "non"
+  #   lexique_entree: null
+  #
+  # Exemple de forme attendue pour un candidat rejeté (proposé par le LLM,
+  # hors des options réelles de la question — revalidé et rejeté côté
+  # app/llm_bridge.js avant même d'atteindre Python) :
+  # - type: "candidat_rejete"
+  #   date: 2026-08-21
+  #   phrase: "bump le sub 5 en douceur"
+  #   sortie_llm_brute: {"reponses": {"bump_direction": "doux"}}
+  #   mot_ou_expression: "en douceur"
+  #   diagnostic: >
+  #     "doux" n'est ni "haut" ni "bas" (les deux seules options de la question
+  #     bump_direction) — le LLM a mal interprété une intensité comme une
+  #     direction. Pas un trou de vocabulaire : la phrase est simplement hors
+  #     de la portée actuelle de `_bump`.
+  #   promu: "rejete"
+  #   lexique_entree: null
+  #
+  # Exemple de forme attendue pour une intention jamais routée :
+  # - type: "intention_manquee"
+  #   date: 2026-08-22
+  #   phrase: "synchronise les deux univers"
+  #   sortie_llm_brute: null
+  #   mot_ou_expression: "synchronise"
+  #   diagnostic: >
+  #     Aucune intention du lexique ne couvre la synchronisation d'univers —
+  #     hors périmètre actuel du traducteur, pas seulement du moteur flou.
+  #   promu: "non"
+  #   lexique_entree: null

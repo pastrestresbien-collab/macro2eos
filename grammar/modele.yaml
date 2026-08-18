@@ -1,10 +1,25 @@
 # Modèle Eos — objets, actions, matrice de légalité
 #
 # Source de vérité pour la construction de commandes. Écrit à la main, relisible.
-# Compilé en JSON par `grammar/compile.py` pour consommation par le code.
+# Compilé en JSON par `grammar/build.py` pour consommation par le code.
 #
-# Périmètre v0.1 (volontairement étroit, à étendre après validation) :
-#   sélection de channels/groupes + application de couleur + enregistrement de palette.
+# Périmètre v0.3 :
+#   v0.1  sélection channels/groupes + couleur de nuancier + record de palette
+#   v0.2  + Fan (§4 de la grammaire consolidée) + cues + macros + submasters
+#   v0.3  + Query + effets + couche d'injection OSC
+#   v0.4  + contexte d'écran (modalité) + auto-terminaison
+#   v0.5  + Patch (§4) — où `At` s'inverse une seconde fois
+#   v0.6  + Groupes (§7) — un ordre, pas seulement un ensemble
+#   v0.7  + Palettes (§10) et Presets (§11) — la référence, et ce qui la casse
+#   v0.8  + Mark (§9) — deux mécanismes exclusifs, et un mode global invisible
+#   v0.9  + Cues multipart (§17) — et la règle transversale de Blind
+#   v0.10 + Cue lists multiples (§14) et Assert — une contradiction résolue
+#   v0.11 + Park (§19) et Filtres (§13) — le cinquième état implicite
+#   v0.12 + Courbes (§22), Snapshots (§23) — et la saisie des niveaux
+#   v0.13 + Magic Sheets (§25) et show control (§31)
+#   v0.14 + Export ASCII (§3) — et le constat de sa lacune
+#   v0.15   Relecture d'ensemble : doublons, dérives de confiance, homonymies
+#   v0.16 + Contrôle partitionné (§28) — plusieurs programmeurs, un seul show
 #
 # Champ `confiance` : S (banc réel) > A (manuel officiel) > B (ETC forum) >
 #                     C (communauté, non testé) > D (signal négatif).
@@ -12,12 +27,1355 @@
 # injecter en aveugle. `backlog` renvoie au numéro dans PLANNING.md.
 
 meta:
-  version: "0.1"
-  perimetre: "selection + couleur + record palette"
-  maj: "2026-08-01"
+  version: "0.16"
+  perimetre: >
+    selection + couleur + record palette + fan + cues + macros + submasters
+    + query + effets + injection OSC + contexte d'écran + patch + groupes + palettes + presets + mark + multipart + cue lists + assert + park + filtres + courbes + snapshots + magic sheets + show control + export ascii + contrôle partitionné
+  maj: "2026-08-02"
 
 # --------------------------------------------------------------------------
-# OBJETS — ce qu'on sélectionne
+# CONTEXTE D'ÉCRAN — la modalité, préalable à tout le reste
+#
+# La ligne de commande Eos est modale : le MÊME mot ne veut pas dire la même
+# chose selon l'écran actif. C'est la raison pour laquelle ce projet a écarté
+# une grammaire formelle (voir README) — une EBNF ne peut pas exprimer qu'un
+# token dépend d'un état extérieur à la phrase.
+# --------------------------------------------------------------------------
+contexte:
+  confiance: A
+  source: "manuel §2 System Basics ; corpus #167-168 (Operations Manual, A)"
+
+  focus:
+    regle: "`Tab <n> Enter` amène le focus sur l'écran n"
+    confiance: A
+    source: "corpus #168, réponse officielle"
+    doctrine: >
+      Le focus visuel et le focus logique sont le MÊME mécanisme — « draw
+      focus » dans le vocabulaire du manuel. Rien n'indique qu'il existe un
+      préfixe de commande qui changerait le contexte sans changer l'affichage.
+      Conséquence directe : pour générer une commande dépendante du contexte,
+      il faut forcer le Tab, et cela déplace ce que voit l'opérateur.
+    raccourci_liste:
+      regle: "double appui sur la touche d'un record target ouvre sa liste"
+      exemple: "`Cue Cue` ouvre l'index de cue list ; `Macro Macro` l'éditeur de macros"
+      confiance: A
+      source: "corpus #169"
+
+  # Table officielle Tab → Display (corpus #168, la plus complète du corpus)
+  ecrans:
+    1:  { nom: "Live/Blind",          confiance: A }
+    2:  { nom: "Playback Status",     confiance: A }
+    3:  { nom: "Magic Sheet",         confiance: A }
+    4:  { nom: "Direct Selects",      confiance: A }
+    5:  { nom: "ML Controls",         confiance: A }
+    6:  { nom: "Effect Status",       confiance: A }
+    7:  { nom: "Keys",                confiance: A }
+    8:  { nom: "Effect Channels",     confiance: A }
+    9:  { nom: "Pixel Maps",          confiance: A }
+    10: { nom: "Pixel Preview",       confiance: A }
+    11: { nom: "Show Control",        confiance: A }
+    12: { nom: "Patch",               confiance: A }
+    13: { nom: "Effects",             confiance: A }
+    14: { nom: "Magic Sheet List",    confiance: A }
+    15: { nom: "Submaster List",      confiance: A }
+    16: { nom: "Cue List",            confiance: A }
+    17: { nom: "Groups",              confiance: A }
+    18: { nom: "Macros",              confiance: A }
+    19: { nom: "Snapshots",           confiance: A }
+    20: { nom: "Park",                confiance: A }
+    21: { nom: "Curves",              confiance: A }
+    22: { nom: "Intensity Palettes",  confiance: A }
+    23: { nom: "Focus Palettes",      confiance: A }
+    24: { nom: "Color Palettes",      confiance: A }
+    25: { nom: "Beam Palettes",       confiance: A }
+    26: { nom: "Presets",             confiance: A }
+    27: { nom: "Color Picker",        confiance: A }
+    28: { nom: "Virtual Faders",      confiance: A }
+    29: { nom: "About",               confiance: A }
+    30: { nom: "Command History",     confiance: A }
+    31: { nom: "Lamp Controls",       confiance: A }
+    32: { nom: "Channels In Use",     confiance: A }
+    33: { nom: "Color Path",          confiance: A }
+    35: { nom: "Fader List",          confiance: A }
+    36: { nom: "Fader Configuration", confiance: A }
+    37: { nom: "sACN Output View",    confiance: A }
+    99: { nom: "Diagnostics",         confiance: A }
+    100: { nom: "User Manual",        confiance: A }
+
+  # Dans Patch, `At` s'inverse une SECONDE fois — selon un mode interne à
+  # l'écran, invisible dans la commande et non observable en OSC.
+  modes_patch:
+    confiance: A
+    source: "manuel §4 « Patching By Channel » / « Patching By Address »"
+    bascule:
+      mot_cle: "Format"
+      osc: format
+      type: toggle
+      confiance: A
+      backlog: 20
+      note: >
+        `Format` bascule, il ne règle pas. Aucune adresse `/eos/out/…` ne
+        publie le mode courant — le sous-arbre `/eos/out/get/patch/…` renvoie
+        la base de patch, pas l'état de l'affichage. Le mode est donc à la fois
+        non réglable et non lisible depuis OSC.
+    par_channel:
+      defaut: true
+      sens: "`5 At 100` patche le CHANNEL 5 à l'ADRESSE 100"
+      confiance: A
+    par_adresse:
+      defaut: false
+      sens: "`5 At 100` patche l'ADRESSE 5 au CHANNEL 100 — exactement l'inverse"
+      confiance: A
+    consequence_generateur: >
+      La même chaîne de caractères produit deux patchs opposés selon un état
+      que le générateur ne peut ni lire ni régler de façon fiable. Seule
+      parade documentée : le préfixe explicite `Address <n> At <channel>`, qui
+      lève l'ambiguïté quel que soit le mode (manuel §4). Le générateur émet
+      cette forme dès qu'il patche par adresse.
+
+  # Une règle transversale, et la plus lourde de conséquences pour une app
+  # qui génère des commandes : en Blind, il n'y a pas d'étape de validation.
+  blind_immediat:
+    regle: >
+      En Blind, les éditions prennent effet IMMÉDIATEMENT : aucune commande
+      `Record` ni `Update` n'est nécessaire.
+    confiance: A
+    source: >
+      manuel §17 (CAUTION explicite), §20 « Editing Submasters », §18 (liste
+      d'effets), §10 ({Locked} non protégé en Blind) — la règle est répétée
+      chapitre après chapitre.
+    consequence_generateur: >
+      Le schéma « je prépare, l'utilisateur relit, puis j'envoie » n'existe pas
+      en Blind : la première commande envoyée est déjà appliquée. Toute
+      validation doit donc avoir lieu AVANT l'envoi, jamais entre deux
+      commandes d'une même séquence. C'est aussi pourquoi une palette
+      `{Locked}` reste modifiable en Blind — la protection porte sur Live.
+
+  # Les mots dont le sens dépend de l'écran actif
+  polysemie:
+    At:
+      sens:
+        Live:  "niveau d'intensité — `Chan 1 At 50` = 50 %"
+        Blind: "niveau d'intensité"
+        Patch: "adresse DMX de départ — `601 At 250` patche l'adresse 250"
+      confiance: S
+      source: >
+        Découverte terrain (corpus #161-162, S), reconfirmée indépendamment par
+        une source communautaire (corpus vague 33) et par le manuel §4.
+      consequence_generateur: >
+        Le générateur DOIT connaître son écran avant d'émettre `At`. Une
+        commande d'intensité envoyée pendant que Patch a le focus repatche.
+    "@":
+      sens:
+        Live:  "identique à At — niveau"
+        Patch: "adresse"
+      confiance: B
+      source: "corpus vague 33, confirmation indépendante"
+      note: "la polysémie ne se limite pas au mot `At` : le symbole la partage"
+    "/":
+      sens:
+        cue:      "préfixe de cue list — `Cue 2/5`"
+        temps:    "séparateur montée/descente — `Time 4/3`"
+        pourcent: "pourcentage du temps de cue en timing discret — `Time /50`"
+        dmx:      "valeur DMX brute en double — `Chan 1 At / / 239` met le channel 1 à 239"
+        patch:    "séparateur univers/adresse — `603 At 2 / 146`"
+      confiance: A
+      source: "manuel §4, §6, §12"
+      note: >
+        Cinq sens documentés pour un seul symbole, tous distingués par la
+        position et non par l'écran. À ne pas confondre avec la polysémie de
+        `At`, qui elle dépend bien de l'écran.
+
+# --------------------------------------------------------------------------
+# EXPORT ASCII — le second format de sortie du projet, et sa lacune
+#
+# L'objectif du dépôt mentionne « injection OSC ou ASCII ». Après revue
+# complète des sources disponibles, le constat est net : la voie OSC est
+# documentée au token près, la voie ASCII ne l'est pas du tout côté FORMAT.
+# Ce qui suit décrit donc un flux de travail, pas une grammaire.
+# --------------------------------------------------------------------------
+export_ascii:
+  confiance: A
+  source: "manuel §3 « Managing Show Files » — import et export"
+  extension: ".asc"
+  format_nominal: "USITT ASCII"
+
+  chemin_export:
+    forme: "Browser > File > Export > USITT ASCII > [Select]"
+    destinations: ["Show File Archive", "serveur de fichiers", "clé USB"]
+    confiance: A
+    generable: false
+    note: >
+      Aucune commande de ligne, aucune touche OSC ne déclenche l'export : c'est
+      une navigation dans le Browser. Comme `{Emergency Mark}`, c'est hors de
+      portée du générateur — à indiquer à l'utilisateur, pas à produire.
+
+  chemin_import:
+    forme: "Browser > File > Import > USITT ASCII"
+    options:
+      "Import as Library Fixtures": "Eos tente d'apparier les fixtures à sa bibliothèque"
+      "Import as Custom Fixtures": "les fixtures entrent telles quelles — recommandé par ETC"
+    ecrasement_par_defaut: >
+      Par défaut, les données ASCII ÉCRASENT le show courant. `{Merge Data?}`
+      les fusionne à la place.
+    confiance: A
+    consequence_generateur: >
+      Un import ASCII mal paramétré détruit le show en place. Toute procédure
+      d'import proposée à l'utilisateur doit mentionner `{Merge Data?}`
+      explicitement — le défaut est le comportement destructeur.
+
+  pertes_annoncees:
+    regle: >
+      ETC prévient en CAUTION que toutes les données ne passent pas, « such as
+      effects and macros », et que le comportement varie selon le produit.
+    confiance: A
+    source: 'manuel §3 : "Not all data (such as effects and macros) may be imported. This varies by product."'
+    portee: >
+      Les MACROS sont nommément citées. C'est exactement l'objet que ce projet
+      produit. La mise en garde est officielle et générale ; le corpus #027 en
+      donne un cas concret (une macro apprise sur un bump de submaster ne se
+      relit pas après un aller-retour).
+
+  lacune_de_specification:
+    constat: >
+      Aucune source du dépôt — ni le manuel officiel, ni les 174 entrées du
+      corpus, ni les workbooks, ni le journal terrain — ne décrit la STRUCTURE
+      du fichier `.asc` : ni les mots-clés, ni la représentation des macros,
+      ni l'extension propriétaire ETC qui les porterait.
+    confiance: A
+    backlog: 32
+    consequence_architecture: >
+      Le modèle ne peut pas produire d'ASCII. Il peut produire des macros
+      correctes et les injecter en OSC ; pour l'ASCII, il ne dispose ni du
+      format cible ni des règles d'échappement. Tant que la spécification n'est
+      pas au dépôt, « injection OSC ou ASCII » doit se lire « injection OSC »,
+      l'ASCII restant une voie d'import/export manuelle assistée par l'app,
+      pas générée par elle.
+    sources_a_rapatrier:
+      - "la norme USITT ASCII Text Representation (DMX/showfile), source primaire"
+      - "la documentation ETC de son extension propriétaire pour les macros"
+    procedure: "voir CLAUDE.md règle n°1 — identifier le lien exact, l'utilisateur télécharge et dépose le fichier dans la conversation"
+
+# --------------------------------------------------------------------------
+# MAGIC SHEETS — un mini-langage de préfixes, distinct de la ligne de commande
+# --------------------------------------------------------------------------
+magic_sheets:
+  confiance: A
+  source: "manuel §25, champ « Command » — contenu de l'infobulle reproduit"
+  ecrans: { navigateur: 3, liste: 14 }
+
+  commandes_objet:
+    principe: >
+      Un objet de Magic Sheet peut porter une commande exécutée à
+      l'interaction. Le champ accepte plusieurs commandes, et un jeu de
+      PRÉFIXES qui n'existe nulle part ailleurs dans la grammaire.
+    confiance: A
+    prefixes:
+      aucun:    { forme: "Chan 1",                     effet: "texte de ligne de commande" }
+      "event:": { forme: "event: Go 0",                effet: "évènement console plutôt que ligne de commande" }
+      "<U2>":   { forme: "<U2>Chan 1",                 effet: "cible l'utilisateur 2" }
+      "macro:": { forme: "macro:Tab_Down 2 7 Tab_Up",  effet: "suite de commandes de macro" }
+      "udp:":   { forme: "udp:$Chan 1#",               effet: "chaîne UDP" }
+      osc:      { forme: "/device/slider=1.0",         effet: "sortie OSC ; fronts insérés automatiquement si absents" }
+      "local:": { forme: "local:/eos/wheel/coars/pan=3.0", effet: "OSC vers la console locale" }
+      combine:  { forme: "udp:local:<U2>$Chan 1#",     effet: "les préfixes se cumulent" }
+
+  nuance_corpus:
+    description: >
+      Le corpus #063 (C, d'après l'infobulle native) décrit `macro:` comme le
+      moyen « d'appeler une macro depuis un bouton », ce qui suggère
+      `macro:<numéro>`. Le seul exemple du manuel, `macro:Tab_Down 2 7 Tab_Up`,
+      montre autre chose : une SUITE DE COMMANDES de macro écrites en noms
+      internes, sans numéro de macro.
+    resolution: >
+      Les deux formes peuvent coexister — rien ne les oppose logiquement — mais
+      seule la seconde est attestée. Le modèle ne retient que celle du manuel.
+    backlog: 30
+
+# --------------------------------------------------------------------------
+# SHOW CONTROL — déclencher depuis l'extérieur
+# --------------------------------------------------------------------------
+show_control:
+  confiance: A
+  source: "manuel §31 « About Eos Family Show Control »"
+  ecran: 11
+
+  actions_possibles:
+    regle: "Eos ne supporte que TROIS actions d'évènement, plus le niveau par adresse"
+    liste:
+      - "exécuter une cue"
+      - "piloter un submaster : bump, fondu (analogique seulement), on et off"
+      - "exécuter une macro"
+      - "{Level By Address} — règle le paramètre d'une adresse au niveau entrant"
+    confiance: A
+    consequence_generateur: >
+      Tout déclenchement programmé passe donc par une macro, ou n'existe pas.
+      C'est un argument de plus pour que le traducteur produise des macros
+      plutôt que des lignes de commande isolées : la macro est le seul objet
+      qu'un évènement sait exécuter.
+
+  une_action_par_evenement:
+    regle: "un évènement ne porte qu'UNE action ; plusieurs évènements peuvent tirer au même instant"
+    confiance: A
+
+  serialisation_des_macros:
+    regle: >
+      Si une macro est déclenchée avant la fin de la précédente, la première
+      TERMINE son action avant que la seconde ne démarre.
+    confiance: A
+    source: "manuel §31, note explicite"
+    portee: >
+      Garantie de sérialisation utile : elle atténue une partie des craintes du
+      corpus sur le chaînage de macros (#070/#095, PLANNING #2) et sur les
+      `Send_String` multiples (#107, PLANNING #3). Attention cependant : elle
+      est énoncée pour les macros déclenchées PAR ÉVÈNEMENT de show control,
+      pas pour un déclenchement OSC direct — ne pas la généraliser au-delà.
+
+  mode_macro:
+    regle: >
+      Une macro déclenchée par évènement s'exécute SANS interagir avec la ligne
+      de commande, sauf si elle est en mode Foreground.
+    confiance: A
+    tension_avec_la_doctrine: >
+      Le projet impose Foreground par défaut (règle héritée du corpus #068 sur
+      `{Target}`). Or c'est précisément le mode qui fait qu'une macro
+      déclenchée par show control écrit sur la ligne de commande de
+      l'opérateur. Les deux règles ne se contredisent pas — elles arbitrent
+      différemment — mais le choix doit être conscient et expliqué à
+      l'utilisateur.
+
+  numeros_instables:
+    regle: >
+      Le numéro d'évènement n'est PAS fixe : c'est un moyen de sélection, et
+      les évènements se renumérotent pour rester chronologiques.
+    confiance: A
+    source: 'manuel §31 : "The event number is not fixed" ; et pour le RTC, "Event 3 is now listed as Event 1"'
+    backlog: 31
+    consequence_generateur: >
+      Une commande générée qui désigne `Event 3` peut viser un autre évènement
+      après une insertion. Contrairement aux cues, palettes ou macros, ce n'est
+      pas un identifiant stable — le traducteur ne peut pas le mémoriser d'une
+      session à l'autre.
+
+  rtc:
+    format_heure: "24 h sans séparateur — `Event 1 Time 1500` règle 15:00"
+    jours: "lundi = 1 ; softkeys ou clavier avec `+`, `-`, `Thru`"
+    quotidien: "il faut ajouter CHAQUE jour de la semaine — aucun raccourci « tous les jours »"
+    astronomique:
+      - "`Event 2 Time Before Sunset 30` — 30 minutes avant le coucher"
+      - "`Event 3 Time After Sunrise 60` — une heure après le lever"
+    date_obligatoire: "une date doit être saisie pour qu'un évènement RTC s'exécute"
+    confiance: A
+    une_commande_par_ligne:
+      regle: "les commandes RTC ne peuvent PAS être combinées sur une même ligne de commande"
+      confiance: A
+      source: "manuel §31, note explicite"
+      consequence_generateur: >
+        Le générateur doit émettre une ligne par réglage — temps, jours, date,
+        action — jamais une ligne composée.
+
+  learn:
+    principe: "`Learn` sur une event list crée un évènement à chaque cue, bump ou macro déclenchée"
+    piege: >
+      Si `Learn` est pressé depuis un autre écran que Show Control, un
+      évènement VIDE est ajouté à toutes les listes en mode learn.
+    silent_mode: "l'horloge tourne sans déclencher les évènements"
+    execution_pendant_edition: >
+      Les évènements se déclenchent même dans l'écran d'édition, dès qu'ils
+      sont créés. Même famille de risque que l'édition de macro concurrente
+      (corpus #067).
+    confiance: A
+    softkeys:
+      "{Learn Events}": "activable en macro ; les macros qui la contiennent ne sont pas apprises"
+      "{SC Learn}": "exclut une macro donnée de l'apprentissage comme évènement"
+
+# --------------------------------------------------------------------------
+# SAISIE DES NIVEAUX — le piège le plus coûteux pour un traducteur NL
+#
+# `At 5` ne vaut pas 5 %. Il vaut 50 %.
+# --------------------------------------------------------------------------
+saisie_niveau:
+  confiance: A
+  regle: >
+    Un chiffre UNIQUE après `At` reçoit un zéro implicite : il est lu comme
+    des dizaines. Deux chiffres ou plus sont lus littéralement.
+  source: >
+    manuel §6, notation `<0>` employée cinq fois : « [1] [+] [3] [At] [5] <0> »
+    = 50 %, « [At] [+] [3] <0> » = +30 %, « [At] [/] [3] <0> » = échelle 30 %,
+    « [1] [At] [6] <0> [Rem Dim] » = 60 %, « [5] [At] [5] <0> [Sneak] [8] » =
+    50 % en 8 s. Confirmé indépendamment au §22 : « [3] [At] [1] [Enter] »
+    règle le point de courbe à 10 %.
+  exemples:
+    - { saisi: "At 5",   obtenu: "50 %" }
+    - { saisi: "At 50",  obtenu: "50 %" }
+    - { saisi: "At 45",  obtenu: "45 %  (manuel §19)" }
+    - { saisi: "At 130", obtenu: "130 % (manuel §6, échelle)" }
+  portee: >
+    Vaut pour l'intensité, les incréments (`At + 3` = +30 %), les échelles
+    (`At / 3` = 30 %) et les points de courbe. Ce n'est pas propre à une
+    commande, c'est la lecture du clavier numérique.
+  consequence_generateur:
+    gravite: haute
+    description: >
+      Une demande « mets les circuits à 5 % » traduite naïvement en `At 5`
+      produit 50 % — un facteur dix, silencieux, sans erreur de syntaxe. C'est
+      le seul piège rencontré jusqu'ici qui transforme une commande valide en
+      résultat faux d'un ordre de grandeur.
+    regle: >
+      Le générateur n'émet jamais un niveau d'un seul chiffre nu. Pour une
+      valeur de 1 à 9, il écrit systématiquement la forme à deux chiffres avec
+      un zéro de tête (voir `forme_pourcentage_simple`).
+  forme_pourcentage_simple:
+    regle: >
+      Sous 10 %, écrire DEUX chiffres avec un zéro de tête : `At 05` = 5 %,
+      `At 07` = 7 %, et ainsi de suite. Symétrique avec la lecture littérale à
+      deux chiffres déjà établie (`At 45` = 45 %) — la présence du second
+      chiffre, zéro ou non, est ce qui lève l'ambiguïté du chiffre unique.
+    confiance: S
+    source: >
+      Confirmation directe de l'utilisateur en session, 2026-08-03 : « 5 vaut
+      50 et 2 vaut 20 ainsi de suite. 05 vaut 5 et 07 vaut 7 ainsi de suite. »
+      Résout PLANNING #29, ouvert depuis v0.12 faute d'exemple du manuel sous
+      10 %. Confiance S par analogie avec `reference/JOURNAL_observations_nomad.md` :
+      même nature de source (retour direct de l'opérateur console) que les
+      autres observations S du projet, pas un document tiers.
+    generateur: >
+      `_formater_niveau()` applique cette règle : toute valeur entière de 1 à 9
+      passée à un niveau `At` (intensité, park) est rendue sur deux chiffres.
+      Ne s'étend pas à `Time`/`Delay`, qui lisent un chiffre unique
+      littéralement (`Time 6` = 6 s, manuel §8) — la règle du zéro implicite
+      est propre à `At`, pas au clavier numérique en général.
+
+# --------------------------------------------------------------------------
+# COURBES — une relation entre le temps et le niveau
+# --------------------------------------------------------------------------
+courbes:
+  confiance: A
+  source: "manuel §22 Curves"
+  mot_cle: "Curve"
+  osc: curve
+  ecran: 21
+  preprogrammees: 11
+  points_max: 100
+
+  portee_selon_la_cible:
+    patch: "la transition d'intensité suit la rampe de la courbe"
+    cue: "n'affecte QUE les mouvements d'intensité de la cue"
+    cue_part: "affecte TOUS les paramètres qui bougent dans la part"
+    scroller_fan: "la sortie du ventilateur suit l'intensité du channel"
+    confiance: A
+    note: >
+      La différence cue / cue part est réelle et documentée deux fois (§12 et
+      §22). Annoncer « courbe appliquée » sans préciser la portée induit en
+      erreur : sur une cue simple c'est l'intensité seule, sur une part c'est
+      tout ce qui bouge.
+
+  suppression_qui_ne_supprime_pas:
+    regle: >
+      Supprimer une courbe préprogrammée ne la retire pas de la liste : elle
+      revient à son état d'origine.
+    confiance: A
+    source: "manuel §22 : « [Delete] {Curve} [9][0][1] [Enter] [Enter] »"
+    consequence_generateur: >
+      `Delete` ne veut pas dire « supprimer » ici mais « réinitialiser ». Une
+      confirmation utilisateur formulée « supprimer la courbe 901 ? » serait
+      trompeuse.
+
+  retrait: "`{Curve} At Enter` retire la courbe, en patch comme sur une cue"
+
+# --------------------------------------------------------------------------
+# `At Enter` — l'idiome de retrait, récurrent dans toute la grammaire
+# --------------------------------------------------------------------------
+idiome_retrait:
+  forme: "`<cible> <attribut> At Enter`"
+  regle: "`At` suivi immédiatement d'`Enter` RETIRE l'attribut au lieu de le régler"
+  confiance: A
+  occurrences:
+    - { source: "manuel §4",  exemple: "`601 At Enter` retire l'adresse, garde le type" }
+    - { source: "manuel §22", exemple: "`Patch Attributes 1 Curve At Enter` retire la courbe du channel 1" }
+    - { source: "manuel §22", exemple: "`Cue 5 Attributes Curve At Enter` retire la courbe de la cue 5" }
+    - { source: "manuel §12", exemple: "`Group 1 Focus At Enter` rappelle la valeur de la cue précédente" }
+    - { source: "manuel §18", exemple: "`<sélection> Effect At Enter` retire l'instruction d'effet" }
+    - { source: "manuel §19", exemple: "`<channels> At Enter` déparque, depuis l'écran Park" }
+  note: >
+    Six occurrences dans cinq chapitres : ce n'est pas une particularité locale
+    mais un idiome de la grammaire. À traiter comme tel plutôt que de le
+    redécouvrir chapitre par chapitre. Attention cependant : au §12 il ne
+    retire pas mais RAPPELLE la valeur antérieure — le sens général est
+    « annule l'instruction courante », dont le retrait n'est qu'un cas.
+
+# --------------------------------------------------------------------------
+# SNAPSHOTS — l'état de la surface de contrôle, pas celui du plateau
+# --------------------------------------------------------------------------
+snapshots:
+  confiance: A
+  source: "manuel §23 Snapshots"
+  mot_cle: "Snapshot"
+  ecran: 19
+
+  portee:
+    regle: >
+      Un snapshot enregistre l'état de la SURFACE DE CONTRÔLE et de la
+      configuration des moniteurs — pas l'état lumineux du plateau.
+    confiance: A
+    consequence_generateur: >
+      Un utilisateur qui demande « enregistre cet état » veut presque toujours
+      une cue, un preset ou une palette. Le snapshot ne conserve aucune donnée
+      de channel. Distinction à faire AVANT de traduire.
+
+  globalite:
+    regle: "les snapshots sont globaux : enregistrables et rappelables depuis n'importe quel appareil sauf les RFR Net3"
+    confiance: A
+    mappage: >
+      Rappelé sur un appareil de disposition différente, Eos mappe « au mieux
+      de ses capacités » — le résultat n'est donc pas garanti identique.
+    recommandation_multi_utilisateur: >
+      Réserver des plages de numéros par utilisateur, faute de quoi les
+      snapshots se marchent dessus (manuel §23).
+
+  faders:
+    regle: "un snapshot de faders n'inclut PAS la cue active — seulement les cues en attente et les attributs"
+    confiance: A
+
+  edition_exclusive:
+    regle: >
+      Dans la liste, désigner un élément par softkey l'active et DÉSACTIVE
+      tous les autres.
+    confiance: A
+    source: "manuel §23 : « <Snapshots> [3] {Monitors} [Enter] » active les moniteurs et désactive le reste"
+    consequence_generateur: >
+      Sémantique remplaçante, pas additive. Une intention « ajoute les
+      moniteurs au snapshot 3 » n'a pas cette traduction.
+
+  rappel:
+    formes: ["`Snapshot 5 Enter`", "depuis une cue via la liste d'exécution", "depuis une macro", "depuis les direct selects"]
+    confiance: A
+
+# --------------------------------------------------------------------------
+# PARK — figer une valeur au-dessus de tout le reste
+# --------------------------------------------------------------------------
+park:
+  confiance: A
+  source: "manuel §19 Park"
+  mot_cle: "Park"
+  osc: park
+  ecran: 20
+
+  principe: >
+    Fige un channel ou un paramètre à une valeur, en interdisant toute reprise
+    par le contrôle manuel, une cue ou un submaster.
+  immunites: ["grandmaster", "blackout", "contrôle par partition"]
+  confiance_immunites: A
+  note_partition: >
+    Park échappe au contrôle par partition : n'importe quel opérateur peut
+    parquer et déparquer, quelle que soit sa partition.
+
+  record_targets:
+    regle: >
+      Les valeurs parquées sont EXCLUES de tous les record targets. On peut
+      malgré tout régler et enregistrer des niveaux manuels pour un channel
+      parqué — mais ils ne sortent pas tant que le paramètre reste parqué.
+    confiance: A
+    consequence_generateur: >
+      Une macro qui règle puis enregistre un channel parqué produit une cue
+      correcte sur le papier et un plateau inchangé. Aucune erreur ne remonte.
+
+  modalite:
+    regle: >
+      Dans l'écran Park, la touche `Park` n'est PAS nécessaire pour parquer —
+      c'est supposé — mais elle sert à DÉPARQUER. `At Enter` déparque aussi.
+    confiance: A
+    source: "manuel §19 « Park Values from the Park Display »"
+    consequence_generateur: >
+      Même touche, sens inversé selon l'écran. `3 At 45 Enter` parque depuis
+      l'écran Park et règle une intensité depuis Live. C'est la polysémie de
+      `At` sous une forme de plus.
+
+  toggle:
+    forme: "`<chan> At Park Enter`"
+    regle: "parque si non parqué, déparque si parqué — c'est un BASCULE"
+    confiance: A
+    source: "manuel §19 : exemple explicite sur le channel 2"
+    consequence_generateur: >
+      Cette forme ne permet pas d'exprimer « parque » de façon absolue. Pour un
+      résultat déterministe il faut passer une valeur : `<chan> At <n> Park`.
+      Même famille de piège que `{Enable}`/`{Disable}` sur le marquage (#6).
+
+  echelle:
+    forme: "`<chan> At / <pourcentage> Park Enter`"
+    exemples:
+      - "`3 At / 125 Park` — le channel 3 sortira 25 % plus haut que son réglage"
+      - "`3 At / 85 Park` — il sortira 15 % plus bas"
+    confiance: A
+    osc: scale
+    note: "septième sens documenté du symbole `/`"
+
+  adresses:
+    forme: "`Address <n> At <niveau> Park Enter`"
+    deparquer: "`Address <n> Park Enter`"
+    tout_deparquer: "`Address Park Enter`"
+    confiance: A
+
+  tout_deparquer:
+    forme: "`Park Enter`"
+    effet: "efface TOUS les channels parqués et toutes les instructions d'échelle"
+    confirmation: true
+    confiance: A
+    note: >
+      Un channel déparqué revient au niveau que la console fournit à cet
+      instant, ou à sa valeur par défaut s'il n'y a pas d'instruction.
+
+# --------------------------------------------------------------------------
+# FILTRES — ce qui décide, en silence, de ce qui sera enregistré
+# --------------------------------------------------------------------------
+filtres:
+  confiance: A
+  source: "manuel §13 Filters"
+  mot_cle: "Filter"
+  osc: filter
+  effacer: { mot_cle: "Clear Filters", osc: clear_filters, confiance: A }
+
+  portee:
+    regle: "déterminent quels paramètres peuvent être stockés dans une cue, une palette ou un preset"
+    confiance: A
+    par_cible:
+      Palettes: "déjà filtrées par nature ; les filtres couleur et beam peuvent affiner"
+      Presets: "les filtres actifs décident du contenu"
+      Cues: "les filtres actifs décident du contenu, MÊME avec `Record Only`"
+      "Recall From": "N'EST PAS affecté par les filtres"
+    note_faders: >
+      Les filtres de channel et de paramètre applicables aux faders et aux
+      submasters sont autre chose : ils agissent à la LECTURE, pas à
+      l'enregistrement. Deux mécanismes homonymes à ne pas confondre.
+
+  tout_ou_rien:
+    regle: >
+      Tous les filtres sélectionnés et aucun filtre sélectionné produisent le
+      MÊME résultat : tous les paramètres sont enregistrables.
+    confiance: A
+    source: 'manuel §13 : "There is no difference between having all filters selected and having no filters selected"'
+    note: >
+      Subtilité logique réelle : l'état « filtré » n'est signifiant qu'entre
+      les deux extrêmes. Un générateur qui compterait les filtres actifs pour
+      décider s'il y a filtrage se tromperait aux deux bouts.
+
+  application:
+    forme: "accord maintenu — tenir `{Filter}`, presser les touches de paramètre, relâcher"
+    confiance: A
+    source: "manuel §13, procédure en trois temps répétée pour chaque cas"
+    toggle: "réappliquer un filtre le retire — c'est un état bascule"
+    backlog: 27
+    note_osc: >
+      `filter`→FILTER et `clear_filters`→CLEAR_FILTER_COMMAND existent bien
+      comme touches OSC, et `/eos/key/<nom>` accepte un front (1.0 appui, 0.0
+      relâchement). Reproduire l'accord maintenu serait donc théoriquement
+      possible. Jamais documenté ni observé.
+
+  etat_invisible:
+    regle: >
+      Aucune adresse `/eos/out/…` ne publie l'état des filtres — vérifié sur
+      le manuel §31 et sur Supported_OSC_Commands.
+    confiance: A
+    backlog: 28
+    consequence_generateur: >
+      La MÊME commande `Record Cue 5 Enter` enregistre un contenu différent
+      selon un état que le générateur ne peut ni lire ni, probablement, régler.
+      C'est le cinquième état implicite du modèle, et le plus lourd : les
+      autres changent le sens d'une commande, celui-ci change silencieusement
+      ce qu'elle enregistre, sans rien changer à son texte.
+
+# --------------------------------------------------------------------------
+# CUE LISTS MULTIPLES ET ASSERT
+#
+# Contient la contradiction la plus nette rencontrée jusqu'ici entre deux
+# sources du projet — voir `assert.contradiction_sources`.
+# --------------------------------------------------------------------------
+cue_lists:
+  confiance: A
+  source: "manuel §14 Multiple Cue Lists"
+  maximum: 999
+  indisponible_sur: ["Element 2", "Element Classic"]
+
+  designation:
+    forme: "`Cue <liste>/<numero>` — la liste 1 s'écrit sans préfixe ni `/`"
+    confiance: A
+    liste_seule:
+      forme: "`Cue <n>/ Enter`"
+      effet: >
+        Sélectionne la cue la plus récemment activée de cette liste, ou la
+        première de la liste s'il n'y en a aucune d'active.
+      confiance: A
+
+  liste_courante_implicite:
+    regle: >
+      La liste d'enregistrement est TOUJOURS déterminée par la cue
+      sélectionnée, sauf si une autre liste est explicitement nommée.
+    confiance: A
+    source: "manuel §14 « Recording to a New Cue List »"
+    backlog: 25
+    note: >
+      La « cue sélectionnée » est la dernière cue affectée en Live — un Record,
+      un Update, un Go, un Back, un Go To Cue, ou même un simple changement
+      d'attribut. Le manuel juge utile de prévenir : « It is very useful to
+      keep an eye on the selected cue ». C'est un quatrième état implicite,
+      après le mode de patch (#20), le couple Q Only/Track et le mode de
+      marquage (#24).
+    regle_generation: >
+      Le générateur nomme TOUJOURS la liste explicitement, même la liste 1,
+      plutôt que d'hériter d'un état qu'il ne peut pas lire.
+
+  changement_de_liste_active:
+    causes:
+      - "`Cue 3/ Enter` — rappel d'une liste en ligne de commande"
+      - "`Record Cue 3/8 Enter` — enregistrement vers une autre liste"
+      - "un `Go` sur le fader d'une autre liste"
+    confiance: A
+
+  go_to_cue_0:
+    forme: "`Go To Cue <liste>/0 Enter`"
+    effet: >
+      Remet à leur valeur par défaut toutes les intensités non possédées par
+      un autre fader, y compris les valeurs manuelles, et replace la liste en
+      tête avec la première cue en attente.
+    epargne: ["channels capturés", "valeurs à priorité", "autres faders sur une autre liste"]
+    non_intensite: "les paramètres non-intensité restent dans leur état courant"
+    confiance: A
+  go_to_cue_out:
+    forme: "`Go To Cue Out Enter`"
+    effet: >
+      Ramène TOUS les paramètres à leur état par défaut et replace toutes les
+      listes chargées sur des faders en tête.
+    epargne: ["channels tenus par un submaster", "liste en Solo Mode"]
+    confiance: A
+    note: >
+      Distinct de `Go To Cue 0`, qui ne touche que l'intensité et une seule
+      liste. Deux commandes proches de nom, de portées très différentes.
+
+assert:
+  confiance: A
+  source: "manuel §14 « Using Assert »"
+  mot_cle: "Assert"
+  osc: assert
+
+  principe: >
+    Par défaut, un paramètre ne réagit qu'aux instructions de mouvement. Assert
+    force le rejeu de données trackées ou bloquées, même si une autre cue list
+    a pris possession du channel.
+
+  niveaux:
+    cue:
+      forme: "`Cue <liste>/<numero> Assert Enter`"
+      effet: "toutes les données de la cue, moves ET tracks, sont rejouées"
+      indicateur: "A majuscule dans la colonne d'assert"
+      confiance: A
+    cue_list:
+      forme: "`Cue <liste>/ Assert Enter`"
+      effet: "toutes les valeurs de toutes les cues de la liste sont assertées"
+      confiance: A
+      note: >
+        Le `/` sans numéro derrière est ce qui distingue l'assert de liste de
+        l'assert de cue. Sixième sens documenté de ce symbole.
+    channel:
+      forme: "`<channels> Assert Enter` puis `Record Cue <n> Enter`"
+      effet: "le channel entier rejoue ses valeurs stockées"
+      indicateur: "A rouge avant enregistrement, bleu après ; `a` minuscule dans la colonne"
+      confiance: A
+    parametre:
+      forme: "`<channels> {Color} Assert Enter` puis enregistrement"
+      effet: "seuls les paramètres désignés sont assertés"
+      confiance: A
+    manuel_sur_cue_active:
+      forme: "`Group 6 Assert Enter`"
+      effet: "rejoue une portion d'une cue ACTIVE sans rejouer la cue entière"
+      confiance: A
+      restriction: "ne fonctionne que sur une cue actuellement active"
+
+  contradiction_sources:
+    description: >
+      La grammaire consolidée du projet (§9) affirme, sur la foi du journal
+      terrain : « Assert n'a pas de mot-clé de ligne de commande — fonction
+      hardkey uniquement », confiance S. Le manuel §14 la contredit
+      frontalement : `Cue x/y Assert Enter` et `<channels> Assert Enter` sont
+      des commandes de ligne, documentées avec exemples.
+    resolution: >
+      Les deux sources disent vrai sur des objets différents. Le constat de
+      banc portait sur `/eos/newcmd "Sub n Assert#"` — un assert de
+      SUBMASTER, qui échoue bien. Le manuel documente l'assert de CUE, de
+      CUE LIST, de CHANNEL et de PARAMÈTRE, qui existent en ligne de commande.
+      La généralisation « pas de mot-clé de ligne de commande » était donc
+      trop large : c'est l'assert de submaster qui n'en a pas.
+    confiance: A
+    backlog: 26
+    portee_conservee_du_banc: >
+      Le constat S reste valable et non négociable pour les submasters :
+      `Sub <n> Assert` échoue, et le contournement documenté reste
+      `/eos/user/1/fader/1/<n>/stop`.
+
+# --------------------------------------------------------------------------
+# CUES MULTIPART — découper une cue pour donner des temps différents
+# --------------------------------------------------------------------------
+multipart:
+  confiance: A
+  source: "manuel §17 Multipart Cues"
+  mot_cle: "Part"
+  osc: part
+  maximum: 20
+
+  usage: >
+    Appliquer des temps différents à des mouvements différents dans une même
+    cue — le focus glisse lentement, la couleur claque après un court délai.
+    Remplace avantageusement une série de cues enchaînées par des temps
+    d'attente.
+
+  instruction_unique:
+    regle: >
+      Un channel ou un paramètre ne peut recevoir qu'UNE seule instruction
+      dans une cue multipart.
+    confiance: A
+    source: "manuel §17 « About Multipart Cues »"
+    exemple_interdit: >
+      Régler la couleur du channel 1 en part 1 puis lui en donner une autre en
+      part 8 est impossible.
+    consequence_generateur: >
+      Contrainte vérifiable statiquement : si l'IR affecte deux fois le même
+      couple channel/paramètre à des parts différentes, c'est une erreur de
+      construction, pas un cas limite de la console.
+
+  part_1_par_defaut:
+    regle: >
+      Désigner une part autre que la 1 place TOUTES les instructions de
+      mouvement de la cue dans la part 1.
+    confiance: A
+    note: "la part 1 est le contenant par défaut, jamais une part comme les autres"
+
+  tracks_sans_part:
+    regle: "les instructions trackées n'appartiennent à aucune part"
+    confiance: A
+
+  part_obligatoire_en_blind:
+    regle: >
+      En Blind, la touche `Part` est une instruction REQUISE : sélectionner
+      des channels ne les affecte pas à une part.
+    confiance: A
+    source: "manuel §17, note explicite"
+    exemple: "`5 Thru 9 Color Part Enter` n'affecte que la couleur à la part sélectionnée"
+
+  creation_en_plage:
+    thru_thru: "`Cue 1 Part 1 Thru Thru 4` crée les parts 1 à 4"
+    thru: "`Cue 1 Part 1 Thru 4` ne crée QUE les parts 1 et 4"
+    confiance: A
+    source: "manuel §17 « Creating Multiple Cue Parts in a Range »"
+    note: >
+      Le contraste est net et documenté ici, là où le §7 ne donnait les règles
+      de `Thru Thru` que pour les record targets. Même symbole, même logique :
+      `Thru` désigne, `Thru Thru` crée.
+
+  attributs:
+    regle: "les attributs et drapeaux de part sont ceux d'une cue, à l'identique"
+    confiance: A
+    par_part:
+      - "`Cue 2 Part 1 Delay 8` — délai propre à la part"
+      - "`Cue 4 Part 3 Color Time 6` — temps de couleur propre à la part"
+      - "`Cue 8 Part 9 AutoMark Off` — AutoMark désactivé pour cette part seule"
+      - "`Record Only Cue 5 Part 2 Assert` — drapeau Assert sur la part"
+    note_automark: >
+      `{AutoMark Off}` par part nuance le mode global de #24 : le MÉCANISME
+      (AutoMark ou marques référencées) se choisit dans le Setup, mais une
+      cue ou une part peut désactiver l'AutoMark localement — un `D` apparaît
+      alors dans les drapeaux (manuel §12).
+
+  suppression:
+    parts: "`Delete Cue 1 Part 1 Enter Enter`"
+    retour_simple: "supprimer TOUTES les parts ramène la cue à une cue simple"
+    confiance: A
+
+# --------------------------------------------------------------------------
+# MARK — préparer un mouvement pendant que le projecteur est noir
+#
+# Deux mécanismes exclusifs l'un de l'autre, et un mode global qui décide
+# lequel est actif. C'est le seul endroit de la grammaire où un réglage de
+# Setup change la nature même de ce qui sera enregistré.
+# --------------------------------------------------------------------------
+mark:
+  confiance: A
+  source: "manuel §9 Mark"
+  mot_cle: "Mark"
+  osc: mark
+
+  exclusivite:
+    regle: "AutoMark et marques référencées ne peuvent PAS coexister"
+    confiance: A
+    conversion: >
+      Désactiver AutoMark convertit TOUTES les AutoMarks du show en marques
+      référencées. Le basculement est global et rétroactif, pas un choix par
+      cue.
+    consequence_generateur: >
+      Le générateur ne peut pas savoir lequel des deux mécanismes est actif :
+      c'est un réglage de Setup, sans commande de lecture. Une intention
+      « prépare le mouvement avant l'allumage » se traduit différemment selon
+      ce réglage, et la traduction doit donc être annoncée sous condition.
+    indisponible_sur: ["Element 2", "Element Classic"]
+
+  automark:
+    principe: >
+      Quand une cue fait passer un projecteur de 0 à actif avec un mouvement
+      NP simultané, la console exécute ce mouvement dans la cue PRÉCÉDENTE.
+    indicateur: "M dans les flags ; D si l'AutoMark a été désactivé pour la cue"
+    confiance: A
+
+  referencee:
+    cue_marquee:
+      role: "porte le drapeau M ; c'est là que les NP changent réellement"
+      pose: "`Cue <n> Mark Enter`"
+    cue_source:
+      role: "porte l'intensité ; c'est là que les mouvements NP sont STOCKÉS"
+      pose: "`<channels> Mark Enter` puis enregistrement de la cue"
+    confiance: A
+    recherche_arriere: >
+      Sans instruction explicite, Eos remonte la cue list jusqu'au premier
+      drapeau M rencontré — à condition que l'intensité des channels reste à
+      zéro sur toute la durée de la marque.
+    channels_obligatoires:
+      regle: >
+        Il faut désigner explicitement les channels à marquer dans la cue
+        source.
+      confiance: A
+      source: 'manuel §9 : "Eos will not assume all automated fixtures apply to any given mark"'
+      consequence_generateur: >
+        Une intention « marque les projecteurs asservis » n'a pas de
+        traduction : il faut une liste de channels. Le traducteur doit la
+        demander plutôt que la deviner.
+    marquage_partiel:
+      forme: "`1 Thru 10 Focus Mark Enter` — ne marque que le focus"
+      effet: "les autres paramètres bougent en direct pendant la montée"
+      confiance: A
+    vers_cue_anterieure:
+      forme: "`<channels> Mark Cue 5 Enter` puis `Record Cue 8 Enter`"
+      effet: >
+        Marque la cue 5 pour exécuter les mouvements NP stockés en cue 8. Tout
+        mouvement NP intermédiaire pour ces channels est SUPPRIMÉ, tant que
+        l'intensité reste à zéro dans l'intervalle.
+      confiance: A
+
+  priorite:
+    ordre_de_tentative: ["{High Priority}", "Mark (normale)", "{Low Priority}"]
+    confiance: A
+    source: "manuel §9 « Priority Mark »"
+    sans_touche_osc: ["{High Priority}", "{Low Priority}"]
+    backlog: 23
+    note: >
+      Ni `eosKeys.ts` ni la liste officielle des touches OSC du manuel §31 ne
+      contiennent ces deux softkeys. `priority`→SOURCE_PRIORITY existe mais
+      désigne la priorité de submaster (§20), mécanisme différent — à ne pas
+      confondre.
+
+  earliest:
+    "{Earliest}":
+      mot_cle: "{Earliest}"
+      osc: earliest
+      effet: >
+        Marque dans la cue qui suit le dernier passage de l'intensité d'une
+        valeur non nulle à 0.
+      confiance: A
+      note: >
+        Traverse les cues bloquées et les mouvements d'intensité bloqués à 0
+        jusqu'à trouver le plus ancien passage à 0.
+    "{Earliest M}":
+      mot_cle: "{Earliest M}"
+      osc: earliest_m
+      effet: "marque vers la plus ancienne cue portant DÉJÀ un drapeau M"
+      confiance: A
+      repli: "se comporte comme {Earliest} si aucune cue marquée n'existe"
+    "{Emergency Mark}":
+      effet: "pose automatiquement un drapeau M s'il n'y en avait pas"
+      confiance: A
+      generable: false
+      note: >
+        Réglage de Setup > Record Defaults, pas un token de ligne de commande.
+        Hors de portée du générateur, à signaler à l'utilisateur seulement.
+
+  mark_time:
+    mot_cle: "Mark Time"
+    osc: mark_time
+    confiance: A
+
+  piege_enable_disable:
+    description: >
+      `{Enable}`/`{Disable}` appliqués au marking se comportent encore comme un
+      TOGGLE en macro, malgré la doctrine officielle générale qui promet un
+      comportement absolu pour ces softkeys.
+    confiance: C
+    source: "corpus #118, contredit #074"
+    backlog: 6
+
+# --------------------------------------------------------------------------
+# PALETTES ET PRESETS — la référence, et ce qui la casse
+#
+# Une palette ou un preset appliqué à un channel y laisse une RÉFÉRENCE, pas
+# une valeur. Presque tous les pièges de cette famille viennent de là : ce qui
+# préserve le lien, et ce qui le rompt sans le dire.
+# --------------------------------------------------------------------------
+palettes:
+  confiance: A
+  source: "manuel §10 Palettes, §11 Presets"
+
+  familles:
+    Int Palette:   { mot_cle: "Int Palette",   categorie: Intensity, confiance: A }
+    Focus Palette: { mot_cle: "Focus Palette", categorie: Focus,     confiance: A }
+    Color Palette: { mot_cle: "Color Palette", categorie: Color,     confiance: A }
+    Beam Palette:  { mot_cle: "Beam Palette",  categorie: Beam,      confiance: A }
+    Palette:
+      mot_cle: "Palette"
+      categorie: IFCB
+      confiance: A
+      note: >
+        Générique : rappelle la palette IFCB associée aux channels
+        sélectionnés, sans dire laquelle. `[selected channels] Palette n Enter`.
+
+  numerotation:
+    palettes: { plage: "0.001 à 9999.999", confiance: A }
+    presets:  { maximum: 1000, decimales: 3, plage: "jusqu'à 9999.999", confiance: A }
+
+  options:
+    "{By Type}":
+      effet: >
+        La palette contient des valeurs de channels « par défaut »,
+        applicables à tout fixture du même type. Peut aussi porter des valeurs
+        discrètes — marquées `T+` au lieu de `T`.
+      confiance: A
+      ne_dispense_pas_de_selection: >
+        PIÈGE DE FORMULATION. « Applicable à tout fixture du même type » décrit
+        le RÉSULTAT, pas l'enregistrement : `{By Type}` ne dispense en rien de
+        sélectionner des channels. Le manuel §10 « Storing a By Type Palette »
+        est explicite : « the lowest number channel of each fixture type will be
+        the default channel. Generally, you will want ONLY ONE channel of each
+        fixture type in use. Any additional channels in that fixture type will
+        be recorded with discrete data. »
+      consequence: >
+        Enregistrer `{By Type}` sur une sélection large est actif­ement
+        contre-productif : un seul channel par type devient le défaut, TOUS les
+        autres sont figés en données discrètes (marqueur `T+`). La sélection
+        idéale est un channel par type de fixture — c'est exactement ce que fait
+        le groupe de travail du workbook L2 (`Group 99`).
+      source_complement: "manuel §10 « Using By Type Palettes » ; workbook L2 Enhanced v3.3"
+      backlog: null
+    "{Absolute}":
+      effet: >
+        Au rappel, la donnée est traitée comme absolue : elle n'est JAMAIS
+        référencée. Marquée `A`.
+      confiance: A
+      note: >
+        À ne pas confondre avec `{Make Abs}`, qui casse la référence au moment
+        du rappel d'une palette ordinaire. Ici c'est la palette elle-même qui
+        est absolue par construction.
+    "{Locked}":
+      effet: "protège la palette d'une modification accidentelle. Marquée `L`."
+      confiance: A
+      piege: >
+        La protection est PARTIELLE et asymétrique : impossible de mettre à
+        jour une palette verrouillée directement en Live, mais elle s'édite
+        librement en Blind. Seule forme acceptée en Live :
+        `<liste de channels> Update <cible> Enter`.
+
+  reference:
+    rappel: >
+      Un rappel produit de la donnée MANUELLE affichée en rouge, sous forme
+      d'abréviation (IP3, FP8…) ou du libellé. `Data` maintenu montre les
+      valeurs numériques derrière la référence.
+    confiance: A
+    proportion:
+      forme: "`Int Palette <y> At <z>` rappelle à une proportion du niveau enregistré"
+      exemple: "`1 Recall From Preset 1 At 50` → un channel à 50 dans le preset ressort à 25"
+      lien: "conservé — la référence survit à la proportion"
+      confiance: A
+    rupture_du_lien:
+      regle: >
+        Enregistrer la donnée rappelée dans un AUTRE record target casse le
+        lien et fige la valeur en absolu.
+      confiance: A
+      note: >
+        C'est le piège référence/absolu déjà signalé au corpus (#042). Le
+        manuel le formule ici sans ambiguïté : pour conserver le lien après
+        une modification, il faut mettre à jour la palette elle-même.
+    make_abs:
+      forme: "`{Make Abs}` au rappel force la donnée en absolu"
+      confiance: A
+
+  record_contre_fusion:
+    remplacement: "`Record Palette 5 Enter Enter` écrase intégralement le contenu"
+    fusion: "`<liste de channels> Record Palette 5 Enter Enter` FUSIONNE au lieu d'écraser"
+    confiance: A
+    note: >
+      Même règle que pour les submasters (§20) et les cues (§12) : la présence
+      d'une sélection transforme un remplacement en fusion. Constante de la
+      grammaire Eos, pas une particularité des palettes.
+
+  selection_par_palette:
+    forme: "`Group Palette <x> Enter` sélectionne tous les channels ayant une donnée dans la palette"
+    confiance: A
+    note: "sélecteur pur — ne modifie aucune valeur"
+  rappel_integral:
+    forme: "`Recall From Palette <x> Enter` rappelle la palette entière, sans sélection préalable"
+    confiance: A
+
+  presets:
+    portee: >
+      Un preset collecte les QUATRE catégories (intensité, focus, couleur,
+      beam) là où une palette n'en couvre qu'une.
+    confiance: A
+    contenu: "données absolues et/ou mélange de palettes IFCB — donc des références imbriquées"
+    pas_de_recursion:
+      regle: "un preset ne peut PAS référencer un autre preset"
+      confiance: A
+      source: 'manuel §11 : "Presets can not refer to other presets"'
+      consequence_generateur: >
+        Contrainte structurelle dure : aucune factorisation de preset en
+        preset n'est possible. Une intention du type « le preset B, plus deux
+        changements » n'a pas de traduction référencée — il faut tout
+        réenregistrer, ou passer par les palettes qu'il contient.
+    effets: "un effet peut être stocké dans un preset (manuel §18)"
+    options:
+      confiance: A
+      source: "manuel §11 « Preset Options » — mêmes trois softkeys que les palettes"
+      note: >
+        {By Type}, {Absolute}, {Locked} : identiques en forme et en piège à
+        `palettes.options` ci-dessus. En particulier {By Type} PORTE LE MÊME
+        PIÈGE : "the lowest number channel of each fixture type will be the
+        default channel [...] you will want only one channel of each fixture
+        type in use. Any additional channels in that fixture type will be
+        recorded with discrete data" (manuel §11 « Storing a By Type Preset »,
+        formulation identique au mot près à celle du §10 pour les palettes).
+        Trouvé le 2026-08-06 en vérifiant `REGLES_POUR_UI.md` — non encore
+        répercuté dans `traducteur/` (les presets n'y sont pas encore modélisés).
+
+# --------------------------------------------------------------------------
+# GROUPES — un ordre, pas seulement un ensemble
+#
+# Un Group ne contient que des références de channels, jamais de niveaux
+# (corpus #058). Mais il porte aussi un ORDRE, et cet ordre est signifiant.
+# --------------------------------------------------------------------------
+groupes:
+  confiance: A
+  source: "manuel §7 Groups"
+
+  ordre:
+    regle: >
+      Les channels sont rangés dans l'ordre de SÉLECTION au moment de
+      l'enregistrement, pas dans l'ordre numérique.
+    confiance: A
+    exemples:
+      - "`1 + 3 + 5 Thru 9 Record Group 1` conserve cet ordre exact"
+      - "`10 Thru 2 Record Group 1` range 10, 9, 8 … — `Thru` descendant est légal"
+    portee: >
+      L'ordre gouverne le parcours `Next`/`Last` et l'application des effets.
+      Un `Update` ajoute les nouveaux channels EN FIN de liste, jamais à leur
+      rang numérique.
+    affichage: "`Format` bascule entre vue ordonnée (défaut) et vue numérique"
+
+  reorganisation:
+    "{Insert Before}":
+      effet: "insère le channel AVANT celui désigné, dans la vue ordonnée"
+      confiance: A
+      source: "manuel §7, exemple : `2 {Insert Before} 9` place le 2 avant le 9"
+      backlog: 22
+    "{Insert After}":
+      effet: "insère le channel APRÈS celui désigné"
+      confiance: A
+      source: "manuel §7, exemple : `2 {Insert After} 5` place le 2 après le 5"
+      backlog: 22
+    "{Reverse}":  { effet: "inverse l'ordre des channels", confiance: A }
+    "{Random}":   { effet: "ordre aléatoire", confiance: A }
+    "{Reorder}":  { effet: "remet en ordre numérique", confiance: A }
+    contradiction_manuel:
+      description: >
+        La liste de softkeys du manuel §7 décrit `{Insert Before}` comme
+        insérant « after the specified channel » et `{Insert After}` comme
+        insérant « before » — l'inverse de leurs noms ET l'inverse de ses
+        propres exemples chiffrés, quelques pages plus loin. Le modèle retient
+        les exemples, qui sont cohérents entre eux et avec les noms.
+      backlog: 22
+
+  sous_groupes:
+    creation_live: "`( 1 Thru 4 ) Record Group 2 Enter`"
+    creation_liste: "`Group 2 Enter ( 1 Thru 4 ) Enter`"
+    confiance: A
+    source: "manuel §7 « Subgroups »"
+    compte_pour_un:
+      description: >
+        Un sous-groupe se comporte comme UN SEUL channel dans quatre cas
+        précis, tous documentés A.
+      cas:
+        - "effets absolus ou relatifs appliqués depuis Live"
+        - "plage de channels d'un step d'effet step-based : le sous-groupe n'est pas éclaté entre steps"
+        - "parcours `Next`/`Last` : chaque sous-groupe est traversé d'un coup"
+        - "`{Reverse}`, `{Reorder}`, `{Random}` portent sur les sous-groupes, pas sur leur contenu"
+      note: >
+        `{Reorder}` classe les sous-groupes d'après leur PREMIER channel.
+        Et c'est le même mécanisme qui fait qu'un sous-groupe compte pour un
+        seul channel dans un Fan (manuel §8).
+
+  record_contre_update:
+    record: >
+      Ré-enregistrer un groupe REMPLACE son contenu et demande une
+      confirmation (sauf désactivation en Setup).
+    update: >
+      Mettre à jour AJOUTE des channels sans confirmation. Deux verbes, deux
+      résultats opposés — à ne jamais confondre dans une traduction.
+    confiance: A
+
+  composition:
+    depuis_groupes:
+      formes:
+        - "`Group 7 + 5 Record Group 9` — deux groupes réunis"
+        - "`Group 8 Group 9 Record Group 10` — juxtaposition sans `+`"
+      confiance: A
+      note: >
+        Deux formes documentées pour la même intention. Le générateur émet la
+        forme avec `+`, seule non ambiguë à la relecture.
+    exclusion: "`- 3 Record Group 7` — tout sauf le channel 3"
+    confiance: A
+
+# --------------------------------------------------------------------------
+# PATCH EN MASSE — le Fan s'applique ici aussi, avec un pas non prévisible
+# --------------------------------------------------------------------------
+patch:
+  confiance: A
+  source: "manuel §4 « Range Patching » ; corpus #164 (A)"
+
+  plage:
+    forme: "`Chan <a> Thru <b> At <adresse>` patche la plage à partir de l'adresse"
+    exemple: "`1 Thru 20 At 10` patche les channels 1 à 20 aux adresses 10 à 29"
+    confiance: A
+  liste:
+    forme: "`<a> + <b> + <c> At <adresse>` attribue les adresses dans l'ordre de la liste"
+    exemple: "`1 + 4 + 8 At 1` patche le channel 1 à l'adresse 1, le 4 à 2, le 8 à 3"
+    confiance: A
+    note: "les adresses se suivent, pas les channels"
+
+  pas_non_previsible:
+    regle: >
+      Le pas d'adresse entre deux channels est l'empreinte DMX (footprint) du
+      fixture, pas systématiquement +1.
+    confiance: A
+    source: "corpus #164, confirmation officielle"
+    consequence_generateur: >
+      Le générateur ne peut PAS annoncer les adresses résultantes sans
+      connaître le type de fixture patché. Il ne doit donc jamais les afficher
+      comme un fait dans une prévisualisation — seulement l'adresse de départ.
+
+  plage_channels_seulement:
+    regle: "`Thru` ne patche en plage QUE des channels"
+    confiance: A
+    source: 'manuel §4 : "Range patching only works with channels"'
+    piege: >
+      Tenter une plage d'ADRESSES ne produit pas d'erreur : Eos crée des PARTS
+      sur le channel au lieu de patcher une plage. Le résultat est silencieux
+      et faux.
+
+  part_automatique:
+    regle: >
+      Patcher une adresse sur un channel déjà adressé crée une part
+      supplémentaire au lieu de remplacer.
+    confiance: A
+    source: "manuel §4 « Creating Multipart and Compound Channels »"
+
+  dimmer_doubling:
+    softkeys: ["{A}", "{B}", "{NoDimDbl}"]
+    confiance: A
+    source: "manuel §4 « Dimmer Doubling »"
+    note: >
+      `{NoDimDbl}` ne s'emploie qu'en mode ADRESSE — il faut basculer avec
+      `Format` d'abord. Décalage réseau par défaut de 20000 (256 sur Sensor
+      Classic), réglable dans le Setup.
+
+# --------------------------------------------------------------------------
+# TERMINAISON — toutes les commandes ne prennent pas `Enter`
+#
+# Le manuel est explicite ET incomplet sur ce point : « There are some commands
+# which are self-terminating […] Some (but not all) of these commands are: ».
+# On connaît donc une partie de la liste, jamais sa totalité — voir PLANNING #19.
+# --------------------------------------------------------------------------
+terminaison:
+  defaut:
+    mot_cle: "Enter"
+    confiance: A
+    source: "manuel §00 « Enter »"
+  liste_officielle_incomplete:
+    confiance: A
+    source: 'manuel §00 : "Some (but not all) of these commands are"'
+    backlog: 19
+    note: >
+      ETC dit explicitement que sa propre liste est partielle. Toute action que
+      le modèle ne marque pas `auto_termine` est donc PRÉSUMÉE avoir besoin
+      d'`Enter`, sans preuve. C'est une présomption, pas un fait établi.
+
+# --------------------------------------------------------------------------
+# DURÉE DE VIE D'UNE SÉLECTION — la règle qui casse les macros multi-lignes
+#
+# Trouvée le 2026-08-06 en relisant le manuel §6 pour vérifier une affirmation
+# du document de cadrage UI. Elle manquait au modèle, et son absence a produit
+# une macro fausse (voir `avertissement_generateur` ci-dessous).
+# --------------------------------------------------------------------------
+duree_de_vie_selection:
+  confiance: A
+  source: >
+    manuel §6 « Deselecting Channels », énoncé DEUX fois textuellement
+    (« Channels are deselected when any action is taken on the keypad that is
+    unrelated to manual control, such as recording groups and cues, or updating
+    a record target, etc. »)
+
+  survit:
+    description: >
+      Une sélection survit à `Enter` et reste active pour la commande suivante
+      TANT QUE celle-ci relève du contrôle manuel (niveau, couleur, paramètre).
+    exemple: "`Chan 1 Thru 5 Full Enter` puis `Color 3/205 Enter` — même sélection"
+    source: >
+      manuel §6 : « You may continue to modify channels 1 through 5 since they
+      are still selected and displayed on the command line. »
+    confiance: A
+
+  ne_survit_pas:
+    description: >
+      Toute action ÉTRANGÈRE au contrôle manuel désélectionne — au premier chef
+      `Record` et `Update` sur n'importe quel record target.
+    declencheurs: [Record, Record Only, Update, Delete, Clear]
+    confiance: A
+    piege: >
+      C'est un piège silencieux de première catégorie : la ligne suivante est
+      syntaxiquement valide, la console ne refuse rien, et la commande s'applique
+      à une sélection VIDE. Une macro « colorer / enregistrer / colorer /
+      enregistrer » n'enregistre correctement que sa PREMIÈRE cible.
+
+  parade:
+    regle: >
+      Ne jamais compter sur la survie d'une sélection à travers un Record. Toute
+      étape qui suit un enregistrement doit reposer sa sélection explicitement,
+      ou la rappeler par `Select Last`.
+    formes_officielles:
+      - "`Group 99 Record Color Palette 1 Label Red Enter` — sélection reposée"
+      - "`Select Last Record Color Palette Next Label Orange Enter` — rappel"
+    source: >
+      Workbook officiel L2 Enhanced v3.3, section « COLOR PALETTES » : la
+      séquence d'enregistrement de sept palettes de couleur repose la sélection
+      à CHAQUE enregistrement, tantôt en réécrivant `[Group] [99]`, tantôt par
+      `[Select Last]`. Aucun `Record` n'y est écrit nu.
+    choix_du_projet: >
+      Le générateur repose la sélection en toutes lettres plutôt que d'employer
+      `Select Last`. Même raison que pour `Chan` et `Cue` explicites : une macro
+      se relit et se réimporte, et `Select Last` dépend d'un état antérieur que
+      le lecteur ne voit pas. Coût : des lignes plus longues. Gain : chaque ligne
+      est vraie isolément.
+    confiance: A
+
+  avertissement_generateur: >
+    Le générateur signale toute étape qui suit un `Record`/`Update` sans reposer
+    de sélection alors que l'étape précédente en portait une. Ce n'est pas une
+    précaution théorique : la première macro produite par ce dépôt pour une
+    demande réelle (six palettes de couleur en série) était fausse à partir de
+    sa deuxième palette, sans qu'aucun avertissement ne se déclenche.
+
+# --------------------------------------------------------------------------
+# OBJETS — ce qu'on sélectionne / ce qu'on cible
 # --------------------------------------------------------------------------
 objets:
   Chan:
@@ -32,9 +1390,90 @@ objets:
     plage: true
     confiance: A
     source: "manuel §7 Groups"
+    note: >
+      Un Group ne contient que des références de channels, jamais de niveaux
+      (corpus #058). Les sous-groupes d'un Group comptent pour un seul channel
+      lors d'un Fan (manuel §8, « Using Subgroups with Fan »).
+  Cue:
+    mot_cle: "Cue"
+    numerote: true
+    decimal: true
+    plage: true
+    liste: true              # `Cue <liste>/<numero>`, ex. Cue 2/5
+    confiance: A
+    source: "manuel §12 Cues & the Cue List"
+    note: "numérotation 0.001 à 9999.999, 10 000 cues maximum"
+  Part:
+    mot_cle: "Part"
+    numerote: true
+    plage: true
+    qualifie: Cue           # ne s'emploie jamais seul
+    confiance: A
+    source: "manuel §17 Multipart Cues, exemples de Fan de temps §8"
+  Sub:
+    mot_cle: "Sub"
+    numerote: true
+    plage: true
+    confiance: A
+    source: "manuel §20 Submasters"
+    note: "1000 submasters maximum"
+  Macro:
+    mot_cle: "Macro"
+    numerote: true
+    plage: false
+    confiance: A
+    source: "manuel §24 Macros"
+    note: "numérotation 1 à 99 999"
+  Preset:
+    mot_cle: "Preset"
+    numerote: true
+    decimal: true
+    plage: true
+    confiance: A
+    source: "manuel §11 Presets"
+    note: >
+      Collecte les quatre catégories IFCB, là où une palette n'en couvre
+      qu'une. Ne peut jamais référencer un autre preset.
+  Effect:
+    mot_cle: "Effect"
+    numerote: true
+    plage: true
+    confiance: A
+    source: "manuel §18 Effects"
+    note: >
+      917 et 918 sont préprogrammés (arc-en-ciel RGB / CMY). Un effet
+      step-based porte sa propre liste de channels ; un effet absolu non.
+  Partition:
+    mot_cle: "Partition"
+    numerote: true
+    plage: false
+    confiance: A
+    source: "manuel §28 Partitioned Control"
+    note: >
+      Quatre partitions préprogrammées, non supprimables (0, 901, 902, 903).
+      Assignation de channels par remplacement ou par `+`/`-` — aucun exemple
+      du manuel n'emploie `Thru` pour désigner une PLAGE de partitions.
 
 # --------------------------------------------------------------------------
-# OPÉRATEURS de sélection
+# CIBLES RÉFÉRENCÉES — record targets citables en critère de Query
+#
+# Un même mot-clé désigne tantôt un objet (« sélectionne ce qui est dans la
+# palette 2 »), tantôt une action (« applique la palette 2 »). Les deux emplois
+# doivent écrire la MÊME chaîne : `build.py` le vérifie contre `actions`.
+# --------------------------------------------------------------------------
+cibles:
+  Int Palette:   { mot_cle: "Int Palette",   action_associee: palette_intensite, confiance: A }
+  Color Palette: { mot_cle: "Color Palette", action_associee: palette_couleur,   confiance: A }
+  Focus Palette: { mot_cle: "Focus Palette", confiance: A }
+  Beam Palette:  { mot_cle: "Beam Palette",  confiance: A }
+  Preset:        { mot_cle: "Preset",        confiance: A }
+  Cue:           { mot_cle: "Cue",           confiance: A }
+  Effect:        { mot_cle: "Effect",        confiance: A }
+  Group:         { mot_cle: "Group",         confiance: A }
+  Sub:           { mot_cle: "Sub",           confiance: A }
+
+# --------------------------------------------------------------------------
+# OPÉRATEURS de sélection et de composition
 # --------------------------------------------------------------------------
 operateurs:
   plage:
@@ -46,6 +1485,435 @@ operateurs:
     confiance: A
   retrait:
     symbole: "-"
+    confiance: A
+  liste:
+    symbole: "/"
+    confiance: A
+    source: "manuel §12 et §16"
+    note: >
+      Polysémique selon la position : préfixe de cue list (`Cue 2/5`), séparateur
+      montée/descente d'un temps (`Time 4/3`), ou pourcentage de temps de cue en
+      timing discret (`Time /50` = 50 % du temps de cue). Le générateur doit
+      connaître le contexte, comme pour `At`.
+  creation_plage:
+    symbole: "Thru Thru"
+    confiance: A
+    source: "manuel §7 « [Thru] and [Thru] [Thru] » ; manuel §20 pour les subs"
+    note: "création en série de record targets — ce n'est pas une sélection"
+    regles:
+      - id: fin_obligatoire
+        regle: "`Group 1 Thru Thru Enter` sans cible de fin est une erreur de syntaxe"
+        confiance: A
+      - id: decimales_identiques
+        regle: >
+          Des cibles décimales ne sont créées que si le début ET la fin ont le
+          MÊME nombre de décimales. Sinon Eos crée des cibles entières.
+        confiance: A
+        exemples:
+          - "`Group 1.001 Thru Thru 11.001` → 10 000 groupes de 1.001 à 11.001"
+          - "`Group 1.001 Thru Thru 11.002` → 10 groupes ENTIERS de 2 à 11"
+          - "`Group 1 Thru Thru 11.001` → 11 groupes : 1.001, 11.001, et les entiers 2 à 11"
+        piege: >
+          Le deuxième exemple est le piège : un chiffre de décimale d'écart
+          change complètement la nature du résultat, sans la moindre erreur.
+      - id: zeros_ignores
+        regle: "les zéros terminaux d'une partie décimale sont ignorés dans ce décompte"
+        confiance: A
+      - id: plafond_silencieux
+        regle: >
+          Une création qui dépasserait 10 000 cibles est IGNORÉE — pas refusée,
+          pas tronquée : rien ne se passe.
+        confiance: A
+  sous_groupe:
+    symbole: ["(", ")"]
+    frappe: "Shift & /"
+    confiance: A
+    source: "manuel §7 « Subgroups » ; eosKeys.ts `(`→CHAN_SUBGROUP_BEGIN, `)`→CHAN_SUBGROUP_END"
+    note: >
+      La frappe console est `Shift & /`, mais ce que porte la ligne de commande
+      est une parenthèse — et ce sont les parenthèses qui sont des touches OSC
+      nommées. C'est donc `( 1 Thru 4 )` qui s'écrit et qui s'injecte.
+
+# --------------------------------------------------------------------------
+# FAN — répartition automatique de valeurs (grammaire consolidée §4, manuel §8)
+#
+# Fan n'est PAS une commande séparée : c'est le comportement implicite de toute
+# commande de niveau ou de temps qui emploie `Thru` ou une liste de références.
+# La touche `Fan` ne sert qu'à changer de style de répartition.
+# --------------------------------------------------------------------------
+fan:
+  mot_cle: "Fan"
+  confiance: A
+  source: "manuel §8 Fan"
+
+  implicite:
+    description: >
+      `Chan 1 Thru 5 At 10 Thru 50 Enter` répartit sans invoquer `Fan` :
+      1=10 %, 2=20 %, 3=30 %, 4=40 %, 5=50 %. C'est la stratégie de génération
+      en masse la plus fiable du projet (grammaire consolidée §13, stratégie 1).
+    confiance: A
+    source: "manuel §8, « Fan From the Command Line »"
+  ordre_application:
+    description: "Fan s'applique dans l'ordre de sélection des channels, ou dans l'ordre du groupe."
+    confiance: A
+  variante_console:
+    description: >
+      `[Fan]` est une hardkey sur Eos/Ion/Gio ; Ion Classic et Element Classic
+      n'ont que le softkey `{Fan}`. Le mot posé sur la ligne de commande est le
+      même — la différence est matérielle, pas syntaxique.
+    confiance: A
+    source: "manuel §8, notes répétées en tête de chaque section"
+
+  # Ce que Fan accepte de répartir
+  portees:
+    intensite:  { exemple: "Chan 1 Thru 5 At 10 Thru 50 Enter",        confiance: A }
+    temps:      { exemple: "Chan 1 Thru 5 Time 6 Thru 10 Enter",        confiance: A }
+    delai:      { exemple: "Chan 1 Thru 5 Delay 6 Thru 8 Enter",        confiance: A }
+    temps_cue:  { exemple: "Cue 1 Thru 5 Time 6 Thru 10 Enter",         confiance: A }
+    temps_part: { exemple: "Cue 1 Part 1 Thru 3 Time 6 Thru 8 Enter",   confiance: A }
+    references: { exemple: "Chan 1 Thru 5 Int Palette 1 Thru 3 Enter",  confiance: A }
+
+  # Règle propre au fan de références (manuel §8, « Fanning References »)
+  regle_references:
+    trois_ou_plus: >
+      3 références ou plus → les channels reçoivent de la donnée RÉFÉRENCÉE, et
+      le motif se répète s'il y a plus de channels que de références
+      (1..5 sur IP 1 Thru 3 → IP1, IP2, IP3, IP1, IP2).
+    deux_ou_moins: >
+      2 références ou moins → interpolation en donnée ABSOLUE entre les deux
+      références, la référence est perdue (1..5 sur IP1=0 % / IP2=100 % →
+      0, 25, 50, 75, 100 % en absolu).
+    confiance: A
+    consequence_generateur: >
+      Un fan de palettes sur 2 références casse la référence sans le dire. Le
+      générateur doit avertir quand l'intention exprimée était « appliquer des
+      palettes » et que la liste n'en contient que deux.
+
+  # Styles — le style change la répartition, jamais la commande qui la porte
+  styles:
+    Center:
+      mot_cle: "{Center}"
+      argument: aucun
+      comportement: "le channel du milieu reste inchangé ; les extrêmes varient en sens opposés"
+      confiance: A
+      source: "manuel §8 (liste des softkeys)"
+      osc: center
+    Reverse:
+      mot_cle: "{Reverse}"
+      argument: aucun
+      comportement: "inverse l'ordre de sélection avant d'appliquer le fan"
+      confiance: A
+      source: "manuel §8 (liste des softkeys)"
+      osc: reverse
+    Mirror Out:
+      mot_cle: "{Mirror Out}"
+      argument: aucun
+      comportement: "le milieu est le point de départ, les extrémités les points d'arrivée"
+      confiance: A
+      source: "manuel §8, exemple chiffré : 1 Thru 10 At 10 Thru 30 Fan {Mirror Out}"
+      osc: mirror_out
+    Mirror In:
+      mot_cle: "{Mirror In}"
+      argument: aucun
+      comportement: "inverse de Mirror Out"
+      confiance: A
+      source: "eosKeys.ts `mirror_in`→FAN_MIRROR_IN ; cité §4 grammaire consolidée"
+      osc: mirror_in
+      note: "existence confirmée A ; aucun exemple chiffré au manuel, contrairement à Mirror Out"
+    Repeat:
+      mot_cle: "{Repeat}"
+      argument: entier
+      comportement: "motif répété toutes les N channels"
+      confiance: A
+      source: "manuel §8, exemple chiffré : 1 Thru 12 At 50 Thru 70 Fan {Repeat} 3"
+      osc: repeat
+    Cluster:
+      mot_cle: "{Cluster}"
+      argument: entier
+      comportement: "channels regroupés en paquets de valeur identique"
+      confiance: A
+      source: "manuel §8, exemple chiffré : 1 Thru 12 At 50 Thru 80 Fan {Cluster} 4"
+      osc: cluster
+    Random:
+      mot_cle: "{Random}"
+      argument: aucun
+      comportement: "ordre randomisé avant application du fan"
+      confiance: A
+      source: "manuel §8 (liste des softkeys)"
+      osc: random
+    # --- existence confirmée A (eosKeys.ts), comportement jamais observé ---
+    Interleave:
+      mot_cle: "{Interleave}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A            # porte sur l'existence de la touche, pas sur l'effet
+      source: "eosKeys.ts `interleave`→FAN_INTERLEAVE"
+      osc: interleave
+      backlog: 9
+    Jump:
+      mot_cle: "{Jump}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `jump`→FAN_JUMP"
+      osc: jump
+      backlog: 9
+    Num Groups:
+      mot_cle: "{Num Groups}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `num_groups`→FAN_NUM_GROUPS"
+      osc: num_groups
+      backlog: 9
+    Channels Per Group:
+      mot_cle: "{Channels Per Group}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `chan_per_group`→FAN_CHANNELS_PER_GROUP"
+      osc: chan_per_group
+      backlog: 9
+    Curve:
+      mot_cle: "{Curve}"
+      argument: inconnu
+      comportement: inconnu
+      confiance: A
+      source: "eosKeys.ts `fan_curve`→FAN_CURVE"
+      osc: fan_curve
+      backlog: 9
+      note: "à ne pas confondre avec {Curve} des attributs de cue (manuel §12), homonyme"
+
+# --------------------------------------------------------------------------
+# QUERY — sélection conditionnelle
+#
+# Le SEUL endroit du langage Eos où existe une logique conditionnelle et une
+# négation : ETC a confirmé par réponse directe qu'il n'y a pas de `Not`
+# générique ailleurs (corpus #155, B). Toute logique conditionnelle du
+# traducteur doit donc passer par ici, ou nulle part.
+# --------------------------------------------------------------------------
+query:
+  mot_cle: "Query"
+  confiance: A
+  source: "manuel §15 « Advanced Manual Control », section Query"
+  osc: query
+  fin:
+    description: "`Enter` clôt la requête et sélectionne le résultat"
+    osc: end_query
+    confiance: A
+  parcours:
+    description: "`Next` / `Last` parcourent le résultat un channel à la fois"
+    confiance: A
+  defaut:
+    description: >
+      Sans précision, Eos suppose que la requête porte sur la sortie courante :
+      `{Is In}` est donc facultatif (manuel §15). Le générateur l'écrit quand
+      même — une macro se relit, l'implicite y coûte plus cher qu'il ne rapporte.
+    confiance: A
+  mots_cles_patch:
+    description: >
+      Jusqu'à 10 mots-clés définis par channel en Patch peuvent servir de
+      critère : `Query {mon mot-clé} {Can't Be} Beam Palette 5 Enter`. Propres
+      au show file — le traducteur ne peut pas les connaître à l'avance.
+    confiance: A
+
+  # Chaque condition porte son nom OSC, ou `osc: null` si elle n'en a pas.
+  # `osc: null` n'est pas un détail : sans touche OSC, la condition n'est
+  # atteignable qu'au doigt — voir PLANNING #15.
+  conditions:
+    Is In:
+      mot_cle: "{Is In}"
+      attend: cible
+      osc: is_in
+      confiance: A
+      optionnel: true
+    Isn't In:
+      mot_cle: "{Isn't In}"
+      attend: cible
+      osc: "isn't_in"
+      confiance: A
+      source: "manuel §31, liste officielle des touches OSC — absent de eosKeys.ts"
+      note: >
+        L'apostrophe a probablement fait échouer l'extraction de `eosKeys.ts`
+        (corpus #148, résolu dans eosKeys_vs_manual_comparison.md). La touche
+        existe bien : `isn't_in` → ISNT_IN.
+    Can Be:
+      mot_cle: "{Can Be}"
+      attend: cible
+      osc: can_be
+      confiance: A
+    Can't Be:
+      mot_cle: "{Can't Be}"
+      attend: cible
+      osc: "can't_be"
+      confiance: A
+      source: "manuel §31, liste officielle des touches OSC — absent de eosKeys.ts"
+    Or:
+      mot_cle: "{Or}"
+      attend: aucun
+      osc: or
+      confiance: A
+    Moves Only:
+      mot_cle: "{Moves Only}"
+      attend: aucun
+      osc: moves_only
+      confiance: A
+    Unpatched:
+      mot_cle: "{Unpatched}"
+      attend: aucun
+      osc: unpatched
+      confiance: A
+      contextes: [Patch]
+      note: "`Query {Unpatched} Delete Enter Enter` ne fonctionne QU'en Patch (manuel §15)"
+    Mark:
+      mot_cle: "{Mark}"
+      attend: aucun
+      osc: mark
+      confiance: A
+      element_classic: false
+      note: "cue où l'intensité est active"
+    Less Than:
+      mot_cle: "{Less Than}"
+      attend: valeur
+      osc: less_than
+      confiance: A
+      note: "inclut l'égalité"
+    Greater Than:
+      mot_cle: "{Greater Than}"
+      attend: valeur
+      osc: greater_than
+      confiance: A
+      note: "inclut l'égalité"
+    Track:
+      mot_cle: "{Track}"
+      attend: aucun
+      osc: track
+      confiance: A
+      note: >
+        Réutilise la hardkey `Track` : « Hardkeys on the face panel, such as
+        [Time], can also be used to construct a query » (manuel §15).
+    Block:
+      mot_cle: "{Block}"
+      attend: aucun
+      osc: block
+      confiance: A
+    Assert:
+      mot_cle: "{Assert}"
+      attend: aucun
+      osc: assert
+      confiance: A
+      element_classic: false
+    Part:
+      mot_cle: "{Part}"
+      attend: aucun
+      osc: part
+      confiance: A
+    Park:
+      mot_cle: "{Park}"
+      attend: aucun
+      osc: park
+      confiance: A
+    Time:
+      mot_cle: "{Time}"
+      attend: valeur
+      osc: time
+      confiance: A
+    Delay:
+      mot_cle: "{Delay}"
+      attend: valeur
+      osc: delay
+      confiance: A
+    Capture:
+      mot_cle: "{Capture}"
+      attend: aucun
+      osc: capture
+      confiance: A
+      element_classic: false
+    # --- conditions sans touche OSC : atteignables au doigt seulement ---
+    Broken Mark:
+      mot_cle: "{Broken Mark}"
+      attend: aucun
+      osc: null
+      confiance: A
+      element_classic: false
+      backlog: 15
+    Marking:
+      mot_cle: "{Marking}"
+      attend: aucun
+      osc: null
+      confiance: A
+      element_classic: false
+      backlog: 15
+      note: "cue future"
+    Up Moves:
+      mot_cle: "{Up Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Down Moves:
+      mot_cle: "{Down Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Live Moves:
+      mot_cle: "{Live Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Dark Moves:
+      mot_cle: "{Dark Moves}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+    Autoblock:
+      mot_cle: "{Autoblock}"
+      attend: aucun
+      osc: null
+      confiance: A
+      backlog: 15
+      note: >
+        `autoblock_clean` → AUTOBLOCK_CLEANUP existe en OSC, mais c'est le
+        nettoyage des auto-blocks, pas la condition de requête. Ne pas confondre.
+
+# --------------------------------------------------------------------------
+# HOMONYMIES ASSUMÉES
+#
+# Plusieurs actions écrivent volontairement le même mot-clé : c'est la
+# polysémie d'Eos, pas une négligence du modèle. Les déclarer ici permet à
+# `build.py` de refuser toute AUTRE homonymie, qui serait un doublon.
+# --------------------------------------------------------------------------
+homonymies_assumees:
+  At:
+    actions: [intensite, patcher, patch_univers, retirer_adresse]
+    justification: >
+      Le cœur du problème que ce projet documente : `At` vaut un niveau en
+      Live, une adresse en Patch, un univers/adresse avec un `/`, et un
+      retrait quand `Enter` le suit immédiatement. Quatre actions, un mot.
+    confiance: A
+  Park:
+    actions: [parquer, tout_deparquer]
+    justification: >
+      Même touche, portée différente selon qu'une sélection la précède ou non
+      (manuel §19).
+    confiance: A
+  Time:
+    actions: [temps, temps_bump_sub]
+    justification: >
+      `Time` est positionnel : répété, il parcourt montée, descente, focus,
+      couleur, beam sur une cue — et montée, dwell, descente sur un submaster.
+      Deux grammaires derrière un mot (manuel §12 et §20).
+    confiance: A
+  Partition:
+    actions: [selectionner_partition, partition_cue_list]
+    justification: >
+      Bare (`{Partition} <n> Enter`), le mot sélectionne — et au besoin crée —
+      la partition de l'utilisateur courant. Après une sélection de cue list
+      (`Cue <n>/`), le même mot assigne ou retire une partition à CETTE liste
+      (manuel §28). Même token, deux grammaires selon ce qui précède.
     confiance: A
 
 # --------------------------------------------------------------------------
@@ -61,8 +1929,10 @@ actions:
   intensite:
     mot_cle: "At"
     attend: pourcentage
+    fanable: true
     contextes: [Live, Blind]
     confiance: A
+    source: "manuel §6 « Manual Control », section Setting Intensity"
     avertissement: >
       Polysémie confirmée : en contexte Patch, `At` désigne une adresse DMX,
       pas une intensité. Le générateur doit connaître son contexte.
@@ -73,6 +1943,1220 @@ actions:
     contextes: [Live]
     confiance: A
     source: "manuel §10 Palettes"
+  palette_intensite:
+    mot_cle: "Int Palette"
+    attend: cible_numerotee
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §8 « Fanning References », manuel §10"
+    avertissement: "voir fan.regle_references : 2 références ou moins cassent la référence"
+  palette_couleur:
+    mot_cle: "Color Palette"
+    attend: cible_numerotee
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 Palettes ; fan de références par analogie avec Int Palette (§8)"
+    note: >
+      Le manuel illustre le fan de références sur `Int Palette` uniquement, mais
+      énonce la règle pour « les références, telles que les palettes » en général.
+
+  # -- temps et délais ------------------------------------------------------
+  temps:
+    mot_cle: "Time"
+    attend: duree
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12 « Timing »"
+    note: >
+      Positionnel : le 1er `Time` = montée d'intensité, le 2e = descente, puis
+      focus, couleur, beam. `Time 4/3` sépare montée et descente sur une seule
+      frappe. `Time` seul, sans valeur, remet au défaut du Setup.
+  delai:
+    mot_cle: "Delay"
+    attend: duree
+    fanable: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12 « Delay Time »"
+
+  # -- cues -----------------------------------------------------------------
+  record_cue:
+    mot_cle: "Record Cue"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §12 « Using Record in Live »"
+    note: >
+      Le manuel note `[Record] <Cue> [5]` : `Cue` est facultatif, le clavier
+      passe en mode cue par défaut après `Record`. Le générateur l'écrit
+      toujours explicitement — une macro se relit et se réimporte, l'implicite
+      y coûte plus cher qu'il ne rapporte.
+  record_only_cue:
+    mot_cle: "Record Only Cue"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §12 « Using Record Only in Live »"
+    note: >
+      Ne stocke que les valeurs manuelles — exclut les apports des submasters et
+      des autres cue lists. Sur Element Classic, s'obtient par `Record Record`.
+  update_cue:
+    mot_cle: "Update Cue"
+    attend: cible_numerotee
+    contextes: [Live]
+    confiance: A
+    source: "manuel §12 « [Update] »"
+    avertissement: >
+      Cible ambiguë et préférences persistantes entre sessions ({Make Absolute},
+      {Break Nested}) — risque référencé A/C au référentiel. Ne jamais générer
+      un `Update` nu sans expliciter la cible.
+  go_to_cue:
+    mot_cle: "Go To Cue"
+    attend: cible_numerotee   # ou Out / Next / Last / Home
+    objet_implicite: Cue      # la cible est dans le mot-clé, pas dans une sélection
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §16 « Go To Cue »"
+    avertissement: >
+      Exécution non déterministe en macro selon Foreground/Background et le
+      timing (corpus #060, #061) — voir PLANNING #7 et #14. Et jamais de
+      concaténation : `Go_To_Cue_5` tronque la décimale, il faut des tokens
+      séparés.
+  cue_link:
+    mot_cle: "Link/Loop"
+    attend: cible_numerotee
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12 « Link / Loop »"
+    note: >
+      Même softkey pour le lien et la boucle : `Cue 2 {Link/Loop} 1 {Link/Loop} 3`
+      = lien de 2 vers 1, répété 3 fois. `0` boucle indéfiniment. Toutes les cues
+      d'une boucle doivent porter un Follow ou un Hang.
+
+  # -- submasters -----------------------------------------------------------
+  record_sub:
+    mot_cle: "Record Sub"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Recording a Submaster »"
+    note: >
+      Sur un sub déjà rempli, un enregistrement sélectif FUSIONNE au lieu de
+      remplacer. Pour remplacer, `Rem Dim` ou suppression préalable.
+  record_only_sub:
+    mot_cle: "Record Only Sub"
+    attend: cible_numerotee
+    label: optionnel
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Recording a Submaster »"
+  update_sub:
+    mot_cle: "Update Sub"
+    attend: cible_numerotee
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Updating a Submaster »"
+  sub_bump_bas:
+    mot_cle: "SubDown"
+    attend: cible_numerotee
+    objet_implicite: Sub
+    contextes: [Live]
+    confiance: B
+    source: "eosKeys.ts `subdown`→SUB_BUMP_DOWN (A) ; ordre `SubDown <n> Enter` corpus #026 (C)"
+    avertissement: >
+      La touche est confirmée A, l'ordre des tokens seulement C/B (un membre
+      expérimenté corrigeant une macro cassée). Et surtout : survie à l'aller-
+      retour ASCII non confirmée — PLANNING #1, priorité haute.
+  sub_bump_haut:
+    mot_cle: "SubUp"
+    attend: cible_numerotee
+    objet_implicite: Sub
+    contextes: [Live]
+    confiance: B
+    source: "eosKeys.ts `subup`→SUB_BUMP_UP (A) ; ordre `SubUp <n> Enter` corpus #026 (C)"
+    avertissement: "mêmes réserves que SubDown — PLANNING #1"
+  temps_bump_sub:
+    mot_cle: "Time"
+    attend: triplet_duree     # montée / dwell / descente
+    contextes: [Live]
+    confiance: A
+    source: "manuel §20 « Using Bump Button Timing With Submasters »"
+    note: >
+      `Sub 8 Time 3 Time 4 Time 3 Enter` = 3 s de montée, 4 s de dwell, 3 s de
+      descente. Le dwell accepte {Manual} (défaut) et {Hold} à la place d'une
+      durée. `Sub 3 Time Enter` remet tout au défaut.
+
+  # -- macros ---------------------------------------------------------------
+  appel_macro:
+    mot_cle: "Macro"
+    attend: cible_numerotee
+    contextes: [Live, contenu_macro]
+    confiance: A
+    source: "manuel §24 « Play a Macro » et « Creating Macros »"
+    avertissement: >
+      En fin de contenu d'une autre macro, c'est le chaînage macro-dans-macro :
+      syntaxe A, fiabilité d'exécution C (corpus #070 vs #095) — PLANNING #2.
+  # -- intensité : formes courtes, souvent auto-terminantes -----------------
+  hors_scene:
+    mot_cle: "Out"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 (liste des commandes auto-terminantes) ; §6 exemple `Group 9 Out`"
+    osc: out
+  plein_feu:
+    mot_cle: "Full"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §6 « [1] [Full] [Full] »"
+    osc: full
+    note: >
+      `Full` seul demande `Enter` ; le DOUBLE appui `Full Full` auto-termine
+      (manuel §6). Deux commandes différentes sous un même mot.
+  niveau_setup:
+    mot_cle: "Level"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 et §6 : « [1] [Level] »"
+    osc: level
+    note: "valeur réglée dans le Setup — 80 % par défaut, pas une constante"
+  incrementer:
+    mot_cle: "+%"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 et §6"
+    osc: "+%"
+    note: >
+      Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut
+      de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.
+  decrementer:
+    mot_cle: "-%"
+    attend: aucun
+    auto_termine: true
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »"
+    osc: "-%"
+  valeur_dmx:
+    mot_cle: "At / /"
+    attend: valeur
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §6 : « [1] [At] [/] [/] [2][3][9] [Enter] »"
+    note: "valeur DMX brute 0-255, pas un pourcentage — troisième sens du `/`"
+  sneak:
+    mot_cle: "Sneak"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §6 ; manuel §24 (exemple de macro `Sneak Time 10 Enter`)"
+    osc: sneak
+    note: >
+      `Sneak Sneak` pose `{AllNPs} Sneak` et auto-termine (manuel §6) — encore
+      un double appui qui change la commande.
+  focus_onglet:
+    mot_cle: "Tab"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind, Patch]
+    confiance: A
+    source: "corpus #168, réponse officielle ETC"
+    osc: tab
+    note: >
+      `Tab <n> Enter` amène le focus sur l'écran n. Préalable obligatoire à
+      toute commande dont le sens dépend de l'écran — `At` au premier chef.
+
+  # -- courbes et snapshots -------------------------------------------------
+  appliquer_courbe:
+    mot_cle: "Curve"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind, Patch]
+    confiance: A
+    source: "manuel §22 « Curves Applied to Cues »"
+    osc: curve
+    avertissement: >
+      Portée différente selon la cible : sur une cue, seuls les mouvements
+      d'intensité ; sur une part, TOUS les paramètres qui bougent.
+  retirer_courbe:
+    mot_cle: "Curve At"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind, Patch]
+    confiance: A
+    source: "manuel §22 : « [Cue] [5] {Attributes} {Curve} [At] [Enter] »"
+  record_snapshot:
+    mot_cle: "Record Snapshot"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §23 « Recording Snapshots »"
+    avertissement: >
+      Enregistre la surface de contrôle et les moniteurs, PAS l'état du
+      plateau. Un utilisateur qui veut « garder cet état lumineux » demande
+      autre chose.
+  rappeler_snapshot:
+    mot_cle: "Snapshot"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §23 « Recalling Snapshots »"
+
+  # -- park -----------------------------------------------------------------
+  parquer:
+    mot_cle: "Park"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Park]
+    confiance: A
+    source: "manuel §19 « Parked Values in Live »"
+    osc: park
+    avertissement: >
+      Sans valeur explicite, `<chan> At Park` est un BASCULE : parque si non
+      parqué, déparque sinon. Pour un résultat déterministe, toujours passer
+      une valeur.
+  parquer_echelle:
+    mot_cle: "At /"
+    attend: pourcentage
+    auto_termine: false
+    contextes: [Live, Park]
+    confiance: A
+    source: "manuel §19 « Scaled Parked Values in Live »"
+    osc: scale
+    note: "125 = 25 % au-dessus du réglage courant ; 85 = 15 % en dessous"
+  tout_deparquer:
+    mot_cle: "Park"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Park]
+    confiance: A
+    source: "manuel §19 : « [Park] [Enter] » sans sélection"
+    confirmation: true
+    avertissement: >
+      Efface TOUS les channels parqués et toutes les échelles du show.
+      Confirmation requise par la console.
+
+  # -- filtres --------------------------------------------------------------
+  effacer_filtres:
+    mot_cle: "Clear Filters"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §13 « Clearing Filters »"
+    osc: clear_filters
+    note: >
+      Seul geste de filtrage qui dispose d'une touche OSC propre et ne dépend
+      pas de l'accord maintenu. Reste à confirmer qu'il fonctionne seul —
+      PLANNING #27.
+
+  # -- assert ---------------------------------------------------------------
+  asserter:
+    mot_cle: "Assert"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §14 « Using Assert »"
+    osc: assert
+    note: >
+      S'applique à une cue, une cue list, un channel ou un paramètre. Sur un
+      channel ou un paramètre, il faut ensuite enregistrer (`Record` ou
+      `Update`) — l'assert seul n'est que posé, pas stocké.
+    avertissement: >
+      Ne fonctionne PAS sur un submaster : `Sub <n> Assert` échoue en erreur de
+      syntaxe (constat de banc, confiance S).
+
+  # -- contrôle partitionné --------------------------------------------------
+  selectionner_partition:
+    mot_cle: "Partition"
+    attend: cible_numerotee
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Partition List », « Creating New Partitions »"
+    osc: partition
+    note: >
+      Si le numéro n'existe pas encore, cette commande CRÉE la partition en
+      plus de la sélectionner et de l'assigner à l'utilisateur courant — un
+      seul geste, là où la plupart des record targets distinguent création et
+      sélection.
+  partition_ajouter:
+    mot_cle: "+"
+    attend: plage_ou_numero
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Creating New Partitions »"
+    note: "ajoute des channels à la partition actuellement sélectionnée, sans en retirer"
+  partition_retirer:
+    mot_cle: "-"
+    attend: plage_ou_numero
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Creating New Partitions »"
+  supprimer_partition:
+    mot_cle: "Delete Partition"
+    attend: cible_numerotee
+    objet_implicite: Partition
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Deleting Partitions »"
+    confirmation: true
+    avertissement: "refuse sur les quatre partitions préprogrammées (0, 901, 902, 903)"
+  partition_cue_list:
+    mot_cle: "Partition"
+    attend: cible_optionnelle
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §28 « Partitions on Cue Lists »"
+    note: >
+      Employé après une sélection de cue list (`Cue <n>/`). Une cible assigne
+      la partition à la liste ; son absence la retire — même idiome que
+      `At Enter` (v0.12), généralisé : un attribut nu suivi d'`Enter` sans
+      valeur efface l'attribut, `At` n'en est qu'un cas particulier.
+
+  # -- cues multipart -------------------------------------------------------
+  affecter_part:
+    mot_cle: "Part"
+    attend: cible_optionnelle
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §17 « Changing a Single Part Cue to a Multipart Cue »"
+    osc: part
+    avertissement: >
+      En Blind, l'édition est appliquée immédiatement — pas de Record, pas de
+      relecture possible entre la commande et son effet.
+  supprimer_part:
+    mot_cle: "Delete Part"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §17 « Deleting Parts from Multipart Cues »"
+    confirmation: true
+    note: "supprimer toutes les parts ramène la cue à une cue simple"
+
+  # -- mark -----------------------------------------------------------------
+  marquer:
+    mot_cle: "Mark"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §9 « Setting Referenced Mark Flags »"
+    osc: mark
+    avertissement: >
+      Ne fonctionne qu'en marques référencées, jamais avec AutoMark actif —
+      et le générateur ne peut pas savoir lequel des deux est en vigueur.
+  marquer_vers_cue:
+    mot_cle: "Mark Cue"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §9 : « [select channels] [Mark] [Cue] [5] [Enter] »"
+    avertissement: >
+      Supprime tout mouvement NP intermédiaire de ces channels entre les deux
+      cues. Effet de bord silencieux sur des cues que l'utilisateur n'a pas
+      nommées.
+  marquer_au_plus_tot:
+    mot_cle: "Mark Earliest"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §9 « Mark Earliest »"
+    osc: earliest
+  mark_time:
+    mot_cle: "Mark Time"
+    attend: duree
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "eosKeys.ts `mark_time`→MARK_TIME ; manuel §9 « Mark Time »"
+    osc: mark_time
+
+  # -- palettes et presets --------------------------------------------------
+  record_palette:
+    mot_cle: "Record"
+    attend: famille_puis_cible     # `Record Color Palette 4`
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §10 « Storing Palettes Live »"
+    note: >
+      Forme générique, paramétrée par la famille. `record_palette_couleur` en
+      est le raccourci historique de la v0.1, conservé pour la non-régression —
+      `build.py` vérifie que les deux écrivent la même chose.
+    avertissement: >
+      Sans sélection, écrase le contenu. AVEC une sélection, fusionne. Deux
+      comportements opposés pour la même commande.
+  record_only_palette:
+    mot_cle: "Record Only"
+    attend: famille_puis_cible
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §10 « Storing Palettes with [Record Only] »"
+  update_palette:
+    mot_cle: "Update"
+    attend: famille_puis_cible
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 « {Locked} Palettes »"
+    note: >
+      Seule forme acceptée sur une palette verrouillée en Live, et seulement
+      avec une liste de channels explicite.
+  rappeler_palette:
+    mot_cle: ""                    # le mot-clé EST la famille
+    attend: famille_puis_cible
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 « Recalling Palettes »"
+    avertissement: >
+      Ne s'applique qu'aux channels SÉLECTIONNÉS — il faut sélectionner avant.
+      Un channel sans valeur stockée dans la palette reste dans son état.
+  rappeler_depuis:
+    mot_cle: "Recall From"
+    attend: famille_puis_cible
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §10 et §11"
+    note: >
+      Rappelle la cible ENTIÈRE et sélectionne les channels qu'elle contient —
+      pas besoin de sélection préalable, contrairement au rappel simple.
+  record_preset:
+    mot_cle: "Record Preset"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §11 « Storing Presets Using [Record] »"
+  record_only_preset:
+    mot_cle: "Record Only Preset"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §11"
+  rappeler_preset:
+    mot_cle: "Preset"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §11 « Recalling Presets »"
+    note: "`Preset Enter` sans numéro rappelle le dernier preset sélectionné"
+
+  # -- groupes --------------------------------------------------------------
+  record_groupe:
+    mot_cle: "Record Group"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §7 « Recording Groups Live »"
+    avertissement: >
+      Sur un groupe existant, REMPLACE le contenu (avec confirmation), il
+      n'ajoute pas. Pour ajouter, c'est `Update Group`.
+  record_only_groupe:
+    mot_cle: "Record Only Group"
+    attend: cible_numerotee
+    label: optionnel
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §7 : « [Record Only] [Group] [7] [Enter] »"
+  update_groupe:
+    mot_cle: "Update Group"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Live]
+    confiance: A
+    source: "manuel §7 : « [1] [Thru] [5] [Update] [Group] [n] [Enter] »"
+    note: "ajoute sans confirmation, et EN FIN de liste ordonnée"
+  inserer_avant:
+    mot_cle: "Insert Before"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7, exemple chiffré (pas la liste de softkeys — voir PLANNING #22)"
+  inserer_apres:
+    mot_cle: "Insert After"
+    attend: cible_numerotee
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7, exemple chiffré (pas la liste de softkeys — voir PLANNING #22)"
+  reordonner:
+    mot_cle: "Reorder"
+    attend: aucun
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7 « Ordered Channels »"
+    note: "sur un groupe à sous-groupes, classe les sous-groupes par leur premier channel"
+  inverser_ordre:
+    mot_cle: "Reverse"
+    attend: aucun
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7"
+    note: "homonyme du style de Fan {Reverse}, mécanisme distinct"
+  ordre_aleatoire:
+    mot_cle: "Random"
+    attend: aucun
+    auto_termine: false
+    contextes: [Blind]
+    confiance: A
+    source: "manuel §7"
+    note: "homonyme du style de Fan {Random}, mécanisme distinct"
+
+  # -- patch ----------------------------------------------------------------
+  patcher:
+    mot_cle: "At"
+    attend: adresse
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 « Patching By Channel »"
+    avertissement: >
+      Même mot-clé que l'intensité, sens opposé — et à l'intérieur même de
+      Patch, le sens s'inverse encore selon le mode Format. Voir
+      contexte.modes_patch. Le générateur ne l'émet qu'en mode par channel.
+    mode_requis: par_channel
+  patcher_par_adresse:
+    mot_cle: "Address"
+    attend: adresse_puis_channel
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [Address] [5][1][3] [At] [8] [Enter] »"
+    note: >
+      Forme NON ambiguë : le préfixe `Address` force l'interprétation quel que
+      soit le mode Format. C'est la seule parade documentée au piège du mode,
+      donc la forme que le générateur privilégie pour patcher par adresse.
+    osc: address
+  patch_univers:
+    mot_cle: "At"
+    attend: univers_adresse       # `At 2 / 146`
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "grammaire consolidée §3 : `603 At 2 / 146` — 2e univers, adresse 146"
+  retirer_adresse:
+    mot_cle: "At"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "grammaire consolidée §3 : `[601] [At] [Enter]` retire l'adresse, garde le type"
+  depatcher:
+    mot_cle: "Unpatch"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 ; grammaire consolidée §3"
+    note: "restaure les propriétés par défaut — retire adresse, type, label"
+  patch_hors_sortie:
+    mot_cle: "At 0"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [n] [At] [0] [Enter] »"
+    note: >
+      Le channel reste manipulable et enregistrable mais ne sort rien. À ne pas
+      confondre avec la suppression, qui interdit toute donnée.
+  supprimer:
+    mot_cle: "Delete"
+    attend: aucun
+    auto_termine: false
+    contextes: [Patch, Live, Blind]
+    confiance: A
+    source: "manuel §4 : « [6] [Thru] [1][0] [Delete] [Enter] [Enter] »"
+    avertissement: >
+      Double `Enter` de confirmation. Les données programmées d'un channel
+      supprimé sont perdues — le manuel le signale en CAUTION.
+    confirmation: true
+  # `patch_courbe` (v0.5) a été fusionné dans `appliquer_courbe` (v0.12) lors de
+  # la relecture d'ensemble : deux actions écrivaient `Curve <n>` à l'identique,
+  # l'une restreinte à Patch, l'autre non. Le §4 et le §22 décrivent le même
+  # geste ; c'est le découpage en tranches qui avait produit le doublon.
+  patch_preheat:
+    mot_cle: "Preheat"
+    attend: pourcentage
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [1] {Preheat} [0][3] [Enter] »"
+    osc: preheat
+  patch_proportion:
+    mot_cle: "Proportion"
+    attend: pourcentage
+    auto_termine: false
+    contextes: [Patch]
+    confiance: A
+    source: "manuel §4 : « [1] {Attributes} {Proportion} [1][2][5] [Enter] »"
+    osc: proportion
+    note: "`Proportion Enter` sans valeur retire la proportion appliquée"
+
+  # -- sélection ------------------------------------------------------------
+  selection_active:
+    mot_cle: "Select Active"
+    attend: aucun
+    contextes: [Live]
+    confiance: A
+    source: "eosKeys.ts `select_active`→SELECT_ACTIVE ; manuel §24 (exemple de macro)"
+    note: "sélectionne tous les channels actifs — intensité > 0 ou en mouvement"
+  selection_derniere:
+    mot_cle: "Select Last"
+    attend: aucun
+    contextes: [Live]
+    confiance: A
+    source: "eosKeys.ts `select_last`→SELECT_LAST"
+    avertissement: >
+      Après une Query composée, rapporté comme relançant la syntaxe de la
+      requête au lieu de renvoyer la sélection (corpus #083) — PLANNING #17.
+      C'est exactement la combinaison qu'exige la stratégie de génération en
+      masse n° 2 appliquée à une sélection conditionnelle.
+
+  # -- effets ---------------------------------------------------------------
+  appliquer_effet:
+    mot_cle: "Effect"
+    attend: cible_numerotee
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18 « Apply an Existing Effect »"
+    note: >
+      Un effet step-based porte une liste de channels embarquée : il se rappelle
+      par `Recall From Effect <n> Enter` sans sélection préalable.
+  retirer_effet:
+    mot_cle: "Effect At"
+    attend: aucun
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18 « Stopping Effects »"
+    note: >
+      `<sélection> Effect At Enter` retire l'instruction d'effet des channels
+      sélectionnés. Le manuel documente aussi `Effect <n> At Enter` pour arrêter
+      l'effet entier, mais le générateur ne l'émet pas : `At` y change de sens
+      selon ce qui précède, et `Stop Effect <n> Enter` dit la même chose sans
+      ambiguïté.
+  arreter_effet:
+    mot_cle: "Stop Effect"
+    attend: cible_optionnelle
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18 « Assigning a Stop Effect Command »"
+    note: >
+      Trois portées distinctes, à ne pas confondre : `Stop Effect Enter` arrête
+      TOUS les effets en cours ; `Stop Effect <n> Enter` un effet précis ;
+      `<sélection> Stop Effect Enter` pose une instruction d'arrêt sur les
+      channels. Le double appui (`Stop Effect Stop Effect`) est un « stop all »
+      qui pose des drapeaux même là où aucun effet ne tourne.
+  effet_bpm:
+    mot_cle: "BPM"
+    attend: valeur
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §18, exemple : Effect 1 {BPM} 190 Enter"
+    note: >
+      Ajuste les temps de step (effet step-based) ou le time/dwell (effet
+      absolu). Sur un effet qui tourne, le changement est immédiat mais les
+      temps stockés ne bougent pas — c'est un override, à enregistrer ensuite.
+
+  label:
+    mot_cle: "Label"
+    attend: texte
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §12, §20, §24"
+    note: >
+      `Label Label` retire le libellé. `||` ou CTRL+J insère un retour à la ligne.
+      Comportement du clavier virtuel avec espaces et tirets non observé —
+      PLANNING #5.
+
+# --------------------------------------------------------------------------
+# MODIFICATEURS — softkeys qui qualifient une action, jamais autonomes
+# --------------------------------------------------------------------------
+modificateurs:
+  Q Only:
+    mot_cle: "Q Only"
+    porte_sur: [record_cue, record_only_cue, update_cue]
+    confiance: A
+    source: "manuel §12 « Cue Only / Track »"
+    osc: cueonly
+    note: >
+      `Q Only` et `Track` sont la MÊME touche physique : elle prend le sens
+      inverse du réglage système. Le générateur doit connaître le mode de la
+      console pour poser le bon mot — sinon il inverse le comportement voulu.
+  Track:
+    mot_cle: "Track"
+    porte_sur: [record_cue, record_only_cue, update_cue]
+    confiance: A
+    source: "manuel §12 « Cue Only / Track »"
+    osc: track
+  Trace:
+    mot_cle: "Trace"
+    porte_sur: [update_cue]
+    confiance: A
+    source: "manuel §12 « Update Using Trace »"
+    osc: trace
+    note: "`Trace Trace` force au-delà du premier obstacle (channel inactif dans la cue)"
+  Rem Dim:
+    mot_cle: "Rem Dim"
+    porte_sur: [record_cue, record_sub]
+    confiance: A
+    source: "manuel §12 et §20"
+    osc: rem_dim
+  Complete:
+    mot_cle: "Complete"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16 « Other Go To Cue Options »"
+    osc: complete
+  MovesOnly:
+    mot_cle: "MovesOnly"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: moves_only
+  MinusLinks:
+    mot_cle: "MinusLinks"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: minus_links
+  SingleParam:
+    mot_cle: "SingleParam"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: single_param
+  MultiParam:
+    mot_cle: "MultiParam"
+    porte_sur: [go_to_cue]
+    confiance: A
+    source: "manuel §16"
+    osc: multi_param
+  Manual:
+    mot_cle: "Manual"
+    porte_sur: [go_to_cue, temps, temps_bump_sub]
+    confiance: A
+    source: "manuel §12, §16, §20"
+    osc: manual
+
+# Règle d'ordre confirmée A (manuel §16) : sur un Go To Cue, `Time` se pose
+# TOUJOURS après les autres modificateurs. Seule exception : {Manual}.
+ordre_modificateurs:
+  go_to_cue:
+    regle: "modificateurs d'abord, `Time` en dernier ; {Manual} exempté"
+    confiance: A
+    source: "manuel §16, note en fin de « Other Go To Cue Options »"
+
+# --------------------------------------------------------------------------
+# CONTRÔLE DE MACRO — tokens valides seulement DANS un contenu de macro
+# --------------------------------------------------------------------------
+macro:
+  creation:
+    learn:
+      forme: "Learn <n> Enter <contenu> Learn"
+      confiance: A
+      source: "manuel §24 « Using the [Learn] Key »"
+      note: >
+        Voie primaire recommandée par ETC. Tout est enregistré, y compris un
+        `Clear` de rattrapage — la frappe fautive pollue le contenu.
+      touches_exclues: ["Macro", "flèches", "Escape", "Select", "Learn"]
+    editeur:
+      forme: "Macro <n> Enter {Edit} <contenu> Select"
+      confiance: A
+      source: "manuel §24 « Creating Macros »"
+      note: "voie secondaire/corrective selon la doctrine ETC ; `Select` valide, `Escape` annule"
+
+  modes:
+    defaut_projet: Foreground
+    justification: >
+      Règle de génération retenue par le projet : Foreground sauf raison
+      explicite. Couvre {Target} vers un User (ne fonctionne qu'en Foreground,
+      corpus #068) et limite le non-déterminisme de Go To Cue (corpus #061).
+    Foreground: { osc: foreground_mode, interne: MACRO_USER,           confiance: A }
+    Background: { osc: background_mode, interne: MACRO_BACKGROUND,     confiance: A }
+    Default:    { osc: default_mode,    interne: MACRO_DEFAULT_MODE,   confiance: A }
+    selecteur:  { osc: macro_mode,      interne: MACRO_MODE,           confiance: A }
+    note: >
+      Trois touches OSC distinctes, pas trois positions d'un même softkey
+      (correction corpus vague 29 via eosKeys.ts).
+
+  controle:
+    Loop Begin:
+      mot_cle: "{Loop Begin}"
+      variante_commande: "Macro_Loop_Begin"
+      argument: entier
+      confiance: A
+      source: "manuel §24 « Macro-Specific Softkeys »"
+      osc: macro_loop_begin
+      note: "0 itération = boucle infinie"
+    Loop End:
+      mot_cle: "{Loop End}"
+      variante_commande: "Macro_Loop_End"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      osc: macro_loop_end
+    Wait:
+      mot_cle: "{Wait}"
+      variante_commande: "Macro_Wait"
+      argument: entier_obligatoire
+      confiance: A
+      source: "manuel §24 : « needs to be followed with a whole number of seconds »"
+      osc: macro_wait
+    Wait for Entr:
+      mot_cle: "{Wait for Entr}"
+      variante_commande: "Wait_For_Enter"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      osc: wait_for_enter
+      note: "orthographe abrégée du manuel — `{Wait for Enter}` en toutes lettres n'est pas la forme officielle"
+    Wait for Input:
+      mot_cle: "{Wait for Input}"
+      variante_commande: "Wait_For_Input"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      osc: wait_for_input
+      note: "la pause dure jusqu'à un nouvel appui sur [Macro], pas sur [Enter]"
+    Delete:
+      mot_cle: "{Delete}"
+      argument: aucun
+      confiance: A
+      source: "manuel §24"
+      note: "softkey d'édition — JAMAIS la hardkey [Delete], qui supprimerait la macro"
+
+  regles_generation:
+    - id: send_string_dernier
+      regle: "`Send_String` doit être en dernière position d'une macro multi-lignes"
+      motif: "sinon `/r` parasite dans l'adresse OSC générée — ticket EOS-55864"
+      confiance: B
+    - id: send_string_espaces
+      regle: "insérer un `Macro_Wait` entre deux `Send_String` consécutifs"
+      motif: "fusion en un paquet UDP malformé si la macro part d'un Client — ticket EOS-53576"
+      confiance: B
+      backlog: 3
+    - id: jamais_concatener
+      regle: "toujours produire des tokens séparés, jamais une chaîne assemblée"
+      motif: >
+        `Go_To_Cue_5.5` concaténé tronque la décimale (corpus #060). Argument
+        structurel : le générateur manipule des tokens typés, pas du texte.
+      confiance: C
+      backlog: 7
+    - id: blind_toujours_qualifie
+      regle: "ne jamais écrire `Blind Enter` nu — toujours `Blind Cue` ou `Blind Sub`"
+      motif: "ambigu en macro (corpus #119)"
+      confiance: C
+    - id: pas_edition_concurrente
+      regle: "ne pas déclencher de macro pendant qu'une édition de macro est ouverte (Tab 18)"
+      motif: >
+        Les commandes de la macro background s'insèrent dans l'édition en cours.
+        Corruption silencieuse, confirmée S.
+      confiance: S
+
+# --------------------------------------------------------------------------
+# OSC — couche d'injection
+#
+# C'est par ici que tout ce qui précède atteint la console. Une commande
+# correctement engendrée mais mal injectée ne vaut rien.
+# --------------------------------------------------------------------------
+osc:
+  prefixe: "/eos/"
+  prefixe_utilisateur: "/eos/user/<n>/"
+  confiance: A
+  source: "manuel §31 « Show Control » ; recoupé S par reference/JOURNAL_observations_nomad.md"
+  note: >
+    Toute commande OSC commence par `/eos/…` ou `/eos/user/<n>/…` (manuel §31).
+    Chaque adresse ci-dessous accepte la variante utilisateur.
+
+  ligne_commande:
+    cmd:
+      adresse: "/eos/cmd"
+      arguments: "chaîne de ligne de commande, arguments de substitution optionnels"
+      confiance: A
+    newcmd:
+      adresse: "/eos/newcmd"
+      reinitialise: true
+      confiance: A
+      note: "identique à cmd, mais réinitialise la ligne de commande d'abord"
+      usage_projet: >
+        Adresse retenue par défaut : deux macros y ont déjà transité au banc de
+        transport (reference/tools/test-client.ts et test-client3.ts).
+    event:
+      adresse: "/eos/event"
+      confiance: A
+      note: "identique à cmd, mais traité comme un évènement console"
+    newevent:
+      adresse: "/eos/newevent"
+      reinitialise: true
+      confiance: A
+    forme_chemin:
+      adresse: "/eos/cmd/<mot>/<mot>/…"
+      confiance: A
+      note: "les tokens deviennent des segments d'adresse — `/eos/cmd/Chan/1/At/75`"
+
+    terminaison:
+      confiance: A
+      formes:
+        - { forme: "mot `Enter` littéral en fin de chaîne", retenue: true,
+            note: "forme employée au banc de transport — celle que le générateur produit" }
+        - { forme: "`#` en fin de chaîne", retenue: false }
+        - { forme: "aucune", resultat: "ligne de commande non terminée, laissée en attente" }
+    substitution:
+      forme: "%1, %2, … remplacés par les arguments OSC dans l'ordre"
+      confiance: A
+      exemple: '/eos/cmd="Chan %1 At %2#", 1, 75'
+
+  touche:
+    adresse: "/eos/key/<nom>"
+    arguments: "front de bouton optionnel : 1.0 = appui, 0.0 = relâchement"
+    confiance: A
+    nommage:
+      retenu: underscore
+      note: >
+        Deux sources ETC se contredisent : la liste canonique du manuel §31
+        écrit `select_active`, l'exemple d'usage du même chapitre écrit
+        `select active`. Le générateur n'émet que la forme underscore de
+        `reference/eosKeys.ts` — PLANNING #16.
+      backlog: 16
+    exception_slash: "pour la touche slash, utiliser un antislash : `/eos/key/\\`"
+
+  macro:
+    selection: { adresse: "/eos/macro", arguments: "numéro", confiance: A }
+    execution: { adresse: "/eos/macro/fire", arguments: "numéro", confiance: A }
+    front:
+      adresse: "/eos/macro/<n>/fire"
+      arguments: "1.0 = appui, 0.0 = relâchement"
+      confiance: A
+    usage_projet: >
+      `/eos/macro/fire` est l'adresse normative du moteur d'injection de macro
+      de macro2eos (grammaire consolidée §11.1).
+
+  utilisateur:
+    adresse: "/eos/user"
+    arguments: "numéro d'utilisateur ; 0 = utilisateur d'arrière-plan"
+    confiance: A
+    recommandation: >
+      Réserver un User# dédié au client OSC dès la connexion plutôt que
+      d'hériter de celui de la console primaire (corpus #066, B).
+
+  retour:
+    ligne_commande:
+      adresses: ["/eos/out/cmd", "/eos/out/user/<n>/cmd"]
+      arguments: "(texte, flag_erreur) — 1 = erreur de syntaxe, 0 = ok"
+      confiance: S
+      source: "journal terrain nomad 3.3.5.69 ; manuel §31 ; Eos 2.6.0+"
+      usage_projet: >
+        Mécanisme de validation en temps réel : envoyer, lire le flag, alerter
+        avant de graver la macro. Complète la validation statique, ne la
+        remplace pas.
+    prefixe_sortie:
+      regle: "toute sortie Eos non-banque est préfixée `/eos/out/`"
+      confiance: S
+      source: "journal terrain"
+
+  regles:
+    - id: pas_de_republication_sub
+      regle: "ne jamais attendre de retour de niveau sur `/eos/sub/<n>`"
+      motif: >
+        Silence total confirmé au banc après changement de niveau — le feedback
+        passe exclusivement par les banques de faders `/eos/fader/<bank>/<n>`.
+      confiance: S
+    - id: assert_hors_ligne_de_commande
+      regle: "ne jamais générer `Sub <n> Assert` en `cmd`/`newcmd`"
+      motif: >
+        `/eos/newcmd \"Sub n Assert#\"` renvoie une erreur de syntaxe — constat
+        de banc. Assert n'a pas de mot-clé de ligne de commande ; le
+        contournement OSC est `/eos/user/1/fader/1/<n>/stop`.
+      confiance: S
+    - id: accolades_non_confirmees
+      regle: >
+        signaler toute commande contenant un token `{…}` avant de l'injecter en
+        chaîne `cmd`/`newcmd`
+      motif: >
+        Aucun exemple, nulle part, ne montre d'accolades dans une chaîne de
+        ligne de commande OSC. Le seul softkey documenté en `cmd` est écrit en
+        mots sans accolades. Si elles ne passent pas, il faut décomposer en
+        `/eos/key/<nom>` séparés.
+      confiance: null
+      backlog: 18
+
+# --------------------------------------------------------------------------
+# CONTRÔLE PARTITIONNÉ — plusieurs programmeurs, un seul show
+#
+# Pertinent pour ce projet au premier chef : macro2eos s'ajoute comme un
+# programmeur de plus à côté d'un opérateur humain. Ce chapitre régit
+# précisément comment plusieurs sources de contrôle coexistent sans se marcher
+# dessus — et confirme, du côté console, une règle déjà déduite du côté Park.
+# --------------------------------------------------------------------------
+partitionnement:
+  confiance: A
+  source: "manuel §28 Partitioned Control"
+  mot_cle: "Partition"
+  osc: partition
+  osc_activation: partitionedcontrol
+
+  principe: >
+    Restreint l'accès en contrôle et en enregistrement d'un utilisateur à un
+    sous-ensemble de channels, pour que plusieurs programmeurs travaillent en
+    même temps sans risquer d'écraser les données de l'autre.
+  chevauchement: "un channel peut appartenir à plusieurs partitions à la fois"
+
+  activation:
+    regle: >
+      Réglage SYSTÈME, dans Setup > System > Partitions. Désactivé par défaut.
+      Ce n'est pas un réglage par utilisateur : activer ou désactiver affecte
+      tout le monde.
+    confiance: A
+    generable: false
+    note: "pas de commande de ligne documentée pour ce réglage — c'est un écran de Setup"
+
+  partitions_preprogrammees:
+    0:   { nom: "aucune",                  effet: "aucun channel, aucun contrôle de fader — défaut de tout utilisateur à l'activation" }
+    901: { nom: "tous les channels",        effet: "accès à tout" }
+    902: { nom: "channels à paramètre unique",   effet: "conventionnels" }
+    903: { nom: "channels à paramètres multiples", effet: "automated fixtures" }
+    confiance: A
+    protection: "ne peuvent pas être supprimées"
+
+  selection_et_creation:
+    forme: "`{Partition} <n> Enter`"
+    confiance: A
+    note: >
+      Si `n` n'existe pas encore, la commande CRÉE la partition en plus de la
+      sélectionner et de l'assigner à l'utilisateur courant — un seul geste
+      fait les deux, contrairement à la plupart des record targets où création
+      et sélection sont perçues comme deux étapes.
+
+  assignation_de_channels:
+    forme_directe: "`<liste de channels> Enter` — remplace intégralement le contenu de la partition"
+    forme_additive: "`+ <liste> Enter`"
+    forme_soustractive: "`- <liste> Enter`"
+    confiance: A
+    confirmation_ecrasement: true
+    contraste_avec_v0_7: >
+      Le §28 inverse, en apparence, la règle « sélection = fusion » établie en
+      v0.7 pour les record targets (Record Cue/Sub/Palette : sans sélection on
+      écrase, avec sélection on fusionne). Ici c'est l'INVERSE : une liste de
+      channels nue REMPLACE le contenu de la partition ; il faut `+` pour
+      ajouter. Ce n'est pas une contradiction du modèle — ce sont deux verbes
+      différents (« enregistrer des données » contre « définir une
+      appartenance ») qui ne partagent que la surface syntaxique. Mais un
+      traducteur NL qui généraliserait naïvement la règle de v0.7 à toute
+      commande portant une sélection se tromperait précisément ici.
+
+  suppression:
+    forme: "`Delete {Partition} <n> Enter Enter`"
+    confiance: A
+    restriction: "refuse sur les quatre partitions préprogrammées"
+
+  porte_sur_l_utilisateur:
+    regle: "une partition est assignée par UTILISATEUR (User ID), pas par appareil"
+    confiance: A
+
+  exceptions_au_controle:
+    regle: >
+      Deux opérations échappent totalement au contrôle par partition, quel que
+      soit le réglage : parquer/déparquer un paramètre, et la lecture des cues.
+    confiance: A
+    confirmation_croisee: >
+      Confirme, depuis le chapitre Partitions, ce que le chapitre Park
+      affirmait déjà de son côté (§19, encodé en v0.11) : « Park instructions
+      are not subject to partition control ». Une même règle établie par deux
+      chapitres indépendants — le niveau de confiance s'en trouve renforcé, pas
+      simplement additionné.
+
+  hors_partition:
+    regle: >
+      Contrôler un channel hors partition affiche un avertissement et exige une
+      confirmation — mais aucune donnée ne peut être stockée pour ce channel,
+      quelle que soit la confirmation donnée.
+    confiance: A
+
+  enregistrement_multi_utilisateur:
+    regle: >
+      Un Record ne stocke que les channels de la partition de son auteur. Les
+      Record d'autres utilisateurs sur la MÊME cible AJOUTENT, ils ne
+      remplacent pas — sauf channels partagés entre partitions, où la dernière
+      valeur fournie l'emporte.
+    confiance: A
+    note: >
+      Ceci est bien la règle de v0.7 (sélection = fusion), mais observée à
+      l'échelle de plusieurs utilisateurs plutôt qu'au sein d'une seule
+      session — les deux règles de cette section ne se contredisent donc pas
+      tant qu'on ne les confond pas.
+
+  playback:
+    partage: >
+      La configuration des faders et ce qui y est chargé sont PARTAGÉS entre
+      tous les appareils de contrôle — sauf la paire de faders maître, propre à
+      chaque utilisateur.
+    partition_sur_cue_list:
+      assigner: "`Cue <n>/ {Partition} <m> Enter`"
+      retirer: "`Cue <n>/ {Partition} Enter`"
+      confiance: A
+      effet: >
+        Les channels hors de la partition assignée à la cue list ne sont ni
+        stockés ni rejoués pour cette liste.
+      idiome_retrait: >
+        `{Partition} Enter` sans valeur retire l'assignation — même famille
+        que l'idiome `At Enter` documenté en v0.12, mais sans `At` : la forme
+        générale est « attribut nu suivi d'Enter, sans valeur, efface
+        l'attribut », pas seulement la forme avec `At` spécifiquement.
+
+  flexichannel_partitionne:
+    regle: >
+      Quand le contrôle partitionné est actif, un mode Flexichannel
+      « Partitioned » devient disponible, limitant l'affichage flexi aux seuls
+      channels de la partition courante.
+    confiance: A
+    backlog: 33
+    note: "mécanisme de Flexichannel non encore couvert par le modèle — hors périmètre pour l'instant"
 
 # --------------------------------------------------------------------------
 # NUANCIERS de gel — préfixe numérique du champ `gel`
@@ -82,12 +3166,17 @@ nuanciers:
   2: { nom: "GAM",     confiance: A }
   3: { nom: "Lee",     confiance: A }
   4: { nom: "Rosco E-Colour", confiance: A }
+  # Numéro de bibliothèque ≠ numéro de teinte. Quel gel EST "rouge" ou "chaud" chez un
+  # fabricant est une donnée externe à la console, hors du périmètre de ce modèle —
+  # voir reference/lee_filters_theatre.md (partiel, PLANNING.md #34) pour Lee. Le
+  # traducteur ne doit jamais deviner un numéro de teinte non sourcé.
 
 # --------------------------------------------------------------------------
 # MATRICE DE LÉGALITÉ
 # Une entrée par combinaison. `inconnu` est une valeur de première classe.
 # --------------------------------------------------------------------------
 legalite:
+  # --- v0.1, inchangé (non-régression) ---
   - objet: Chan
     action: couleur_gel
     valide: oui
@@ -114,7 +3203,926 @@ legalite:
     confiance: A
     note: "s'applique à ce qui est sélectionné, pas d'objet explicite"
 
+  - objet: selection_courante
+    action: intensite
+    valide: oui
+    confiance: A
+    note: >
+      Une sélection déjà posée — par Query, Select Active, Select Last ou une
+      étape précédente — accepte directement `At`. Exemple A : la requête
+      `Query {Is In} Color Palette 2 At 50 Enter` du manuel §15.
+
+  - objet: selection_courante
+    action: couleur_gel
+    valide: oui
+    confiance: A
+
+  # --- Fan ---
+  - objet: Chan
+    action: temps
+    valide: oui
+    confiance: A
+    note: "temps discret par channel ; fanable par `Thru` (manuel §8)"
+
+  - objet: Group
+    action: temps
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: delai
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: delai
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: temps
+    valide: oui
+    confiance: A
+    note: "`Cue 1 Thru 5 Time 6 Thru 10` fane les temps de cue (manuel §8)"
+
+  - objet: Part
+    action: temps
+    valide: oui
+    confiance: A
+    note: "`Cue 1 Part 1 Thru 3 Time 6 Thru 8` (manuel §8)"
+
+  # --- Cues ---
+  - objet: selection_courante
+    action: record_cue
+    valide: oui
+    confiance: A
+    note: "sans sélection préalable, enregistre tous les channels non-défaut"
+
+  - objet: Chan
+    action: record_cue
+    valide: oui
+    confiance: A
+    note: "enregistrement sélectif : `Chan 1 Thru 5 Record Cue 4` (manuel §12)"
+
+  - objet: Group
+    action: record_cue
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_cue
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_cue
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: record_only_cue
+    valide: oui
+    confiance: A
+    note: "`Group 2 Record Only Cue 5` (manuel §12)"
+
+  - objet: selection_courante
+    action: update_cue
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_cue
+    valide: oui
+    confiance: A
+    note: "`5 Thru 9 Update Make Absolute` restreint la mise à jour (manuel §12)"
+
+  - objet: Cue
+    action: go_to_cue
+    valide: oui
+    confiance: A
+    note: "objet implicite : la cible est portée par le mot-clé, sans sélection préalable"
+
+  - objet: Chan
+    action: palette_intensite
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: palette_intensite
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: palette_couleur
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: palette_couleur
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: cue_link
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: label
+    valide: oui
+    confiance: A
+
+  # --- Submasters ---
+  - objet: selection_courante
+    action: record_sub
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_sub
+    valide: oui
+    confiance: A
+    note: "`6 Thru 10 Record Sub 3` (manuel §20)"
+
+  - objet: Group
+    action: record_sub
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_sub
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_sub
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_sub
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: update_sub
+    valide: oui
+    confiance: A
+
+  - objet: Sub
+    action: label
+    valide: oui
+    confiance: A
+
+  - objet: Sub
+    action: temps_bump_sub
+    valide: oui
+    confiance: A
+
+  - objet: Sub
+    action: sub_bump_bas
+    valide: oui
+    confiance: B
+    note: >
+      Touche confirmée A (eosKeys.ts), ordre `SubDown <n> Enter` confirmé C
+      (corpus #026, membre expérimenté corrigeant une macro cassée). La survie
+      à l'export ASCII reste ouverte — PLANNING #1.
+
+  - objet: Sub
+    action: sub_bump_haut
+    valide: oui
+    confiance: B
+    note: "mêmes réserves que sub_bump_bas"
+
+  - objet: Sub
+    action: intensite
+    valide: non
+    confiance: S
+    note: >
+      Le pilotage de niveau d'un sub passe par le fader ou les bumps, pas par
+      `At`. Entrée conservée pour que le générateur refuse explicitement au
+      lieu de tomber dans le trou « combinaison absente du modèle ».
+
+  - objet: Sub
+    action: asserter
+    valide: non
+    confiance: S
+    note: >
+      `/eos/newcmd "Sub n Assert#"` échoue en erreur de syntaxe — constat de
+      banc. Restriction propre AUX SUBMASTERS : l'assert de cue, de cue list,
+      de channel et de paramètre existe bien en ligne de commande (manuel §14).
+      Voir `assert.contradiction_sources`. Contournement documenté :
+      `/eos/user/1/fader/1/<n>/stop`.
+
+  # --- Macros ---
+  - objet: Macro
+    action: label
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: appel_macro
+    valide: oui
+    confiance: A
+    note: "`Macro 5 Enter` depuis la ligne de commande (manuel §24)"
+
+  # --- Effets ---
+  - objet: Chan
+    action: appliquer_effet
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: appliquer_effet
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: appliquer_effet
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: retirer_effet
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: retirer_effet
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: arreter_effet
+    valide: oui
+    confiance: A
+    note: "sans sélection ni numéro, `Stop Effect Enter` arrête TOUS les effets"
+
+  - objet: Chan
+    action: arreter_effet
+    valide: oui
+    confiance: A
+
+  - objet: Effect
+    action: effet_bpm
+    valide: oui
+    confiance: A
+
+  - objet: Effect
+    action: label
+    valide: oui
+    confiance: A
+
+  # --- Sélection ---
+  - objet: selection_courante
+    action: selection_active
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: selection_derniere
+    valide: oui
+    confiance: A
+
+  # --- Contexte d'écran et formes courtes ---
+  - objet: Chan
+    action: hors_scene
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: hors_scene
+    valide: oui
+    confiance: A
+    note: "`Group 9 Out` — exemple chiffré du manuel §6"
+
+  - objet: selection_courante
+    action: hors_scene
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: plein_feu
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: plein_feu
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: niveau_setup
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: incrementer
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: decrementer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: valeur_dmx
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: sneak
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: focus_onglet
+    valide: oui
+    confiance: A
+    note: "ne dépend d'aucune sélection — change l'écran, donc le sens des mots suivants"
+
+  # --- Courbes et snapshots ---
+  - objet: Cue
+    action: appliquer_courbe
+    valide: oui
+    confiance: A
+    note: "sur une cue, la courbe n'affecte que l'intensité"
+
+  - objet: Part
+    action: appliquer_courbe
+    valide: oui
+    confiance: A
+    note: "sur une part, elle affecte TOUS les paramètres qui bougent"
+
+  - objet: Chan
+    action: appliquer_courbe
+    valide: oui
+    confiance: A
+    note: "en Patch — `Patch Attributes 1 Curve 901 Enter`"
+
+  - objet: Cue
+    action: retirer_courbe
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_snapshot
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: rappeler_snapshot
+    valide: oui
+    confiance: A
+
+  # --- Park et filtres ---
+  - objet: Chan
+    action: parquer
+    valide: oui
+    confiance: A
+    note: "`2 At 50 Park Enter` — avec valeur, le résultat est déterministe"
+
+  - objet: Group
+    action: parquer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: parquer_echelle
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: tout_deparquer
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: effacer_filtres
+    valide: oui
+    confiance: A
+
+  # --- Assert et cue lists multiples ---
+  - objet: Cue
+    action: asserter
+    valide: oui
+    confiance: A
+    note: "`Cue 2/5 Assert Enter` sur une cue ; `Cue 2/ Assert Enter` sur toute la liste"
+
+  - objet: Chan
+    action: asserter
+    valide: oui
+    confiance: A
+    note: "à enregistrer ensuite — l'assert posé n'est pas stocké"
+
+  - objet: Group
+    action: asserter
+    valide: oui
+    confiance: A
+    note: "`Group 6 Assert Enter` rejoue une portion d'une cue ACTIVE"
+
+  - objet: selection_courante
+    action: asserter
+    valide: oui
+    confiance: A
+
+  # --- Contrôle partitionné ---
+  - objet: Partition
+    action: selectionner_partition
+    valide: oui
+    confiance: A
+    note: "sélectionne, et crée si le numéro n'existe pas encore"
+
+  - objet: Partition
+    action: partition_ajouter
+    valide: oui
+    confiance: A
+
+  - objet: Partition
+    action: partition_retirer
+    valide: oui
+    confiance: A
+
+  - objet: Partition
+    action: supprimer_partition
+    valide: oui
+    confiance: A
+    note: "refusée par la console sur les partitions préprogrammées 0/901/902/903"
+
+  - objet: Cue
+    action: partition_cue_list
+    valide: oui
+    confiance: A
+    note: "`Cue 5/ Partition 902 Enter` assigne ; `Cue 5/ Partition Enter` retire"
+
+  # --- Cues multipart ---
+  - objet: Chan
+    action: affecter_part
+    valide: oui
+    confiance: A
+    note: "`1 Thru 5 Part 2 Enter` en Blind — la touche Part est obligatoire"
+
+  - objet: Part
+    action: record_cue
+    valide: oui
+    confiance: A
+    note: "`Record Cue 2 Part 1 Delay 8` — attributs propres à la part"
+
+  - objet: Cue
+    action: delai
+    valide: oui
+    confiance: A
+    note: "`Record Cue 2 Delay 5` (manuel §12) ; qualifiable par une part (§17)"
+
+  - objet: Part
+    action: delai
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: supprimer_part
+    valide: oui
+    confiance: A
+
+  # --- Mark ---
+  - objet: Cue
+    action: marquer
+    valide: oui
+    confiance: A
+    note: "`Cue 10 Mark Enter` pose le drapeau M — c'est la cue marquée"
+
+  - objet: Chan
+    action: marquer
+    valide: oui
+    confiance: A
+    note: "`1 Thru 10 Mark Enter` dans la cue source — les channels sont obligatoires"
+
+  - objet: Group
+    action: marquer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: marquer_vers_cue
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: marquer_au_plus_tot
+    valide: oui
+    confiance: A
+
+  - objet: Cue
+    action: mark_time
+    valide: oui
+    confiance: A
+
+  # --- Palettes et presets ---
+  - objet: selection_courante
+    action: record_palette
+    valide: oui
+    confiance: A
+    note: "sans sélection, écrase ; avec sélection, fusionne"
+
+  - objet: Chan
+    action: record_palette
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: record_palette
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_palette
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_palette
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_palette
+    valide: oui
+    confiance: A
+    note: "seule forme acceptée sur une palette verrouillée, en Live"
+
+  - objet: Chan
+    action: rappeler_palette
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: rappeler_palette
+    valide: oui
+    confiance: A
+    note: "`Group 11 Beam Palette 5 Enter` — exemple chiffré du manuel §10"
+
+  - objet: selection_courante
+    action: rappeler_palette
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: rappeler_depuis
+    valide: oui
+    confiance: A
+    note: "sélectionne lui-même les channels de la cible"
+
+  - objet: Chan
+    action: rappeler_depuis
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_preset
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_preset
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_preset
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_preset
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: rappeler_preset
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: rappeler_preset
+    valide: oui
+    confiance: A
+
+  - objet: Preset
+    action: rappeler_preset
+    valide: non
+    confiance: A
+    note: >
+      Un preset ne peut pas en référencer un autre (manuel §11). Entrée
+      conservée pour que le générateur refuse explicitement au lieu de tomber
+      dans le trou « combinaison absente du modèle ».
+
+  # --- Groupes ---
+  - objet: Chan
+    action: record_groupe
+    valide: oui
+    confiance: A
+    note: "`1 Thru 5 Record Group 7` — l'ordre de sélection est conservé"
+
+  - objet: Group
+    action: record_groupe
+    valide: oui
+    confiance: A
+    note: "`Group 7 + 5 Record Group 9` — composer un groupe à partir de groupes"
+
+  - objet: selection_courante
+    action: record_groupe
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: record_only_groupe
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: record_only_groupe
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: update_groupe
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: label
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: supprimer
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: inserer_avant
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: inserer_apres
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: reordonner
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: inverser_ordre
+    valide: oui
+    confiance: A
+
+  - objet: Group
+    action: ordre_aleatoire
+    valide: oui
+    confiance: A
+
+  # --- Patch ---
+  - objet: Chan
+    action: patcher
+    valide: oui
+    confiance: A
+    note: "n'a de sens qu'en mode par channel — voir contexte.modes_patch"
+
+  - objet: Chan
+    action: patch_univers
+    valide: oui
+    confiance: A
+
+  - objet: selection_courante
+    action: patcher_par_adresse
+    valide: oui
+    confiance: A
+    note: "`Address 513 At 8` — forme non ambiguë, sans sélection préalable"
+
+  - objet: Chan
+    action: retirer_adresse
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: depatcher
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: patch_hors_sortie
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: supprimer
+    valide: oui
+    confiance: A
+
+
+  - objet: Chan
+    action: patch_preheat
+    valide: oui
+    confiance: A
+
+  - objet: Chan
+    action: patch_proportion
+    valide: oui
+    confiance: A
+
+  - objet: Part
+    action: patcher
+    valide: oui
+    confiance: A
+    note: "`Chan 8 Part 2 At 513` — crée et adresse la part 2"
+
   # --- zones non tranchées ---
+  - combinaison: "mode de patch By Channel / By Address"
+    valide: inconnu
+    confiance: null
+    backlog: 20
+    note: >
+      `5 At 100` patche le channel 5 à l'adresse 100 en mode par channel, et
+      l'adresse 5 au channel 100 en mode par adresse. La bascule `Format` est
+      un toggle, aucune sortie OSC ne publie le mode courant : le générateur ne
+      peut ni le lire ni le régler de façon fiable.
+
+  - combinaison: "structure du fichier USITT ASCII"
+    valide: inconnu
+    confiance: null
+    backlog: 32
+    note: >
+      Aucune source du dépôt ne décrit le format `.asc` — ni mots-clés, ni
+      représentation des macros, ni extension propriétaire ETC. Le modèle ne
+      peut donc pas produire d'ASCII, seulement décrire le flux d'import et
+      d'export. Lacune documentaire, pas zone d'ombre de la console.
+
+  - combinaison: "macro: dans un bouton de Magic Sheet — quelle forme ?"
+    valide: inconnu
+    confiance: null
+    backlog: 30
+    note: >
+      Le corpus #063 décrit `macro:` comme appelant une macro par son numéro ;
+      le seul exemple du manuel montre une suite de commandes de macro sans
+      numéro. Les deux formes peuvent coexister, une seule est attestée.
+
+  - combinaison: "numéro d'évènement de show control"
+    valide: inconnu
+    confiance: null
+    backlog: 31
+    note: >
+      Les numéros d'évènement se renumérotent pour rester chronologiques. Un
+      `Event 3` généré peut désigner autre chose après une insertion — ce n'est
+      pas un identifiant stable, contrairement aux cues ou aux macros.
+
+  - combinaison: "Flexichannel « Partitioned » — mode non couvert"
+    valide: inconnu
+    confiance: null
+    backlog: 33
+    note: >
+      Devient disponible quand le contrôle partitionné est actif ; limite
+      l'affichage flexi aux channels de la partition courante (manuel §28).
+      Le mécanisme Flexichannel lui-même n'est pas encore dans le modèle —
+      hors périmètre pour l'instant, pas une zone d'ombre de la console.
+
+  - combinaison: "niveau sous 10 % — zéro de tête"
+    valide: oui
+    confiance: S
+    note: >
+      RÉSOLU 2026-08-03 (ex-#29). `At 5` vaut 50 % (manuel §6, cinq occurrences
+      de la notation `<0>`) ; sous 10 %, `At 05` = 5 %, `At 07` = 7 % —
+      confirmation directe de l'utilisateur en session. Le générateur écrit
+      désormais systématiquement deux chiffres pour toute valeur 1-9 via
+      `_formater_niveau()`, jamais un chiffre nu.
+
+  - combinaison: "pose de filtres par accord maintenu"
+    valide: inconnu
+    confiance: null
+    backlog: 27
+    note: >
+      Le manuel décrit la pose d'un filtre comme un accord : tenir `{Filter}`,
+      presser les touches de paramètre, relâcher. `/eos/key/filter` accepte un
+      front (1.0/0.0), donc la reproduction est plausible — jamais documentée
+      ni observée. Sans elle, l'app hérite d'un état de filtrage qu'elle ne
+      choisit pas.
+
+  - combinaison: "état des filtres — invisible et déterminant"
+    valide: inconnu
+    confiance: null
+    backlog: 28
+    note: >
+      Aucune adresse `/eos/out/…` ne publie l'état des filtres. La même
+      commande `Record Cue 5 Enter` enregistre donc un contenu différent selon
+      un état non lisible, sans que son texte change. Cinquième état implicite,
+      et le seul qui altère le RÉSULTAT plutôt que le SENS d'une commande.
+
+  - combinaison: "cue list courante — état implicite"
+    valide: inconnu
+    confiance: null
+    backlog: 25
+    note: >
+      La liste d'enregistrement est déterminée par la « cue sélectionnée », qui
+      change à chaque Record, Update, Go, Back, Go To Cue ou modification
+      d'attribut. Le générateur nomme toujours la liste explicitement pour ne
+      pas en dépendre, mais reste à vérifier qu'un préfixe explicite l'emporte
+      bien dans tous les cas.
+
+  - combinaison: "Assert en ligne de commande — portée réelle"
+    valide: inconnu
+    confiance: null
+    backlog: 26
+    note: >
+      Le manuel §14 documente `Assert` en ligne de commande sur cue, cue list,
+      channel et paramètre. Le banc a constaté l'échec de `Sub n Assert`. Les
+      deux sont compatibles — la restriction porte sur les submasters — mais la
+      généralisation inscrite dans la grammaire consolidée §9 est trop large.
+      À confirmer au banc : `Cue 2/5 Assert Enter` passe-t-il en `newcmd` ?
+
+  - combinaison: "AutoMark ou marques référencées — lequel est actif ?"
+    valide: inconnu
+    confiance: null
+    backlog: 24
+    note: >
+      Les deux mécanismes s'excluent, le choix est un réglage de Setup global
+      et rétroactif, et aucune commande de lecture n'est documentée. Une même
+      intention « prépare le mouvement avant l'allumage » se traduit
+      différemment selon ce réglage que le générateur ne peut pas consulter.
+
+  - combinaison: "{High Priority} / {Low Priority} sur une marque"
+    valide: inconnu
+    confiance: null
+    backlog: 23
+    note: >
+      Documentés au manuel §9 mais absents de la liste officielle des touches
+      OSC (§31) comme de eosKeys.ts. Même classe de problème que les sept
+      conditions Query de #15 : atteignables au doigt, pas par `/eos/key/`.
+
+  - combinaison: "{Insert Before} / {Insert After} — sens réel"
+    valide: inconnu
+    confiance: null
+    backlog: 22
+    note: >
+      Le manuel §7 se contredit à quelques pages d'écart : sa liste de softkeys
+      décrit `{Insert Before}` comme insérant « after the specified channel »,
+      ses exemples chiffrés font l'inverse. Le modèle retient les exemples —
+      cohérents entre eux et avec les noms — mais c'est un arbitrage, pas un
+      fait établi.
+
+  - combinaison: "mot-clé Chan explicite en contexte Patch"
+    valide: inconnu
+    confiance: null
+    backlog: 21
+    note: >
+      Le chapitre Patch du manuel n'écrit JAMAIS `[Chan]` — que des numéros nus
+      et le préfixe `[Address]`. Or le générateur écrit `Chan` partout par
+      convention. Que `Chan 5 At 100` soit accepté en Patch, et force bien
+      l'interprétation channel quel que soit le mode, est une extrapolation.
+
+  - combinaison: "commande auto-terminante hors liste officielle"
+    valide: inconnu
+    confiance: null
+    backlog: 19
+    note: >
+      Le manuel énonce sa liste de commandes auto-terminantes en la déclarant
+      partielle : « Some (but not all) of these commands are ». Toute action
+      que le modèle ne marque pas `auto_termine` est donc présumée avoir besoin
+      d'`Enter` — présomption, pas fait établi. Un `Enter` de trop sur une
+      commande déjà terminée peut ré-exécuter la ligne suivante.
+
+  - combinaison: "Select Last après une Query composée"
+    valide: inconnu
+    confiance: null
+    backlog: 17
+    note: >
+      Corpus #083 : la touche relancerait la syntaxe de la requête au lieu de
+      renvoyer la sélection résultante. Si confirmé, la stratégie de génération
+      en masse n° 2 (boucle SelectLast/Next) devient inapplicable à une
+      sélection conditionnelle — c'est-à-dire au seul cas où Query sert.
+
+  - combinaison: "condition Query sans touche OSC"
+    valide: inconnu
+    confiance: null
+    backlog: 15
+    note: >
+      Sept conditions ({Broken Mark}, {Marking}, {Up Moves}, {Down Moves},
+      {Live Moves}, {Dark Moves}, {Autoblock}) figurent au manuel §15 mais pas
+      dans la liste officielle des touches OSC du §31. Atteignables au doigt,
+      pas par `/eos/key/`. Reste à savoir si leur nom passe dans une chaîne
+      `/eos/cmd`.
+
+  - combinaison: "token {…} dans une chaîne /eos/cmd"
+    valide: inconnu
+    confiance: null
+    backlog: 18
+    note: >
+      Concerne toute commande générée portant un style de Fan ou un
+      modificateur. Aucun exemple d'accolades dans une chaîne de ligne de
+      commande OSC nulle part dans le corpus ni le manuel.
+
   - combinaison: "Group <n> + <a> Thru <b>"
     valide: inconnu
     confiance: null
@@ -131,3 +4139,76 @@ legalite:
     note: >
       Comportement réel du clavier virtuel avec espaces et tirets dans le
       libellé — non observé.
+
+  - combinaison: "Fan {Interleave} | {Jump} | {Num Groups} | {Channels Per Group} | {Curve}"
+    valide: inconnu
+    confiance: null
+    backlog: 9
+    note: >
+      Cinq styles de Fan dont l'existence est confirmée A par eosKeys.ts mais
+      dont ni le manuel ni le corpus ne décrit le comportement, ni même le
+      nombre d'arguments attendus. Générer l'un d'eux serait produire une
+      commande dont le projet ne sait pas prédire l'effet.
+
+  - combinaison: "Fan {Mirror}"
+    valide: inconnu
+    confiance: null
+    backlog: 13
+    note: >
+      Le manuel §8 emploie `{Mirror}` dans trois exemples (« Fanning Parameter
+      Data », « Fan From the Command Line », fan de délais) alors que sa propre
+      liste de softkeys ne documente que `{Mirror Out}` et `{Mirror In}` —
+      et eosKeys.ts ne connaît que `mirror_in` / `mirror_out` (plus
+      `mirror_mode`→MIRROR, dont le rapport au Fan n'est pas établi).
+      L'exemple `1 Thru 5 At 10 Thru 30 Fan {Mirror}` donne le même résultat
+      chiffré que l'exemple `{Mirror Out}` : abréviation rédactionnelle
+      probable, jamais confirmée. Le générateur écrit `{Mirror Out}` en clair
+      et n'émet jamais `{Mirror}`.
+
+  - combinaison: "macro contenant SubDown/SubUp → export/import ASCII"
+    valide: inconnu
+    confiance: null
+    backlog: 1
+    note: >
+      Corpus #027 : une macro apprise sur un bump de submaster ne se relit pas
+      correctement après un aller-retour ASCII. Si confirmé, contrainte dure sur
+      le format d'export du traducteur, pas seulement sur la syntaxe générée.
+
+  - combinaison: "Macro <n> Enter en fin de contenu de macro"
+    valide: inconnu
+    confiance: null
+    backlog: 2
+    note: >
+      Chaînage macro-dans-macro : syntaxe confirmée A par le manuel §24, mais
+      corpus #070 et #095 se contredisent sur la fiabilité d'exécution réelle.
+      La syntaxe est sûre, l'exécution ne l'est pas — distinction que le modèle
+      doit garder visible.
+
+  - combinaison: "Go To Cue <décimale> depuis une macro"
+    valide: inconnu
+    confiance: null
+    backlog: 7
+    note: >
+      Deux problèmes distincts sous le même nom. (a) Troncature de la décimale
+      si la commande est concaténée en une chaîne unique (corpus #060) — évitée
+      par construction ici, le générateur produit des tokens séparés. (b)
+      Exécution non déterministe selon Foreground/Background et le timing
+      (corpus #061) — non évitable par construction, voir PLANNING #14.
+
+  - combinaison: "Go To Cue en macro Background"
+    valide: inconnu
+    confiance: null
+    backlog: 14
+    note: >
+      Corpus #061, témoignage technique dense avec logs : le Go To Cue n'est pas
+      toujours exécuté en Background, ou l'est sur la mauvaise cue list. Le
+      projet force Foreground par défaut, ce qui limite le risque sans le lever.
+
+  - combinaison: "Fan de références sur exactement 2 palettes"
+    valide: non
+    confiance: A
+    note: >
+      Syntaxiquement accepté, mais casse l'intention : avec 2 références ou
+      moins, Eos interpole en données ABSOLUES et perd la référence (manuel §8,
+      « Fanning References »). Marqué `non` parce que le résultat contredit ce
+      que l'utilisateur a demandé — c'est un piège, pas une erreur de syntaxe.

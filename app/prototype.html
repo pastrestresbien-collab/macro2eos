@@ -1,0 +1,2300 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>macro2eos — prototype interactif</title>
+
+<style>
+  :root {
+    --page-bg: #F2F4F7; --page-surface: #FFFFFF; --page-line: #D8DEE7;
+    --page-ink: #16202C; --page-muted: #5C6B7D; --page-accent: #1F6F9F;
+
+    --app-bg: #0B0F14; --app-surface: #141B24; --app-surface-hi: #1C2632;
+    --app-line: #26313F; --app-ink: #E4EAF2; --app-muted: #8496AB;
+    --app-accent: #4DA3D9; --app-accent-ink: #06121C;
+    --app-warn: #E0A83C; --app-danger: #D9605A; --app-ok: #5FBF8F;
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --page-bg:#0D1319; --page-surface:#151D26; --page-line:#26313D;
+            --page-ink:#DFE7F0; --page-muted:#8595A6; --page-accent:#6BB6E4; }
+  }
+  :root[data-theme="dark"] { --page-bg:#0D1319; --page-surface:#151D26; --page-line:#26313D;
+            --page-ink:#DFE7F0; --page-muted:#8595A6; --page-accent:#6BB6E4; }
+  :root[data-theme="light"] { --page-bg:#F2F4F7; --page-surface:#FFFFFF; --page-line:#D8DEE7;
+            --page-ink:#16202C; --page-muted:#5C6B7D; --page-accent:#1F6F9F; }
+
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--page-bg); color:var(--page-ink); font-family:var(--sans);
+         line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font-family: inherit; }
+  button:focus-visible, [tabindex]:focus-visible { outline:2px solid var(--app-accent); outline-offset:2px; }
+
+  .page { max-width:520px; margin:0 auto; padding:30px 18px 60px;
+          display:flex; flex-direction:column; align-items:center; gap:18px; }
+  .eyebrow { font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+             color:var(--page-muted); font-weight:600; align-self:flex-start; }
+  .page h1 { margin:0; font-size:22px; align-self:flex-start; letter-spacing:-.01em; }
+  .page p.lede { margin:0; align-self:flex-start; color:var(--page-muted); font-size:13.5px; max-width:54ch; }
+
+  /* ---------- châssis ---------- */
+  .device { background:#05080B; border:1px solid var(--page-line); border-radius:30px;
+            padding:10px; box-shadow:0 16px 40px rgba(4,10,18,.3); max-width:100%; }
+  .viewport { width:min(340px, calc(100vw - 56px)); height:min(680px, calc(100dvh - 220px));
+              min-height:500px; background:var(--app-bg); color:var(--app-ink);
+              border-radius:22px; overflow:hidden; display:flex; flex-direction:column;
+              font-size:14px; position:relative; }
+
+  .os-bar { display:flex; align-items:center; justify-content:space-between;
+            padding:7px 16px 2px; font-size:11.5px; color:var(--app-ink);
+            font-variant-numeric:tabular-nums; flex:none; }
+  .os-bar .sig { display:flex; gap:3px; align-items:flex-end; }
+  .os-bar .sig i { display:block; width:3px; background:var(--app-ink); border-radius:1px; }
+  .os-bar .sig i:nth-child(1){height:4px} .os-bar .sig i:nth-child(2){height:6px}
+  .os-bar .sig i:nth-child(3){height:8px} .os-bar .sig i:nth-child(4){height:10px}
+  .os-bar .batt { border:1px solid var(--app-muted); border-radius:2px; width:20px; height:10px;
+                  position:relative; padding:1px; }
+  .os-bar .batt::after { content:""; position:absolute; right:-3px; top:3px; width:2px; height:4px;
+                         background:var(--app-muted); border-radius:1px; }
+  .os-bar .batt i { display:block; height:100%; width:78%; background:var(--app-ink); border-radius:1px; }
+
+  .statusbar { display:flex; align-items:center; justify-content:space-between; gap:10px;
+               padding:8px 12px 8px 14px; border-bottom:1px solid var(--app-line);
+               background:var(--app-surface); flex:none; }
+  .conn { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--app-muted);
+          background:none; border:none; padding:4px 2px; cursor:pointer; }
+  .conn:hover { color:var(--app-ink); }
+  .dot { width:7px; height:7px; border-radius:50%; flex:none; }
+  .dot-ok { background:var(--app-ok); box-shadow:0 0 0 3px rgba(95,191,143,.16); }
+  .dot-wait { background:var(--app-warn); box-shadow:0 0 0 3px rgba(224,168,60,.16); }
+  .user-tag { font-family:var(--mono); font-size:11.5px; color:var(--app-accent);
+              border:1px solid var(--app-line); border-radius:6px; padding:2px 7px; }
+  .hdr-right { display:flex; align-items:center; gap:7px; flex:none; }
+  .hdr-btn { flex:none; width:38px; height:38px; border-radius:10px;
+             display:inline-flex; align-items:center; justify-content:center;
+             background:none; border:1px solid transparent; color:var(--app-muted);
+             font-size:20px; line-height:1; cursor:pointer; }
+  .hdr-btn:hover { color:var(--app-ink); border-color:var(--app-line); }
+  .hdr-btn.on { color:var(--app-accent); border-color:var(--app-line); background:var(--app-surface-hi); }
+  .hdr-exit { width:auto; padding:0 12px; height:34px; font-size:12.5px; font-weight:600;
+              color:var(--app-warn); border-color:rgba(224,168,60,.4); }
+
+  .banner-recon { display:flex; align-items:center; justify-content:space-between; gap:8px;
+                  padding:8px 14px; background:rgba(224,168,60,.13);
+                  border-bottom:1px solid rgba(224,168,60,.32); color:var(--app-warn);
+                  font-size:12px; font-weight:600; flex:none; }
+  .banner-recon button { background:none; border:none; color:var(--app-warn);
+                         text-decoration:underline; font-size:11.5px; font-weight:600;
+                         cursor:pointer; padding:0; flex:none; }
+
+  main#screen { flex:1; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; }
+
+  .label { font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+           color:var(--app-muted); font-weight:600; }
+
+  /* ==========================================================================
+     LE FIL — cœur du prototype B.
+     L'historique n'est pas un écran où l'on se rend : c'est le plan de travail
+     lui-même. On y voit ce qu'on a demandé, ce que l'app a compris, ce que la
+     console a répondu. Consulter le passé et préparer la suite sont le même
+     geste, au même endroit.
+     ========================================================================== */
+  .thread { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+  .thread-empty { margin:auto; text-align:center; color:var(--app-muted); font-size:13px;
+                  max-width:30ch; line-height:1.55; }
+
+  .day { display:flex; align-items:center; gap:10px; color:var(--app-muted); font-size:10.5px;
+         letter-spacing:.1em; text-transform:uppercase; }
+  .day::before, .day::after { content:""; flex:1; height:1px; background:var(--app-line); }
+
+  .exch { display:flex; flex-direction:column; gap:7px; }
+
+  /* la demande : ce que l'utilisateur a dit, aligné à droite comme un message envoyé */
+  .ask { align-self:flex-end; max-width:85%; background:var(--app-accent); color:var(--app-accent-ink);
+         border-radius:14px 14px 4px 14px; padding:9px 13px; font-size:14px; line-height:1.35; }
+  .ask.from-lib { background:var(--app-surface-hi); color:var(--app-ink); border:1px solid var(--app-line); }
+  .ask .src-tag { display:block; font-size:10px; opacity:.75; margin-top:3px; }
+
+  /* la proposition : ce que l'app a compris, à gauche */
+  .reply { align-self:flex-start; max-width:92%; background:var(--app-surface);
+           border:1px solid var(--app-line); border-radius:14px 14px 14px 4px;
+           padding:11px 12px; display:flex; flex-direction:column; gap:8px; }
+  .reply .macro { font-family:var(--mono); font-size:13px; line-height:1.45; color:var(--app-ink);
+                  overflow-wrap:anywhere; }
+  .reply .macro .chip { border-bottom:1px dashed var(--app-muted); padding-bottom:1px; cursor:pointer; }
+  .reply .macro .chip:hover, .reply .macro .chip.active { border-bottom-color:var(--app-accent); color:var(--app-accent); }
+
+  .flag { display:flex; gap:7px; font-size:11.5px; line-height:1.45; border-radius:9px; padding:8px 10px; }
+  .flag-warn { background:rgba(224,168,60,.1); border:1px solid rgba(224,168,60,.32); color:var(--app-warn); }
+  .flag-bad { background:rgba(217,96,90,.1); border:1px solid rgba(217,96,90,.35); color:var(--app-danger); }
+  .flag-ok { background:rgba(95,191,143,.1); border:1px solid rgba(95,191,143,.3); color:var(--app-ok); }
+  .flag b { font-weight:650; }
+  .flag .txt { color:var(--app-muted); }
+
+  .fixline { font-family:var(--mono); font-size:12px; background:#070B10; border:1px solid var(--app-line);
+             border-radius:8px; padding:8px 9px; }
+  .fixline .was { color:var(--app-danger); text-decoration:line-through; }
+  .fixline .now { color:var(--app-ok); }
+
+  /* verdict de la console : rattaché à l'échange, pas une notification volante */
+  .verdict { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:620; }
+  .verdict.ok { color:var(--app-ok); } .verdict.doute { color:var(--app-accent); }
+  .verdict.bad { color:var(--app-danger); } .verdict.pending { color:var(--app-warn); }
+  .verdict .t { margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--app-muted); font-weight:400; }
+
+  /* envoi d'un favori : un événement, pas un tour de parole — volontairement discret */
+  .event { align-self:center; display:flex; align-items:center; gap:8px; font-size:11.5px;
+           color:var(--app-muted); background:var(--app-surface); border:1px solid var(--app-line);
+           border-radius:20px; padding:6px 13px; max-width:92%; }
+  .event .nm { color:var(--app-ink); font-weight:600; }
+
+  .kept { display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--app-accent); }
+
+  .row-actions { display:flex; flex-wrap:wrap; gap:7px; }
+  .mini { font-size:12px; padding:7px 11px; border-radius:9px; border:1px solid var(--app-line);
+          background:transparent; color:var(--app-muted); cursor:pointer; }
+  .mini:hover { color:var(--app-ink); border-color:var(--app-muted); }
+  .mini.go { background:var(--app-accent); border-color:var(--app-accent); color:var(--app-accent-ink); font-weight:620; }
+  .mini.warn { background:var(--app-warn); border-color:var(--app-warn); color:#1A1204; font-weight:620; }
+
+  .menu { background:var(--app-surface-hi); border:1px solid var(--app-line); border-radius:10px;
+          padding:6px; display:flex; flex-direction:column; gap:2px; }
+  .menu .opt { display:flex; align-items:center; justify-content:space-between; padding:10px;
+               border-radius:7px; font-size:13.5px; background:none; border:none; text-align:left;
+               color:var(--app-ink); cursor:pointer; width:100%; }
+  .menu .opt:hover { background:rgba(255,255,255,.04); }
+  .menu .opt.sel { background:rgba(77,163,217,.14); color:var(--app-accent); font-weight:620; }
+  .menu .opt.danger { color:var(--app-danger); }
+  .menu input[type=text] { background:var(--app-bg); border:1px solid var(--app-line); border-radius:8px;
+                           color:var(--app-ink); font-size:13.5px; padding:9px 10px; font-family:inherit; width:100%; }
+  .menu input[type=text]:focus { outline:none; border-color:var(--app-accent); }
+
+  /* ---------- la barre de saisie, ancrée en bas du fil ---------- */
+  .composer { flex:none; border-top:1px solid var(--app-line); background:var(--app-surface);
+              padding:10px 12px; display:flex; align-items:flex-end; gap:8px; }
+  .composer textarea { flex:1; min-width:0; background:var(--app-bg); border:1px solid var(--app-line);
+                       border-radius:18px; padding:10px 14px; font-size:14.5px; line-height:1.35;
+                       color:var(--app-ink); font-family:inherit; resize:none; max-height:96px; }
+  .composer textarea:focus { outline:none; border-color:var(--app-accent); }
+  .composer textarea::placeholder { color:var(--app-muted); }
+  .cbtn { flex:none; width:40px; height:40px; border-radius:50%; display:inline-flex;
+          align-items:center; justify-content:center; font-size:18px; cursor:pointer;
+          background:var(--app-surface-hi); border:1px solid var(--app-line); color:var(--app-muted); }
+  .cbtn:hover { color:var(--app-ink); border-color:var(--app-muted); }
+  .cbtn.send { background:var(--app-accent); border-color:var(--app-accent); color:var(--app-accent-ink); }
+  .demo-line { flex:none; display:flex; align-items:center; justify-content:space-between; gap:10px;
+               padding:7px 14px; font-size:11px; color:var(--app-muted);
+               border-top:1px dashed var(--app-line); background:var(--app-surface); }
+  .swtch { flex:none; width:32px; height:19px; border-radius:19px; background:var(--app-line);
+           position:relative; cursor:pointer; border:none; padding:0; }
+  .swtch::after { content:""; position:absolute; top:2px; left:2px; width:15px; height:15px;
+                  border-radius:50%; background:var(--app-muted); transition:transform .15s; }
+  .swtch.on { background:rgba(224,168,60,.35); }
+  .swtch.on::after { transform:translateX(13px); background:var(--app-warn); }
+
+  /* ---------- favoris ---------- */
+  .tabs-row { display:flex; align-items:center; border-bottom:1px solid var(--app-line);
+              background:var(--app-surface); flex:none; }
+  .tabs { display:flex; align-items:center; gap:6px; padding:10px 6px 0 14px; overflow-x:auto; flex:1; min-width:0; }
+  .tab { flex:none; padding:8px 12px 10px; font-size:13px; color:var(--app-muted);
+         border:none; border-bottom:2px solid transparent; white-space:nowrap;
+         background:none; cursor:pointer; }
+  .tab.on { color:var(--app-ink); border-bottom-color:var(--app-accent); font-weight:600; }
+  .tab-edit { flex:none; font-size:12px; color:var(--app-accent); padding:6px 12px 8px 6px;
+              background:none; border:none; cursor:pointer; white-space:nowrap; }
+
+  .pad { padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile { background:var(--app-surface); border:1px solid var(--app-line); border-radius:12px;
+          padding:14px 12px; min-height:84px; min-width:0; display:flex; flex-direction:column;
+          justify-content:space-between; gap:8px; text-align:left; cursor:pointer;
+          position:relative; color:inherit; }
+  .tile:hover { border-color:var(--app-muted); }
+  .tile .name { font-size:14.5px; font-weight:600; line-height:1.25; }
+  .tile .cmd { font-family:var(--mono); font-size:10.5px; color:var(--app-muted);
+               white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tile.editable { border-style:dashed; border-color:var(--app-muted); cursor:default; }
+  .tile.editable .name { padding-right:34px; }
+  .tile.editable.active { border-color:var(--app-accent); }
+  .tile-edit-btn { position:absolute; top:8px; right:8px; font-size:11px; line-height:1;
+                   color:var(--app-muted); border:1px solid var(--app-line); border-radius:6px;
+                   padding:3px 6px; background:var(--app-surface-hi); cursor:pointer; }
+  .empty-tab { font-size:13px; color:var(--app-muted); border:1px dashed var(--app-line);
+               border-radius:10px; padding:20px 14px; text-align:center; }
+
+  .btn { display:block; width:100%; text-align:center; border-radius:11px; padding:13px 12px;
+         font-size:14.5px; font-weight:620; border:1px solid transparent; cursor:pointer; }
+  .btn-primary { background:var(--app-accent); color:var(--app-accent-ink); }
+  .btn-warn { background:var(--app-warn); color:#1A1204; }
+  .btn-danger { background:var(--app-danger); color:#200706; }
+  .btn-ghost { background:transparent; border-color:var(--app-line); color:var(--app-muted); }
+  .btn-ghost:hover { color:var(--app-ink); border-color:var(--app-muted); }
+  .btn-sm { padding:9px 10px; font-size:13px; border-radius:9px; }
+  .btn-row { display:flex; gap:8px; }
+  .btn-row .btn { flex:1; min-width:0; }
+  .btn-play { background:var(--app-surface-hi); border-color:var(--app-line); color:var(--app-ink); }
+  .play-note { margin:0; font-size:11.5px; color:var(--app-muted); line-height:1.45; }
+  .play-strip { display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--app-muted);
+                border-top:1px solid var(--app-line); padding:13px 2px 2px; }
+
+  body.play .tile { min-height:118px; padding:18px 15px; justify-content:center; }
+  body.play .tile .name { font-size:19px; line-height:1.2; }
+  body.play .tile .cmd { display:none; }
+  body.play .tiles { gap:12px; }
+  body.play .tab { font-size:15px; padding:11px 15px 12px; }
+  body.play .conn { font-size:14px; color:var(--app-ink); white-space:nowrap; }
+  body.play .dot { width:9px; height:9px; }
+
+  /* ---------- réglages ---------- */
+  .group { display:flex; flex-direction:column; gap:8px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px;
+         background:var(--app-surface); border:1px solid var(--app-line); border-radius:10px; padding:12px 13px; }
+  .row.click { cursor:pointer; }
+  .row.click:hover { border-color:var(--app-muted); }
+  .row .k { font-size:13.5px; }
+  .row .v { font-family:var(--mono); font-size:12.5px; color:var(--app-muted); text-align:right; }
+  .row .v.accent { color:var(--app-accent); font-family:var(--sans); }
+  .seg { display:flex; background:var(--app-bg); border:1px solid var(--app-line);
+         border-radius:9px; padding:3px; gap:3px; }
+  .seg button { font-size:12px; padding:6px 10px; border-radius:6px; color:var(--app-muted);
+                background:none; border:none; cursor:pointer; }
+  .seg button.on { background:var(--app-accent); color:var(--app-accent-ink); font-weight:600; }
+  .soon { font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--app-muted);
+          border:1px solid var(--app-line); border-radius:5px; padding:2px 6px; }
+  .back-row { display:flex; align-items:center; gap:8px; }
+  .back-btn { display:inline-flex; align-items:center; gap:6px; background:var(--app-surface-hi);
+              border:1px solid var(--app-line); color:var(--app-ink); font-size:13.5px; font-weight:620;
+              border-radius:20px; padding:8px 14px 8px 11px; cursor:pointer; }
+  .back-btn .arrow { color:var(--app-accent); font-size:15px; line-height:1; }
+
+  /* ---------- Atelier : en-tête de session ---------- */
+  .atelier-head { display:flex; align-items:center; gap:8px; padding:10px 14px 6px; flex-shrink:0; }
+  .atelier-title { flex:1; min-width:0; display:flex; align-items:center; gap:6px; background:none;
+                    border:none; color:var(--app-ink); font-size:14.5px; font-weight:650; text-align:left;
+                    cursor:pointer; padding:6px 4px; }
+  .atelier-title .chevron { color:var(--app-accent); font-size:16px; line-height:1; flex-shrink:0; }
+  .atelier-title .ttl { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* ---------- Sessions : liste ---------- */
+  .session-row { display:flex; align-items:center; gap:6px; padding:11px 4px; border-bottom:1px solid var(--app-line); }
+  .session-row .main { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; background:none;
+                        border:none; color:inherit; text-align:left; cursor:pointer; padding:2px 4px; }
+  .session-row .main .k { font-size:14px; font-weight:620; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .session-row .main .v { font-size:11.5px; color:var(--app-muted); }
+  .session-row .icon-btn { background:none; border:none; color:var(--app-muted); font-size:15px;
+                            padding:6px; cursor:pointer; line-height:1; }
+  .session-row .icon-btn:hover { color:var(--app-ink); }
+  .badge-current { display:inline-block; font-size:10px; font-weight:620; letter-spacing:.03em;
+                    text-transform:uppercase; color:var(--app-accent-ink); background:var(--app-accent);
+                    border-radius:5px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
+
+  .lib-item { display:flex; flex-direction:column; gap:6px; background:var(--app-surface);
+              border:1px solid var(--app-line); border-radius:10px; padding:12px 13px;
+              text-align:left; cursor:pointer; color:inherit; width:100%; }
+  .lib-item:hover { border-color:var(--app-muted); }
+  .lib-item .req { font-size:13.5px; font-weight:620; line-height:1.3; }
+  .lib-item .cmd { font-family:var(--mono); font-size:10.5px; color:var(--app-muted);
+                   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lib-item .src { display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--app-muted); }
+  .lib-conf { flex:none; font-family:var(--mono); font-size:9.5px; border-radius:5px;
+              padding:1px 6px; border:1px solid var(--app-line); }
+  .lib-conf.a { color:var(--app-ok); border-color:rgba(95,191,143,.4); }
+  .lib-conf.c { color:var(--app-muted); }
+
+  .import-item { display:flex; align-items:center; justify-content:space-between; gap:10px;
+                 background:var(--app-surface); border:1px solid var(--app-line);
+                 border-radius:10px; padding:11px 12px; }
+  .import-item .meta { display:flex; flex-direction:column; gap:3px; }
+  .import-item .meta .name { font-size:13.5px; font-weight:600; }
+  .import-item .meta .cmd { font-family:var(--mono); font-size:11px; color:var(--app-muted); }
+  .badge-other { flex:none; font-size:9.5px; text-transform:uppercase; color:var(--app-warn);
+                 border:1px solid rgba(224,168,60,.4); background:rgba(224,168,60,.1);
+                 border-radius:5px; padding:3px 6px; white-space:nowrap; }
+  .card { border-radius:10px; padding:12px 13px; display:flex; flex-direction:column; gap:5px; font-size:13px; }
+  .card strong { font-size:13px; font-weight:620; }
+  .card p { margin:0; color:var(--app-muted); line-height:1.45; }
+  .card-warn { background:rgba(224,168,60,.09); border:1px solid rgba(224,168,60,.35); }
+  .card-warn strong { color:var(--app-warn); }
+  .card-danger { background:rgba(217,96,90,.09); border:1px solid rgba(217,96,90,.38); }
+  .card-danger strong { color:var(--app-danger); }
+
+  /* ---------- overlay : confirmation plein écran ---------- */
+  .overlay { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; background:var(--app-bg); }
+  .confirm-full { flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px;
+                  padding:24px 20px; text-align:center; }
+  .confirm-full .warn-icon { font-size:28px; color:var(--app-warn); }
+  .confirm-full h3 { margin:0; font-size:16.5px; }
+  .confirm-full p { margin:0; color:var(--app-muted); font-size:13px; }
+  .confirm-full .mono-box { font-family:var(--mono); font-size:13px; text-align:left;
+                            background:#070B10; border:1px solid var(--app-line);
+                            border-left:2px solid var(--app-accent); border-radius:10px; padding:12px; }
+  .confirm-full .actions { display:flex; flex-direction:column; gap:9px; }
+
+  /* ---------- overlay : export du fil (texte à copier) ---------- */
+  .export-fil { flex:1; display:flex; flex-direction:column; gap:12px; padding:20px 16px; overflow:hidden; }
+  .export-fil h3 { margin:0; font-size:16px; }
+  .export-fil p { margin:0; color:var(--app-muted); font-size:12.5px; }
+  .export-fil textarea { flex:1; width:100%; box-sizing:border-box; resize:none; font-family:var(--mono);
+    font-size:11.5px; line-height:1.5; background:#070B10; color:var(--app-ink);
+    border:1px solid var(--app-line); border-radius:10px; padding:12px; }
+  .export-fil .actions { display:flex; flex-direction:column; gap:9px; }
+
+  .toast { position:absolute; left:14px; right:14px; bottom:82px; z-index:8;
+           background:var(--app-surface-hi); border:1px solid var(--app-line); color:var(--app-ink);
+           font-size:12.5px; padding:10px 13px; border-radius:10px; text-align:center;
+           box-shadow:0 8px 20px rgba(0,0,0,.35); }
+  @media (prefers-reduced-motion: no-preference) {
+    .toast { animation: toast-in .18s ease-out; }
+  }
+  @keyframes toast-in { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+
+  nav#bottom-nav { display:flex; border-top:1px solid var(--app-line); background:var(--app-surface); flex:none; }
+  nav#bottom-nav button { flex:1; background:none; border:none; padding:11px 6px 12px;
+                          display:flex; flex-direction:column; align-items:center; gap:3px;
+                          color:var(--app-muted); font-size:11px; cursor:pointer; }
+  nav#bottom-nav button .ic { font-size:17px; line-height:1; }
+  nav#bottom-nav button.on { color:var(--app-accent); }
+
+  /* ---------- page ---------- */
+  .fs-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+  .fs-btn { display:inline-flex; align-items:center; gap:7px; background:var(--page-surface);
+            border:1px solid var(--page-line); color:var(--page-ink); font-size:13px; font-weight:600;
+            border-radius:10px; padding:9px 16px; cursor:pointer; text-decoration:none; }
+  .fs-btn:hover { border-color:var(--page-accent); color:var(--page-accent); }
+
+  body.sim-fs { overflow:hidden; }
+  body.sim-fs .page { padding:0; max-width:none; }
+  body.sim-fs .page > *:not(.device) { display:none; }
+  body.sim-fs .device { position:fixed; inset:0; z-index:9999; padding:0; border:none;
+                        border-radius:0; box-shadow:none; }
+  body.sim-fs .viewport { width:100%; height:100%; border-radius:0; }
+  #sim-exit { display:none; position:fixed; top:10px; right:10px; z-index:10000;
+              width:36px; height:36px; border-radius:50%; align-items:center; justify-content:center;
+              background:rgba(20,27,36,.85); border:1px solid rgba(255,255,255,.18);
+              color:#E4EAF2; font-size:16px; cursor:pointer; }
+  body.sim-fs #sim-exit { display:flex; }
+
+  .why { max-width:56ch; width:100%; border-top:1px solid var(--page-line); padding-top:20px; }
+  .why h2 { margin:0 0 12px; font-size:15px; }
+  .why p { margin:0 0 12px; font-size:13px; color:var(--page-muted); line-height:1.55; }
+  .why b { color:var(--page-ink); font-weight:620; }
+  .why ul { margin:0; padding-left:19px; display:flex; flex-direction:column; gap:8px; }
+  .why li { font-size:13px; color:var(--page-muted); line-height:1.5; }
+  .why code { font-family:var(--mono); font-size:11.5px; background:var(--page-surface);
+              border:1px solid var(--page-line); border-radius:4px; padding:1px 5px; }
+</style>
+
+<div class="page">
+  <div class="eyebrow">macro2eos · prototype</div>
+  <h1>La console comme conversation</h1>
+  <p class="lede">
+    Deux surfaces : l'<b>Atelier</b>, où l'on demande et où tout ce qu'on a fait reste
+    sous les yeux, et la <b>Conduite</b>, la grille de jeu. L'historique n'est plus un
+    écran où l'on se rend — il <i>est</i> le plan de travail.
+  </p>
+
+  <div class="device">
+    <button id="sim-exit" type="button" aria-label="Quitter le plein écran">✕</button>
+    <div class="viewport" id="viewport">
+      <div class="os-bar">
+        <span>21:14</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span class="sig"><i></i><i></i><i></i><i></i></span>
+          <span class="batt"><i></i></span>
+        </span>
+      </div>
+      <div id="statusbar-slot"></div>
+      <div id="banner-slot"></div>
+      <main id="screen"></main>
+      <nav id="bottom-nav"></nav>
+    </div>
+  </div>
+
+  <div class="fs-actions">
+    <button class="fs-btn" id="fs-toggle" type="button">⛶ Tester en plein écran</button>
+    <a class="fs-btn" id="open-browser" href="#" target="_blank" rel="noopener noreferrer">↗ Ouvrir dans le navigateur</a>
+  </div>
+
+  <section class="why">
+    <h2>Ce qui change, et pourquoi</h2>
+    <p>
+      <b>Le constat.</b> On ne va jamais « dans l'historique » comme on va quelque part.
+      On le consulte toujours <i>par rapport à autre chose</i> : est-ce que c'est passé ?
+      qu'est-ce que j'ai envoyé tout à l'heure ? je veux refaire ça. C'est un contexte,
+      pas une destination — en faire un écran était l'erreur de départ.
+    </p>
+    <p>
+      <b>La conséquence.</b> Ce que décrit vraiment l'usage, c'est une conversation :
+      vous demandez, l'app propose, la console répond. Alors le fil de cette conversation
+      <i>est</i> l'historique. Il n'y a plus rien où se rendre.
+    </p>
+    <ul>
+      <li><b>Deux surfaces, plus quatre destinations.</b> <code>Atelier</code> (le fil) et
+        <code>Conduite</code> (la grille de jeu). Réglages reste une icône d'angle.</li>
+      <li><b>L'écran de saisie n'est plus vide.</b> Avant, un champ et deux boutons dans le
+        vide. Maintenant, ce que vous venez de faire est sous vos yeux.</li>
+      <li><b>« Éditer dans Saisie » disparaît</b> — vous y êtes déjà. On touche un échange
+        passé pour le reprendre.</li>
+      <li><b>Le refus devient un tour de parole</b>, pas une alerte : la console répond,
+        vous corrigez, vous renvoyez. C'est la forme naturelle de l'échange.</li>
+      <li><b>Les envois de favoris apparaissent dans le fil</b> en ligne discrète : le
+        journal reste complet sans noyer votre travail de préparation.</li>
+      <li><b>La dictée arrivera ici sans rien casser</b> — une conversation est déjà la
+        bonne forme pour de la voix (voir <code>APP.md</code>).</li>
+    </ul>
+    <h2 style="margin-top:26px;">Six choses à essayer</h2>
+    <ol style="margin:0; padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+      <li><b>Le test qui compte.</b> Conduite → <b>▶ Mode jeu</b>, puis <b>posez le téléphone
+        devant vous</b> à la distance de la régie, en plein écran. Les libellés sont-ils
+        lisibles de là où vous serez ?</li>
+      <li><b>Une macro qui inquiète.</b> Atelier → <code>groupe 5 et circuits 1 à 6 en lee 195</code>
+        → ↵. Elle porte un ⚠ ; la confirmation passe en plein écran. Touchez
+        <code>Group</code> dans la réponse pour corriger ce champ sans retaper la phrase.</li>
+      <li><b>Un refus.</b> <code>circuits 10 a 20 en lee 195</code> → envoyer. La console
+        répond dans le fil, la correction est proposée sur place.</li>
+      <li><b>Une coupure.</b> Armez <i>Démo · simuler une coupure</i> puis envoyez : la
+        commande reste en suspens, à vous de trancher. Rien n'est rejoué tout seul.</li>
+      <li><b>Garder et reprendre.</b> Sous un envoi accepté : <i>Garder en favori</i> ou
+        <i>Reprendre</i>. Depuis la Conduite : <i>+ Reprendre un envoi accepté</i>.</li>
+      <li><b>Le fil comme journal.</b> Envoyez une tuile depuis la Conduite, revenez à
+        l'Atelier : elle y figure en pastille discrète, sans noyer votre travail.</li>
+    </ol>
+    <p style="margin-top:16px; border-left:2px solid var(--page-accent); padding-left:12px;">
+      Vos favoris et le fil sont conservés sur cet appareil : fermez et rouvrez sans rien
+      perdre. Pour repartir propre : ⚙ → <i>Repartir de zéro</i>. Le moteur de traduction
+      est désormais le vrai traducteur du corpus (`traducteur/`), pas une démonstration —
+      il peut vous poser une vraie question quand la demande est ambiguë, au lieu de
+      deviner. Voir <code style="font-family:var(--mono)">app/engine.js</code>.
+    </p>
+  </section>
+</div>
+
+<script src="vendor/pyodide/pyodide.js"></script>
+<script src="engine.js"></script>
+<script src="llm_bridge.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var LIBRARY = [
+    { req:"Nettoyer les mouvements invisibles du show",
+      cmd:"Query Dark_Moves Enter AllNPs @ Enter Update Enter Clear_Cmd",
+      confidence:"C", source:"corpus communautaire, non testé au banc" },
+    { req:"Bump le sub 3 pour la durée de l'effet en cours",
+      cmd:"SubDown 3 Enter SubUp 3 Enter",
+      confidence:"C", source:"corpus communautaire, non testé au banc" },
+    { req:"Effet cercle symétrique jardin / cour",
+      cmd:"Group 1 Effect 201.1 Group 2 Offset Reverse Effect 201.2",
+      confidence:"C", source:"corpus communautaire, non testé au banc" },
+    { req:"Highlight de référence sur une sélection",
+      cmd:"{Highlight RemDim} Preset 9997 Enter",
+      confidence:"A", source:"manuel officiel, Eos L3 Workbook" }
+  ];
+
+  // Deux surfaces seulement. Le reste est satellite ou utilitaire d'angle.
+  var SCREENS = {
+    atelier:   { label:"Atelier",  role:"surface" },
+    conduite:  { label:"Conduite", role:"surface" },
+    reglages:  { label:"Réglages", role:"utilitaire", title:"Réglages" },
+    biblio:    { label:"Bibliothèque", role:"satellite", parent:"atelier",  title:"Bibliothèque de macros" },
+    // Satellite de la Conduite : reprendre un envoi déjà accepté du fil pour en
+    // faire un favori. Ce n'est pas « parcourir l'historique » — c'est choisir
+    // une source pour une action précise, depuis l'écran qui la demande.
+    puiser:    { label:"Puiser",   role:"satellite", parent:"conduite", title:"Reprendre un envoi accepté" },
+    tabs:      { label:"Onglets",  role:"satellite", parent:"reglages", title:"Onglets de favoris" },
+    importer:  { label:"Importer", role:"satellite", parent:"reglages", title:"Importer des favoris" },
+    // Sessions : chaque session porte son propre fil de recherche/construction
+    // de macro — distinct des favoris (macros validées, archivées). Satellite
+    // de l'Atelier pour la mise en avant dans la nav du bas, mais c'est aussi
+    // l'écran de démarrage de l'app (voir tout en bas du fichier).
+    sessions:  { label:"Sessions", role:"satellite", parent:"atelier", title:"Sessions" }
+  };
+
+  function backTarget(id) {
+    var c = SCREENS[id] || {};
+    if (c.role === "utilitaire") return state.returnTo || "atelier";
+    return c.parent || "atelier";
+  }
+
+  function activeSession() {
+    return state.sessions.filter(function (s) { return s.id === state.activeSessionId; })[0] || null;
+  }
+  // Le fil de la session active — jamais copié, la référence exacte du
+  // tableau porté par la session, pour que push()/filter()-réassignation
+  // restent visibles immédiatement.
+  function curThread() {
+    var s = activeSession();
+    return s ? s.thread : [];
+  }
+  function touchSession(s) { if (s) s.updatedAt = Date.now(); }
+  // Toutes les sessions confondues — un envoi accepté à reprendre en favori
+  // (Puiser) peut venir de n'importe quelle session passée, pas seulement de
+  // celle actuellement ouverte : les favoris eux-mêmes sont globaux, hors
+  // sessions.
+  function tousLesEchanges() {
+    var out = [];
+    state.sessions.forEach(function (s) { out = out.concat(s.thread); });
+    return out;
+  }
+  function titreDepuisPhrase(phrase) {
+    var t = (phrase || "").trim().replace(/\s+/g, " ");
+    if (!t) return "Nouvelle session";
+    return t.length > 42 ? t.slice(0, 42).trim() + "…" : t;
+  }
+
+  var uid = 100;
+  // Sessions : distinctes des favoris. Un favori est une macro déjà validée,
+  // archivée pour un rappel immédiat en Conduite. Une session est un fil de
+  // recherche/construction en cours — l'espace où on cherche et affine une
+  // macro avant, éventuellement, de la garder en favori. Chaque session a
+  // son propre fil, isolé des autres.
+  var SEED_TIME = Date.now() - 2 * 60 * 60 * 1000;
+  var state = {
+    screen: "sessions",
+    returnTo: "atelier",
+    playMode: false,
+    connected: true,
+    overlay: null,
+    dropArmed: false,
+    draft: "",
+    chipOpenId: null,
+    chipChamp: null,
+    keepFormId: null,
+    puiserChoice: null,
+    resetAsk: false,
+    tabs: ["Cyrano", "Général", "Couleurs"],
+    activeTab: "Cyrano",
+    editMode: false, editingTileId: null, deletingTileId: null, renamingTileId: null,
+    favMode: "immediate", tileConfirmId: null,
+    favoris: [
+      { id: uid++, name:"Noir salle", cmd:"Sub 12 At 0 Enter", tab:"Cyrano" },
+      { id: uid++, name:"Plein feu", cmd:"Chan 1 Thru 96 At Full Enter", tab:"Cyrano" },
+      { id: uid++, name:"195 · Par LED", cmd:"Color Palette 5 Enter", tab:"Couleurs" },
+      { id: uid++, name:"Face seule", cmd:"Group 3 At 85 Enter", tab:"Cyrano" },
+      { id: uid++, name:"Rappel saluts", cmd:"Macro 12 Enter", tab:"Général" }
+    ],
+    renamingSessionId: null,
+    deletingSessionId: null,
+    // Moteur flou (LLM, phase 2) — désactivé par défaut, clé personnelle de
+    // l'utilisateur uniquement (voir app/llm_bridge.js et le plan moteur
+    // flou). Stocké séparément de `sessions`/`favoris` (voir `saveLlmConfig`).
+    llmConfig: { actif: false, apiKey: "", model: "claude-sonnet-5" },
+    // Journal de renforcement (phase 3) — file locale des trous de vocabulaire
+    // rencontrés par le moteur flou, jamais promus automatiquement (voir
+    // traducteur/observations_llm.yaml et `pushObservationLlm`).
+    obsLlmQueue: [],
+    activeSessionId: null, // fixé juste après la définition de `state`, une fois `sessions` prêt
+    sessions: [
+      {
+        id: uid++, title: "Bump sub + rattrapage couleur", createdAt: SEED_TIME, updatedAt: SEED_TIME,
+        // LE FIL de cette session. Chaque entrée est un échange complet, ou un événement.
+        //   kind: 'exchange' — ask -> proposition -> verdict
+        //   kind: 'event'    — envoi d'un favori
+        thread: [
+          { id: uid++, kind:"exchange", time:"19:50", ask:"Bump le sub 3 pour la durée de l'effet en cours",
+            fromLib:"corpus communautaire · C", cmd:"SubDown 3 Enter SubUp 3 Enter",
+            status:"ok", tokens:[] },
+          { id: uid++, kind:"exchange", time:"20:58", ask:"circuits 10 a 20 en lee 195",
+            cmd:"Chan 10 Thru 20 Color 3/195 Enter", status:"fixed",
+            wasRefused:true, tokens:[] }
+        ]
+      }
+    ],
+    toast: null
+  };
+  state.activeSessionId = state.sessions[0].id;
+
+  // v2 : le fil unique devient plusieurs sessions. Une donnée v1 (`thread`
+  // seul, pas de `sessions`) n'est pas migrée au hasard — elle reste sous
+  // l'ancienne clé, ignorée, et l'app repart des sessions d'exemple plutôt
+  // que de deviner comment fragmenter un fil en sessions.
+  var STORE_KEY = "macro2eos.prototypeB.v2";
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        uid:uid, tabs:state.tabs, activeTab:state.activeTab, favoris:state.favoris,
+        favMode:state.favMode, sessions:state.sessions, activeSessionId:state.activeSessionId
+      }));
+    } catch (e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY); if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.tabs) || !Array.isArray(d.favoris)) return false;
+      uid = d.uid || uid; state.tabs = d.tabs; state.favoris = d.favoris;
+      if (Array.isArray(d.sessions) && d.sessions.length) {
+        state.sessions = d.sessions;
+        state.activeSessionId = state.sessions.some(function (s) { return s.id === d.activeSessionId; })
+          ? d.activeSessionId : state.sessions[0].id;
+      }
+      state.favMode = d.favMode === "confirm" ? "confirm" : "immediate";
+      state.activeTab = d.tabs.indexOf(d.activeTab) >= 0 ? d.activeTab : d.tabs[0];
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Clé API + réglages du moteur flou : volontairement dans une clé
+  // localStorage séparée de STORE_KEY, jamais mêlée aux sessions/favoris —
+  // un « Repartir de zéro » (reset:ok, qui n'efface que STORE_KEY) ne doit
+  // pas emporter une clé API sans que ce soit explicitement demandé, et
+  // l'export du fil (fil:export) ne doit jamais pouvoir y toucher.
+  var LLM_STORE_KEY = "macro2eos.llmConfig.v1";
+  function saveLlmConfig() {
+    try { localStorage.setItem(LLM_STORE_KEY, JSON.stringify(state.llmConfig)); } catch (e) {}
+  }
+  function loadLlmConfig() {
+    try {
+      var raw = localStorage.getItem(LLM_STORE_KEY); if (!raw) return;
+      var d = JSON.parse(raw);
+      if (!d || typeof d !== "object") return;
+      state.llmConfig.actif = d.actif === true;
+      state.llmConfig.apiKey = typeof d.apiKey === "string" ? d.apiKey : "";
+      state.llmConfig.model = typeof d.model === "string" && d.model ? d.model : "claude-sonnet-5";
+    } catch (e) {}
+  }
+
+  // Journal de renforcement (phase 3, voir traducteur/observations_llm.yaml)
+  // — file locale elle aussi séparée, pour la même raison : ni le reset ni
+  // l'export du fil ne doivent la toucher. Bornée à 200 entrées, pas pour une
+  // raison de format mais parce qu'une file qui grossit sans jamais être
+  // exportée/vidée signale qu'elle a cessé d'être utile telle quelle.
+  var OBS_LLM_STORE_KEY = "macro2eos.observationsLlm.v1";
+  var OBS_LLM_MAX = 200;
+  function saveObsLlmQueue() {
+    try { localStorage.setItem(OBS_LLM_STORE_KEY, JSON.stringify(state.obsLlmQueue)); } catch (e) {}
+  }
+  function loadObsLlmQueue() {
+    try {
+      var raw = localStorage.getItem(OBS_LLM_STORE_KEY); if (!raw) return;
+      var d = JSON.parse(raw);
+      if (Array.isArray(d)) state.obsLlmQueue = d;
+    } catch (e) {}
+  }
+  // N'enregistre jamais rien si le moteur flou n'a pas été explicitement
+  // activé (state.llmConfig.actif) — pas de collecte en arrière-plan pour un
+  // usage qui n'a jamais consenti à la fonctionnalité elle-même.
+  function pushObservationLlm(type, phrase, sortieLlmBrute, motOuExpression) {
+    if (!state.llmConfig.actif) return;
+    state.obsLlmQueue.push({
+      type: type,
+      date: new Date().toISOString().slice(0, 10),
+      phrase: phrase,
+      sortie_llm_brute: sortieLlmBrute,
+      mot_ou_expression: motOuExpression,
+      diagnostic: "",
+      promu: "non",
+      lexique_entree: null,
+    });
+    if (state.obsLlmQueue.length > OBS_LLM_MAX) {
+      state.obsLlmQueue = state.obsLlmQueue.slice(state.obsLlmQueue.length - OBS_LLM_MAX);
+    }
+    saveObsLlmQueue();
+  }
+
+  // Échappe une chaîne pour un scalaire YAML entre doubles guillemets — pas
+  // seulement le guillemet lui-même : l'antislash d'abord (sinon un antislash
+  // déjà présent se ferait doubler par l'échappement du guillemet qui suit),
+  // puis les retours à la ligne et tabulations, qu'un utilisateur peut très
+  // bien avoir tapés (Maj+Entrée insère un saut de ligne dans le composer).
+  // Sans ça, `yaml.safe_load` (traducteur/build.py) refuserait le fichier
+  // collé — voir la sérialisation ci-dessous.
+  function echapperYamlDq(s) {
+    return String(s)
+      .replace(/\\/g, "\\\\")
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, "\\r")
+      .replace(/\n/g, "\\n")
+      .replace(/\t/g, "\\t");
+  }
+
+  // Sérialise la file en YAML prêt à coller sous `observations:` dans
+  // traducteur/observations_llm.yaml — jamais un format à part : le champ
+  // `diagnostic` reste volontairement vide, à remplir en revue humaine, et
+  // `promu` reste "non" — jamais mis à "oui" depuis l'app (voir le fichier).
+  function serialiserObservationsLlm() {
+    if (!state.obsLlmQueue.length) return "(aucune observation en attente)";
+    var lignes = [];
+    state.obsLlmQueue.forEach(function (o) {
+      lignes.push('  - type: "' + o.type + '"');
+      lignes.push("    date: " + o.date);
+      lignes.push('    phrase: "' + echapperYamlDq(o.phrase || "") + '"');
+      lignes.push("    sortie_llm_brute: " + (o.sortie_llm_brute == null ? "null" : JSON.stringify(o.sortie_llm_brute)));
+      lignes.push('    mot_ou_expression: "' + echapperYamlDq(o.mot_ou_expression || "") + '"');
+      lignes.push('    diagnostic: ""');
+      lignes.push('    promu: "non"');
+      lignes.push("    lexique_entree: null");
+      lignes.push("");
+    });
+    return lignes.join("\n").trim();
+  }
+
+  var toastTimer = null;
+  function showToast(m) {
+    state.toast = m; renderAll();
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ state.toast = null; renderAll(); }, 1800);
+  }
+  function nowTime() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+  function depuisTemps(ts) {
+    if (!ts) return "";
+    var s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (s < 60) return "à l'instant";
+    var m = Math.round(s / 60);
+    if (m < 60) return "il y a " + m + " min";
+    var h = Math.round(m / 60);
+    if (h < 24) return "il y a " + h + " h";
+    var j = Math.round(h / 24);
+    return "il y a " + j + " j";
+  }
+  function esc(s) { return String(s).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+  function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim(); }
+
+  // ---------- moteur réel ----------
+  // La traduction elle-même vit dans app/engine.js (`window.traduireReel`),
+  // qui fait tourner le vrai `traducteur/traducteur.py` + `grammar/generateur.py`
+  // via Pyodide — pas un module de démonstration. Ce fichier-ci ne fait que
+  // relayer l'appel et poser le résultat dans le fil ; voir `handle("ask", …)`
+  // et `submitAnswer()` plus bas.
+  //
+  // `traduireReel` retourne toujours l'une de trois issues (jamais une devinette
+  // silencieuse) : "compris" (une commande), "a_preciser" (une question, avec
+  // ses options — voir REGLES_POUR_UI.md règle 5), ou "incompris" (rien, plus
+  // les mots non reconnus). Les trois sont posées dans le fil ci-dessous.
+
+  // ---------- rendu ----------
+  function renderAll() {
+    renderStatusbar(); renderBanner(); renderScreen(); renderNav(); save();
+  }
+
+  function renderStatusbar() {
+    var el = document.getElementById("statusbar-slot");
+    var dot = state.connected ? "dot-ok" : "dot-wait";
+    var label = state.playMode
+      ? (state.connected ? "Connectée" : "Reconnexion…")
+      : (state.connected ? "Console connectée" : "Reconnexion en cours…");
+    var right = state.playMode
+      ? '<button class="hdr-btn hdr-exit" data-action="play:exit">Quitter le mode jeu</button>'
+      : '<span class="user-tag">User 12</span>' +
+        '<button class="hdr-btn' + (state.screen === "reglages" ? " on" : "") + '" data-action="util" data-screen="reglages" aria-label="Réglages">⚙</button>';
+    el.innerHTML = '<div class="statusbar">' +
+      '<button class="conn" data-action="toggle-connection"><span class="dot ' + dot + '"></span>' + label + "</button>" +
+      '<span class="hdr-right">' + right + "</span></div>";
+  }
+
+  function renderBanner() {
+    var el = document.getElementById("banner-slot");
+    if (state.connected) { el.innerHTML = ""; return; }
+    el.innerHTML = '<div class="banner-recon"><span>⚠ Connexion perdue — nouvelle tentative en cours</span>' +
+      '<button data-action="toggle-connection">reconnecter (démo)</button></div>';
+  }
+
+  function renderNav() {
+    var el = document.getElementById("bottom-nav");
+    if (state.playMode) { el.innerHTML = ""; el.style.display = "none"; return; }
+    el.style.display = "";
+    var conf = SCREENS[state.screen] || {};
+    var active = conf.role === "surface" ? state.screen : conf.parent;
+    var items = [
+      { id:"conduite", ic:"▦", label:"Conduite" },
+      { id:"atelier",  ic:"⌨", label:"Atelier" }
+    ];
+    el.innerHTML = items.map(function (it) {
+      return '<button data-action="nav" data-screen="' + it.id + '" class="' + (active === it.id ? "on" : "") + '">' +
+        '<span class="ic">' + it.ic + "</span>" + it.label + "</button>";
+    }).join("");
+  }
+
+  function screenHeader(id) {
+    var to = backTarget(id), conf = SCREENS[id] || {};
+    return '<div class="back-row"><button class="back-btn" data-action="nav" data-screen="' + to + '">' +
+      '<span class="arrow">‹</span>' + esc((SCREENS[to]||{}).label || "Retour") + "</button></div>" +
+      (conf.title ? '<div class="label">' + esc(conf.title) + "</div>" : "");
+  }
+
+  function renderScreen() {
+    var el = document.getElementById("screen");
+    var conf = SCREENS[state.screen] || {};
+    var body;
+    if (state.screen === "atelier") body = screenAtelier();
+    else if (state.screen === "conduite") body = screenConduite();
+    else if (state.screen === "biblio") body = '<div class="pad">' + screenHeader("biblio") + screenBiblio() + "</div>";
+    else if (state.screen === "puiser") body = '<div class="pad">' + screenHeader("puiser") + screenPuiser() + "</div>";
+    else if (state.screen === "reglages") body = '<div class="pad">' + screenHeader("reglages") + screenReglages() + "</div>";
+    else if (state.screen === "tabs") body = '<div class="pad">' + screenHeader("tabs") + screenTabs() + "</div>";
+    else if (state.screen === "importer") body = '<div class="pad">' + screenHeader("importer") + screenImport() + "</div>";
+    else if (state.screen === "sessions") body = '<div class="pad">' + screenHeader("sessions") + screenSessions() + "</div>";
+    else body = screenAtelier();
+    el.innerHTML = body + overlayHtml() + toastHtml();
+    var th = document.getElementById("thread");
+    if (th) th.scrollTop = th.scrollHeight;
+    var ta = document.getElementById("composer-input");
+    if (ta) { ta.value = state.draft; autoGrow(ta); }
+  }
+
+  function toastHtml() { return state.toast ? '<div class="toast">' + esc(state.toast) + "</div>" : ""; }
+
+  function autoGrow(ta) { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 96) + "px"; }
+
+  // ===================== L'ATELIER : le fil =====================
+  function screenAtelier() {
+    var s = activeSession();
+    var out = '<div class="atelier-head">' +
+      '<button class="atelier-title" data-action="nav" data-screen="sessions">' +
+      '<span class="chevron">‹</span><span class="ttl">' + esc(s ? s.title : "Session") + '</span></button>' +
+      '<button class="cbtn" data-action="session:new" aria-label="Nouvelle session">+</button></div>';
+
+    out += '<div class="thread" id="thread">';
+    var th = curThread();
+    if (!th.length) {
+      out += '<div class="thread-empty">Décrivez ce que vous voulez faire.<br>' +
+             "Ce que vous envoyez restera ici, avec la réponse de la console.</div>";
+    } else {
+      out += '<div class="day">Aujourd\'hui</div>';
+      th.forEach(function (e) { out += e.kind === "event" ? renderEvent(e) : renderExchange(e); });
+    }
+    out += "</div>";
+
+    // Le bouton discussion n'apparaît que moteur flou activé + clé configurée
+    // — sans ça, il ouvrirait un fil qui ne peut jamais avancer (voir
+    // demarrerDiscussionDepuisComposer). Toujours en PLUS du bouton d'envoi
+    // normal, jamais à sa place : le traducteur seul reste le chemin par défaut.
+    var boutonDiscuter = (state.llmConfig.actif && state.llmConfig.apiKey)
+      ? '<button class="cbtn" data-action="discussion:demarrer" aria-label="Discuter pour préciser" title="Discuter pour préciser">💬</button>'
+      : "";
+    out += '<div class="composer">' +
+      '<button class="cbtn" data-action="nav" data-screen="biblio" aria-label="Bibliothèque">📚</button>' +
+      '<textarea id="composer-input" rows="1" placeholder="ex. groupe 5 et circuits 1 à 6 en lee 195"></textarea>' +
+      boutonDiscuter +
+      '<button class="cbtn send" data-action="ask" aria-label="Envoyer la demande">→</button></div>';
+
+    out += '<div class="demo-line"><span>Démo · simuler une coupure au prochain envoi</span>' +
+      '<button class="swtch ' + (state.dropArmed ? "on" : "") + '" data-action="drop:toggle"></button></div>';
+    return out;
+  }
+
+  function renderEvent(e) {
+    return '<div class="event">▦ <span class="nm">' + esc(e.name) + "</span> · envoyé" +
+      '<span style="font-family:var(--mono); font-size:10.5px; margin-left:4px;">' + esc(e.time) + "</span></div>";
+  }
+
+  // Correction ciblée par champ (APP.md, 2026-08-03) : chaque élément reconnu
+  // par le traducteur (type de cible, numéro) reste identifiable et
+  // corrigible individuellement, sans retaper la phrase — en complément de
+  // « Reprendre », jamais en remplacement. Calculé depuis `e.ir`, la vraie IR
+  // renvoyée par le moteur, jamais reconstruit en devinant dans le texte.
+  //
+  // Chan/Group sont les deux seuls objets génériques de sélection dans le
+  // lexique (`traducteur/README.md`) : la bascule circuit/groupe est donc
+  // toujours structurellement légale. Cue/Sub/Preset ne sont PAS proposés en
+  // alternative — le modèle les traite différemment (Sub et Preset ne sont
+  // même jamais des objets de sélection génériques) et cette tranche ne
+  // tranche pas la liste complète des alternatives plausibles par champ
+  // (dépend de l'axe A, voir `APP.md` § Ouvert).
+  var OBJETS_SWAP = { Chan: "Circuit", Group: "Groupe" };
+
+  function calculerChips(e) {
+    if (!e.ir || !e.ir.length || !e.ir[0] || !e.ir[0].selection) return [];
+    var sel = e.ir[0].selection;
+    if (typeof sel.objet !== "string") return [];
+    var chips = [], pos = 0;
+    if (OBJETS_SWAP.hasOwnProperty(sel.objet)) {
+      chips.push({ champ: "objet", texte: sel.objet, start: pos, end: pos + sel.objet.length });
+    }
+    pos += sel.objet.length + 1;
+    if (sel.de !== undefined && sel.a !== undefined) {
+      var deTxt = String(sel.de);
+      chips.push({ champ: "de", texte: deTxt, start: pos, end: pos + deTxt.length });
+      pos += deTxt.length + 6; // " Thru "
+      var aTxt = String(sel.a);
+      chips.push({ champ: "a", texte: aTxt, start: pos, end: pos + aTxt.length });
+    } else if (sel.numero !== undefined) {
+      var numTxt = String(sel.numero);
+      chips.push({ champ: "numero", texte: numTxt, start: pos, end: pos + numTxt.length });
+    }
+    // Défense : si le calcul de position ne correspond pas au texte rendu
+    // (structure inattendue — ex. une IR à base de Query, sans sélection en
+    // tête de ligne), aucun chip plutôt qu'un chip mal placé.
+    var ok = e.cmd != null && chips.every(function (c) { return e.cmd.slice(c.start, c.end) === c.texte; });
+    return ok ? chips : [];
+  }
+
+  function macroHtml(e) {
+    // Correction ciblée par champ seulement avant envoi (APP.md, § Écran 1) —
+    // même règle que les hypothèses : une fois la macro envoyée, la console a
+    // déjà statué, il n'y a plus rien à corriger sur place ici.
+    var chips = e.status === "draft" ? calculerChips(e) : [];
+    if (!chips.length) return esc(e.cmd);
+    var out = "", cursor = 0;
+    chips.forEach(function (c) {
+      out += esc(e.cmd.slice(cursor, c.start));
+      var cls = "chip" + (state.chipOpenId === e.id && state.chipChamp === c.champ ? " active" : "");
+      out += '<span class="' + cls + '" data-action="chip:toggle" data-id="' + e.id +
+        '" data-champ="' + c.champ + '">' + esc(c.texte) + "</span>";
+      cursor = c.end;
+    });
+    out += esc(e.cmd.slice(cursor));
+    return out;
+  }
+
+  function renderExchange(e) {
+    var out = '<div class="exch">';
+
+    out += '<div class="ask' + (e.fromLib ? " from-lib" : "") + '">' + esc(e.ask) +
+      (e.fromLib ? '<span class="src-tag">📚 ' + esc(e.fromLib) + "</span>" : "") + "</div>";
+
+    out += '<div class="reply">';
+
+    if (e.status === "thinking") {
+      out += '<div class="flag"><span>…</span><span><b>Traduction en cours.</b> ' +
+        '<span class="txt">Premier appel : le moteur Python doit démarrer dans le navigateur, ' +
+        "ça peut prendre quelques secondes.</span></span></div>";
+      out += "</div></div>";
+      return out;
+    }
+
+    if (e.status === "engine-error") {
+      out += '<div class="flag flag-bad"><span>⚠</span><span><b>Le moteur réel n\'a pas pu répondre.</b> ' +
+        '<span class="txt">' + esc(e.errorText || "erreur inconnue") + "</span></span></div>";
+      out += '<div class="row-actions"><button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Réessayer</button></div>';
+      out += "</div></div>";
+      return out;
+    }
+
+    // Discussion libre à plusieurs tours (moteur flou, phase 5) — distincte
+    // du mécanisme Question/Option ci-dessous : ici l'IA ne produit que du
+    // français, jamais une clé du vocabulaire ni de syntaxe Eos. Chaque
+    // « essai » (phrase_a_essayer proposée par l'IA) repasse par le VRAI
+    // traducteur, avec le même statut à trois issues que partout ailleurs —
+    // voir `avancerDiscussion` et `window.discuterLlm` (app/llm_bridge.js).
+    if (e.status === "discussion") {
+      out += '<div class="menu" style="display:flex; flex-direction:column; gap:8px; padding:9px;">';
+      (e.discussion || []).forEach(function (tour, idx) {
+        if (tour.role === "user") {
+          out += '<div class="ask" style="align-self:flex-end; margin:0;">' + esc(tour.texte) + "</div>";
+          return;
+        }
+        if (tour.role === "erreur") {
+          out += '<div class="flag flag-bad"><span>⚠</span><span class="txt">' + esc(tour.texte) + "</span></div>";
+          return;
+        }
+        out += '<div class="reply" style="align-self:flex-start; margin:0; max-width:100%;"><div>' + esc(tour.texte) + "</div>";
+        if (tour.essai) {
+          out += '<div class="fixline" style="margin-top:7px;"><div class="txt">Essai : « ' + esc(tour.essai.phrase) + " »</div>";
+          if (tour.essai.statut === "compris") {
+            out += '<div class="now">' + esc(tour.essai.cmd) + "</div>" +
+              '<div class="row-actions" style="margin-top:6px;"><button class="mini go" data-action="discussion:utiliser" data-id="' +
+              e.id + '" data-tour="' + idx + '">✓ Utiliser cette macro</button></div>';
+          } else if (tour.essai.statut === "a_preciser") {
+            out += '<div class="txt">Reste ambigu' + (tour.essai.question ? " — " + esc(tour.essai.question) : "") + ".</div>";
+          } else {
+            out += '<div class="txt">Toujours pas compris — le vrai traducteur ne reconnaît pas cette formulation.</div>';
+          }
+          out += "</div>";
+        }
+        out += "</div>";
+      });
+      if (e.discussionEnCours) {
+        out += '<div class="flag"><span>…</span><span class="txt">En train de répondre…</span></div>';
+      }
+      out += "</div>";
+      var champDesactive = e.discussionEnCours ? " disabled" : "";
+      out += '<div class="menu" style="margin-top:8px; padding:8px;">' +
+        '<input type="text" id="discussion-reply-' + e.id + '" data-id="' + e.id + '"' + champDesactive +
+        ' placeholder="Réponds, précise, ou demande une autre variante…" /></div>' +
+        '<div class="row-actions"><button class="mini go" data-action="discussion:envoyer" data-id="' + e.id + '"' + champDesactive +
+        '>Envoyer</button><button class="mini" data-action="discussion:fermer" data-id="' + e.id +
+        '">Abandonner la discussion</button></div>';
+      out += "</div></div>";
+      return out;
+    }
+
+    if (e.status === "question" && e.question) {
+      var q = e.question;
+      out += '<div class="flag flag-warn"><span>?</span><span><b>' + esc(q.texte) + '</b>' +
+        (q.pourquoi ? ' <span class="txt">' + esc(q.pourquoi) + "</span>" : "") + "</span></div>";
+      if (e.pendingChoice) {
+        out += '<div class="menu"><div style="padding:6px 4px;">' +
+          '<input type="text" id="answer-value-' + e.id + '" data-id="' + e.id +
+          '" placeholder="ex. 1 à 10, ou groupe 99" /></div>' +
+          '<div class="row-actions" style="padding:0 6px 6px;">' +
+          '<button class="mini go" data-action="answer:value-submit" data-id="' + e.id + '">Valider</button>' +
+          '<button class="mini" data-action="answer:cancel" data-id="' + e.id + '">← Changer d\'option</button>' +
+          "</div></div>";
+      } else {
+        out += '<div class="menu">' + q.options.map(function (o) {
+          return '<button class="opt" data-action="answer:pick" data-id="' + e.id + '" data-choice="' + esc(o.cle) + '">' +
+            esc(o.libelle) + (o.detail ? '<span class="txt" style="display:block;font-weight:400;">' + esc(o.detail) + "</span>" : "") +
+            "</button>";
+        }).join("") + "</div>";
+      }
+      if (state.llmConfig.actif && state.llmConfig.apiKey) {
+        out += '<div class="row-actions" style="margin-top:6px;"><button class="mini" data-action="discussion:ouvrir" data-id="' +
+          e.id + '">💬 Discuter plutôt que choisir</button></div>';
+      }
+      out += "</div></div>";
+      return out;
+    }
+
+    if (e.status === "unknown") {
+      // Le traducteur explique parfois précisément pourquoi (`notes`) —
+      // par ex. « rosco n'est pas un nuancier connu » plutôt qu'un simple
+      // refus muet. Ne jamais l'avaler : sans ça, le message générique
+      // ci-dessous cache la vraie raison, trouvée le 2026-08-07 en testant
+      // une correction vers un fabricant non sourcé.
+      var motsInconnus = (e.nonReconnus || []).length
+        ? "Mots non reconnus : « " + e.nonReconnus.join(" », « ") + " »."
+        : (e.notes && e.notes.length) ? null : "Aucun vocabulaire connu dans cette phrase.";
+      out += '<div class="flag flag-bad"><span>?</span><span><b>Je n\'ai pas compris cette formulation.</b> ' +
+        (motsInconnus ? '<span class="txt">' + esc(motsInconnus) + "</span>" : "") + "</span></div>";
+      if (e.notes && e.notes.length) {
+        out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
+      }
+      out += '<div class="row-actions"><button class="mini go" data-action="nav" data-screen="biblio">📚 Bibliothèque</button>' +
+        '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reformuler</button>' +
+        (state.llmConfig.actif && state.llmConfig.apiKey
+          ? '<button class="mini" data-action="discussion:ouvrir" data-id="' + e.id + '">💬 Discuter</button>'
+          : "") + "</div>";
+      out += "</div></div>";
+      return out;
+    }
+
+    out += '<div class="macro">' + macroHtml(e) + "</div>";
+
+    // Journal des corrections en langage naturel (« remplace X par Y »),
+    // « à la manière d'un LLM » — chaque instruction reste visible, réussie
+    // ou non, plutôt que de réécrire la macro en silence.
+    if (e.corrections && e.corrections.length) {
+      e.corrections.forEach(function (c) {
+        out += '<div class="flag' + (c.ok ? "" : " flag-warn") + '"><span>' + (c.ok ? "↺" : "✕") + '</span>' +
+          '<span><b>' + esc(c.texte) + '</b>' +
+          (c.ok ? "" : ' <span class="txt">' + esc(c.raison || "Non reconnue.") + "</span>") +
+          "</span></div>";
+      });
+    }
+
+    if (e.notes && e.notes.length) {
+      out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
+    }
+
+    // Hypothèses : une valeur retenue sans marqueur explicite dans la
+    // phrase (aujourd'hui, uniquement le nuancier — Lee est le seul connu).
+    // Ni un blocage (a_preciser) ni un silence (juste une note) : la
+    // traduction part quand même, mais le champ reste visiblement une
+    // supposition, corrigeable en un geste — décidé avec l'utilisateur le
+    // 2026-08-07. Affichées seulement tant que la macro n'a pas été envoyée.
+    // Badge honnête (phase 4 du moteur flou) : distingue une traduction que
+    // le lexique a comprise seul d'une traduction où le LLM a tranché une
+    // question déjà posée par le lexique — jamais l'inverse. La macro reste
+    // strictement celle du corpus dans les deux cas ; seule l'ambiguïté a
+    // été levée avec l'aide du LLM. Visible seulement avant envoi, comme les
+    // hypothèses juste en dessous.
+    if (e.status === "draft" && e.viaDiscussion) {
+      out += '<div class="flag"><span>💬</span><span class="txt">Précisé par une discussion avec le moteur flou — ' +
+        "la phrase finale a été proposée en français par l'IA, mais la macro elle-même vient du vrai " +
+        'traducteur, exactement comme si tu l\'avais tapée toi-même.</span></div>';
+    } else if (e.status === "draft" && e.viaLlm) {
+      out += '<div class="flag"><span>✨</span><span class="txt">Précisé avec l\'aide du moteur flou (LLM) — ' +
+        'la macro reste celle du corpus, seule une question déjà posée a été tranchée avec son aide.</span></div>';
+    }
+
+    if (e.status === "draft" && e.hypotheses && e.hypotheses.length) {
+      e.hypotheses.forEach(function (h) {
+        out += '<div class="flag flag-warn"><span>~</span><span>' +
+          '<b>Supposé — ' + esc(h.champ) + ' : ' + esc(h.valeur) + '.</b> ' +
+          '<span class="txt">' + esc(h.pourquoi) + '</span></span></div>' +
+          '<div class="row-actions"><button class="mini" data-action="hyp:corriger" data-id="' +
+          e.id + '" data-champ="' + esc(h.champ) + '">Corriger « ' + esc(h.champ) + ' »</button></div>';
+      });
+    }
+
+    if (e.status === "draft" && state.chipOpenId === e.id && state.chipChamp) {
+      var chipActive = calculerChips(e).filter(function (c) { return c.champ === state.chipChamp; })[0];
+      if (chipActive && chipActive.champ === "objet") {
+        out += '<div class="menu">' + Object.keys(OBJETS_SWAP).map(function (k) {
+          var sel = k === chipActive.texte;
+          return '<button class="opt' + (sel ? " sel" : "") + '" data-action="chip:objet" data-id="' + e.id +
+            '" data-choice="' + k + '">' + OBJETS_SWAP[k] + " (" + k + ")" + (sel ? "<span>✓ reconnu</span>" : "") + "</button>";
+        }).join("") + "</div>";
+      } else if (chipActive) {
+        out += '<div class="menu" style="padding:8px;">' +
+          '<input type="number" id="chip-numero-input" value="' + esc(chipActive.texte) + '" style="width:100%; box-sizing:border-box;" />' +
+          '<div class="btn-row" style="margin-top:8px;">' +
+          '<button class="btn btn-primary btn-sm" data-action="chip:numero" data-id="' + e.id + '" data-champ="' + chipActive.champ + '">Corriger</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="chip:cancel">Annuler</button></div></div>';
+      }
+    }
+
+    if (e.status === "draft") {
+      if (e.warnText) out += '<div class="flag flag-warn"><span>⚠</span><span><b>Syntaxe jamais vérifiée sur console.</b> <span class="txt">' + esc(e.warnText) + "</span></span></div>";
+      out += '<div class="row-actions">' +
+        '<button class="mini ' + (e.warn ? "warn" : "go") + '" data-action="send" data-id="' + e.id + '">' +
+          (e.warn ? "Vérifier puis envoyer" : "Envoyer") + "</button>" +
+        '<button class="mini" data-action="discard" data-id="' + e.id + '">Reprendre</button></div>';
+    }
+
+    if (e.status === "refused") {
+      out += '<div class="flag flag-bad"><span>✕</span><span><b>Refusée par la console.</b> ' +
+        '<span class="txt">Mot-clé inconnu : <code style="font-family:var(--mono)">Colour</code>. L\'orthographe attendue est américaine.</span></span></div>';
+      out += '<div class="fixline"><span class="was">Colour</span> → <span class="now">Color</span></div>';
+      out += '<div class="row-actions"><button class="mini go" data-action="fix" data-id="' + e.id + '">Corriger et renvoyer</button>' +
+        '<button class="mini" data-action="reuse" data-id="' + e.id + '">Reformuler</button></div>';
+    }
+
+    if (e.status === "pending") {
+      out += '<div class="flag flag-warn"><span>⏱</span><span><b>Aucun accusé de réception.</b> ' +
+        '<span class="txt">La connexion est tombée juste après l\'envoi : impossible de savoir si la console a exécuté cette commande.</span></span></div>';
+      out += '<div class="row-actions"><button class="mini warn" data-action="replay" data-id="' + e.id + '">Rejouer maintenant</button>' +
+        '<button class="mini" data-action="leave" data-id="' + e.id + '">Laisser — c\'est fait</button></div>';
+    }
+
+    if (e.status === "ok" || e.status === "doute" || e.status === "fixed") {
+      var vc = e.status === "doute" ? "doute" : "ok";
+      var vt = e.status === "doute" ? "Acceptée · a levé un doute"
+             : e.status === "fixed" ? "Acceptée après correction" : "Acceptée par la console";
+      out += '<div class="verdict ' + vc + '">✓ ' + vt + '<span class="t">' + esc(e.time || "") + "</span></div>";
+
+      var fav = state.favoris.filter(function (f) { return f.threadId === e.id; })[0];
+      if (fav) {
+        out += '<div class="kept">▦ Gardée en favori · ' + esc(fav.name) + " · " + esc(fav.tab) + "</div>";
+      } else if (state.keepFormId === e.id) {
+        out += '<div class="menu"><div style="padding:6px 4px;"><input type="text" id="keep-name" placeholder="Nom du favori" /></div>' +
+          '<div class="label" style="padding:4px 6px;">Dans quel onglet ?</div>' +
+          state.tabs.map(function (tb) {
+            return '<button class="opt" data-action="keep:tab" data-id="' + e.id + '" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+          }).join("") + "</div>";
+      } else {
+        out += '<div class="row-actions">' +
+          '<button class="mini" data-action="keep:open" data-id="' + e.id + '">▦ Garder en favori</button>' +
+          '<button class="mini" data-action="reuse" data-id="' + e.id + '">↻ Reprendre</button></div>';
+      }
+    }
+
+    out += "</div></div>";
+    return out;
+  }
+
+  // ===================== LA CONDUITE : la grille =====================
+  function screenConduite() {
+    var out = '<div class="tabs-row"><div class="tabs">';
+    state.tabs.forEach(function (tb) {
+      out += '<button class="tab' + (tb === state.activeTab ? " on" : "") + '" data-action="tab:switch" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+    });
+    if (!state.playMode) out += '<button class="tab" data-action="tab:add">+</button>';
+    out += "</div>";
+    if (!state.playMode) out += '<button class="tab-edit" data-action="edit:toggle">' + (state.editMode ? "Terminé" : "Modifier") + "</button>";
+    out += "</div>";
+
+    out += '<div class="pad">';
+    var list = state.favoris.filter(function (f) { return f.tab === state.activeTab; });
+    if (!list.length) out += '<div class="empty-tab">Aucun favori dans cet onglet.</div>';
+    else {
+      out += '<div class="tiles">';
+      list.forEach(function (f) {
+        if (state.editMode) {
+          out += '<div class="tile editable' + (state.editingTileId === f.id ? " active" : "") + '" data-action="tile:menu" data-id="' + f.id + '">' +
+            '<span class="name">' + esc(f.name) + '</span><span class="cmd">' + esc(f.cmd) + '</span>' +
+            '<span class="tile-edit-btn">•••</span></div>';
+        } else {
+          out += '<button class="tile" data-action="tile:tap" data-id="' + f.id + '">' +
+            '<span class="name">' + esc(f.name) + '</span><span class="cmd">' + esc(f.cmd) + "</span></button>";
+        }
+      });
+      out += "</div>";
+    }
+
+    if (state.editMode && state.editingTileId != null) {
+      var tile = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+      if (tile) {
+        out += '<div class="label">« ' + esc(tile.name) + ' »</div>';
+        if (state.deletingTileId === tile.id) {
+          out += '<div class="menu"><div style="padding:8px 10px; font-size:13px; color:var(--app-muted);">Supprimer ce favori ?</div>' +
+            '<div class="btn-row" style="padding:4px 8px 8px;"><button class="btn btn-danger btn-sm" data-action="tile:del:ok">Confirmer</button>' +
+            '<button class="btn btn-ghost btn-sm" data-action="tile:del:no">Annuler</button></div></div>';
+        } else if (state.renamingTileId === tile.id) {
+          out += '<div class="menu"><div style="padding:6px 4px;"><input type="text" id="tile-rename" value="' + esc(tile.name) + '" /></div>' +
+            '<div class="btn-row" style="padding:2px 4px 6px;"><button class="btn btn-primary btn-sm" data-action="tile:rename:save">Enregistrer</button>' +
+            '<button class="btn btn-ghost btn-sm" data-action="tile:menu" data-id="' + tile.id + '">Annuler</button></div></div>';
+        } else {
+          out += '<div class="menu">' +
+            '<button class="opt" data-action="tile:rename">Modifier le libellé</button>' +
+            '<button class="opt" data-action="tile:dup">Dupliquer</button>' +
+            '<div class="opt" style="cursor:default; color:var(--app-muted); font-size:11.5px;">Déplacer vers l\'onglet</div>' +
+            state.tabs.filter(function (tb) { return tb !== tile.tab; }).map(function (tb) {
+              return '<button class="opt" data-action="tile:move" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+            }).join("") +
+            '<button class="opt danger" data-action="tile:del">Supprimer</button></div>';
+        }
+      }
+    }
+
+    if (state.playMode) {
+      out += '<div class="play-strip"><span class="dot dot-ok"></span>' +
+        (state.favMode === "immediate" ? "Envoi immédiat — un appui suffit" : "Envoi après confirmation — deux appuis") + "</div>";
+    } else if (!state.editMode) {
+      out += '<button class="btn btn-ghost" data-action="nav" data-screen="puiser">+ Reprendre un envoi accepté</button>';
+      out += '<div class="label">Mode d\'envoi</div>';
+      out += '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
+        '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="favmode" data-mode="immediate">Immédiat</button>' +
+        '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="favmode" data-mode="confirm">Confirmer</button></span></div>';
+      out += '<button class="btn btn-play" data-action="play:enter">▶ Mode jeu</button>' +
+        '<p class="play-note">Agrandit les tuiles et retire tout le reste : pensé pour un téléphone posé ' +
+        "sur la régie, lu de loin et dans le noir. L'édition devient impossible.</p>";
+    }
+    out += "</div>";
+    return out;
+  }
+
+  // ===================== satellites =====================
+  function screenPuiser() {
+    var kept = {};
+    state.favoris.forEach(function (f) { if (f.threadId != null) kept[f.threadId] = true; });
+    var ok = tousLesEchanges().filter(function (e) {
+      return e.kind === "exchange" && (e.status === "ok" || e.status === "doute" || e.status === "fixed");
+    });
+    if (!ok.length) {
+      return '<div class="empty-tab">Aucun envoi accepté pour l\'instant.<br>' +
+        '<span style="font-size:11.5px;">Envoyez d\'abord une macro depuis l\'Atelier.</span></div>';
+    }
+    if (state.puiserChoice != null) {
+      var ch = tousLesEchanges().filter(function (e) { return e.id === state.puiserChoice; })[0];
+      if (ch) {
+        return '<div class="ask" style="align-self:stretch; max-width:none;">' + esc(ch.ask) + "</div>" +
+          '<div class="reply" style="max-width:none;"><div class="macro">' + esc(ch.cmd) + "</div></div>" +
+          '<div class="label">Nom du favori</div>' +
+          '<div class="menu" style="padding:8px;"><input type="text" id="puiser-name" placeholder="' +
+            esc(ch.cmd.split(" ").slice(0,2).join(" ")) + '" /></div>' +
+          '<div class="label">Dans quel onglet ?</div>' +
+          '<div class="menu">' + state.tabs.map(function (tb) {
+            return '<button class="opt" data-action="puiser:tab" data-tab="' + esc(tb) + '">' + esc(tb) + "</button>";
+          }).join("") + "</div>" +
+          '<button class="btn btn-ghost btn-sm" data-action="puiser:back">Choisir un autre envoi</button>';
+      }
+    }
+    return ok.map(function (e) {
+      return '<button class="lib-item" data-action="puiser:pick" data-id="' + e.id + '">' +
+        '<span class="req">' + esc(e.ask) + "</span>" +
+        '<span class="cmd">' + esc(e.cmd) + "</span>" +
+        '<span class="src">' + (kept[e.id] ? "▦ déjà gardée en favori" : "✓ acceptée · " + esc(e.time || "")) + "</span>" +
+        "</button>";
+    }).join("");
+  }
+
+  function screenBiblio() {
+    return LIBRARY.map(function (it, i) {
+      return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
+        '<span class="req">' + esc(it.req) + '</span><span class="cmd">' + esc(it.cmd) + "</span>" +
+        '<span class="src"><span class="lib-conf ' + (it.confidence === "A" ? "a" : "c") + '">' + it.confidence + "</span>" +
+        esc(it.source) + "</span></button>";
+    }).join("");
+  }
+
+  // Liste des sessions — écran de démarrage de l'app (comme ChatGPT/Claude).
+  // Une session = un fil de recherche/construction de macro, distinct des
+  // favoris (macros déjà validées). Titrage automatique sur le premier
+  // échange, renommage et suppression manuels ici.
+  function screenSessions() {
+    var out = '<button class="btn btn-primary" data-action="session:new" style="width:100%; margin-bottom:14px;">+ Nouvelle session</button>';
+    if (!state.sessions.length) {
+      out += '<div class="thread-empty">Aucune session pour l\'instant.</div>';
+      return out;
+    }
+    var list = state.sessions.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
+    list.forEach(function (s) {
+      if (state.renamingSessionId === s.id) {
+        out += '<div class="session-row"><div style="flex:1; display:flex; flex-direction:column; gap:6px;">' +
+          '<input type="text" id="session-rename" value="' + esc(s.title) + '" />' +
+          '<div class="btn-row"><button class="btn btn-primary btn-sm" data-action="session:rename:save" data-id="' + s.id + '">Enregistrer</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="session:rename:cancel">Annuler</button></div></div></div>';
+      } else if (state.deletingSessionId === s.id) {
+        out += '<div class="card card-danger" style="margin:6px 0;"><strong>Supprimer « ' + esc(s.title) + ' » ?</strong>' +
+          '<p>Le fil de cette session sera définitivement effacé.</p>' +
+          '<div class="btn-row" style="margin-top:8px;"><button class="btn btn-danger btn-sm" data-action="session:delete:ok" data-id="' + s.id + '">Supprimer</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="session:delete:no">Annuler</button></div></div>';
+      } else {
+        var n = s.thread.filter(function (e) { return e.kind === "exchange"; }).length;
+        out += '<div class="session-row">' +
+          '<button class="main" data-action="session:open" data-id="' + s.id + '">' +
+          '<span class="k">' + esc(s.title) + (s.id === state.activeSessionId ? '<span class="badge-current">en cours</span>' : '') + '</span>' +
+          '<span class="v">' + n + ' échange(s)' + (s.updatedAt ? ' · ' + depuisTemps(s.updatedAt) : '') + '</span></button>' +
+          '<button class="icon-btn" data-action="session:rename" data-id="' + s.id + '" aria-label="Renommer">✎</button>' +
+          '<button class="icon-btn" data-action="session:delete" data-id="' + s.id + '" aria-label="Supprimer">🗑</button></div>';
+      }
+    });
+    return out;
+  }
+
+  // Moteur flou (LLM, phase 2) : désactivé par défaut, clé personnelle de
+  // l'utilisateur uniquement (BYOK — voir Décisions tranchées du plan moteur
+  // flou). Volontairement AUCUN indicateur de « mode console / mode
+  // préparation » — l'app tente simplement l'appel à chaque phrase ambiguë
+  // et retombe sur le moteur déterministe seul en silence, y compris quand
+  // le téléphone est connecté au Wi-Fi de la console (donc sans Internet).
+  function screenReglagesMoteurFlou() {
+    var c = state.llmConfig;
+    var out = '<div class="group"><div class="label">Moteur flou (LLM, en préparation)</div>';
+    out += '<div class="row"><span class="k">Activé</span><span class="seg">' +
+      '<button class="' + (c.actif ? "on" : "") + '" data-action="llm:actif" data-val="on">Oui</button>' +
+      '<button class="' + (!c.actif ? "on" : "") + '" data-action="llm:actif" data-val="off">Non</button></span></div>';
+    out += '<div class="row" style="flex-direction:column; align-items:stretch; gap:6px;">' +
+      '<span class="k">Clé API (personnelle, jamais transmise ailleurs qu\'à api.anthropic.com)</span>' +
+      '<input type="password" id="llm-apikey" placeholder="sk-ant-…" value="' + esc(c.apiKey || "") + '" ' +
+      'style="background:var(--app-surface); border:1px solid var(--app-line); border-radius:9px; color:var(--app-ink); padding:9px 11px; font-family:var(--mono); font-size:12.5px;" /></div>';
+    out += '<div class="row"><span class="k">Modèle</span><span class="seg">' +
+      ["claude-sonnet-5", "claude-opus-5", "claude-haiku-4-5-20251001"].map(function (m) {
+        var lbl = m === "claude-sonnet-5" ? "Sonnet 5" : (m === "claude-opus-5" ? "Opus 5" : "Haiku 4.5");
+        return '<button class="' + (c.model === m ? "on" : "") + '" data-action="llm:model" data-val="' + m + '">' + lbl + "</button>";
+      }).join("") + "</span></div>";
+    out += '<p class="play-note">Utilisé uniquement en préparation, jamais au pupitre : dès que le ' +
+      "téléphone rejoint le Wi-Fi de la console, il perd sa connexion 4G/5G et l'appel échoue " +
+      'silencieusement — le moteur déterministe seul prend le relais sans rien signaler, comme ' +
+      "aujourd'hui sans moteur flou. Rien n'est jamais inventé : le LLM ne peut choisir que parmi " +
+      "des valeurs déjà connues du corpus.</p>";
+    out += '<div class="row click" data-action="obsllm:export"><span class="k">Exporter les observations</span>' +
+      '<span class="v">' + state.obsLlmQueue.length + ' en attente</span></div>';
+    out += '<p class="play-note">Chaque fois que le moteur flou bute sur un mot ou une intention qu\'il ne ' +
+      "connaît pas, un constat s'accumule ici, sans jamais rien changer au corpus tout seul — voir " +
+      'traducteur/observations_llm.yaml. À exporter et coller à la main après revue.</p></div>';
+    return out;
+  }
+
+  function screenReglages() {
+    var out = '<div class="group"><div class="label">Console</div>' +
+      '<div class="row"><span class="k">Adresse</span><span class="v">192.168.1.42</span></div>' +
+      '<div class="row"><span class="k">Port</span><span class="v">3032</span></div>' +
+      '<div class="row"><span class="k">Utilisateur dédié</span><span class="v accent">User 12</span></div></div>';
+    out += '<div class="group"><div class="label">Conduite</div>' +
+      '<div class="row"><span class="k">Appui sur une tuile</span><span class="seg">' +
+      '<button class="' + (state.favMode === "immediate" ? "on" : "") + '" data-action="favmode" data-mode="immediate">Immédiat</button>' +
+      '<button class="' + (state.favMode === "confirm" ? "on" : "") + '" data-action="favmode" data-mode="confirm">Confirmer</button></span></div>' +
+      '<div class="row click" data-action="nav" data-screen="tabs"><span class="k">Gérer les onglets</span><span class="v accent">' + state.tabs.length + " onglets</span></div></div>";
+    out += '<div class="group"><div class="label">Sauvegarde</div>' +
+      '<div class="row click" data-action="export"><span class="k">Exporter les favoris</span><span class="v">Texte + fichier</span></div>' +
+      '<div class="row click" data-action="nav" data-screen="importer"><span class="k">Importer</span><span class="v">Depuis un fichier</span></div>' +
+      '<div class="row click" data-action="fil:export"><span class="k">Copier le fil (pour analyse)</span><span class="v">' + curThread().filter(function (x) { return x.kind === "exchange"; }).length + ' échange(s) · session en cours</span></div></div>';
+    out += '<div class="group"><div class="label">Saisie</div>' +
+      '<div class="row"><span class="k">Dictée vocale</span><span class="soon">Plus tard</span></div></div>';
+    out += screenReglagesMoteurFlou();
+    out += '<div class="group"><div class="label">Prototype</div>';
+    if (state.resetAsk) {
+      out += '<div class="card card-danger"><strong>Tout remettre à zéro ?</strong><p>Le fil, les favoris et les onglets de test seront effacés.</p></div>' +
+        '<div class="btn-row"><button class="btn btn-danger btn-sm" data-action="reset:ok">Effacer</button>' +
+        '<button class="btn btn-ghost btn-sm" data-action="reset:no">Annuler</button></div>';
+    } else {
+      out += '<div class="row click" data-action="reset:ask"><span class="k">Repartir de zéro</span><span class="v">Réinitialiser</span></div>';
+    }
+    out += '<p class="play-note">Le fil et les favoris sont conservés sur cet appareil.</p></div>';
+    return out;
+  }
+
+  function screenTabs() {
+    var out = '<div class="menu">';
+    state.tabs.forEach(function (tb) {
+      var n = state.favoris.filter(function (f) { return f.tab === tb; }).length;
+      out += '<div class="opt" style="cursor:default;"><span>' + esc(tb) + ' <span style="color:var(--app-muted); font-size:11.5px;">(' + n + ")</span></span>" +
+        (state.tabs.length > 1 ? '<button class="btn btn-ghost btn-sm" style="width:auto; padding:4px 9px;" data-action="tabs:del" data-tab="' + esc(tb) + '">Supprimer</button>' : "") + "</div>";
+    });
+    out += "</div>";
+    out += '<div style="display:flex; gap:8px;"><input type="text" id="new-tab" placeholder="Nouvel onglet" style="flex:1; background:var(--app-surface); border:1px solid var(--app-line); border-radius:9px; color:var(--app-ink); padding:9px 11px; font-family:inherit;" />' +
+      '<button class="btn btn-primary btn-sm" style="width:auto; flex:none; padding:9px 14px;" data-action="tabs:add">Ajouter</button></div>';
+    out += '<p class="play-note">Supprimer un onglet déplace ses favoris vers le premier onglet restant.</p>';
+    return out;
+  }
+
+  function screenImport() {
+    var out = '<div class="label">Fichier : cyrano-favoris.eosfav</div>';
+    out += '<div class="card card-warn"><strong>2 favoris référencent un autre spectacle</strong>' +
+      "<p>Ils restent syntaxiquement valides mais peuvent pointer vers d'autres circuits ici.</p></div>";
+    out += '<div style="display:flex; flex-direction:column; gap:8px;">' +
+      '<div class="import-item"><div class="meta"><span class="name">Rappel entracte</span><span class="cmd">Sub 9 At 0 Enter</span></div></div>' +
+      '<div class="import-item"><div class="meta"><span class="name">195 · Par LED</span><span class="cmd">Color Palette 5 Enter</span></div><span class="badge-other">Autre spectacle</span></div>' +
+      '<div class="import-item"><div class="meta"><span class="name">Face seule</span><span class="cmd">Group 3 At 85 Enter</span></div><span class="badge-other">Autre spectacle</span></div></div>';
+    out += '<div style="display:flex; flex-direction:column; gap:9px;"><button class="btn btn-primary" data-action="import:ok">Importer les 3 favoris</button>' +
+      '<button class="btn btn-ghost" data-action="nav" data-screen="reglages">Annuler</button></div>';
+    return out;
+  }
+
+  function overlayHtml() {
+    if (state.overlay && state.overlay.kind === "confirm") {
+      var e = curThread().filter(function (x) { return x.id === state.overlay.id; })[0];
+      if (!e) return "";
+      return '<div class="overlay"><div class="confirm-full"><div class="warn-icon">⚠</div>' +
+        "<h3>Syntaxe jamais vérifiée sur console</h3><p>" + esc(e.warnText || "") + "</p>" +
+        '<div class="mono-box">' + esc(e.cmd) + "</div>" +
+        '<div class="actions"><button class="btn btn-warn" data-action="confirm:yes" data-id="' + e.id + '">J\'ai vérifié — envoyer</button>' +
+        '<button class="btn btn-ghost" data-action="confirm:no">Annuler</button></div></div></div>';
+    }
+    if (state.overlay && state.overlay.kind === "export-fil") {
+      return '<div class="overlay"><div class="export-fil">' +
+        '<h3>Copier le fil</h3>' +
+        '<p>Tout le texte ci-dessous est sélectionné — colle-le (Ctrl/Cmd+V) où tu veux l\'envoyer. ' +
+        'Rien ne quitte cet appareil tant que tu ne colles pas toi-même : ce fil vit uniquement dans ' +
+        'ce navigateur (stockage local), il n\'y a aucun serveur qui le voit.</p>' +
+        '<textarea id="export-fil-text" readonly>' + esc(state.overlay.text) + '</textarea>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="fil:copier">Copier dans le presse-papiers</button>' +
+        '<button class="btn btn-ghost" data-action="fil:fermer">Fermer</button></div></div></div>';
+    }
+    if (state.overlay && state.overlay.kind === "export-obs") {
+      return '<div class="overlay"><div class="export-fil">' +
+        '<h3>Copier les observations</h3>' +
+        '<p>Prêt à coller sous <code style="font-family:var(--mono)">observations:</code> dans ' +
+        '<code style="font-family:var(--mono)">traducteur/observations_llm.yaml</code>, après revue — rien ' +
+        "n'est promu automatiquement, `promu` reste \"non\" tant qu'un humain ne l'a pas changé à la main. " +
+        'Rien ne quitte cet appareil tant que tu ne colles pas toi-même.</p>' +
+        '<textarea id="export-obs-text" readonly>' + esc(state.overlay.text) + '</textarea>' +
+        '<div class="actions"><button class="btn btn-primary" data-action="obsllm:copier">Copier dans le presse-papiers</button>' +
+        '<button class="btn btn-danger" data-action="obsllm:vider">Vider la file</button>' +
+        '<button class="btn btn-ghost" data-action="obsllm:fermer">Fermer</button></div></div></div>';
+    }
+    return "";
+  }
+
+  // ---------- actions ----------
+  // Cherche dans TOUTES les sessions, pas seulement la session active : une
+  // réponse asynchrone du moteur peut arriver après que l'utilisateur a
+  // changé de session, et l'échange qui attendait cette réponse doit quand
+  // même la recevoir plutôt que la perdre silencieusement.
+  function findEx(id) { return tousLesEchanges().filter(function (e) { return e.id == id; })[0]; }
+
+  // Sérialise le fil en texte brut, pensé pour être collé tel quel dans une
+  // conversation — pas un format d'échange machine, juste la trace lisible
+  // de ce qui a été tapé et de ce que le moteur a répondu.
+  function serialiserFil() {
+    var exs = curThread().filter(function (e) { return e.kind === "exchange"; });
+    if (!exs.length) return "(fil vide — aucune phrase testée pour l'instant)";
+    var lignes = [];
+    exs.forEach(function (e) {
+      lignes.push("[" + (e.time || "?") + "] " + (e.ask || ""));
+      if (e.cmd) lignes.push("  -> " + e.cmd);
+      lignes.push("  statut : " + e.status);
+      if (e.question && e.question.texte) lignes.push("  question posée : " + e.question.texte);
+      if (e.hypotheses && e.hypotheses.length) {
+        e.hypotheses.forEach(function (h) { lignes.push("  hypothèse : " + h.champ + " = " + h.valeur); });
+      }
+      if (e.nonReconnus && e.nonReconnus.length) lignes.push("  mots non reconnus : " + e.nonReconnus.join(", "));
+      if (e.notes && e.notes.length) lignes.push("  notes : " + e.notes.join(" / "));
+      if (e.warnText) lignes.push("  avertissement : " + e.warnText);
+      lignes.push("");
+    });
+    return lignes.join("\n").trim();
+  }
+
+  // ---------- pont vers le vrai traducteur (app/engine.js) ----------
+
+  function askEngine(exchangeId, phrase, reponses) {
+    if (typeof window.traduireReel !== "function") {
+      applyRealError(exchangeId, "Le moteur réel (app/engine.js) n'est pas chargé.");
+      return;
+    }
+    window.traduireReel(phrase, reponses).then(function (r) {
+      applyRealResult(exchangeId, phrase, r, reponses);
+    }).catch(function (err) {
+      applyRealError(exchangeId, (err && err.message) || String(err));
+    });
+  }
+
+  // Moteur flou (phase 2) — point d'entrée du premier passage sur une
+  // nouvelle phrase (voir le plan moteur flou, § Flux). Le lexique
+  // déterministe tourne TOUJOURS en premier, en local : s'il comprend déjà
+  // la phrase ou ne reconnaît RIEN du tout, le LLM n'a rien à apporter (voir
+  // `Traducteur.interpreter_flou` — un `incompris` complet n'est pas rescapé
+  // dans cette tranche) et on s'arrête là, identique à `askEngine` seul.
+  //
+  // Le LLM n'est donc consulté QUE pour trancher une question déjà posée par
+  // le lexique — jamais pour deviner une intention depuis rien. Toute panne
+  // (pas activé, pas de clé, hors réseau — le cas normal une fois connecté
+  // au Wi-Fi de la console, timeout, JSON invalide, valeur hors vocabulaire)
+  // retombe SILENCIEUSEMENT sur le résultat déterministe déjà obtenu :
+  // aucun indicateur de mode, aucun message d'erreur — voir Décisions
+  // tranchées #3 du plan.
+  function askEngineFlou(exchangeId, phrase, reponses) {
+    if (typeof window.traduireReel !== "function") {
+      applyRealError(exchangeId, "Le moteur réel (app/engine.js) n'est pas chargé.");
+      return;
+    }
+    window.traduireReel(phrase, reponses).then(function (base) {
+      var rienAAppporter = base.statut !== "a_preciser" || !base.questions || !base.questions.length;
+      var flouIndisponible = !state.llmConfig.actif || !state.llmConfig.apiKey || typeof window.interpreterLlm !== "function";
+
+      // Journal de renforcement (phase 3) : un `incompris` complet est un
+      // vrai trou de vocabulaire/intention, qu'on n'a pas les moyens de
+      // rescaper dans cette tranche (voir `Traducteur.interpreter_flou`),
+      // mais qu'on garde comme signal plutôt que de le jeter — voir
+      // `traducteur/observations_llm.yaml`. `pushObservationLlm` n'écrit
+      // rien tant que le moteur flou n'est pas explicitement activé.
+      if (base.statut === "incompris") {
+        pushObservationLlm("intention_manquee", phrase, null,
+          (base.non_reconnus && base.non_reconnus.length) ? base.non_reconnus.join(" ") : phrase);
+      }
+
+      if (rienAAppporter || flouIndisponible) {
+        applyRealResult(exchangeId, phrase, base, reponses);
+        return;
+      }
+      window.interpreterLlm(phrase, base.questions, {
+        apiKey: state.llmConfig.apiKey,
+        model: state.llmConfig.model,
+      }).then(function (sortieLlm) {
+        (sortieLlm.mots_hors_lexique || []).forEach(function (mot) {
+          pushObservationLlm("vocabulaire_manquant", phrase, sortieLlm, mot);
+        });
+        return window.interpreterFlouReel(phrase, sortieLlm, reponses);
+      }).then(function (r) {
+        applyRealResult(exchangeId, phrase, r, reponses, true);
+      }).catch(function (err) {
+        if (err && err.observation) {
+          pushObservationLlm(err.observation.type, phrase, err.observation.sortieLlmBrute, err.observation.motOuExpression);
+        }
+        applyRealResult(exchangeId, phrase, base, reponses);
+      });
+    }).catch(function (err) {
+      applyRealError(exchangeId, (err && err.message) || String(err));
+    });
+  }
+
+  // ---------- discussion libre à plusieurs tours (moteur flou, phase 5) ----------
+  // Différence de nature avec askEngineFlou ci-dessus : là, le LLM ne fait
+  // que trancher une question déjà posée par le lexique, en un seul aller-
+  // retour invisible. Ici, l'utilisateur a explicitement demandé à discuter,
+  // sur plusieurs tours, et voit tout ce qui se passe. Le garde-fou reste le
+  // même malgré cette liberté : le LLM ne produit jamais de syntaxe Eos, il
+  // ne fait que proposer des PHRASES FRANÇAISES (`phrase_a_essayer`) qui
+  // repassent systématiquement par `window.traduireReel` — la même autorité
+  // que pour n'importe quelle phrase tapée à la main. Toute panne ici est
+  // affichée dans le fil (jamais un repli silencieux) : contrairement au
+  // premier passage silencieux d'`askEngineFlou`, l'utilisateur attend
+  // activement une réponse à ce qu'il vient de taper.
+  function avancerDiscussion(exchangeId) {
+    var e = findEx(exchangeId); if (!e) return;
+    if (typeof window.discuterLlm !== "function") {
+      e.discussion.push({ role: "erreur", texte: "Le module de discussion (app/llm_bridge.js) n'est pas chargé." });
+      renderAll();
+      return;
+    }
+    e.discussionEnCours = true;
+    renderAll();
+    window.discuterLlm(e.discussion, {
+      apiKey: state.llmConfig.apiKey,
+      model: state.llmConfig.model,
+    }).then(function (rep) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.discussionEnCours = false;
+      var tour = { role: "assistant", texte: rep.message, essai: null };
+      e2.discussion.push(tour);
+      renderAll();
+      if (!rep.phraseAEssayer || typeof window.traduireReel !== "function") return;
+      window.traduireReel(rep.phraseAEssayer, {}).then(function (r) {
+        var e3 = findEx(exchangeId); if (!e3) return;
+        tour.essai = {
+          phrase: rep.phraseAEssayer, statut: r.statut, cmd: r.commande, ir: r.ir || [],
+          avertissements: r.avertissements || [],
+          question: (r.questions && r.questions[0] && r.questions[0].texte) || null,
+        };
+        renderAll();
+      }).catch(function () { /* l'essai reste simplement absent — pas bloquant pour la discussion */ });
+    }).catch(function (err) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.discussionEnCours = false;
+      e2.discussion.push({ role: "erreur", texte: "La discussion a échoué (" +
+        ((err && err.message) || String(err)) + ") — hors réseau, normal une fois connecté au Wi-Fi de la " +
+        "console. Réessaie une fois reconnecté, ou réponds quand même : le vrai traducteur reste utilisable." });
+      renderAll();
+    });
+  }
+
+  function demarrerDiscussion(exchangeId, phraseInitiale) {
+    var e = findEx(exchangeId); if (!e) return;
+    e.status = "discussion"; e.discussion = [{ role: "user", texte: phraseInitiale }]; e.discussionEnCours = false;
+    renderAll();
+    avancerDiscussion(exchangeId);
+  }
+
+  // Correction en langage naturel d'une macro déjà proposée (« remplace X
+  // par Y »), « à la manière d'un LLM » — adressée à la dernière macro en
+  // attente d'envoi plutôt que de retaper toute la phrase. Voir
+  // `Traducteur.corriger` pour la portée exacte de ce qui est reconnu.
+  function askCorrection(exchangeId, instruction) {
+    var e = findEx(exchangeId); if (!e) return;
+    if (typeof window.corrigerReel !== "function") {
+      showToast("Le moteur réel n'est pas chargé — correction impossible.");
+      return;
+    }
+    window.corrigerReel(e.ir, instruction).then(function (res) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.corrections = e2.corrections || [];
+      if (res.statut === "compris") {
+        e2.ir = res.ir;
+        e2.cmd = res.commande;
+        e2.warn = (res.avertissements || []).length > 0;
+        e2.warnText = e2.warn ? res.avertissements.join(" · ") : null;
+        e2.corrections.push({ texte: instruction, ok: true });
+        touchSession(activeSession());
+      } else {
+        e2.corrections.push({ texte: instruction, ok: false,
+          raison: (res.notes && res.notes[0]) || "Correction non reconnue." });
+      }
+      renderAll();
+    }).catch(function (err) {
+      showToast("Correction impossible : " + ((err && err.message) || String(err)));
+    });
+  }
+
+  // Rejoue une question déjà répondue avec une réponse de plus — c'est ainsi
+  // que le traducteur reprend là où il s'était arrêté sans redemander le
+  // reste (voir traducteur/README.md).
+  function submitAnswer(e, valeurReponse) {
+    var reponses = Object.assign({}, e.reponses || {});
+    reponses[e.question.id] = valeurReponse;
+    e.status = "thinking"; e.pendingChoice = null; e.question = null;
+    renderAll();
+    askEngine(e.id, e.ask, reponses);
+  }
+
+  // `viaLlm` (phase 4 du moteur flou) : uniquement vrai quand ce résultat
+  // vient de `interpreter_flou` après une résolution LLM réussie. `viaDiscussion`
+  // (phase 5) : uniquement vrai quand la phrase vient d'un `phrase_a_essayer`
+  // accepté depuis une discussion (voir `handle("discussion:utiliser", …)`).
+  // Jamais fixés par défaut à autre chose, pour que les badges (macroHtml) ne
+  // mentent jamais sur l'origine de la traduction.
+  function applyRealResult(exchangeId, phrase, r, reponses, viaLlm, viaDiscussion) {
+    var e = findEx(exchangeId); if (!e) return;
+    e.ask = phrase; e.reponses = reponses; e.pendingChoice = null;
+    e.notes = r.notes || []; e.nonReconnus = r.non_reconnus || [];
+    e.hypotheses = r.hypotheses || [];
+    e.viaLlm = !!viaLlm;
+    e.viaDiscussion = !!viaDiscussion;
+
+    if (r.statut === "compris") {
+      e.cmd = r.commande;
+      e.ir = r.ir || [];
+      e.warn = (r.avertissements || []).length > 0;
+      e.warnText = e.warn ? r.avertissements.join(" · ") : null;
+      e.question = null; e.status = "draft"; e.tokens = [];
+    } else if (r.statut === "a_preciser") {
+      e.question = (r.questions || [])[0] || null;
+      e.status = e.question ? "question" : "unknown";
+    } else {
+      e.question = null; e.status = "unknown";
+    }
+    renderAll();
+
+    // Moteur flou (phase 5) : une phrase incomprise lance directement la
+    // discussion, sans clic sur 💬 — décidé avec l'utilisateur le 2026-08-18
+    // (avant, seul le bouton l'ouvrait). Seulement si le moteur flou est
+    // configuré ; sinon le bouton "💬 Discuter" reste le seul recours (voir
+    // le bloc `status === "unknown"` plus bas). Ce déclenchement ne passe
+    // que par ici, jamais par `discussion:fermer` (qui remet aussi le statut
+    // à "unknown") : un abandon volontaire de la discussion ne doit jamais
+    // la relancer tout seul en boucle.
+    if (e.status === "unknown" && state.llmConfig.actif && state.llmConfig.apiKey &&
+        typeof window.discuterLlm === "function") {
+      demarrerDiscussion(exchangeId, phrase);
+    }
+  }
+
+  function applyRealError(exchangeId, message) {
+    var e = findEx(exchangeId); if (!e) return;
+    e.status = "engine-error"; e.errorText = message;
+    renderAll();
+  }
+
+  // Re-rend une IR retouchée par une correction ciblée par champ (chip) —
+  // repasse par le VRAI générateur (`window.rendreIrReel`), jamais une
+  // resynthèse devinée côté JS : la syntaxe reste la propriété exclusive du
+  // modèle, ici comme partout ailleurs dans ce prototype.
+  function reRenderIr(exchangeId) {
+    var e = findEx(exchangeId); if (!e || !e.ir) return;
+    if (typeof window.rendreIrReel !== "function") {
+      showToast("Le moteur réel n'est pas chargé — correction impossible.");
+      return;
+    }
+    window.rendreIrReel(e.ir).then(function (res) {
+      var e2 = findEx(exchangeId); if (!e2) return;
+      e2.cmd = res.commande;
+      e2.warn = (res.avertissements || []).length > 0;
+      e2.warnText = e2.warn ? res.avertissements.join(" · ") : null;
+      renderAll();
+    }).catch(function (err) {
+      showToast("Correction impossible : " + ((err && err.message) || String(err)));
+    });
+  }
+
+  function commit(e) {
+    var refused = /colour/i.test(e.cmd);
+    e.time = nowTime();
+    if (state.dropArmed) {
+      e.status = "pending"; state.connected = false; state.dropArmed = false;
+    } else if (refused) {
+      e.status = "refused";
+    } else {
+      e.status = e.warn ? "doute" : "ok";
+    }
+    renderAll();
+  }
+
+  function handle(action, target) {
+    var d = target.dataset, e;
+    switch (action) {
+      case "nav":
+        state.screen = d.screen;
+        if (d.screen !== "conduite") { state.editMode = false; state.editingTileId = null; }
+        renderAll(); break;
+
+      case "util": {
+        var here = SCREENS[state.screen] || {};
+        state.returnTo = here.role === "surface" ? state.screen : (here.parent || state.returnTo);
+        state.screen = d.screen; state.editMode = false; state.editingTileId = null;
+        renderAll(); break;
+      }
+
+      case "toggle-connection": state.connected = !state.connected; renderAll(); break;
+      case "drop:toggle": state.dropArmed = !state.dropArmed; renderAll(); break;
+
+      case "play:enter":
+        state.playMode = true; state.screen = "conduite"; state.editMode = false;
+        state.editingTileId = null; document.body.classList.add("play"); renderAll(); break;
+      case "play:exit":
+        state.playMode = false; document.body.classList.remove("play"); renderAll(); break;
+
+      // ---- le fil ----
+      case "ask": {
+        var ta = document.getElementById("composer-input");
+        var raw = ta ? ta.value : "";
+        if (!raw.trim()) break;
+        state.draft = "";
+
+        // « remplace X par Y » / « change X en Y » adressé à la dernière
+        // macro encore en attente d'envoi dans cette session : une
+        // correction, pas une nouvelle demande — voir `askCorrection`.
+        // Le déclencheur reste les verbes de correction, jamais « en » seul
+        // (bien trop courant dans une phrase normale, ex. « ... en lee
+        // 195 ») pour ne pas détourner une vraie nouvelle demande.
+        var thAsk = curThread();
+        var dernierDraft = null;
+        for (var iDraft = thAsk.length - 1; iDraft >= 0; iDraft--) {
+          if (thAsk[iDraft].kind === "exchange" && thAsk[iDraft].status === "draft") {
+            dernierDraft = thAsk[iDraft]; break;
+          }
+        }
+        if (dernierDraft && /\b(remplace|remplacer|change|changer)\b/i.test(raw)) {
+          askCorrection(dernierDraft.id, raw);
+          renderAll();
+          break;
+        }
+
+        var eid = uid++;
+        var sAsk = activeSession();
+        // Titrage automatique : seulement au tout premier échange de la
+        // session, jamais ensuite — comme ChatGPT/Claude, le titre capture
+        // la demande d'ouverture, pas la dernière en date.
+        if (sAsk && !curThread().length) sAsk.title = titreDepuisPhrase(raw);
+        touchSession(sAsk);
+        // Le vrai traducteur répond de façon asynchrone (Pyodide) : on pose
+        // tout de suite une entrée "réflexion en cours", puis on la met à
+        // jour avec le résultat réel — jamais de résultat inventé pour
+        // combler l'attente.
+        curThread().push({ id: eid, kind:"exchange", ask: raw, cmd: null,
+          status:"thinking", tokens: [], time: nowTime() });
+        renderAll();
+        askEngineFlou(eid, raw, {});
+        break;
+      }
+
+      // Même bouton que "ask", mais démarre directement une discussion à
+      // plusieurs tours au lieu d'un premier passage silencieux — voir
+      // demarrerDiscussion. Visible uniquement moteur flou activé (le bouton
+      // lui-même n'est rendu que dans ce cas, voir screenAtelier).
+      case "discussion:demarrer": {
+        var taD = document.getElementById("composer-input");
+        var rawD = taD ? taD.value : "";
+        if (!rawD.trim()) break;
+        state.draft = "";
+        var eidD = uid++;
+        var sD = activeSession();
+        if (sD && !curThread().length) sD.title = titreDepuisPhrase(rawD);
+        touchSession(sD);
+        curThread().push({ id: eidD, kind: "exchange", ask: rawD, cmd: null,
+          status: "discussion", discussion: [], discussionEnCours: false, tokens: [], time: nowTime() });
+        renderAll();
+        demarrerDiscussion(eidD, rawD);
+        break;
+      }
+
+      // Bascule un échange déjà bloqué (question à choix fixes, ou pas
+      // compris du tout) vers une discussion — reprend la phrase d'origine
+      // comme premier tour, exactement comme si l'utilisateur avait cliqué
+      // 💬 depuis le composer avec cette même phrase.
+      case "discussion:ouvrir": {
+        e = findEx(d.id); if (!e) break;
+        demarrerDiscussion(e.id, e.ask);
+        break;
+      }
+
+      case "discussion:envoyer": {
+        e = findEx(d.id); if (!e || e.status !== "discussion") break;
+        // Jamais deux appels réseau simultanés sur la même discussion — un
+        // double Entrée/clic avant la première réponse enverrait deux
+        // requêtes concurrentes qui écriraient chacune leur propre tour dans
+        // le même fil, sans coordination (trouvé en revue de code).
+        if (e.discussionEnCours) break;
+        var elReply = document.getElementById("discussion-reply-" + e.id);
+        var texteReply = elReply ? elReply.value.trim() : "";
+        if (!texteReply) break;
+        e.discussion.push({ role: "user", texte: texteReply });
+        renderAll();
+        avancerDiscussion(e.id);
+        break;
+      }
+
+      // Promeut l'essai d'un tour de discussion en résultat réel de
+      // l'échange — même chemin que askEngineFlou côté rendu (badge
+      // « viaDiscussion » plutôt que « viaLlm », voir macroHtml), pour que
+      // l'origine reste toujours visible plutôt que mélangée à une traduction
+      // ordinaire.
+      case "discussion:utiliser": {
+        e = findEx(d.id); if (!e || !e.discussion) break;
+        var tourUtilise = e.discussion[Number(d.tour)];
+        if (!tourUtilise || !tourUtilise.essai || tourUtilise.essai.statut !== "compris") break;
+        var essaiUtilise = tourUtilise.essai;
+        applyRealResult(e.id, essaiUtilise.phrase, {
+          statut: "compris", commande: essaiUtilise.cmd, ir: essaiUtilise.ir,
+          avertissements: essaiUtilise.avertissements, notes: [], non_reconnus: [], hypotheses: [],
+        }, {}, false, true);
+        break;
+      }
+
+      // Abandonne la discussion sans résultat — retombe sur « pas compris »,
+      // le même état honnête qu'un incompris ordinaire (Bibliothèque/
+      // Reformuler restent disponibles depuis là).
+      case "discussion:fermer": {
+        e = findEx(d.id); if (!e) break;
+        e.status = "unknown";
+        renderAll();
+        break;
+      }
+
+      case "chip:toggle":
+        if (state.chipOpenId == d.id && state.chipChamp === d.champ) {
+          state.chipOpenId = null; state.chipChamp = null;
+        } else {
+          state.chipOpenId = Number(d.id); state.chipChamp = d.champ;
+        }
+        renderAll();
+        setTimeout(function () { var ni = document.getElementById("chip-numero-input"); if (ni) { ni.focus(); ni.select(); } }, 0);
+        break;
+
+      case "chip:objet": {
+        e = findEx(d.id); if (!e || !e.ir || !e.ir[0] || !e.ir[0].selection) break;
+        e.ir[0].selection.objet = d.choice;
+        state.chipOpenId = null; state.chipChamp = null;
+        reRenderIr(e.id);
+        break;
+      }
+
+      case "chip:numero": {
+        e = findEx(d.id); if (!e || !e.ir || !e.ir[0] || !e.ir[0].selection) break;
+        var niEl = document.getElementById("chip-numero-input");
+        var val = niEl ? parseInt(niEl.value, 10) : NaN;
+        if (isNaN(val) || val < 0) { showToast("Numéro invalide."); break; }
+        e.ir[0].selection[d.champ] = val;
+        state.chipOpenId = null; state.chipChamp = null;
+        reRenderIr(e.id);
+        break;
+      }
+
+      case "chip:cancel": state.chipOpenId = null; state.chipChamp = null; renderAll(); break;
+
+      // ---- répondre à une question du vrai traducteur ----
+      case "hyp:corriger": {
+        // Rouvre l'hypothèse comme une vraie question, en réutilisant le
+        // même mécanisme que les questions posées d'emblée (answer:pick /
+        // answer:value-submit ci-dessous) — pas un système séparé.
+        e = findEx(d.id); if (!e || !e.hypotheses) break;
+        var hyp = e.hypotheses.filter(function (h) { return h.champ === d.champ; })[0];
+        if (!hyp) break;
+        e.question = hyp.correction; e.status = "question"; e.pendingChoice = null;
+        renderAll();
+        break;
+      }
+
+      case "answer:pick": {
+        e = findEx(d.id); if (!e || !e.question) break;
+        var opt = e.question.options.filter(function (o) { return o.cle === d.choice; })[0];
+        if (!opt) break;
+        if (opt.demande_valeur) {
+          // Cette option demande une précision en plus (des numéros de
+          // circuits, par exemple) : on montre le champ avant de renvoyer.
+          e.pendingChoice = opt.cle;
+          renderAll();
+          var vi = document.getElementById("answer-value-" + e.id);
+          if (vi) vi.focus();
+          break;
+        }
+        submitAnswer(e, opt.cle);
+        break;
+      }
+
+      case "answer:value-submit": {
+        e = findEx(d.id); if (!e || !e.pendingChoice) break;
+        var vinput = document.getElementById("answer-value-" + e.id);
+        var val = vinput ? vinput.value.trim() : "";
+        if (!val) break;
+        submitAnswer(e, { cle: e.pendingChoice, valeur: val });
+        break;
+      }
+
+      case "answer:cancel":
+        e = findEx(d.id); if (e) e.pendingChoice = null;
+        renderAll(); break;
+
+      case "send":
+        e = findEx(d.id); if (!e) break;
+        if (e.warn) { state.overlay = { kind:"confirm", id: e.id }; renderAll(); }
+        else commit(e);
+        break;
+
+      case "confirm:yes":
+        state.overlay = null; e = findEx(d.id); if (e) commit(e); break;
+      case "confirm:no": state.overlay = null; renderAll(); break;
+
+      case "discard":
+        (function () { var sDisc = activeSession(); if (sDisc) sDisc.thread = sDisc.thread.filter(function (x) { return x.id != d.id; }); })();
+        renderAll(); break;
+
+      case "fix": {
+        e = findEx(d.id); if (!e) break;
+        e.cmd = e.cmd.replace(/colour/i, "Color");
+        e.status = "fixed"; e.time = nowTime();
+        renderAll(); break;
+      }
+
+      case "replay": {
+        e = findEx(d.id); if (!e) break;
+        state.connected = true; e.status = "ok"; e.time = nowTime();
+        showToast("Rejouée."); break;
+      }
+      case "leave": {
+        e = findEx(d.id); if (!e) break;
+        state.connected = true; e.status = "ok"; e.time = e.time;
+        showToast("Laissée telle quelle — rien renvoyé."); break;
+      }
+
+      case "reuse": {
+        e = findEx(d.id); if (!e) break;
+        state.draft = e.ask; state.screen = "atelier";
+        renderAll();
+        var ta2 = document.getElementById("composer-input");
+        if (ta2) { ta2.focus(); ta2.setSelectionRange(ta2.value.length, ta2.value.length); }
+        break;
+      }
+
+      case "keep:open":
+        state.keepFormId = Number(d.id); renderAll();
+        setTimeout(function () { var n = document.getElementById("keep-name"); if (n) n.focus(); }, 0);
+        break;
+
+      case "keep:tab": {
+        e = findEx(d.id); if (!e) break;
+        var nm = document.getElementById("keep-name");
+        var name = (nm && nm.value.trim()) || e.cmd.split(" ").slice(0,2).join(" ");
+        state.favoris.push({ id: uid++, name: name, cmd: e.cmd, tab: d.tab, threadId: e.id });
+        state.keepFormId = null;
+        showToast("Gardée dans Conduite → " + d.tab);
+        break;
+      }
+
+      case "lib:pick": {
+        var it = LIBRARY[Number(d.idx)];
+        state.draft = it.req; state.screen = "atelier";
+        renderAll();
+        var ta3 = document.getElementById("composer-input");
+        if (ta3) ta3.focus();
+        break;
+      }
+
+      // ---- reprendre un envoi accepté depuis la Conduite ----
+      case "puiser:pick": state.puiserChoice = Number(d.id); renderAll();
+        setTimeout(function () { var n = document.getElementById("puiser-name"); if (n) n.focus(); }, 0);
+        break;
+      case "puiser:back": state.puiserChoice = null; renderAll(); break;
+      case "puiser:tab": {
+        e = tousLesEchanges().filter(function (x) { return x.id === state.puiserChoice; })[0];
+        if (!e) break;
+        var pn = document.getElementById("puiser-name");
+        var pname = (pn && pn.value.trim()) || e.cmd.split(" ").slice(0,2).join(" ");
+        state.favoris.push({ id: uid++, name: pname, cmd: e.cmd, tab: d.tab, threadId: e.id });
+        state.puiserChoice = null; state.activeTab = d.tab; state.screen = "conduite";
+        showToast("Gardée dans Conduite → " + d.tab);
+        break;
+      }
+
+      // ---- conduite ----
+      case "tab:switch": state.activeTab = d.tab; state.editingTileId = null; renderAll(); break;
+      case "tab:add": {
+        var n2 = prompt("Nom du nouvel onglet ?");
+        if (n2 && n2.trim()) { state.tabs.push(n2.trim()); state.activeTab = n2.trim(); }
+        renderAll(); break;
+      }
+      case "edit:toggle": state.editMode = !state.editMode; state.editingTileId = null; renderAll(); break;
+
+      case "tile:tap": {
+        var t2 = state.favoris.filter(function (f) { return f.id == d.id; })[0];
+        if (!t2) break;
+        if (state.favMode === "confirm" && state.tileConfirmId !== t2.id) {
+          state.tileConfirmId = t2.id;
+          showToast("Confirmer « " + t2.name + " » ? Ré-appuyez pour envoyer.");
+          setTimeout(function () { state.tileConfirmId = null; }, 2500);
+          break;
+        }
+        state.tileConfirmId = null;
+        touchSession(activeSession());
+        curThread().push({ id: uid++, kind:"event", name: t2.name, cmd: t2.cmd, time: nowTime() });
+        showToast("Envoyé : " + t2.cmd);
+        break;
+      }
+
+      case "tile:menu":
+        state.editingTileId = state.editingTileId == d.id ? null : Number(d.id);
+        state.deletingTileId = null; state.renamingTileId = null; renderAll(); break;
+      case "tile:rename":
+        state.renamingTileId = state.editingTileId; renderAll();
+        setTimeout(function () { var el = document.getElementById("tile-rename"); if (el) { el.focus(); el.select(); } }, 0);
+        break;
+      case "tile:rename:save": {
+        var el2 = document.getElementById("tile-rename");
+        var t3 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (t3 && el2 && el2.value.trim()) t3.name = el2.value.trim();
+        state.renamingTileId = null; renderAll(); break;
+      }
+      case "tile:dup": {
+        var src = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (src) { state.favoris.push({ id: uid++, name: src.name + " (copie)", cmd: src.cmd, tab: src.tab, threadId: src.threadId });
+                   showToast("Dupliqué."); }
+        state.editingTileId = null; renderAll(); break;
+      }
+      case "tile:move": {
+        var t4 = state.favoris.filter(function (f) { return f.id === state.editingTileId; })[0];
+        if (t4) { t4.tab = d.tab; showToast("Déplacé vers « " + d.tab + " »"); }
+        state.editingTileId = null; renderAll(); break;
+      }
+      case "tile:del": state.deletingTileId = state.editingTileId; renderAll(); break;
+      case "tile:del:no": state.deletingTileId = null; renderAll(); break;
+      case "tile:del:ok":
+        state.favoris = state.favoris.filter(function (f) { return f.id !== state.deletingTileId; });
+        state.editingTileId = null; state.deletingTileId = null; showToast("Favori supprimé."); break;
+
+      case "favmode": state.favMode = d.mode; renderAll(); break;
+
+      case "llm:actif":
+        state.llmConfig.actif = d.val === "on";
+        saveLlmConfig(); renderAll(); break;
+      case "llm:model":
+        state.llmConfig.model = d.val;
+        saveLlmConfig(); renderAll(); break;
+
+      case "tabs:add": {
+        var el3 = document.getElementById("new-tab");
+        if (el3 && el3.value.trim()) { state.tabs.push(el3.value.trim()); renderAll(); }
+        break;
+      }
+      case "tabs:del": {
+        if (state.tabs.length <= 1) break;
+        var rm = d.tab;
+        state.tabs = state.tabs.filter(function (tb) { return tb !== rm; });
+        var fb = state.tabs[0];
+        state.favoris.forEach(function (f) { if (f.tab === rm) f.tab = fb; });
+        if (state.activeTab === rm) state.activeTab = fb;
+        renderAll(); break;
+      }
+
+      case "export": showToast("Export généré (démo) — texte + fichier."); break;
+      case "fil:export":
+        state.overlay = { kind: "export-fil", text: serialiserFil() };
+        renderAll();
+        // Sélection auto au rendu suivant, pour que Ctrl/Cmd+C marche même
+        // si l'API clipboard est bloquée dans ce contexte (Artifact/iframe).
+        setTimeout(function () {
+          var ta = document.getElementById("export-fil-text");
+          if (ta) { ta.focus(); ta.select(); }
+        }, 30);
+        break;
+      case "fil:copier": {
+        var ta2 = document.getElementById("export-fil-text");
+        var texte = ta2 ? ta2.value : (state.overlay && state.overlay.text) || "";
+        if (ta2) { ta2.focus(); ta2.select(); }
+        var okCopie = false;
+        try { okCopie = document.execCommand && document.execCommand("copy"); } catch (err) {}
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texte).then(
+            function () { showToast("Fil copié — colle-le où tu veux."); },
+            function () { showToast(okCopie ? "Fil copié — colle-le où tu veux." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C."); }
+          );
+        } else {
+          showToast(okCopie ? "Fil copié — colle-le où tu veux." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C.");
+        }
+        break;
+      }
+      case "fil:fermer": state.overlay = null; renderAll(); break;
+
+      // ---- journal de renforcement du moteur flou (phase 3) ----
+      case "obsllm:export":
+        state.overlay = { kind: "export-obs", text: serialiserObservationsLlm() };
+        renderAll();
+        setTimeout(function () {
+          var taObs = document.getElementById("export-obs-text");
+          if (taObs) { taObs.focus(); taObs.select(); }
+        }, 30);
+        break;
+      case "obsllm:copier": {
+        var taObs2 = document.getElementById("export-obs-text");
+        var texteObs = taObs2 ? taObs2.value : (state.overlay && state.overlay.text) || "";
+        if (taObs2) { taObs2.focus(); taObs2.select(); }
+        var okCopieObs = false;
+        try { okCopieObs = document.execCommand && document.execCommand("copy"); } catch (err) {}
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(texteObs).then(
+            function () { showToast("Observations copiées."); },
+            function () { showToast(okCopieObs ? "Observations copiées." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C."); }
+          );
+        } else {
+          showToast(okCopieObs ? "Observations copiées." : "Copie automatique bloquée ici — le texte est sélectionné, fais Ctrl/Cmd+C.");
+        }
+        break;
+      }
+      case "obsllm:vider":
+        state.obsLlmQueue = [];
+        saveObsLlmQueue();
+        state.overlay = null;
+        showToast("File d'observations vidée.");
+        renderAll(); break;
+      case "obsllm:fermer": state.overlay = null; renderAll(); break;
+
+      // ---- sessions ----
+      case "session:new": {
+        var newSid = uid++;
+        state.sessions.push({ id: newSid, title: "Nouvelle session", createdAt: Date.now(), updatedAt: Date.now(), thread: [] });
+        state.activeSessionId = newSid;
+        state.screen = "atelier";
+        renderAll(); break;
+      }
+      case "session:open":
+        state.activeSessionId = Number(d.id);
+        state.screen = "atelier";
+        renderAll(); break;
+      case "session:rename":
+        state.renamingSessionId = Number(d.id);
+        renderAll();
+        setTimeout(function () { var elRen = document.getElementById("session-rename"); if (elRen) { elRen.focus(); elRen.select(); } }, 0);
+        break;
+      case "session:rename:save": {
+        var elSave = document.getElementById("session-rename");
+        var sRen = state.sessions.filter(function (x) { return x.id === state.renamingSessionId; })[0];
+        if (sRen && elSave && elSave.value.trim()) sRen.title = elSave.value.trim();
+        state.renamingSessionId = null;
+        renderAll(); break;
+      }
+      case "session:rename:cancel": state.renamingSessionId = null; renderAll(); break;
+      case "session:delete": state.deletingSessionId = Number(d.id); renderAll(); break;
+      case "session:delete:no": state.deletingSessionId = null; renderAll(); break;
+      case "session:delete:ok": {
+        var delSid = Number(d.id);
+        state.sessions = state.sessions.filter(function (x) { return x.id !== delSid; });
+        if (!state.sessions.length) {
+          // Toujours au moins une session — l'Atelier a toujours besoin d'une
+          // session active, jamais d'un état « aucune destination ».
+          state.sessions.push({ id: uid++, title: "Nouvelle session", createdAt: Date.now(), updatedAt: Date.now(), thread: [] });
+        }
+        if (state.activeSessionId === delSid) {
+          var nextS = state.sessions.slice().sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); })[0];
+          state.activeSessionId = nextS.id;
+        }
+        state.deletingSessionId = null;
+        showToast("Session supprimée.");
+        renderAll(); break;
+      }
+      case "import:ok": {
+        var tb2 = state.tabs.indexOf("Importé") >= 0 ? "Importé" : (state.tabs.push("Importé"), "Importé");
+        state.favoris.push(
+          { id: uid++, name:"Rappel entracte", cmd:"Sub 9 At 0 Enter", tab: tb2 },
+          { id: uid++, name:"195 · Par LED (import)", cmd:"Color Palette 5 Enter", tab: tb2 },
+          { id: uid++, name:"Face seule (import)", cmd:"Group 3 At 85 Enter", tab: tb2 });
+        state.screen = "reglages";
+        showToast("3 favoris importés dans « Importé »."); break;
+      }
+
+      case "reset:ask": state.resetAsk = true; renderAll(); break;
+      case "reset:no": state.resetAsk = false; renderAll(); break;
+      case "reset:ok":
+        try { localStorage.removeItem(STORE_KEY); } catch (err) {}
+        location.reload(); break;
+
+      default: break;
+    }
+  }
+
+  var vp = document.getElementById("viewport");
+  vp.addEventListener("click", function (ev) {
+    var el = ev.target.closest("[data-action]");
+    if (!el) return;
+    handle(el.dataset.action, el);
+  });
+  vp.addEventListener("input", function (ev) {
+    if (ev.target && ev.target.id === "composer-input") {
+      state.draft = ev.target.value;
+      autoGrow(ev.target);
+    }
+    if (ev.target && ev.target.id === "llm-apikey") {
+      state.llmConfig.apiKey = ev.target.value;
+      saveLlmConfig();
+    }
+  });
+  vp.addEventListener("keydown", function (ev) {
+    if (ev.target && ev.target.id === "composer-input" && ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      handle("ask", ev.target);
+    }
+    if (ev.target && /^answer-value-/.test(ev.target.id || "") && ev.key === "Enter") {
+      ev.preventDefault();
+      handle("answer:value-submit", ev.target);
+    }
+    if (ev.target && /^discussion-reply-/.test(ev.target.id || "") && ev.key === "Enter") {
+      ev.preventDefault();
+      handle("discussion:envoyer", ev.target);
+    }
+  });
+
+  (function fullscreen() {
+    var btn = document.getElementById("fs-toggle"), exit = document.getElementById("sim-exit");
+    function on() { return document.body.classList.contains("sim-fs"); }
+    function upd() { btn.textContent = on() ? "⛶ Quitter le plein écran" : "⛶ Tester en plein écran"; }
+    function enter() {
+      document.body.classList.add("sim-fs");
+      var rq = vp.requestFullscreen || vp.webkitRequestFullscreen;
+      if (rq) { try { var pr = rq.call(vp); if (pr && pr.catch) pr.catch(function(){}); } catch (e) {} }
+      upd();
+    }
+    function leave() {
+      document.body.classList.remove("sim-fs");
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function(){});
+      else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+      upd();
+    }
+    btn.addEventListener("click", function () { on() ? leave() : enter(); });
+    exit.addEventListener("click", leave);
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && on()) leave(); });
+  })();
+
+  document.getElementById("open-browser").href = window.location.href;
+
+  // La liste des sessions est désormais l'écran de démarrage, avec ou sans
+  // état sauvegardé — plus de saut direct vers Conduite au retour, cohérent
+  // avec le choix ChatGPT/Claude : on choisit ou reprend une session d'abord.
+  load();
+  loadLlmConfig();
+  loadObsLlmQueue();
+  renderAll();
+})();
+</script>

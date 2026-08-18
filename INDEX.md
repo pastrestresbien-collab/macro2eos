@@ -5,7 +5,8 @@ destiné à un outil de traduction langage naturel → macros Eos (injection OSC
 
 **Point d'entrée** : [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md)
 pour la syntaxe Eos de référence · [`PLANNING.md`](PLANNING.md) pour l'état d'avancement
-et le backlog de travail.
+et le backlog de travail · [`REGLES_POUR_UI.md`](REGLES_POUR_UI.md) pour **développer
+l'interface** : les neuf règles de la grammaire qui contraignent l'UI, et pourquoi.
 
 ## Corpus de collecte (grammaire, macros, risques)
 
@@ -24,12 +25,24 @@ et le backlog de travail.
 | EOS OSC Support — Supported OSC Commands (ETCLabs/EosSyncLib, 2017) | [`reference/Supported_OSC_Commands.md`](reference/Supported_OSC_Commands.md) | ✅ Converti intégralement (PDF source inclus) — colonne « Min Eos Version » par commande, absente du manuel v3.2.0 |
 | `fakeeos.ts` — simulateur ETCnomad minimal (transport OSC/TCP, projet xtouch2Eos) + client de test | [`reference/tools/`](reference/tools/) | ✅ Reçu et testé bout en bout (voir `reference/tools/README.md`) — valide le transport, pas la grammaire Eos |
 | **Grammaire ETC Eos consolidée** — synthèse de référence (corpus 174 entrées + manuel v3.2.0 32 chapitres + workbooks + eosKeys.ts + OSC docs), 15 sections, remplace la grammaire consolidée historique du corpus | [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md) | ✅ Rédigée à partir de l'ensemble du corpus disponible |
+| Table Lee Filters (théâtre) — numéro de gel par teinte nommée, hors ETC | [`reference/lee_filters_theatre.md`](reference/lee_filters_theatre.md) | ✅ Catalogue officiel Lee « Art of Light » (~2007) reçu et intégré — gamme couleur complète (~230 teintes, nom + description officielle), PDF source conservé — `PLANNING.md` #34 |
 
 ## Grammaire exploitable par le code
 
 | Document | Emplacement | Statut |
 |---|---|---|
-| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande | [`grammar/`](grammar/README.md) | 🚧 v0.1 — périmètre sélection + couleur + record palette |
+| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande, injection OSC | [`grammar/`](grammar/README.md) | ✅ v0.16 — 79 actions, 164 règles, 113 tests |
+| Traducteur français → IR (lexique, intentions, questions) — entre en amont du générateur | [`traducteur/`](traducteur/README.md) | 🚧 v0.2 — 9 intentions, 9 couleurs, 39 tests. Déterministe, sans IA à l'exécution |
+
+Le modèle couvre : sélection, Fan, cues (simples, multipart, listes multiples), macros,
+submasters, Query, effets, palettes, presets, groupes, patch, mark, park, filtres, courbes,
+snapshots, magic sheets, show control, contrôle partitionné, contexte d'écran, terminaison,
+et l'injection OSC. Hors périmètre : Augment3d, pixel mapping, serveur média virtuel,
+multi-console, et l'export ASCII faute de spécification (voir `PLANNING.md` #32).
+
+**25 zones non tranchées** y sont déclarées `inconnu` et reliées au backlog : le modèle
+avertit au lieu d'injecter en aveugle. Voir [`VERIFICATION.md`](VERIFICATION.md) pour la
+méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 
 ## Manuels convertis en Markdown
 
@@ -63,9 +76,16 @@ et le backlog de travail.
 - `SOURCES.md` — URLs officielles vérifiées de chaque document + miroirs.
 - `VERIFICATION.md` — rapport d'intégrité (couverture texte source ↔ Markdown).
 - `PLANNING.md` — état d'avancement, axes de travail, backlog unique des points à
-  valider au banc réel.
+  valider au banc réel. Volontairement court (relu à chaque session) ; le récit
+  détaillé, daté, tranche par tranche est dans `PLANNING_HISTORIQUE.md` — à consulter
+  sur besoin précis, pas à relire systématiquement.
 - `APP.md` — spécification produit : décisions, flux, contraintes techniques établies.
-- `app/maquette.html` — maquette visuelle des trois écrans (à ouvrir dans un navigateur).
+- `REGLES_POUR_UI.md` — cadrage pour la session qui développe l'interface : les règles
+  structurantes de la grammaire Eos et ce que chacune impose à l'UI.
+- `PIPELINE_TRADUCTION.md` — le déroulé en 9 étapes d'une requête, de la saisie NL à
+  l'ajout au corpus (analyse, affichage par paramètre, validation, envoi, constat).
+- `app/` — prototype interactif (`prototype.html`, branché sur le vrai traducteur via
+  Pyodide, voir `app/engine.js`) et maquette visuelle (`maquette.html`, périmée).
 - `CLAUDE.md` — règles de travail pour toute session sur ce dépôt.
 
 ## Règle de fidélité

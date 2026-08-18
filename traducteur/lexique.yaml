@@ -1,0 +1,795 @@
+# Lexique — le français de l'utilisateur vers les concepts du modèle
+#
+# Ce fichier ne contient AUCUNE syntaxe Eos. Il ne fait qu'une chose : relier des
+# mots français à des concepts que `grammar/modele.yaml` connaît déjà. La syntaxe
+# reste la propriété exclusive du modèle, et c'est `grammar/generateur.py` qui
+# l'écrit. Un mot absent d'ici ne produit donc jamais une commande approximative :
+# il produit un « je n'ai pas compris ».
+#
+# ÉCHELLE DE CONFIANCE — distincte du S/A/B/C/D du reste du projet.
+# Celle-ci mesure la fiabilité d'une *commande console*. Ici on mesure autre chose :
+# « ce mot français désigne-t-il bien ce concept ? ». Chaque entrée porte donc soit
+# une `source` (d'où vient le rattachement), soit un `choix` (décision assumée du
+# projet, faute de correspondance évidente), soit — depuis le moteur flou —
+# une `source_llm` : le rattachement vient d'une observation LLM promue après
+# revue humaine (voir traducteur/observations_llm.yaml), jamais automatiquement.
+# `source_llm` reste distincte de `source`/`choix` : elle documente l'origine
+# honnêtement (« un humain a validé une suggestion du LLM »), sans jamais
+# prétendre au S/A/B/C/D du reste du projet, qui mesure autre chose (la
+# fiabilité d'une commande console, pas si un mot désigne bien un concept).
+
+meta:
+  version: "0.2"
+  maj: "2026-08-07"
+
+# --------------------------------------------------------------------------
+# NORMALISATION — appliquée avant toute recherche
+#
+# La saisie vocale arrivera plus tard sur la même chaîne (`APP.md`), et la saisie
+# texte d'un téléphone est déjà bruitée. On ne suppose donc jamais une entrée
+# propre : minuscules, accents retirés, ponctuation ignorée.
+#
+# Retirer les accents n'est pas cosmétique : l'utilisateur écrit « 1 a 6 » aussi
+# souvent que « 1 à 6 ». Sans cette normalisation, la moitié des plages échouent.
+# --------------------------------------------------------------------------
+normalisation:
+  minuscules: true
+  sans_accents: true
+  ponctuation_ignoree: ",;:!?.()[]"
+
+# --------------------------------------------------------------------------
+# TOLÉRANCE AUX FAUTES DE FRAPPE
+#
+# Distance d'édition, mais **jamais globale** : toujours restreinte aux candidats
+# du créneau en cours de remplissage. La raison tient dans un cas réel.
+#
+# L'utilisateur a écrit « chang » pour « chaud ». En cherchant dans tout le
+# lexique, le plus proche voisin de « chang » n'est pas « chaud » (distance 2)
+# mais « chan » (distance 1) — le mot-clé Eos pour un circuit. Une correction
+# globale aurait donc traduit une couleur en sélection de circuits, silencieusement.
+#
+# Restreinte à la liste des couleurs, où « chan » n'est pas candidat, « chaud »
+# gagne sans ambiguïté. Le créneau fait le désambiguïsateur.
+# --------------------------------------------------------------------------
+tolerance:
+  # Pas de correction sous 4 lettres : trop de mots courts sont à distance 1 les
+  # uns des autres (« r » et « v » sont des couleurs distinctes, pas des fautes).
+  longueur_minimale: 4
+  distance_max_mot_court: 1     # 4 lettres
+  distance_max_mot_long: 2      # 5 lettres et plus
+  # Deux candidats à égalité de distance ne sont jamais départagés au hasard :
+  # c'est une question à poser, pas un pari.
+  egalite: question
+
+# --------------------------------------------------------------------------
+# MOTS OUTILS — ignorés, mais listés
+#
+# Listés explicitement plutôt que devinés : un mot inconnu doit rester inconnu.
+# Si un mot outil manque ici, il ressortira en « non reconnu » et l'utilisateur
+# le verra — c'est le bon échec, bruyant plutôt que silencieux.
+# --------------------------------------------------------------------------
+mots_outils:
+  - le
+  - la
+  - les
+  - l
+  - un
+  - une
+  - des
+  - du
+  - de
+  - d
+  - et
+  - en
+  - avec
+  - dans
+  - sur
+  - pour
+  - au
+  - aux
+  - ref
+  - refs
+  - reference
+  - references
+  - numero
+  - numeros
+  - no
+  - s
+  - il
+  - me
+  - moi
+  - stp
+  - please
+  - ce
+  - qui
+  - est
+  - n
+  - pas
+  - jamais
+
+# --------------------------------------------------------------------------
+# OPÉRATEURS DE PLAGE — « 1 à 6 », « 1 thru 6 », « 1-6 »
+# --------------------------------------------------------------------------
+plage:
+  mots: [a, thru, jusqu, jusqua, "-"]
+  source: "`Thru` est l'opérateur de plage du modèle (grammar/modele.yaml, operateurs.plage)"
+
+# --------------------------------------------------------------------------
+# OBJETS — les mots français qui désignent une cible du modèle
+#
+# La clé est le nom d'objet tel que `grammar/modele.yaml` l'écrit. Les alias sont
+# les façons dont un utilisateur français le dit réellement.
+# --------------------------------------------------------------------------
+objets:
+  Chan:
+    alias: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, lampe, lampes]
+    source: "objets.Chan du modèle ; alias métier français courants"
+  Group:
+    alias: [groupe, groupes, group, groups]
+    source: "objets.Group du modèle"
+  Cue:
+    alias: [cue, cues, memoire, memoires, sequence]
+    source: >
+      objets.Cue du modèle. « mémoire » est le terme français traditionnel du
+      métier pour une cue — conservé parce que la saisie vocale le produira.
+
+# --------------------------------------------------------------------------
+# OBJETS-CIBLES — jamais une sélection générique, contrairement à `objets`
+# ci-dessus. `Sub` n'est volontairement PAS ajouté à `objets` : le résolveur
+# générique `_objet()` sert aussi `regler_intensite` et `colorer_selection`,
+# et `grammar/modele.yaml` (matrice de légalité) déclare `Sub + intensite`
+# INVALIDE au niveau de confiance le plus haut du projet (S — « le pilotage
+# de niveau d'un sub passe par le fader ou les bumps, pas par At »). Le
+# mélanger à l'index générique laisserait « sub 3 à 50 % » passer par
+# `regler_intensite` et produire une commande qu'on sait déjà fausse. Un
+# index séparé, consulté seulement par les intentions dédiées aux
+# submasters, évite structurellement ce chemin.
+# --------------------------------------------------------------------------
+objets_cible:
+  Sub:
+    # Alias à un seul mot uniquement : le tokeniseur coupe sur l'espace et le
+    # tiret (`grammar/generateur.py` n'a pas cette contrainte, mais le lexique
+    # si), donc « sous-master » ne matcherait jamais comme un seul jeton.
+    alias: [sub, subs, submaster, submasters, sousmaster, sousmasters]
+    source: "objets.Sub du modèle (grammar/modele.yaml) ; manuel §20 Submasters"
+  Preset:
+    # Même raisonnement que Sub : `Preset` n'est jamais une sélection
+    # générique. La matrice de légalité (grammar/modele.yaml) déclare
+    # `Preset + rappeler_preset` INVALIDE (confiance A, manuel §11 : « Presets
+    # can not refer to other presets ») — un preset ne référence jamais un
+    # autre preset. Le mélanger à `objets` laisserait une phrase comme
+    # « preset 3 en rouge » passer par `colorer_selection` sans que rien ne
+    # la bloque avant le générateur.
+    alias: [preset, presets]
+    source: "objets.Preset du modèle (grammar/modele.yaml) ; manuel §11 Presets"
+
+# --------------------------------------------------------------------------
+# NUANCIERS — bibliothèques de gélatines
+# --------------------------------------------------------------------------
+nuanciers:
+  lee:
+    numero: 3
+    alias: [lee, "lee filters", leefilters]
+    source: "manuel §10, corpus #082 — `Color 3/<numéro>`, confirmé A"
+
+# --------------------------------------------------------------------------
+# COULEURS — mot français → numéro de gélatine Lee
+#
+# Source unique : `reference/lee_filters_theatre.md`, lui-même issu du catalogue
+# officiel Lee « Art of Light » (PDF conservé dans `reference/source/`).
+#
+# RÈGLE DE PEUPLEMENT : une couleur n'entre ici que si le rattachement est
+# évident — le nom Lee est le mot français, sa traduction directe, ou une
+# décision déjà prise et documentée. Le catalogue compte ~230 teintes et la
+# plupart des mots français courants ont plusieurs candidats sérieux
+# (« ambre » en a au moins quatre). Dans ce cas la bonne réponse n'est pas de
+# choisir : c'est `ambigu`, qui fait poser la question.
+# --------------------------------------------------------------------------
+couleurs:
+  rouge:
+    gel: 106
+    nom_lee: "Primary Red"
+    alias: [r, rouges]
+    source: "catalogue officiel p.22 — « Strong red effect, cycloramas »"
+
+  vert:
+    gel: 139
+    nom_lee: "Primary Green"
+    alias: [v, verts]
+    source: "catalogue officiel p.19 — « Set lighting, cycloramas »"
+
+  bleu:
+    gel: 120
+    nom_lee: "Deep Blue"
+    alias: [b, bleus]
+    source: >
+      catalogue officiel p.17 — « Pleasing effect for theatrical lighting ».
+      Lee ne nomme aucune teinte « Primary Blue » : 120 est le bleu standard le
+      plus proche d'un bleu primaire dans la gamme théâtre.
+
+  jaune:
+    gel: 101
+    nom_lee: "Yellow"
+    alias: [j, jaunes]
+    source: "catalogue officiel p.21 — « Sunlight and window effect »"
+
+  orange:
+    gel: 105
+    nom_lee: "Orange"
+    alias: [o, oranges]
+    source: "catalogue officiel p.22 — nom Lee littéralement identique au mot français"
+
+  magenta:
+    gel: 113
+    nom_lee: "Magenta"
+    alias: [magentas]
+    source: "catalogue officiel p.23 — nom Lee littéralement identique"
+
+  violet:
+    gel: 344
+    nom_lee: "Violet"
+    alias: [violets]
+    source: "catalogue officiel p.16 — nom Lee littéralement identique"
+
+  chaud:
+    gel: 205
+    nom_lee: "Half CTO"
+    alias: [chaude, chauds, chaudes]
+    choix: >
+      DÉCISION DU PROJET, pas une correspondance de catalogue. « Chaud » désigne
+      la famille CTO (204-206), qui réchauffe une source — confirmé par
+      l'utilisateur en session (confiance S) et cohérent avec les conversions
+      Kelvin officielles du catalogue p.30. Reste à choisir la force : 205 (Half)
+      est retenu comme défaut, ni la correction la plus forte (204) ni la plus
+      discrète (206). Voir `reference/lee_filters_theatre.md`.
+    note_utilisateur: >
+      chaud → Lee 205 (Half CTO, correction moyenne). Pour une correction plus
+      forte 204, plus légère 206.
+
+  froid:
+    gel: 202
+    nom_lee: "Half CTB"
+    alias: [froide, froids, froides]
+    choix: >
+      Symétrique de « chaud ». Famille CTB (201-203), qui refroidit une source.
+      202 (Half) retenu par défaut pour la même raison.
+    note_utilisateur: >
+      froid → Lee 202 (Half CTB, correction moyenne). Pour une correction plus
+      forte 201, plus légère 203.
+
+  # -- Ambigus : reconnus, mais jamais tranchés tout seuls -------------------
+  # ATTENTION — JAMAIS de zéro de tête sur un numéro de gel dans ce fichier.
+  # YAML 1.1 lit `020` comme de l'OCTAL : la valeur chargée vaut 16, pas 20.
+  # Le piège est silencieux (aucune erreur, un numéro plausible) et produirait
+  # `Color 3/016` au lieu de `Color 3/020` — la mauvaise gélatine sur scène.
+  # Les numéros s'écrivent donc en décimal nu ; c'est l'affichage qui remet les
+  # trois chiffres du catalogue Lee (`{gel:03d}` dans le code).
+  # Vérifié par `test_traducteur.py`.
+  ambre:
+    ambigu: true
+    alias: [ambres, amber]
+    candidats:
+      - { gel: 162, nom_lee: "Bastard Amber", effet: "blanc chaud, wash chaud, lumière de lampe" }
+      - { gel: 102, nom_lee: "Light Amber",   effet: "jaune chaud, bougie ou fort soleil" }
+      - { gel: 20,  nom_lee: "Medium Amber",  effet: "soleil d'après-midi, bougie, latéral" }
+      - { gel: 104, nom_lee: "Deep Amber",    effet: "soleil, accents, latéral" }
+    source: "catalogue officiel pp.20-22 — quatre ambres franchement distincts"
+
+  rose:
+    ambigu: true
+    alias: [roses, pink]
+    candidats:
+      - { gel: 157, nom_lee: "Pink",        effet: "danse, adoucit les costumes blancs" }
+      - { gel: 2,   nom_lee: "Rose Pink",   effet: "wash rose fort pour cyclorama" }
+      - { gel: 107, nom_lee: "Light Rose",  effet: "washs généraux, poursuites" }
+      - { gel: 128, nom_lee: "Bright Pink", effet: "contre-jour, latéral, comédies musicales" }
+    source: >
+      catalogue officiel pp.22-24. Piège de traduction en plus du choix de force :
+      le mot anglais « Rose » chez Lee ne recouvre pas le « rose » français, qui
+      se dit « Pink ». Raison de plus pour ne pas trancher tout seul.
+
+# --------------------------------------------------------------------------
+# CIBLES SYMBOLIQUES DE CUE — mots-clés acceptés par `Go To Cue` à la place
+# d'un numéro (grammar/generateur.py, CIBLES_SYMBOLIQUES).
+# --------------------------------------------------------------------------
+cue_cibles:
+  Out:
+    alias: [out, noir, blackout]
+    source: "manuel §16 — Go To Cue Out ramène tous les paramètres de toutes les listes"
+  Next:
+    alias: [suivante, next, suivant]
+    source: "manuel §16"
+  Last:
+    alias: [precedente, last, derniere]
+    source: "manuel §16"
+  Home:
+    alias: [home, origine]
+    source: "manuel §16"
+
+# --------------------------------------------------------------------------
+# INTENTIONS — ce que l'utilisateur veut faire
+#
+# Une intention se déclenche quand TOUS ses groupes de déclencheurs sont
+# présents dans la phrase (un mot suffit par groupe). Volontairement insensible
+# à l'ordre des mots : le français du métier est télégraphique et la dictée
+# vocale ne rendra pas une syntaxe propre.
+# --------------------------------------------------------------------------
+intentions:
+  creer_palettes_couleur:
+    description: "créer une ou plusieurs palettes de couleur à partir de gélatines"
+    declencheurs:
+      verbe: [creer, cree, crees, creez, enregistrer, enregistre, record, sauver, sauve, faire, fais, fait]
+      objet: [palette, palettes]
+      famille: [couleur, couleurs, color]
+    exemple_nl: "créer les palettes de couleur 1 à 6 avec les références lee, chaud froid r v b j"
+    origine: >
+      Demande réelle de l'utilisateur, session 2026-08-03, posée explicitement
+      comme « un objectif de traduction réelle ». C'est le cas d'ancrage du
+      traducteur : il est recopié verbatim, fautes comprises, dans les tests.
+
+  colorer_selection:
+    description: "mettre une sélection de circuits dans une couleur de nuancier"
+    declencheurs:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      # `@couleurs` est un joker : n'importe quel nom de teinte du lexique sert
+      # de déclencheur. Évite de recopier ici tous les noms de couleurs.
+      famille: [couleur, color, lee, gelatine, gel, "@couleurs"]
+    exemple_nl: "circuits 10 à 20 en Lee 195"
+    origine: "patron `selection_plage_couleur` (grammar/patrons.yaml), confiance A"
+
+  parquer:
+    description: "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub"
+    declencheurs:
+      verbe: [parquer, parque]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "parque le circuit 3 à 45 %"
+    origine: >
+      manuel §19 Park, confiance A (`grammar/modele.yaml`, section `park`).
+      Déclaré AVANT `regler_intensite` dans ce fichier : sans cette
+      priorité, une phrase qui contient à la fois un objet et un marqueur de
+      niveau (« % », « intensité »…) déclencherait l'intensité au lieu du
+      parquage, puisque `regler_intensite` ne demande aucun verbe pour se
+      déclencher — c'est la même précaution que celle documentée dans
+      `traducteur/README.md` (« la tolérance aux fautes n'a pas le droit de
+      vote sur l'intention »), appliquée ici à l'ORDRE plutôt qu'à la
+      tolérance elle-même.
+    note: >
+      Cette première tranche ne couvre QUE la forme absolue et déterministe
+      `<chan> At <n> Park Enter` sur un SEUL circuit ou groupe, jamais une
+      plage — volontairement, pas par oubli. « circuit 4 à 50 % » contient
+      un seul « à » qui sert à la fois de séparateur possible de plage et de
+      préposition introduisant le niveau ; sans un second marqueur de
+      position pour trancher (contrairement à `regler_intensite`, qui ne
+      rencontre l'ambiguïté qu'avec DEUX « à » dans la phrase — un pour la
+      plage, un pour le niveau), `self._plage` lirait « 4 à 50 » comme une
+      plage de circuits 4 à 50, jamais comme un circuit et un niveau. Se
+      limiter à un seul circuit/groupe élimine l'ambiguïté à la racine :
+      le numéro qui suit l'objet est toujours celui du circuit, jamais
+      d'une plage. Le niveau réutilise le même extracteur que
+      `regler_intensite` (`self._niveau`, marqueur « % »/« pourcent »/
+      « intensité »/« niveau » requis, pas optionnel).
+      Le manuel documente aussi une forme bascule, `<chan> At Park Enter`
+      (parque si non parqué, déparque si parqué) — jamais générée ici, car
+      son résultat dépend d'un état console que le traducteur ne peut pas
+      lire (même refus de principe que pour `bump_direction`, où deviner un
+      état console produirait une macro valide et un résultat imprévisible
+      sur scène). Sans marqueur de niveau dans la phrase, la traduction
+      reste `incompris` plutôt que de choisir la forme bascule ou de
+      mésinterpréter un numéro comme une plage. L'échelle (`At /
+      <pourcentage> Park`) et le parquage d'adresse (`Address <n> At
+      <niveau> Park`) restent hors périmètre de cette tranche.
+
+  regler_intensite:
+    description: "donner un niveau d'intensité à une sélection"
+    declencheurs:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      niveau: [pourcent, "%", intensite, niveau]
+    exemple_nl: "circuits 1 à 5 à 50 %"
+    origine: "patron `degrade_intensite` (grammar/patrons.yaml), confiance A"
+    note: >
+      Un marqueur de niveau explicite est EXIGÉ (`%`, « pourcent », « intensité »,
+      « niveau »). « circuits 1 à 5 à 50 » sans marqueur reste volontairement
+      incompris : rien ne dit si 50 est un niveau, une cue ou une palette. C'est
+      le genre de phrase qu'il vaut mieux faire reformuler que deviner.
+
+  enregistrer_cue:
+    description: "enregistrer une sélection de circuits dans une cue existante"
+    declencheurs:
+      verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
+      cue: [cue, cues, memoire, memoires, sequence]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "enregistrer les circuits 1 à 5 dans la cue 4"
+    origine: >
+      patron `record_cue_selectif` (grammar/patrons.yaml), confiance A — exemple
+      chiffré du manuel §12 « Using a Positive Selective Store ». Un
+      enregistrement sélectif sur une cue existante MODIFIE les circuits visés
+      sans écraser le reste : ce n'est pas un remplacement.
+
+  aller_a_cue:
+    description: "aller à une cue (Go To Cue)"
+    declencheurs:
+      verbe: [aller, va, vas, go, goto, jouer, joue, lancer, lance, demarrer, demarre]
+      # inclut le mot « cue » et les cibles symboliques (out/noir, next, etc.) :
+      # « va au noir » n'a pas besoin de dire « cue » pour être compris.
+      cible: [cue, cues, memoire, memoires, sequence, out, noir, blackout,
+              suivante, next, suivant, precedente, last, derniere, home, origine]
+    exemple_nl: "aller à la cue 5"
+    origine: "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts"
+
+  enregistrer_sub:
+    description: "enregistrer une sélection de circuits dans un submaster"
+    declencheurs:
+      verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
+      sub: [sub, subs, submaster, submasters, sousmaster, sousmasters]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "enregistrer les circuits 1 à 5 dans le sub 3"
+    origine: >
+      manuel §20 « Recording a Submaster », confiance A. Même structure que
+      `enregistrer_cue` : la sélection est exigée dans la phrase elle-même,
+      jamais devinée depuis un état de la console (règle 5, `REGLES_POUR_UI.md`).
+    note: >
+      Sur un sub déjà rempli, cet enregistrement FUSIONNE au lieu de remplacer
+      (manuel §20) — le traducteur ne le signale pas encore en note, seul le
+      générateur le documente dans le modèle.
+
+  appliquer_effet:
+    description: "appliquer un effet existant à une sélection de circuits"
+    declencheurs:
+      verbe: [lancer, lance, appliquer, applique, demarrer, demarre, jouer, joue]
+      objet_effet: [effet, effets]
+      cible: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "lance l'effet 3 sur les circuits 1 à 10"
+    origine: >
+      manuel §18 « Apply an Existing Effect », confiance A. La sélection est
+      exigée dans la phrase — l'app ne traduit jamais « sur ce qui est
+      actuellement sélectionné », un état qu'elle ne contrôle pas.
+
+  arreter_effet:
+    description: "arrêter un effet précis, ou tous les effets en cours"
+    declencheurs:
+      verbe: [arreter, arrete, stopper, stoppe, stop]
+      objet_effet: [effet, effets]
+    exemple_nl: "arrête l'effet 3 ; arrête tous les effets"
+    origine: >
+      manuel §18 « Assigning a Stop Effect Command », confiance A. `Stop
+      Effect Enter` (sans numéro) arrête tous les effets en cours ; `Stop
+      Effect <n> Enter` un effet précis. La variante posée sur une sélection
+      de circuits (« pose une instruction d'arrêt ») n'est pas couverte ici :
+      distinguer dans la phrase un numéro d'effet d'un numéro de circuit
+      demanderait de trancher une ambiguïté sans marqueur fiable — laissé de
+      côté plutôt que deviné.
+
+  bump_sub:
+    description: "appuyer sur la touche de bump d'un submaster (haut ou bas)"
+    declencheurs:
+      verbe: [bump]
+      sub: [sub, subs, submaster, submasters, sousmaster, sousmasters]
+    exemple_nl: "bump haut le sub 5 ; bump bas sub 12"
+    origine: >
+      `eosKeys.ts` : `subdown`→SUB_BUMP_DOWN, `subup`→SUB_BUMP_UP, confiance A
+      sur l'existence des touches. L'ORDRE des tokens (`SubUp <n> Enter`) est
+      seulement confiance B/C (corpus #026) — voir `grammar/modele.yaml`, le
+      générateur porte déjà l'avertissement, pas dupliqué ici.
+    note: >
+      Aucune source du dépôt ne documente ce que « haut »/« bas » font
+      fonctionnellement sur le plateau (montée/descente, marquage, etc.) —
+      seuls les NOMS des deux touches sont sourcés. Le traducteur ne les
+      explique donc pas ; si la phrase ne précise pas laquelle, il pose une
+      question plutôt que de choisir.
+
+  enregistrer_preset:
+    description: "enregistrer une sélection de circuits dans un preset"
+    declencheurs:
+      verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
+      preset: [preset, presets]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "enregistrer les circuits 1 à 5 dans le preset 2"
+    origine: >
+      manuel §11 « Storing Presets Using [Record] », confiance A. Même
+      structure que `enregistrer_sub`/`enregistrer_cue` : la sélection est
+      exigée dans la phrase elle-même, jamais devinée depuis un état de la
+      console (règle 5, `REGLES_POUR_UI.md`).
+    note: >
+      Un preset ne peut pas en référencer un autre (manuel §11, « Presets
+      can not refer to other presets ») — `Preset` vit dans `objets_cible`,
+      jamais dans `objets`, pour qu'aucune autre intention ne puisse s'en
+      servir comme sélection. Le piège `{By Type}` (PLANNING #38) s'applique
+      identiquement aux presets qu'aux palettes — pas encore exposé comme
+      option ici, seule la forme simple est couverte pour l'instant.
+
+  rappeler_preset:
+    description: "appliquer un preset existant à une sélection de circuits"
+    declencheurs:
+      verbe: [rappeler, rappelle, appliquer, applique, charger, charge]
+      preset: [preset, presets]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "rappelle le preset 2 sur les circuits 1 à 5"
+    origine: >
+      manuel §11 « Recalling Presets », confiance A. Même exigence de
+      sélection explicite que `enregistrer_preset` — le manuel documente
+      `Preset Enter` sans numéro (rappelle le dernier preset sélectionné)
+      mais le traducteur ne produit jamais cette forme implicite,
+      cohérent avec le refus général de deviner un état console.
+
+  appel_macro:
+    description: "lancer une macro par son numéro, depuis la ligne de commande"
+    declencheurs:
+      verbe: [lancer, lance, executer, execute, jouer, joue, demarrer, demarre, appeler, appelle]
+      macro: [macro, macros]
+    exemple_nl: "lance la macro 5"
+    origine: >
+      manuel §24 « Play a Macro », confiance A — `Macro <n> Enter` depuis
+      Live. Ne couvre que l'appel direct, jamais le chaînage macro-dans-macro
+      (fiabilité d'exécution seulement C, corpus #070 vs #095, PLANNING #2) :
+      cette intention ne produit qu'une ligne de commande isolée, jamais un
+      contenu de macro imbriqué.
+
+  selectionner_query:
+    description: >
+      sélectionner les channels actuellement dans, ou explicitement pas
+      dans, une palette couleur / un preset / une cue — via Query, le seul
+      endroit du langage Eos où existe une négation
+    declencheurs:
+      verbe: [selectionner, selectionne]
+      dans: [dans]
+      cible: [palette, palettes, preset, presets, cue, cues, memoire, memoires]
+    exemple_nl: >
+      sélectionne ce qui est dans la palette couleur 5 ; sélectionne ce qui
+      n'est pas dans le preset 3
+    origine: >
+      manuel §15 « Advanced Manual Control », section Query, confiance A.
+      `{Is In}` est facultatif dans la syntaxe officielle (Query seul
+      suffit, manuel §15) mais le générateur l'écrit quand même — une macro
+      se relit, l'implicite y coûte plus cher qu'il ne rapporte (même
+      convention que `Chan`/`Cue` explicites ailleurs dans le projet).
+    note: >
+      Périmètre volontairement restreint à Color Palette, Preset et Cue —
+      les seules familles déjà couvertes ailleurs dans le traducteur
+      (`creer_palettes_couleur`, `enregistrer_preset`, `enregistrer_cue`/
+      `aller_a_cue`). `Group` et `Sub` existent comme cibles de Query dans
+      le modèle mais restent hors périmètre ici : `Query {Is In} Group 2`
+      et `Group 2 Enter` sont deux mécanismes distincts et le risque de
+      confusion entre les deux n'a pas été tranché — mieux vaut ne pas
+      couvrir que mal distinguer. Ne couvre qu'une plage/numéro simple, pas
+      les Query composées à plusieurs conditions (`{Can Be} X {Isn't In} Y`,
+      manuel §15) — hors périmètre de cette première tranche.
+
+  marquer:
+    description: >
+      poser un drapeau Mark — sur une cue (le drapeau lui-même) ou sur des
+      channels (la cue SOURCE où sont stockés les mouvements NP)
+    declencheurs:
+      verbe: [marquer, marque]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj,
+              groupe, groupes, group, cue, cues, memoire, memoires, sequence]
+    exemple_nl: "marque les circuits 1 à 5 ; marque la cue 10"
+    origine: >
+      manuel §9 « Setting Referenced Mark Flags », confiance A
+      (`grammar/modele.yaml`, section `mark.referencee`). Deux usages
+      distincts de la même touche : `Cue <n> Mark Enter` pose le drapeau M
+      sur la cue marquée ; `<channels> Mark Enter` désigne, dans la cue
+      source, les channels dont les mouvements NP seront stockés. Le
+      traducteur ne distingue pas les deux cas — c'est `self._objet` qui
+      choisit Chan/Group/Cue selon le mot présent dans la phrase, exactement
+      comme pour les autres intentions de sélection.
+    note: >
+      Ne fonctionne qu'en marques référencées, jamais avec AutoMark actif, et
+      le générateur ne peut pas savoir lequel des deux mécanismes est en
+      vigueur (PLANNING #24) — c'est lui, pas le traducteur, qui porte cet
+      avertissement à chaque rendu. Le manuel exige des channels désignés
+      explicitement dans la cue source (« Eos will not assume all automated
+      fixtures apply to any given mark ») — jamais une sélection implicite
+      héritée d'un état console, cohérent avec le refus général de deviner un
+      état console. `Mark Cue <n>` (marquer vers une cue antérieure) et
+      `Mark Earliest` restent hors périmètre de cette première tranche.
+
+  asserter:
+    description: >
+      réaffirmer l'autorité d'une cue, d'un channel ou d'un paramètre sur le
+      plateau (Assert)
+    declencheurs:
+      verbe: [asserter, assert]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj,
+              groupe, groupes, group, cue, cues, memoire, memoires, sequence]
+    exemple_nl: "assert la cue 5 ; assert le groupe 6"
+    origine: >
+      manuel §14 « Using Assert », confiance A. S'applique à une cue, une cue
+      list, un channel ou un paramètre — jamais à un submaster, qui échoue en
+      erreur de syntaxe au banc réel (confiance S, `grammar/modele.yaml`
+      section `asserter`). `Sub` vit dans `objets_cible`, jamais dans
+      `objets` (même raison que pour `enregistrer_sub`/`bump_sub`) : une
+      phrase « assert le sub 3 » ne déclenche donc structurellement pas
+      cette intention — elle ne trouve aucun objet reconnu, comme prévu.
+    note: >
+      Cette tranche ne couvre que la forme la plus simple : un seul circuit,
+      groupe ou cue (liste 1 implicite), sans la notation de cue list
+      explicite (`Cue x/y`, manuel §14) — les cue lists multiples restent
+      hors périmètre du traducteur dans son ensemble. Sur un channel ou un
+      paramètre, l'assert seul n'est que posé, pas stocké : le manuel exige
+      ensuite un `Record`/`Update` séparé, jamais généré automatiquement ici.
+
+  effacer_filtres:
+    description: "effacer tous les filtres actifs (Clear Filters)"
+    declencheurs:
+      verbe: [effacer, efface, vider, vide, supprimer, supprime]
+      filtre: [filtre, filtres]
+    exemple_nl: "efface les filtres"
+    origine: >
+      manuel §13 Filters, confiance A pour l'existence d'une touche dédiée
+      `{Clear Filters}` (`grammar/modele.yaml`, section `filtres.effacer`) —
+      le seul geste de filtre à disposer d'une touche OSC propre. Poser un
+      filtre par accord maintenu (`{Filter}` + touches de paramètre, tenu
+      puis relâché) reste hors périmètre : rien ne confirme que cet accord
+      se reproduit fidèlement en OSC (backlog #27).
+    note: >
+      Ne prend aucune sélection ni cible — « Clear Filters » efface TOUS
+      les filtres actifs, sans distinction ni portée réglable. Le générateur
+      rappelle à chaque rendu que la pose de filtre par accord maintenu
+      n'est pas confirmée en OSC (#27) ; ce traducteur ne couvre que
+      l'effacement.
+
+  enregistrer_snapshot:
+    description: >
+      enregistrer un snapshot — état de la SURFACE DE CONTRÔLE et des
+      moniteurs, jamais un état lumineux du plateau
+    declencheurs:
+      verbe: [enregistrer, enregistre, sauver, sauve]
+      snapshot: [snapshot, snapshots]
+    exemple_nl: "enregistre le snapshot 3"
+    origine: >
+      manuel §23 Snapshots, confiance A (`grammar/modele.yaml`, section
+      `snapshots`). Déclencheur volontairement limité au mot « snapshot » —
+      pas de synonyme français générique — car « enregistre cet état »
+      désigne presque toujours une cue, un preset ou une palette : le
+      snapshot ne conserve aucune donnée de channel, une confusion ici
+      produirait une macro qui ne fait pas ce que l'utilisateur croit.
+    note: >
+      L'édition dans la liste des snapshots est exclusive, pas additive
+      (manuel §23 : activer un élément désactive tous les autres) — hors de
+      portée de cette intention, qui ne couvre que l'enregistrement initial.
+
+  rappeler_snapshot:
+    description: "rappeler un snapshot déjà enregistré"
+    declencheurs:
+      verbe: [rappeler, rappelle, charger, charge]
+      snapshot: [snapshot, snapshots]
+    exemple_nl: "rappelle le snapshot 3"
+    origine: >
+      manuel §23 « Recalling Snapshots », confiance A. Les snapshots sont
+      globaux (rappelables depuis n'importe quel appareil sauf les RFR
+      Net3) ; rappelé sur un appareil de disposition différente, Eos mappe
+      « au mieux de ses capacités » — résultat non garanti identique, mais
+      hors de portée du traducteur (dépend du matériel, pas de la phrase).
+
+  appliquer_courbe:
+    description: "appliquer une courbe de fondu à une cue"
+    declencheurs:
+      verbe: [appliquer, applique]
+      courbe: [courbe, courbes]
+      cue: [cue, cues, memoire, memoires, sequence]
+    exemple_nl: "applique la courbe 4 à la cue 5"
+    origine: >
+      manuel §22 Curves, confiance A (`grammar/modele.yaml`, section
+      `courbes`/`appliquer_courbe`). Le numéro de courbe et le numéro de cue
+      sont extraits chacun par leur propre marqueur (le nombre après
+      « courbe », le nombre après « cue »), jamais par position dans la
+      phrase — l'ordre naturel place souvent la courbe avant la cue
+      (« applique la courbe 4 à la cue 5 »), l'inverse de l'ordre attendu
+      par un extracteur positionnel comme celui de `enregistrer_cue`.
+    note: >
+      Cette tranche ne couvre que la cible Cue, l'usage documenté et testé
+      le plus courant. Le manuel documente une portée différente selon la
+      cible (patch, cue, part de cue, ventilateur de scroller) — patch et
+      part restent hors périmètre, le traducteur ne distinguant pas encore
+      ces contextes. Le générateur porte déjà l'avertissement sur la portée
+      variable ; le traducteur ne le répète pas.
+
+  retirer_courbe:
+    description: "retirer la courbe de fondu d'une cue (idiome `Curve At`)"
+    declencheurs:
+      verbe: [retirer, retire, enlever, enleve, supprimer, supprime]
+      courbe: [courbe, courbes]
+      cue: [cue, cues, memoire, memoires, sequence]
+    exemple_nl: "retire la courbe de la cue 5"
+    origine: >
+      manuel §22 : « [Cue] [5] {Attributes} {Curve} [At] [Enter] », confiance
+      A. Idiome `Curve At` sans valeur — retirer, pas régler à zéro.
+
+  selectionner_partition:
+    description: "sélectionner une partition préprogrammée du contrôle partitionné"
+    declencheurs:
+      verbe: [selectionne, selectionner, utilise, utiliser, active, activer, choisis, choisir]
+      partition: [partition, partitions]
+    exemple_nl: "sélectionne la partition 902"
+    origine: >
+      manuel §28 Partitioned Control, confiance A (`grammar/modele.yaml`,
+      section `actions`/`selectionner_partition`) : « {Partition} [902]
+      [Enter] ». Rend le résultat de la sélection courante = le contenu de
+      cette partition (remplacement, pas fusion — voir `note` ci-dessous).
+    note: >
+      Cette tranche ne couvre que la sélection et la suppression d'une
+      partition, les deux seuls actes du manuel sans second numéro implicite
+      (celui d'une partition déjà active) à deviner. L'idiome `+`/`-`
+      (ajouter/retirer des channels à la partition courante,
+      `partition_ajouter`/`partition_retirer` dans le modèle) et l'assignation
+      d'une partition à une cue list précise (`partition_cue_list`) restent
+      hors périmètre — voir traducteur/README.md.
+
+  supprimer_partition:
+    description: "supprimer une partition préprogrammée"
+    declencheurs:
+      verbe: [supprimer, supprime, effacer, efface]
+      partition: [partition, partitions]
+    exemple_nl: "supprime la partition 5"
+    origine: >
+      manuel §28, confiance A (`grammar/modele.yaml`, section
+      `actions`/`supprimer_partition`) : « [Delete] {Partition} [5]
+      [Enter] [Enter] » (double confirmation portée par le générateur, pas
+      répétée ici). Refuse sur les quatre partitions préprogrammées (0, 901,
+      902, 903) — avertissement porté par le générateur
+      (`_verifier_partition_preprogrammee`), pas répété ici.
+
+# --------------------------------------------------------------------------
+# QUESTIONS — le troisième résultat possible
+#
+# Une traduction a trois issues, pas deux : comprise, **à préciser**, ou
+# incomprise. Poser une question n'est pas un échec du traducteur, c'est son
+# comportement correct face à une ambiguïté que seul l'utilisateur peut lever.
+# C'est « n'invente rien » rendu exécutable.
+# --------------------------------------------------------------------------
+questions:
+  portee_enregistrement:
+    texte: "Sur quels circuits enregistrer ?"
+    pourquoi: >
+      `Record Color Palette` capture l'état de la sélection courante — ou, si
+      rien n'est sélectionné, celui de tous les channels non-défaut, ce qui est
+      rarement l'intention réelle. La demande ne le précise pas, et le
+      traducteur ne doit pas choisir à la place de l'utilisateur.
+    source: "`APP.md` § Ouvert ; `grammar/modele.yaml` § palettes ; manuel §10"
+    correction_2026_08_06: >
+      Cette question offrait auparavant « tous les projecteurs du même type »
+      comme une alternative DISPENSANT de donner des circuits. C'était faux :
+      `{By Type}` décrit ce que la palette CONTIENDRA, pas comment elle
+      s'enregistre. Le manuel §10 « Storing a By Type Palette » est explicite —
+      « the lowest number channel of each fixture type will be the default
+      channel [...] you will want only one channel of each fixture type in
+      use ». Les deux options exigent donc une sélection ; elles ne diffèrent
+      que par l'ajout de `{By Type}`.
+    options:
+      - cle: par_type
+        libelle: "Une palette générique, réutilisable par type d'appareil"
+        detail: >
+          Ajoute `{By Type}`. Donner de préférence UN SEUL circuit par type
+          d'appareil : le plus petit numéro de chaque type devient la valeur par
+          défaut, et tous les autres circuits du même type sont figés en valeurs
+          individuelles (marqueur `T+`), ce qui est rarement voulu.
+        demande_valeur: true
+      - cle: selection
+        libelle: "Une palette sur des circuits précis"
+        detail: "La palette capture l'état exact des circuits donnés."
+        demande_valeur: true
+
+  couleur_ambigue:
+    texte: "Quelle nuance exactement ?"
+    pourquoi: >
+      Le mot français reconnu recouvre plusieurs teintes franchement
+      différentes au catalogue Lee. Choisir au hasard produirait une macro
+      valide, acceptée par la console, et la mauvaise couleur sur scène — le
+      pire des trois échecs possibles parce qu'il est silencieux.
+    source: "`reference/lee_filters_theatre.md`, catalogue officiel Lee"
+
+  bump_direction:
+    texte: "Bump vers le haut ou vers le bas ?"
+    pourquoi: >
+      Eos distingue deux touches nommées, SubUp et SubDown, et la phrase ne
+      dit pas laquelle. Aucune source du dépôt ne documente ce que chacune
+      fait concrètement sur le plateau — le traducteur ne peut donc pas
+      deviner, seulement transmettre le nom exact de la touche demandée.
+    source: "`reference/eosKeys.ts` (subup/subdown) ; `grammar/modele.yaml` § actions.sub_bump_bas/haut"
+    options:
+      - cle: haut
+        libelle: "Bump haut (SubUp)"
+        detail: "Touche `SubUp`, confiance A sur son existence, B sur l'ordre des tokens en macro."
+      - cle: bas
+        libelle: "Bump bas (SubDown)"
+        detail: "Touche `SubDown`, confiance A sur son existence, B sur l'ordre des tokens en macro."
