@@ -1680,6 +1680,19 @@
       e.question = null; e.status = "unknown";
     }
     renderAll();
+
+    // Moteur flou (phase 5) : une phrase incomprise lance directement la
+    // discussion, sans clic sur 💬 — décidé avec l'utilisateur le 2026-08-18
+    // (avant, seul le bouton l'ouvrait). Seulement si le moteur flou est
+    // configuré ; sinon le bouton "💬 Discuter" reste le seul recours (voir
+    // le bloc `status === "unknown"` plus bas). Ce déclenchement ne passe
+    // que par ici, jamais par `discussion:fermer` (qui remet aussi le statut
+    // à "unknown") : un abandon volontaire de la discussion ne doit jamais
+    // la relancer tout seul en boucle.
+    if (e.status === "unknown" && state.llmConfig.actif && state.llmConfig.apiKey &&
+        typeof window.discuterLlm === "function") {
+      demarrerDiscussion(exchangeId, phrase);
+    }
   }
 
   function applyRealError(exchangeId, message) {
