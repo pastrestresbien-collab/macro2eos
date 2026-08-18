@@ -21,6 +21,16 @@ name: Déployer le beta (GitHub Pages)
 # filtre). Le `ref:` explicite du checkout ci-dessous garantit que c'est
 # toujours le contenu de la branche de développement qui est publié, jamais
 # celui — différent, plus ancien — de la branche par défaut.
+#
+# Pas de bloc `environment: github-pages` sur le job (délibéré) : GitHub crée
+# par défaut une règle de protection sur cet environnement qui restreint les
+# déploiements à la branche par défaut du dépôt — un `push` déclenché depuis
+# cette branche de développement échouait donc systématiquement (0 seconde,
+# aucune étape exécutée), alors qu'un déclenchement manuel depuis la branche
+# par défaut passait. `actions/deploy-pages` n'a pas besoin de ce bloc pour
+# fonctionner (OIDC via `id-token: write` suffit) — il ne sert qu'à afficher
+# l'URL de déploiement dans l'UI GitHub, qu'on perd ici sans conséquence.
+# Trouvé le 2026-08-17 en comparant les runs qui passaient vs échouaient.
 
 on:
   push:
@@ -39,9 +49,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
