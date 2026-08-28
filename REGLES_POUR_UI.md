@@ -438,6 +438,29 @@ Cas établis :
   de choisir les circuits » : la sélection reste obligatoire, et doit idéalement tenir en
   un circuit par type d'appareil.
 
+### Et la même classe d'erreur, produite par l'app elle-même
+
+Tous les cas ci-dessus sont des pièges de la **console**. Le 2026-08-28, quatre autres ont
+été trouvés dans **notre propre code**, tous de la même forme — une macro d'apparence
+impeccable qui ne dit pas tout ce que la phrase demandait. Ils sont corrigés ; ils sont
+listés ici parce que la leçon vaut pour la suite :
+
+- **Un mot inconnu tombé sans le dire** — « circuits 1 à 5 en jaune clignotant » rendait
+  un jaune fixe, et l'UI n'affichait les mots tombés que sur un `incompris`.
+- **Un mot connu annoncé comme inconnu** — l'inverse du précédent, et tout aussi trompeur :
+  l'app enseignait des limites fausses (voir règle 5).
+- **Deux couleurs, une seule appliquée** — la première l'emportait en silence. C'est
+  devenu une question (règle 5), jamais un choix d'office.
+- **Le bon numéro sur le mauvais objet** — « lance l'effet 2 sur le groupe 3 » produisait
+  `Chan 3 Effect 2 Enter`, parce que la tolérance aux fautes laissait le verbe « lance »
+  se faire passer pour « lampe ». Le plus grave des quatre : rien, dans la macro, ne
+  trahissait l'erreur.
+
+⚠️ **Un traducteur peut fabriquer cette classe d'erreur aussi bien que la console.** Le
+contrôle « aucun mot de la phrase n'est tombé sans être signalé » est aussi structurant
+que les avertissements du modèle — et il vaut sur un `compris`, là où personne ne pense à
+le chercher.
+
 **→ Pour l'UI.** C'est ici que l'interface gagne ou perd sa valeur. Ces cas ne peuvent pas
 être laissés au texte de la commande — il a l'air juste. Ils doivent être **traduits en
 clair dans l'aperçu**, dans la langue de l'utilisateur, pas en jargon :
@@ -462,7 +485,14 @@ l'effet réel, pas le verbe employé par l'utilisateur.
 |---|---|
 | `compris` | une macro, prête à relire |
 | `a_preciser` | une ou plusieurs **questions**, avec leurs options |
-| `incompris` | rien, et la liste des mots non reconnus |
+| `incompris` | rien, et le compte rendu des mots de la phrase |
+
+⚠️ **Ce compte rendu vaut pour les trois états, pas seulement pour `incompris`** — et
+il en porte deux, à ne jamais confondre : `non_reconnus` (le lexique ne sait pas nommer
+ce mot) et `ignores` (le mot est au lexique, la traduction ne s'en est pas servie). Les
+deux doivent être affichés, y compris sur un `compris` : un mot tombé d'une macro par
+ailleurs correcte est exactement le cas de la règle 4 ci-dessus. Trouvé le 2026-08-28,
+l'UI ne les rendait que sur `incompris`.
 
 ⚠️ Le découpage en trois états est une **décision de conception du projet**, pas une
 contrainte d'ETC. Mais elle repose sur un fait, lui vérifié :

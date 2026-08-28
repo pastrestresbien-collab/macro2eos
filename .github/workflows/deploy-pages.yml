@@ -64,6 +64,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: claude/macro2eos-app-design-autk7k
+      # app/data/ est une copie figée des sources (voir app/build_data.sh).
+      # Publier une copie périmée ferait tourner l'app sur un ANCIEN moteur,
+      # tests au vert et correctifs invisibles — arrivé le 2026-08-28, où
+      # quatre corrections du traducteur ont failli partir avec un app/data/
+      # vieux de deux semaines. Échouer ici coûte un run ; ne pas échouer
+      # coûte un beta qui ment sur ce qu'il contient.
+      - name: Vérifier que app/data/ correspond à ses sources
+        run: |
+          python3 -m pip install --quiet pyyaml
+          ./app/build_data.sh --verifier
       - name: Cache-bust engine.js et llm_bridge.js (voir commentaire en tête de fichier)
         run: |
           sed -i "s/engine\.js\"/engine.js?v=${{ github.sha }}\"/" app/prototype.html

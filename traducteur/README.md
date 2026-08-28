@@ -17,7 +17,7 @@ C'est le choix de conception central.
 |---|---|---|
 | `compris` | une IR, prête à rendre | affiche la macro et son aperçu |
 | `a_preciser` | une ou plusieurs questions | pose la question, relance avec la réponse |
-| `incompris` | rien, et les mots non reconnus | demande de reformuler |
+| `incompris` | rien, et le compte rendu des mots (voir plus bas) | demande de reformuler |
 
 **`a_preciser` n'est pas un échec dégradé.** C'est le comportement correct face à une
 ambiguïté que seul l'utilisateur peut lever. Sans cette issue, un traducteur n'a d'autre
@@ -25,7 +25,7 @@ choix que de deviner — et une couleur devinée produit une macro valide, accep
 console, et la mauvaise teinte sur scène. C'est le pire des trois échecs possibles parce
 qu'il est **silencieux** : ni erreur de syntaxe, ni refus, rien à voir dans l'aperçu.
 
-Deux questions sont encodées à ce stade :
+Trois questions sont encodées à ce stade :
 
 - **la portée d'un enregistrement** — `Record Color Palette` capture la sélection
   courante, ou tous les channels non-défaut si rien n'est sélectionné, ce qui n'est
@@ -33,6 +33,32 @@ Deux questions sont encodées à ce stade :
 - **une couleur ambiguë** — « ambre » a quatre candidats sérieux au catalogue Lee,
   « rose » aussi, avec en prime un piège de traduction (le « Rose » de Lee n'est pas le
   rose français, qui se dit « Pink »).
+- **plusieurs couleurs pour une seule commande** (`couleur_unique`, ajoutée le
+  2026-08-28) — une commande de couleur ne pose qu'une teinte. « circuits 1 à 5 en jaune
+  bleu » retenait la première en silence : macro d'apparence complète, une couleur perdue
+  en route. Ce n'est pas la même chose qu'une couleur ambiguë — ici chaque mot est résolu
+  sans le moindre doute, c'est la commande qui n'en accepte qu'un.
+
+## Deux comptes rendus de mots, jamais un seul
+
+Un mot de la phrase qui n'arrive pas jusqu'à l'IR le fait pour deux raisons distinctes,
+et les confondre a produit un bug réel (corrigé le 2026-08-28) :
+
+| Champ | Sens | Exemple |
+|---|---|---|
+| `non_reconnus` | le lexique ne sait pas nommer ce mot | « clignotant » |
+| `ignores` | le mot est au lexique, la traduction ne s'en est pas servie | « jaune », dans une phrase dont l'intention a échoué |
+
+`_non_reconnus` ne considérait « connus » que les **déclencheurs d'intention** — pas le
+vocabulaire de créneau. L'app annonçait donc ne pas reconnaître « jaune », une couleur de
+son propre lexique qu'elle venait de traduire dans la phrase précédente. Elle enseignait
+à l'utilisateur des limites fausses, et lui faisait abandonner des mots qui marchent.
+
+**Les deux doivent être affichés sur TOUS les statuts, `compris` compris.** L'UI ne les
+rendait que sur `incompris` : « circuits 1 à 5 en jaune clignotant » affichait donc une
+macro de jaune fixe, impeccable, sans dire nulle part que « clignotant » était tombé —
+la classe d'erreur que [`../REGLES_POUR_UI.md`](../REGLES_POUR_UI.md) (règle 4) désigne
+comme la plus grave du projet.
 
 ## Pourquoi aucune IA à l'exécution
 
@@ -80,9 +106,17 @@ candidats à égalité de distance ne sont jamais départagés au hasard : c'est
 ```bash
 cd traducteur && python3 traducteur.py        # démonstration sur la phrase réelle
 cd traducteur && python3 test_traducteur.py   # non-régression
+./app/build_data.sh                           # OBLIGATOIRE après toute modif de ce fichier
 ```
 
 Dépendance unique : `pyyaml`.
+
+⚠️ **`app/data/traducteur.py` est une copie figée de ce fichier**, servie au navigateur
+(Pyodide n'a pas accès au reste du dépôt). Modifier `traducteur.py` sans relancer
+`./app/build_data.sh` laisse l'app tourner sur l'ancienne version — tests au vert,
+correctifs invisibles, aucun signal. Failli arriver le 2026-08-28 avec quatre correctifs
+à la fois ; depuis, `./app/build_data.sh --verifier` échoue si la copie a dérivé, et il
+tourne en tête du workflow de déploiement.
 
 ## Le cas d'ancrage
 
@@ -268,3 +302,27 @@ plus jamais la tolérance aux fautes, seulement des correspondances exactes.** L
 tolérance reste réservée au remplissage d'un créneau déjà choisi, où le champ restreint
 des candidats la rend sûre — c'est tout l'intérêt du principe « restreint au créneau »
 énoncé plus haut, ici appliqué un cran plus tôt qu'attendu.
+
+## Troisième piège de la même famille : un verbe qui vole une place de créneau
+
+Trouvé le 2026-08-28, et le plus coûteux des trois — il produisait **le bon numéro sur le
+mauvais objet**.
+
+`_objet` cherchait le premier mot de la phrase résoluble en objet (Chan, Group, Cue), en
+**un seul balayage tolérant**. Dans « lance l'effet 2 sur le groupe 3 », « lance » tombe à
+distance 2 de « lampe » (un alias de Chan) et emportait donc la place d'objet, avant même
+que « groupe » soit examiné. Résultat : `Chan 3 Effect 2 Enter` au lieu de `Group 3` —
+statut `compris`, aucun avertissement, macro d'apparence impeccable, et l'effet qui part
+sur les mauvais projecteurs.
+
+Restreindre au créneau ne suffisait pas ici : le créneau *était* restreint aux objets. Ce
+qui manquait, c'est que le balayage porte sur **tous les mots de la phrase**, verbes
+compris — n'importe quel mot pouvait donc se porter candidat. **Correction :
+correspondance exacte sur toute la phrase d'abord, tolérance seulement au second
+passage.** Un vrai nom d'objet l'emporte ainsi toujours sur un mot qui lui ressemble, et
+la tolérance ne sert plus que là où rien d'exact ne se présente — ce pour quoi elle est
+faite.
+
+Le motif commun aux trois : **la tolérance aux fautes doit corriger une frappe, jamais
+arbitrer un sens.** Chaque fois qu'elle a eu voix au chapitre sur *quel* concept désigner
+plutôt que sur *comment* un mot est orthographié, elle s'est trompée en silence.
