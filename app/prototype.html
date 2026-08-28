@@ -922,6 +922,41 @@
     return ok ? chips : [];
   }
 
+  // Mots de la phrase qui ne sont PAS dans la macro produite — les inconnus
+  // du lexique (`nonReconnus`) et les mots connus restés inutilisés
+  // (`ignores`). Deux causes distinctes, deux phrases distinctes.
+  //
+  // À afficher sur TOUS les statuts, `compris` compris. C'est là le bug
+  // corrigé le 2026-08-28 : ces mots n'étaient rendus que dans la branche
+  // « pas compris », si bien que « circuits 1 à 5 en jaune clignotant »
+  // affichait une macro de jaune fixe, d'apparence impeccable, sans nulle
+  // part dire que « clignotant » était tombé. Une macro incomplète présentée
+  // comme complète est précisément la classe d'erreur que REGLES_POUR_UI.md
+  // (règle 4) désigne comme la plus grave du projet — celle qui ne lève
+  // aucune erreur.
+  function motsTombesHtml(e) {
+    var liste = function (mots) { return "« " + mots.join(" », « ") + " »"; };
+    var out = "";
+    if ((e.nonReconnus || []).length) {
+      out += '<div class="flag flag-warn"><span>⚠</span><span>' +
+        "<b>" + esc(liste(e.nonReconnus)) + "</b> " +
+        '<span class="txt">' +
+        (e.nonReconnus.length > 1
+          ? "ne sont pas au lexique et n’apparaissent"
+          : "n’est pas au lexique et n’apparaît") +
+        " donc pas dans cette macro.</span></span></div>";
+    }
+    if ((e.ignores || []).length) {
+      out += '<div class="flag flag-warn"><span>⚠</span><span>' +
+        "<b>" + esc(liste(e.ignores)) + "</b> " +
+        '<span class="txt">' +
+        (e.ignores.length > 1 ? "sont connus" : "est connu") +
+        " mais n’" + (e.ignores.length > 1 ? "ont" : "a") +
+        " pas été utilisé par cette commande.</span></span></div>";
+    }
+    return out;
+  }
+
   function macroHtml(e) {
     // Correction ciblée par champ seulement avant envoi (APP.md, § Écran 1) —
     // même règle que les hypothèses : une fois la macro envoyée, la console a
@@ -1045,11 +1080,18 @@
       // refus muet. Ne jamais l'avaler : sans ça, le message générique
       // ci-dessous cache la vraie raison, trouvée le 2026-08-07 en testant
       // une correction vers un fabricant non sourcé.
-      var motsInconnus = (e.nonReconnus || []).length
-        ? "Mots non reconnus : « " + e.nonReconnus.join(" », « ") + " »."
-        : (e.notes && e.notes.length) ? null : "Aucun vocabulaire connu dans cette phrase.";
-      out += '<div class="flag flag-bad"><span>?</span><span><b>Je n\'ai pas compris cette formulation.</b> ' +
-        (motsInconnus ? '<span class="txt">' + esc(motsInconnus) + "</span>" : "") + "</span></div>";
+      // Le détail des mots passe par `motsTombesHtml`, partagé avec la
+      // branche « compris » — et qui distingue un mot inconnu du lexique
+      // d'un mot connu resté inutilisé. L'ancienne version confondait les
+      // deux et annonçait donc « jaune » comme non reconnu alors que l'app
+      // venait de le traduire dans la phrase d'avant (corrigé le 2026-08-28,
+      // côté traducteur par `_non_reconnus`/`_ignores`).
+      var rienDeConnu = !(e.nonReconnus || []).length && !(e.ignores || []).length
+        && !(e.notes && e.notes.length);
+      out += '<div class="flag flag-bad"><span>?</span><span><b>Je n\'ai pas compris cette formulation.</b>' +
+        (rienDeConnu ? ' <span class="txt">Aucun vocabulaire connu dans cette phrase.</span>' : "") +
+        "</span></div>";
+      out += motsTombesHtml(e);
       if (e.notes && e.notes.length) {
         out += '<div class="flag"><span>·</span><span class="txt">' + esc(e.notes.join(" · ")) + "</span></div>";
       }
@@ -1063,6 +1105,7 @@
     }
 
     out += '<div class="macro">' + macroHtml(e) + "</div>";
+    out += motsTombesHtml(e);
 
     // Journal des corrections en langage naturel (« remplace X par Y »),
     // « à la manière d'un LLM » — chaque instruction reste visible, réussie
@@ -1475,6 +1518,7 @@
         e.hypotheses.forEach(function (h) { lignes.push("  hypothèse : " + h.champ + " = " + h.valeur); });
       }
       if (e.nonReconnus && e.nonReconnus.length) lignes.push("  mots non reconnus : " + e.nonReconnus.join(", "));
+      if (e.ignores && e.ignores.length) lignes.push("  mots connus non utilisés : " + e.ignores.join(", "));
       if (e.notes && e.notes.length) lignes.push("  notes : " + e.notes.join(" / "));
       if (e.warnText) lignes.push("  avertissement : " + e.warnText);
       lignes.push("");
@@ -1663,6 +1707,7 @@
     var e = findEx(exchangeId); if (!e) return;
     e.ask = phrase; e.reponses = reponses; e.pendingChoice = null;
     e.notes = r.notes || []; e.nonReconnus = r.non_reconnus || [];
+    e.ignores = r.ignores || [];
     e.hypotheses = r.hypotheses || [];
     e.viaLlm = !!viaLlm;
     e.viaDiscussion = !!viaDiscussion;

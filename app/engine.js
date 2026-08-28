@@ -79,6 +79,7 @@
     "        'intention': trad.intention,",
     "        'notes': trad.notes,",
     "        'non_reconnus': trad.non_reconnus,",
+    "        'ignores': trad.ignores,",
     "        'questions': [_question_vers_dict(q) for q in trad.questions],",
     "        'hypotheses': [_hypothese_vers_dict(h) for h in trad.hypotheses],",
     "        'ir': trad.ir,",
@@ -133,6 +134,7 @@
     "        'intention': trad.intention,",
     "        'notes': trad.notes,",
     "        'non_reconnus': trad.non_reconnus,",
+    "        'ignores': trad.ignores,",
     "        'questions': [_question_vers_dict(q) for q in trad.questions],",
     "        'hypotheses': [_hypothese_vers_dict(h) for h in trad.hypotheses],",
     "        'ir': trad.ir,",
@@ -196,8 +198,8 @@
     return _enginePromise;
   }
 
-  // API publique : { statut, intention, notes, non_reconnus, questions,
-  //                  hypotheses, ir, commande, avertissements }
+  // API publique : { statut, intention, notes, non_reconnus, ignores,
+  //                  questions, hypotheses, ir, commande, avertissements }
   // Reflète exactement `traducteur.Traduction` + `generateur.Resultat` —
   // aucun champ n'est inventé ici, tous viennent du vrai code Python.
   window.traduireReel = async function (phrase, reponses) {

@@ -93,6 +93,11 @@ class Traduction:
     questions: list[Question] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     non_reconnus: list[str] = field(default_factory=list)
+    # Mots du lexique présents dans la phrase mais restés inutilisés. Distinct
+    # de `non_reconnus` (mots inconnus) : ici l'app savait ce que le mot veut
+    # dire et ne s'en est pas servie. À afficher sur tous les statuts, `compris`
+    # compris — voir `Traducteur._ignores`.
+    ignores: list[str] = field(default_factory=list)
     intention: str | None = None
     hypotheses: list[Hypothese] = field(default_factory=list)
 
@@ -351,6 +356,24 @@ class Traducteur:
         )
 
     @staticmethod
+    def _question_couleur_unique(couleurs: list[dict]) -> Question:
+        """Plusieurs teintes nommées pour une seule commande de couleur.
+
+        Ce n'est pas une couleur ambiguë (`_question_couleur_ambigue`, où un
+        mot a plusieurs candidats au catalogue) : ici chaque mot est résolu
+        sans doute, mais la commande n'en applique qu'un."""
+        return Question(
+            id="couleur_unique",
+            texte="Plusieurs couleurs dans la phrase — laquelle appliquer ?",
+            pourquoi="Une commande de couleur ne pose qu'une teinte. En retenir "
+                     "une d'office laisserait les autres de côté sans le dire, "
+                     "et la macro aurait l'air complète.",
+            options=[Option(cle=str(c["gel"]),
+                            libelle=f"{c['nom']} — Lee {c['gel']:03d} {c['nom_lee']}")
+                     for c in couleurs],
+        )
+
+    @staticmethod
     def _question_couleur(mot: str, exaequo: list[str]) -> Question:
         return Question(
             id=f"couleur:{mot}",
@@ -415,7 +438,7 @@ class Traducteur:
 
         if intention is None:
             return Traduction(statut="incompris",
-                              non_reconnus=self._non_reconnus(toks, set()),
+                              **self._mots(toks, set()),
                               notes=["Aucune intention reconnue dans la phrase."])
 
         handler = {
@@ -495,13 +518,74 @@ class Traducteur:
         )
         return self.lex["nuanciers"]["lee"]["numero"], hypothese, None
 
-    def _non_reconnus(self, toks: list[str], pris: set[int]) -> list[str]:
-        """Mots qui ne sont ni consommés, ni outils, ni déclencheurs connus."""
+    def _vocabulaire_connu(self) -> set[str]:
+        """Tout ce que le lexique sait nommer, créneaux compris.
+
+        Pas seulement les déclencheurs d'intention : les couleurs, les objets,
+        les nuanciers et les cibles de cue en font partie. Ces mots-là, l'app
+        les connaît — qu'elle ait su ou non quoi en faire dans une phrase
+        donnée est une autre question, et c'est justement la distinction que
+        `_non_reconnus` doit préserver (voir son commentaire)."""
         connus = {m for corps in self.lex["intentions"].values()
                   for mots in corps["declencheurs"].values() for m in mots}
         connus |= self._outils | self._mots_plage | {"%"}
+        for index in (self._objets, self._objets_cible, self._nuanciers,
+                      self._couleurs, self._cue_cibles):
+            connus |= set(index)
+        return connus
+
+    def _non_reconnus(self, toks: list[str], pris: set[int]) -> list[str]:
+        """Mots que le lexique ne sait pas nommer du tout.
+
+        **Ne jamais y remettre le vocabulaire de créneau** (bug corrigé le
+        2026-08-28). La version précédente ne considérait « connus » que les
+        déclencheurs d'intention : sur une phrase dont l'intention échouait,
+        l'app annonçait donc ne pas reconnaître « jaune » — une couleur de son
+        propre lexique, qu'elle venait de traduire correctement dans la phrase
+        d'avant. Elle enseignait ainsi à l'utilisateur des limites fausses, et
+        lui faisait abandonner des mots qui marchent.
+
+        Un mot connu mais resté inutilisé n'est pas « non reconnu » : il est
+        *ignoré*, ce que rapporte `_ignores` — deux problèmes distincts qui
+        appellent deux messages distincts."""
+        connus = self._vocabulaire_connu()
         return [t for i, t in enumerate(toks)
                 if i not in pris and not t.isdigit() and t not in connus]
+
+    def _ignores(self, toks: list[str], pris: set[int]) -> list[str]:
+        """Mots du lexique présents dans la phrase mais absents du résultat.
+
+        Le pendant de `_non_reconnus`, et le plus dangereux des deux : ces
+        mots-là ont un sens pour l'app, elle ne s'en est simplement pas
+        servie. « circuits 1 à 5 en jaune bleu » ne retient qu'une teinte.
+        Sans ce signalement, la macro produite a l'air complète et ne l'est
+        pas — exactement la classe d'erreur que `REGLES_POUR_UI.md` (règle 4)
+        désigne comme la pire du projet : celle qui ne lève aucune erreur.
+        L'UI doit les afficher sur TOUS les statuts, y compris `compris`.
+
+        Restreint au vocabulaire de CRÉNEAU — couleurs, objets, nuanciers,
+        cibles de cue — c'est-à-dire aux mots qui portent du contenu jusqu'à
+        l'IR. Les déclencheurs d'intention (« enregistre », « applique ») en
+        sont exclus : ils ne remplissent aucun créneau, ils choisissent le
+        handler, et sont donc « utilisés » sans jamais entrer dans `pris`.
+        Les compter ici ferait crier au mot perdu sur presque chaque phrase
+        correcte."""
+        creneaux: set[str] = set()
+        for index in (self._objets, self._objets_cible, self._nuanciers,
+                      self._couleurs, self._cue_cibles):
+            creneaux |= set(index)
+        creneaux -= self._outils | self._mots_plage
+        return [t for i, t in enumerate(toks)
+                if i not in pris and not t.isdigit() and t in creneaux]
+
+    def _mots(self, toks: list[str], pris: set[int]) -> dict[str, list[str]]:
+        """Les deux comptes rendus de mots, à splatter dans une `Traduction`.
+
+        Groupés en un seul appel pour qu'aucun site de construction ne puisse
+        rapporter les mots inconnus en oubliant les mots ignorés — c'est
+        précisément cet oubli qui a produit le bug de la règle 4."""
+        return {"non_reconnus": self._non_reconnus(toks, pris),
+                "ignores": self._ignores(toks, pris)}
 
     # -- intention : créer des palettes de couleur -------------------------
     def _creer_palettes_couleur(self, toks: list[str], reponses: dict) -> Traduction:
@@ -530,7 +614,7 @@ class Traducteur:
                 "Aucun numéro de palette trouvé dans la phrase."])
         if not couleurs:
             return Traduction(statut="incompris",
-                              non_reconnus=self._non_reconnus(toks, pris),
+                              **self._mots(toks, pris),
                               notes=notes + ["Aucune couleur reconnue dans la phrase."])
         if len(couleurs) != len(cibles):
             return Traduction(statut="incompris", notes=notes + [
@@ -591,7 +675,7 @@ class Traducteur:
                 notes.append(f"{couleur['nom']} → Lee {couleur['gel']:03d} "
                              f"({couleur['nom_lee']})")
         return Traduction(statut="compris", ir=ir, notes=notes, hypotheses=hypotheses,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     def _question_portee(self) -> Question:
         modele = self.lex["questions"]["portee_enregistrement"]
@@ -653,9 +737,26 @@ class Traducteur:
             if couleurs is None:
                 return Traduction(statut="a_preciser", questions=questions, notes=notes)
             if couleurs:
-                teinte = couleurs[0]["gel"]
-                notes.append(f"{couleurs[0]['nom']} → Lee {teinte:03d} "
-                             f"({couleurs[0]['nom_lee']})")
+                # Une seule teinte peut être appliquée par commande. Retenir
+                # silencieusement la première quand la phrase en nomme
+                # plusieurs — ce que faisait la version précédente — produit
+                # une macro d'apparence impeccable qui perd une couleur en
+                # route (« circuits 1 à 5 en jaune bleu » donnait un jaune,
+                # sans une note). C'est une ambiguïté que seul l'utilisateur
+                # peut lever : elle vaut une question, pas un choix d'office
+                # (REGLES_POUR_UI.md, règles 4 et 5). Corrigé le 2026-08-28.
+                choisie = couleurs[0]
+                if len(couleurs) > 1:
+                    reponse = str(reponses.get("couleur_unique", ""))
+                    choisie = next((c for c in couleurs
+                                    if str(c["gel"]) == reponse), None)
+                    if choisie is None:
+                        questions.append(self._question_couleur_unique(couleurs))
+                        return Traduction(statut="a_preciser", questions=questions,
+                                          notes=notes, **self._mots(toks, pris))
+                teinte = choisie["gel"]
+                notes.append(f"{choisie['nom']} → Lee {teinte:03d} "
+                             f"({choisie['nom_lee']})")
             else:
                 # Aucun mot de couleur, aucun « lee » : un numéro resté libre
                 # ICI a déjà survécu à l'extraction de la sélection (qui a
@@ -668,7 +769,7 @@ class Traducteur:
                 libres = self._nombres(toks, pris)
                 if not libres:
                     return Traduction(statut="incompris",
-                                      non_reconnus=self._non_reconnus(toks, pris),
+                                      **self._mots(toks, pris),
                                       notes=notes + ["Aucune couleur reconnue."])
                 i, teinte = libres[0]
                 pris.add(i)
@@ -685,7 +786,7 @@ class Traducteur:
         ir = [{"selection": selection,
                "action": {"type": "couleur_gel", "nuancier": nuancier, "teinte": teinte}}]
         return Traduction(statut="compris", ir=ir, notes=notes, hypotheses=hypotheses,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : régler une intensité ----------------------------------
     def _regler_intensite(self, toks: list[str], reponses: dict) -> Traduction:
@@ -715,7 +816,7 @@ class Traducteur:
         action.update(niveau)
         ir = [{"selection": selection, "action": action}]
         return Traduction(statut="compris", ir=ir, notes=notes,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     def _niveau(self, toks: list[str], pris: set[int]) -> dict | None:
         """`50 %` → {valeur: 50}. `10 a 50 %` → dégradé {de: 10, a: 50}."""
@@ -769,7 +870,7 @@ class Traducteur:
         ir = [{"selection": selection,
                "action": {"type": "parquer", "valeur": niveau["valeur"]}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : enregistrer une sélection dans une cue -----------------
     def _enregistrer_cue(self, toks: list[str], reponses: dict) -> Traduction:
@@ -800,7 +901,7 @@ class Traducteur:
 
         ir = [{"selection": selection, "action": {"type": "record_cue", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : aller à une cue -----------------------------------------
     def _aller_a_cue(self, toks: list[str], reponses: dict) -> Traduction:
@@ -816,7 +917,12 @@ class Traducteur:
                 pris.add(i)
                 ir = [{"action": {"type": "go_to_cue", "mot": cle}}]
                 return Traduction(statut="compris", ir=ir,
-                                  non_reconnus=self._non_reconnus(toks, pris))
+                                  **self._mots(toks, pris))
+
+        # Le mot « cue » lui-même : il désigne bien l'objet de l'action, et
+        # doit donc compter comme consommé, sans quoi `_ignores` le signale à
+        # tort comme un mot perdu sur une phrase pourtant traduite entière.
+        self._objet(toks, pris)
 
         libres = self._nombres(toks, pris)
         if not libres:
@@ -827,7 +933,7 @@ class Traducteur:
         pris.add(i)
         ir = [{"action": {"type": "go_to_cue", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : enregistrer une sélection dans un submaster ------------
     def _enregistrer_sub(self, toks: list[str], reponses: dict) -> Traduction:
@@ -859,7 +965,7 @@ class Traducteur:
 
         ir = [{"selection": selection, "action": {"type": "record_sub", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : appliquer un effet à une sélection ----------------------
     def _appliquer_effet(self, toks: list[str], reponses: dict) -> Traduction:
@@ -890,7 +996,7 @@ class Traducteur:
         ir = [{"selection": selection,
                "action": {"type": "appliquer_effet", "numero": numero}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : arrêter un effet ----------------------------------------
     def _arreter_effet(self, toks: list[str], reponses: dict) -> Traduction:
@@ -906,7 +1012,7 @@ class Traducteur:
         if self._indice_mot(toks, pris, {"tous", "toutes", "tout"}) is not None:
             ir = [{"action": {"type": "arreter_effet"}}]
             return Traduction(statut="compris", ir=ir,
-                              non_reconnus=self._non_reconnus(toks, pris))
+                              **self._mots(toks, pris))
 
         numero = None
         for i, valeur in self._nombres(toks, pris):
@@ -920,7 +1026,7 @@ class Traducteur:
 
         ir = [{"action": {"type": "arreter_effet", "numero": numero}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : bump d'un submaster (haut / bas) ------------------------
     def _bump_sub(self, toks: list[str], reponses: dict) -> Traduction:
@@ -956,7 +1062,7 @@ class Traducteur:
         type_action = "sub_bump_haut" if direction == "haut" else "sub_bump_bas"
         ir = [{"action": {"type": type_action, "numero": numero}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     def _question_bump_direction(self) -> Question:
         modele = self.lex["questions"]["bump_direction"]
@@ -998,7 +1104,7 @@ class Traducteur:
 
         ir = [{"selection": selection, "action": {"type": "record_preset", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : rappeler un preset sur une sélection ---------------------
     def _rappeler_preset(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1026,7 +1132,7 @@ class Traducteur:
 
         ir = [{"selection": selection, "action": {"type": "rappeler_preset", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : lancer une macro -----------------------------------------
     def _appel_macro(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1048,7 +1154,7 @@ class Traducteur:
 
         ir = [{"action": {"type": "appel_macro", "numero": numero}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : sélectionner via Query (Is In / Isn't In) ---------------
     def _selectionner_query(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1104,7 +1210,7 @@ class Traducteur:
         ir = [{"query": [{"condition": condition,
                           "cible": {"type": type_cible, "numero": cible}}]}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : marquer (drapeau Mark, cue ou channels) -----------------
     def _marquer(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1128,7 +1234,7 @@ class Traducteur:
 
         ir = [{"selection": selection, "action": {"type": "marquer"}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : asserter (réaffirmer l'autorité d'une cue/sélection) ---
     def _asserter(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1150,14 +1256,14 @@ class Traducteur:
 
         ir = [{"selection": selection, "action": {"type": "asserter"}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : effacer tous les filtres (Clear Filters) ---------------
     def _effacer_filtres(self, toks: list[str], reponses: dict) -> Traduction:
         # Aucune sélection, aucune cible : « Clear Filters » agit globalement.
         ir = [{"action": {"type": "effacer_filtres"}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, set()))
+                          **self._mots(toks, set()))
 
     # -- intention : enregistrer un snapshot ---------------------------------
     def _enregistrer_snapshot(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1176,7 +1282,7 @@ class Traducteur:
                 "Aucun numéro de snapshot trouvé après « snapshot »."])
         ir = [{"action": {"type": "record_snapshot", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : rappeler un snapshot ------------------------------------
     def _rappeler_snapshot(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1195,7 +1301,7 @@ class Traducteur:
                 "Aucun numéro de snapshot trouvé après « snapshot »."])
         ir = [{"action": {"type": "rappeler_snapshot", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : appliquer une courbe à une cue --------------------------
     def _appliquer_courbe(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1233,7 +1339,7 @@ class Traducteur:
         ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
                "action": {"type": "appliquer_courbe", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : retirer la courbe d'une cue (idiome `Curve At`) --------
     def _retirer_courbe(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1253,7 +1359,7 @@ class Traducteur:
         ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
                "action": {"type": "retirer_courbe"}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     # -- intention : contrôle partitionné, sélectionner/supprimer une partition
     # Volontairement limité à `selectionner_partition`/`supprimer_partition` :
@@ -1280,7 +1386,7 @@ class Traducteur:
                 "Aucun numéro de partition trouvé après « partition »."])
         ir = [{"action": {"type": type_action, "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
-                          non_reconnus=self._non_reconnus(toks, pris))
+                          **self._mots(toks, pris))
 
     def _selectionner_partition(self, toks: list[str], reponses: dict) -> Traduction:
         return self._partition(toks, "selectionner_partition")
@@ -1323,13 +1429,32 @@ class Traducteur:
         return None
 
     def _objet(self, toks: list[str], pris: set[int]) -> str | None:
-        for i, tok in enumerate(toks):
-            if i in pris:
-                continue
-            cle, _ = self._resoudre(tok, self._objets)
-            if cle:
-                pris.add(i)
-                return cle
+        """Le premier mot de la phrase qui désigne un objet (Chan, Group, Cue).
+
+        **Correspondance exacte d'abord, tolérance aux fautes seulement en
+        second passage** — corrigé le 2026-08-28, sur un cas grave. Un seul
+        balayage tolérant retenait le PREMIER mot approximativement proche,
+        verbes compris : dans « lance l'effet 2 sur le groupe 3 », « lance »
+        tombe à distance 2 de « lampe » (alias de Chan) et gagnait la place,
+        avant même que « groupe » soit examiné. Résultat : `Chan 3 Effect 2`
+        au lieu de `Group 3` — le bon numéro sur le mauvais objet, statut
+        `compris`, aucun avertissement, macro d'apparence impeccable.
+
+        C'est la troisième fois que la tolérance aux fautes change un SENS au
+        lieu de corriger une frappe (voir « chang »/« chan » et
+        « groupe »/« rouge » dans le README) : la parade est toujours la même
+        — ne l'autoriser que là où rien d'exact ne se présente."""
+        for exact in (True, False):
+            for i, tok in enumerate(toks):
+                if i in pris:
+                    continue
+                if exact:
+                    cle = self._objets.get(tok)
+                else:
+                    cle, _ = self._resoudre(tok, self._objets)
+                if cle:
+                    pris.add(i)
+                    return cle
         return None
 
     def _nuancier(self, toks: list[str], pris: set[int]) -> tuple[int | None, int | None]:
@@ -1514,7 +1639,8 @@ class Traducteur:
             # affinée plutôt que la question d'origine, non filtrée.
             return Traduction(statut="a_preciser", questions=questions_restantes,
                               intention=base.intention, notes=base.notes,
-                              non_reconnus=base.non_reconnus)
+                              non_reconnus=base.non_reconnus,
+                              ignores=base.ignores)
         return base
 
     # -- confort : traduire puis rendre ------------------------------------

@@ -800,6 +800,74 @@ CAS = [
         "statut": "compris",
         "rendu": "Delete Partition 902 Enter",
     },
+
+    # ------------------------------------------------------------------
+    # Trois pertes silencieuses trouvées en test réel le 2026-08-28, toutes
+    # de la même famille : la macro avait l'air complète et ne l'était pas.
+    # Voir REGLES_POUR_UI.md règle 4 — « les erreurs les plus graves ne
+    # lèvent aucune erreur ».
+    # ------------------------------------------------------------------
+    {
+        # L'app annonçait ne pas reconnaître « jaune » — une couleur de son
+        # propre lexique, traduite sans peine dans la phrase d'avant. Elle
+        # enseignait des limites fausses. « jaune » est un mot de créneau
+        # connu (donc `ignores`) ; « clignotants » et « blanc » sont
+        # réellement absents du lexique, et restent donc signalés. « effet »
+        # est un déclencheur d'intention, ni l'un ni l'autre.
+        "nom": "mots connus jamais annoncés comme inconnus, même quand l'intention échoue",
+        "phrase": "Bien aintenant je veux un effet jaune clignotants en blanc",
+        "statut": "incompris",
+        "non_reconnus": ["bien", "aintenant", "je", "veux", "clignotants", "blanc"],
+        "ignores": ["jaune"],
+    },
+    {
+        # Le mot tombé était bien calculé, mais l'UI ne l'affichait que sur
+        # un `incompris` : sur un `compris`, il disparaissait. La garde
+        # globale de `main()` couvre ce cas, l'assertion explicite le nomme.
+        "nom": "un mot inconnu sur une phrase par ailleurs comprise reste signalé",
+        "phrase": "circuits 1 a 5 en jaune clignotant",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Color 3/101 Enter",
+        "non_reconnus": ["clignotant"],
+        "ignores": [],
+    },
+    {
+        # Le pire des trois : les deux couleurs étaient consommées, donc
+        # invisibles pour `non_reconnus` COMME pour `ignores`. Seule la
+        # première était appliquée, sans une note.
+        "nom": "deux couleurs pour une seule commande — une question, jamais la première d'office",
+        "phrase": "circuits 1 a 5 en jaune bleu",
+        "statut": "a_preciser",
+        "questions": ["couleur_unique"],
+        "options": ["101", "120"],
+    },
+    {
+        "nom": "deux couleurs — la réponse tranche, et c'est bien celle-là qui sort",
+        "phrase": "circuits 1 a 5 en jaune bleu",
+        "reponses": {"couleur_unique": "120"},
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Color 3/120 Enter",
+    },
+    {
+        "nom": "une seule couleur — aucune question ajoutée par la garde multi-couleurs",
+        "phrase": "circuits 1 a 5 en jaune",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Color 3/101 Enter",
+        "non_reconnus": [],
+        "ignores": [],
+    },
+    {
+        # Le plus grave des quatre : le bon numéro sur le MAUVAIS objet.
+        # « lance » tombe à distance 2 de « lampe » (alias de Chan) et
+        # gagnait la place d'objet avant que « groupe » soit seulement
+        # examiné — d'où `Chan 3` au lieu de `Group 3`, sans un mot. Voir
+        # `Traducteur._objet` : exact d'abord, tolérance en second seulement.
+        "nom": "un verbe ne peut plus voler la place d'objet à un vrai nom d'objet",
+        "phrase": "lance l'effet 2 sur le groupe 3",
+        "statut": "compris",
+        "rendu": "Group 3 Effect 2 Enter",
+        "ignores": [],
+    },
 ]
 
 
@@ -904,12 +972,26 @@ def main() -> int:
             ok &= controler(f"{cas['nom']} (hypotheses)",
                             [h.champ for h in trad.hypotheses], cas["hypotheses"])
 
+        if "non_reconnus" in cas:
+            ok &= controler(f"{cas['nom']} (mots inconnus)",
+                            trad.non_reconnus, cas["non_reconnus"])
+
+        if "ignores" in cas:
+            ok &= controler(f"{cas['nom']} (mots ignorés)",
+                            trad.ignores, cas["ignores"])
+
         # Un mot non reconnu qui passe inaperçu est une traduction partielle
-        # présentée comme complète — pire qu'un refus.
-        if trad.statut == "compris" and trad.non_reconnus:
-            print(f"  ÉCHEC — {cas['nom']} (mots non reconnus alors que compris)")
-            print(f"    {trad.non_reconnus}")
-            ok = False
+        # présentée comme complète — pire qu'un refus. Un mot CONNU resté
+        # inutilisé l'est tout autant, et se voit encore moins : rien dans la
+        # macro ne trahit son absence. Les deux sont donc des échecs de test,
+        # à moins que le cas ne les déclare explicitement (auquel dernier cas
+        # l'UI a la charge de les afficher — voir `app/prototype.html`).
+        for cle, libelle, mots in (("non_reconnus", "non reconnus", trad.non_reconnus),
+                                   ("ignores", "ignorés", trad.ignores)):
+            if trad.statut == "compris" and mots and cle not in cas:
+                print(f"  ÉCHEC — {cas['nom']} (mots {libelle} alors que compris)")
+                print(f"    {mots}")
+                ok = False
 
         echecs += not ok
 
