@@ -1,0 +1,134 @@
+# Journal des questions posées au corpus — troisième journal du projet, à
+# côté de grammar/refus_terrain.yaml et traducteur/observations_llm.yaml.
+#
+# Les trois capturent des choses de nature différente, et les confondre ferait
+# perdre l'information la plus utile de chacun :
+#
+#   refus_terrain.yaml      constat au BANC réel (confiance S) — ce que la
+#                           console accepte ou refuse vraiment.
+#   observations_llm.yaml   trou de VOCABULAIRE côté moteur flou — un mot que
+#                           le lexique fermé ne connaissait pas.
+#   journal_questions.yaml  (ce fichier) trouvaille DOCUMENTAIRE — ce que le
+#                           manuel dit, et ce que le dépôt en fait ou n'en
+#                           fait pas encore.
+#
+# Pourquoi ce fichier existe
+# ---------------------------
+# Les questions posées en session (« comment marche l'arrière-plan d'une cue
+# list ? », « quelle commande pour éteindre les écrans ? ») produisent à chaque
+# fois une réponse sourcée qui a coûté une recherche dans 37 Mo de manuels —
+# et qui repartait jusqu'ici en fumée avec la conversation. Or ces réponses
+# révèlent régulièrement un écart : le manuel documente quelque chose que le
+# modèle ne connaît pas, ou une absence que le projet ferait bien d'acter.
+# C'est ce delta qu'on conserve ici, pas la réponse elle-même.
+#
+# Ce n'est PAS une base de connaissances. Le manuel reste la source ; ce
+# fichier ne recopie que ce qu'il faut pour retrouver le passage et décider
+# quoi en faire.
+#
+# Alimentation : manuelle, en fin d'échange (voir PROMPT_QUESTIONS.md à la
+# racine). Aucune écriture automatique, aucune promotion automatique — même
+# discipline que les deux autres journaux.
+#
+# Champs :
+#   date        - AAAA-MM-JJ
+#   question    - la question posée, en français, verbatim si possible
+#   reponse     - la réponse en une ou deux phrases, pas le développement
+#   sources     - liste de "fichier §section" réellement consultés et cités.
+#                 Une réponse sans source vérifiée n'entre pas dans ce fichier.
+#   confiance   - S/A/B/C/D (échelle du projet, voir SOURCES.md) ou "absence"
+#                 pour un fait négatif (« X n'existe pas »), qui ne se prouve
+#                 jamais par une citation — voir REGLES_POUR_UI.md règle 6.
+#   consequence - ce que ça implique pour le dépôt. C'est le champ qui compte :
+#                 "aucune"                 la réponse n'a pas d'impact projet
+#                 "modele_manquant"        le manuel documente, modele.yaml ignore
+#                 "lexique_manquant"       traduisible en principe, pas au lexique
+#                 "absence_confirmee"      à ne jamais tenter de générer
+#                 "contradiction"          le dépôt dit autre chose que le manuel
+#                 "doc_a_ecrire"           utile, à consigner dans un .md du dépôt
+#   backlog     - numéro(s) PLANNING.md concerné(s), ou null
+#   traite      - "non" | "oui" | "rejete" — jamais mis à "oui" par du code.
+#                 Passe à "oui" quand la conséquence a été portée dans le
+#                 dépôt (entrée de modele.yaml, de lexique.yaml, ligne de
+#                 PLANNING.md...), avec la référence dans `traite_ou`.
+#   traite_ou   - où la conséquence a atterri, ou null
+
+meta:
+  version: "0.1"
+  maj: "2026-09-03"
+
+questions:
+  - date: "2026-09-03"
+    question: "Explique la notion d'arrière-plan dans les paramètres des cue lists."
+    reponse: >-
+      Background est une propriété de cue list réglée au niveau du fader :
+      activée, le contenu de la liste sert d'état d'arrière-plan pour les
+      autres cues et submasters. Background Priority (10 niveaux, 4 par
+      défaut) décide sur quoi on retombe quand du contenu est relâché — la
+      priorité la plus haute qui avait la main, et non plus le dernier fader
+      propriétaire comme dans les versions antérieures.
+    sources:
+      - "manuals/operations-manual/12-cues-the-cue-list.md §Cue List Properties, §Background"
+      - "reference/eosKeys.ts — background/BACKGROUND_FADER, distinct de background_mode/MACRO_BACKGROUND"
+    confiance: "A"
+    consequence: "modele_manquant"
+    detail: >-
+      grammar/modele.yaml ne connaît `Background` que comme mode de MACRO
+      (MACRO_BACKGROUND). Les propriétés de cue list (Background, Background
+      Priority, Phantom, Back From First, Go From Last, Stomp, Exclude) n'y
+      sont pas modélisées du tout. Le manuel ne donne d'exemple de ligne de
+      commande que pour Priority (`[Cue] [1] [/] {Priority} [5] [Enter]`) —
+      la syntaxe des autres reste à établir avant toute modélisation.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+
+  - date: "2026-09-03"
+    question: "Quelle commande écrire dans l'éditeur de macro pour éteindre les affichages ?"
+    reponse: >-
+      La fonction s'appelle Extinguish (Setup > Device > Brightness Settings,
+      ou maintenir [Displays]) : elle met toutes les luminosités à 0 % et
+      éteint écrans et touches, sauf le bouton d'alimentation. Mais c'est un
+      bouton de fenêtre de réglages, pas une touche ni une softkey — donc
+      a priori pas insérable dans une macro.
+    sources:
+      - "manuals/operations-manual/05-setup.md §Brightness Settings, §Extinguish"
+      - "manuals/l1-essentials-workbook/Eos_Family_L1_Essentials_v3.3.md §EXTINGUISH"
+      - "manuals/operations-manual/24-macros.md §Macro Softkeys"
+      - "reference/eosKeys.ts — aucune occurrence d'extinguish/backlight/brightness sur 1155 entrées"
+    confiance: "absence"
+    consequence: "absence_confirmee"
+    detail: >-
+      Absence NON confirmée au banc : deux indices convergents seulement
+      (rien dans eosKeys.ts, rien dans les softkeys de macro du §24). Se
+      tromper sur une absence est plus grave que sur une syntaxe
+      (REGLES_POUR_UI.md règle 6) — à trancher sur console via l'outil que
+      le manuel documente lui-même : éditeur de macro > {Edit} > bouton de
+      recherche, qui liste TOUTES les commandes de macro. Si la liste est
+      vide sur "ext"/"bright"/"display", l'absence devient S et peut entrer
+      au modèle comme zone interdite.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+
+  - date: "2026-09-03"
+    question: "Comment faire le focus à la souris d'un projecteur traditionnel dans Augment3d ?"
+    reponse: >-
+      Impossible par click-to-focus ou poignée de focus : le manuel est
+      explicite, les poignées sphériques refocalisent les asservis, les
+      poignées cubiques signalent un conventionnel et ne peuvent PAS servir à
+      refocaliser. On tourne l'objet (Rotate Tool, Local Tool, Pivot, Snap
+      Angle) et on se repère avec Stick Beams, qui trace la ligne jusqu'au
+      point d'impact sans exiger d'intensité.
+    sources:
+      - "manuals/operations-manual/26-augment3d.md §Focus Handles, §Rotate Tool, §Local Tool, §Sticks Tool"
+      - "manuals/augment3d-workbook/Eos_Family_Intro_to_Augment3d_v3.0.md §Click to Focus"
+    confiance: "A"
+    consequence: "aucune"
+    detail: >-
+      Augment3d est hors du périmètre de l'app (aucune de ces actions ne
+      passe par la ligne de commande ni par OSC). Consigné pour ne pas
+      refaire la recherche, pas pour être modélisé.
+    backlog: null
+    traite: "non"
+    traite_ou: null
