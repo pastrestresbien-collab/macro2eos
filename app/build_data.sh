@@ -58,6 +58,17 @@ lexique = yaml.safe_load(Path('traducteur/lexique.yaml').read_text(encoding='utf
 (dest / 'vocabulaire_llm.json').write_text(
     json.dumps(construire(lexique), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 print('  traducteur/lexique.yaml -> app/data/vocabulaire_llm.json (vocabulaire moteur flou)')
+
+# Catalogue des phrases que le traducteur sait comprendre — ce que la
+# Bibliothèque affiche pour répondre à « qu'est-ce que l'app sait faire ? ».
+# Même principe : généré depuis le lexique, jamais une liste tenue à la main
+# (elle dériverait au premier ajout d'intention). traducteur/test_catalogue.py
+# garantit que chaque phrase se traduit vraiment.
+from build_catalogue import construire as construire_catalogue
+(dest / 'catalogue.json').write_text(
+    json.dumps(construire_catalogue(lexique), ensure_ascii=False, indent=2) + '\n',
+    encoding='utf-8')
+print('  traducteur/lexique.yaml -> app/data/catalogue.json (catalogue des phrases)')
 "
 
 cp grammar/generateur.py "$DEST/generateur.py"

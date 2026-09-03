@@ -1,0 +1,142 @@
+[
+  {
+    "intention": "creer_palettes_couleur",
+    "phrase": "créer les palettes de couleur 1 à 6 avec les références lee, chaud froid r v b j",
+    "description": "créer une ou plusieurs palettes de couleur à partir de gélatines"
+  },
+  {
+    "intention": "colorer_selection",
+    "phrase": "circuits 10 à 20 en Lee 195",
+    "description": "mettre une sélection de circuits dans une couleur de nuancier"
+  },
+  {
+    "intention": "parquer",
+    "phrase": "parque le circuit 3 à 45 %",
+    "description": "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub"
+  },
+  {
+    "intention": "regler_intensite",
+    "phrase": "circuits 1 à 5 à 50 %",
+    "description": "donner un niveau d'intensité à une sélection"
+  },
+  {
+    "intention": "enregistrer_cue",
+    "phrase": "enregistrer les circuits 1 à 5 dans la cue 4",
+    "description": "enregistrer une sélection de circuits dans une cue existante"
+  },
+  {
+    "intention": "aller_a_cue",
+    "phrase": "aller à la cue 5",
+    "description": "aller à une cue (Go To Cue)"
+  },
+  {
+    "intention": "enregistrer_sub",
+    "phrase": "enregistrer les circuits 1 à 5 dans le sub 3",
+    "description": "enregistrer une sélection de circuits dans un submaster"
+  },
+  {
+    "intention": "appliquer_effet",
+    "phrase": "lance l'effet 3 sur les circuits 1 à 10",
+    "description": "appliquer un effet existant à une sélection de circuits"
+  },
+  {
+    "intention": "arreter_effet",
+    "phrase": "arrête l'effet 3",
+    "description": "arrêter un effet précis, ou tous les effets en cours"
+  },
+  {
+    "intention": "arreter_effet",
+    "phrase": "arrête tous les effets",
+    "description": "arrêter un effet précis, ou tous les effets en cours"
+  },
+  {
+    "intention": "bump_sub",
+    "phrase": "bump haut le sub 5",
+    "description": "appuyer sur la touche de bump d'un submaster (haut ou bas)"
+  },
+  {
+    "intention": "bump_sub",
+    "phrase": "bump bas sub 12",
+    "description": "appuyer sur la touche de bump d'un submaster (haut ou bas)"
+  },
+  {
+    "intention": "enregistrer_preset",
+    "phrase": "enregistrer les circuits 1 à 5 dans le preset 2",
+    "description": "enregistrer une sélection de circuits dans un preset"
+  },
+  {
+    "intention": "rappeler_preset",
+    "phrase": "rappelle le preset 2 sur les circuits 1 à 5",
+    "description": "appliquer un preset existant à une sélection de circuits"
+  },
+  {
+    "intention": "appel_macro",
+    "phrase": "lance la macro 5",
+    "description": "lancer une macro par son numéro, depuis la ligne de commande"
+  },
+  {
+    "intention": "selectionner_query",
+    "phrase": "sélectionne ce qui est dans la palette couleur 5",
+    "description": "sélectionner les channels actuellement dans, ou explicitement pas dans, une palette couleur / un preset / une cue — via Query, le seul endroit du langage Eos où existe une négation\n"
+  },
+  {
+    "intention": "selectionner_query",
+    "phrase": "sélectionne ce qui n'est pas dans le preset 3",
+    "description": "sélectionner les channels actuellement dans, ou explicitement pas dans, une palette couleur / un preset / une cue — via Query, le seul endroit du langage Eos où existe une négation\n"
+  },
+  {
+    "intention": "marquer",
+    "phrase": "marque les circuits 1 à 5",
+    "description": "poser un drapeau Mark — sur une cue (le drapeau lui-même) ou sur des channels (la cue SOURCE où sont stockés les mouvements NP)\n"
+  },
+  {
+    "intention": "marquer",
+    "phrase": "marque la cue 10",
+    "description": "poser un drapeau Mark — sur une cue (le drapeau lui-même) ou sur des channels (la cue SOURCE où sont stockés les mouvements NP)\n"
+  },
+  {
+    "intention": "asserter",
+    "phrase": "assert la cue 5",
+    "description": "réaffirmer l'autorité d'une cue, d'un channel ou d'un paramètre sur le plateau (Assert)\n"
+  },
+  {
+    "intention": "asserter",
+    "phrase": "assert le groupe 6",
+    "description": "réaffirmer l'autorité d'une cue, d'un channel ou d'un paramètre sur le plateau (Assert)\n"
+  },
+  {
+    "intention": "effacer_filtres",
+    "phrase": "efface les filtres",
+    "description": "effacer tous les filtres actifs (Clear Filters)"
+  },
+  {
+    "intention": "enregistrer_snapshot",
+    "phrase": "enregistre le snapshot 3",
+    "description": "enregistrer un snapshot — état de la SURFACE DE CONTRÔLE et des moniteurs, jamais un état lumineux du plateau\n"
+  },
+  {
+    "intention": "rappeler_snapshot",
+    "phrase": "rappelle le snapshot 3",
+    "description": "rappeler un snapshot déjà enregistré"
+  },
+  {
+    "intention": "appliquer_courbe",
+    "phrase": "applique la courbe 4 à la cue 5",
+    "description": "appliquer une courbe de fondu à une cue"
+  },
+  {
+    "intention": "retirer_courbe",
+    "phrase": "retire la courbe de la cue 5",
+    "description": "retirer la courbe de fondu d'une cue (idiome `Curve At`)"
+  },
+  {
+    "intention": "selectionner_partition",
+    "phrase": "sélectionne la partition 902",
+    "description": "sélectionner une partition préprogrammée du contrôle partitionné"
+  },
+  {
+    "intention": "supprimer_partition",
+    "phrase": "supprime la partition 5",
+    "description": "supprimer une partition préprogrammée"
+  }
+]

@@ -300,6 +300,16 @@
               padding:1px 6px; border:1px solid var(--app-line); }
   .lib-conf.a { color:var(--app-ok); border-color:rgba(95,191,143,.4); }
   .lib-conf.c { color:var(--app-muted); }
+  .lib-search { margin-bottom:10px; }
+  .lib-search input { background:var(--app-bg); border:1px solid var(--app-line); border-radius:8px;
+                      color:var(--app-ink); font-size:13.5px; padding:9px 10px;
+                      font-family:inherit; width:100%; }
+  .lib-search input:focus { outline:none; border-color:var(--app-accent); }
+  .lib-sec { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+             color:var(--app-muted); margin:16px 0 8px; display:flex; flex-wrap:wrap;
+             align-items:baseline; gap:6px; }
+  .lib-sec:first-of-type { margin-top:4px; }
+  .lib-sec-note { font-weight:400; letter-spacing:0; text-transform:none; font-size:10.5px; }
 
   .import-item { display:flex; align-items:center; justify-content:space-between; gap:10px;
                  background:var(--app-surface); border:1px solid var(--app-line);
@@ -496,7 +506,10 @@
     atelier:   { label:"Atelier",  role:"surface" },
     conduite:  { label:"Conduite", role:"surface" },
     reglages:  { label:"Réglages", role:"utilitaire", title:"Réglages" },
-    biblio:    { label:"Bibliothèque", role:"satellite", parent:"atelier",  title:"Bibliothèque de macros" },
+    // Titre volontairement large : depuis l'ajout du catalogue, cet écran ne
+    // liste plus seulement des macros du corpus, mais d'abord les phrases que
+    // l'app sait traduire — deux sections nettement séparées (screenBiblio).
+    biblio:    { label:"Bibliothèque", role:"satellite", parent:"atelier",  title:"Bibliothèque" },
     // Satellite de la Conduite : reprendre un envoi déjà accepté du fil pour en
     // faire un favori. Ce n'est pas « parcourir l'historique » — c'est choisir
     // une source pour une action précise, depuis l'écran qui la demande.
@@ -583,6 +596,16 @@
     // rencontrés par le moteur flou, jamais promus automatiquement (voir
     // traducteur/observations_llm.yaml et `pushObservationLlm`).
     obsLlmQueue: [],
+    // Catalogue des phrases que le traducteur sait comprendre — chargé depuis
+    // data/catalogue.json, lui-même généré depuis lexique.yaml (voir
+    // traducteur/build_catalogue.py). Jamais écrit en dur ici : une liste
+    // tenue à la main dériverait du lexique au premier ajout d'intention, et
+    // un catalogue qui ment sur ce que l'app sait faire est pire que pas de
+    // catalogue. Chargé hors Pyodide, donc consultable pendant que le moteur
+    // démarre — c'est justement le moment où l'on cherche quoi taper.
+    catalogue: [],
+    catalogueErreur: null,
+    catalogueQ: "",
     activeSessionId: null, // fixé juste après la définition de `state`, une fois `sessions` prêt
     sessions: [
       {
@@ -1326,13 +1349,64 @@
     }).join("");
   }
 
+  // La Bibliothèque répond à deux questions différentes, et les confondre
+  // serait trompeur :
+  //
+  //   1. « Qu'est-ce que CETTE APP sait traduire ? » — le catalogue, généré
+  //      depuis le lexique, dont chaque phrase est garantie traduisible
+  //      (traducteur/test_catalogue.py). C'est la réponse au problème
+  //      d'habitabilité : sans lui, l'utilisateur fait face à un champ vide
+  //      et doit deviner les mots que le lexique connaît.
+  //   2. « Quelles macros intéressantes existent ? » — les entrées du corpus
+  //      ci-dessous, en syntaxe Eos, la plupart non testées au banc et pas
+  //      forcément traduisibles par cette app. Utile, mais ce n'est pas la
+  //      même promesse — d'où deux sections nettement séparées.
+  function catalogueFiltre() {
+    var q = (state.catalogueQ || "").trim().toLowerCase();
+    if (!q) return state.catalogue;
+    return state.catalogue.filter(function (it) {
+      return (it.phrase + " " + it.description).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
   function screenBiblio() {
-    return LIBRARY.map(function (it, i) {
+    var out = '<div class="lib-search"><input type="text" id="biblio-q" placeholder="chercher — ex. couleur, cue, effet…" value="' +
+      esc(state.catalogueQ || "") + '" /></div>';
+
+    out += '<div class="lib-sec">Ce que l\'app sait traduire</div>';
+
+    if (state.catalogueErreur) {
+      out += '<div class="flag flag-warn"><span>⚠</span><span class="txt">Catalogue indisponible (' +
+        esc(state.catalogueErreur) + '). Le traducteur, lui, fonctionne normalement.</span></div>';
+    } else if (!state.catalogue.length) {
+      out += '<div class="thread-empty">Chargement du catalogue…</div>';
+    } else {
+      var liste = catalogueFiltre();
+      if (!liste.length) {
+        // Ne jamais rendre une liste vide sans l'expliquer : c'est
+        // exactement l'information que l'utilisateur est venu chercher.
+        out += '<div class="flag flag-bad"><span>?</span><span><b>Rien ne correspond à « ' +
+          esc(state.catalogueQ) + ' ».</b> <span class="txt">La console sait sans doute le faire ; ' +
+          'cette app ne sait pas encore le dire. Le lexique couvre ' + state.catalogue.length +
+          ' formulations pour l\'instant.</span></span></div>';
+      }
+      liste.forEach(function (it) {
+        var i = state.catalogue.indexOf(it);
+        out += '<button class="lib-item" data-action="cat:pick" data-idx="' + i + '">' +
+          '<span class="req">' + esc(it.phrase) + "</span>" +
+          '<span class="src">' + esc(it.description) + "</span></button>";
+      });
+    }
+
+    out += '<div class="lib-sec">Macros du corpus <span class="lib-sec-note">syntaxe Eos brute — ' +
+      'pas forcément traduisible par l\'app</span></div>';
+    out += LIBRARY.map(function (it, i) {
       return '<button class="lib-item" data-action="lib:pick" data-idx="' + i + '">' +
         '<span class="req">' + esc(it.req) + '</span><span class="cmd">' + esc(it.cmd) + "</span>" +
         '<span class="src"><span class="lib-conf ' + (it.confidence === "A" ? "a" : "c") + '">' + it.confidence + "</span>" +
         esc(it.source) + "</span></button>";
     }).join("");
+    return out;
   }
 
   // Liste des sessions — écran de démarrage de l'app (comme ChatGPT/Claude).
@@ -2060,6 +2134,20 @@
         break;
       }
 
+      // Une phrase du catalogue part dans le composer, jamais directement
+      // dans le traducteur : elle doit rester modifiable (on remplace les
+      // numéros par les siens) et repasser par le même chemin qu'une phrase
+      // tapée à la main — aucun raccourci qui court-circuiterait l'aperçu.
+      case "cat:pick": {
+        var entree = state.catalogue[Number(d.idx)];
+        if (!entree) break;
+        state.draft = entree.phrase; state.screen = "atelier";
+        renderAll();
+        var taCat = document.getElementById("composer-input");
+        if (taCat) { taCat.focus(); taCat.setSelectionRange(taCat.value.length, taCat.value.length); }
+        break;
+      }
+
       // ---- reprendre un envoi accepté depuis la Conduite ----
       case "puiser:pick": state.puiserChoice = Number(d.id); renderAll();
         setTimeout(function () { var n = document.getElementById("puiser-name"); if (n) n.focus(); }, 0);
@@ -2295,6 +2383,16 @@
       state.llmConfig.apiKey = ev.target.value;
       saveLlmConfig();
     }
+    // Recherche du catalogue : filtrage local, aucun appel réseau — le
+    // catalogue est déjà en mémoire. Le re-rendu complet remplace le champ,
+    // d'où le rétablissement du focus et du curseur juste après.
+    if (ev.target && ev.target.id === "biblio-q") {
+      var pos = ev.target.selectionStart;
+      state.catalogueQ = ev.target.value;
+      renderAll();
+      var champ = document.getElementById("biblio-q");
+      if (champ) { champ.focus(); champ.setSelectionRange(pos, pos); }
+    }
   });
   vp.addEventListener("keydown", function (ev) {
     if (ev.target && ev.target.id === "composer-input" && ev.key === "Enter" && !ev.shiftKey) {
@@ -2310,6 +2408,23 @@
       handle("discussion:envoyer", ev.target);
     }
   });
+
+  // Catalogue des phrases traduisibles (voir `state.catalogue`). Chargé à
+  // part de Pyodide, et volontairement non bloquant : un échec ici ne doit
+  // jamais empêcher de traduire — la Bibliothèque le dira, et c'est tout.
+  fetch("data/catalogue.json")
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (entrees) {
+      state.catalogue = Array.isArray(entrees) ? entrees : [];
+      renderAll();
+    })
+    .catch(function (err) {
+      state.catalogueErreur = (err && err.message) || String(err);
+      renderAll();
+    });
 
   (function fullscreen() {
     var btn = document.getElementById("fs-toggle"), exit = document.getElementById("sim-exit");

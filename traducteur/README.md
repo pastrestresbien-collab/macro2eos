@@ -102,10 +102,41 @@ candidats à égalité de distance ne sont jamais départagés au hasard : c'est
 | `lexique.yaml` | Mots français → concepts du modèle. Aucune syntaxe Eos. Chaque entrée porte sa `source` ou son `choix`. |
 | `traducteur.py` | Normalisation, détection d'intention, remplissage de créneaux, questions. |
 | `test_traducteur.py` | Non-régression, ancrée sur la demande réelle de l'utilisateur. |
+| `build_catalogue.py` | Génère le catalogue des phrases traduisibles depuis `lexique.yaml`. |
+| `test_catalogue.py` | Garantit que chaque phrase du catalogue se traduit vraiment. |
+
+## Le catalogue — répondre à « qu'est-ce que l'app sait faire ? »
+
+L'app présentait un champ de saisie vide devant un lexique de 23 intentions et
+une centaine de mots déclencheurs, sans qu'aucun écran ne dise jamais lesquels — et
+la détection d'intention exige une correspondance **exacte**. C'est le *problème
+d'habitabilité* des interfaces en langage naturel : il ne se corrige pas en
+comprenant mieux, mais en **montrant** les limites.
+
+`build_catalogue.py` génère donc, depuis `lexique.yaml`, une phrase concrète par
+capacité — dans le format exact que l'utilisateur devra taper ensuite. La
+Bibliothèque de l'app l'affiche, cherchable, et une recherche infructueuse dit
+explicitement « la console sait sans doute le faire, cette app ne sait pas
+encore le dire » plutôt que de rendre une liste vide.
+
+Deux règles, les mêmes que pour le vocabulaire du moteur flou :
+
+- **Rien n'est rédigé dans le générateur.** Il ne lit que `description` et
+  `exemple_nl`, déjà présents sur chaque intention. Plusieurs exemples se
+  séparent par « ; ». Une liste tenue à la main dériverait au premier ajout
+  d'intention — et un catalogue qui ment sur ce que l'app sait faire est pire
+  que pas de catalogue, puisqu'il ment à quelqu'un qui le consulte justement
+  parce qu'il ne savait pas quoi taper.
+- **Chaque phrase est vérifiée.** `test_catalogue.py` les rejoue toutes contre
+  le vrai traducteur et échoue si l'une retombe en `incompris`, si elle laisse
+  des mots de côté, si son IR ne se rend pas, ou si une intention n'a aucun
+  exemple (elle serait alors introuvable dans l'app). Rien à maintenir : les
+  cas sont générés, donc toute intention ajoutée est couverte d'office.
 
 ```bash
 cd traducteur && python3 traducteur.py        # démonstration sur la phrase réelle
 cd traducteur && python3 test_traducteur.py   # non-régression
+cd traducteur && python3 test_catalogue.py    # chaque phrase du catalogue se traduit
 ./app/build_data.sh                           # OBLIGATOIRE après toute modif de ce fichier
 ```
 
