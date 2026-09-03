@@ -184,6 +184,10 @@ class Traducteur:
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
         self._cue_cibles = self._indexer(self.lex["cue_cibles"])
+        # Intention retenue par l'appel `traduire()` en cours — voir la note
+        # de `traduire()`. Champ de travail, pas un état du traducteur : il
+        # est posé puis restauré à chaque appel, et vaut None hors appel.
+        self._intention_courante: str | None = None
 
     @staticmethod
     def _indexer(section: dict) -> dict[str, str]:
@@ -466,7 +470,22 @@ class Traducteur:
             "selectionner_partition": self._selectionner_partition,
             "supprimer_partition": self._supprimer_partition,
         }[intention]
-        trad = handler(toks, reponses)
+
+        # `_ignores` a besoin de savoir quelle intention a été retenue, pour
+        # distinguer un déclencheur qui a fait son travail (celui de CETTE
+        # intention) d'un déclencheur resté sur le carreau (celui d'une autre
+        # — « effet » dans une phrase partie sur `colorer_selection »). Les 27
+        # sites qui construisent une `Traduction` ne connaissent pas leur
+        # propre nom d'intention ; le passer par un champ le temps de l'appel
+        # évite de tous les retoucher. Sauvegarde/restauration parce que
+        # `interpreter_flou` rappelle `traduire()` de façon imbriquée : sans
+        # ça, l'appel interne laisserait le champ faussé pour l'externe.
+        precedente = self._intention_courante
+        self._intention_courante = intention
+        try:
+            trad = handler(toks, reponses)
+        finally:
+            self._intention_courante = precedente
         trad.intention = intention
         return trad
 
@@ -563,20 +582,46 @@ class Traducteur:
         désigne comme la pire du projet : celle qui ne lève aucune erreur.
         L'UI doit les afficher sur TOUS les statuts, y compris `compris`.
 
-        Restreint au vocabulaire de CRÉNEAU — couleurs, objets, nuanciers,
-        cibles de cue — c'est-à-dire aux mots qui portent du contenu jusqu'à
-        l'IR. Les déclencheurs d'intention (« enregistre », « applique ») en
-        sont exclus : ils ne remplissent aucun créneau, ils choisissent le
-        handler, et sont donc « utilisés » sans jamais entrer dans `pris`.
-        Les compter ici ferait crier au mot perdu sur presque chaque phrase
-        correcte."""
-        creneaux: set[str] = set()
+        Deux familles de mots y entrent.
+
+        1. Le vocabulaire de CRÉNEAU — couleurs, objets, nuanciers, cibles de
+           cue — c'est-à-dire les mots qui portent du contenu jusqu'à l'IR.
+
+        2. Les déclencheurs d'une AUTRE intention que celle retenue (paramètre
+           `intention`, ajouté le 2026-09-03). « je veux un effet jaune sur les
+           circuits 1 à 5 » part sur `colorer_selection` et rend un jaune fixe :
+           le mot « effet », qui nomme une capacité entière du lexique,
+           disparaissait sans un mot. Il n'était ni « non reconnu » (l'app le
+           connaît) ni « ignoré » (tous les déclencheurs en étaient exclus).
+
+        Les déclencheurs de l'intention RETENUE restent exclus, eux : ils ont
+        fait leur travail — choisir le handler — sans jamais entrer dans
+        `pris`, faute de remplir un créneau. Les compter ferait crier au mot
+        perdu sur presque chaque phrase correcte (51 faux positifs mesurés sur
+        la suite de tests avant d'affiner)."""
+        interessants: set[str] = set()
         for index in (self._objets, self._objets_cible, self._nuanciers,
                       self._couleurs, self._cue_cibles):
-            creneaux |= set(index)
-        creneaux -= self._outils | self._mots_plage
+            interessants |= set(index)
+
+        # Les déclencheurs des AUTRES intentions, moins ceux de l'intention
+        # retenue. `self._intention_courante` est posé par `traduire()` le
+        # temps d'un appel (voir sa note) : quand il vaut None — appel direct
+        # d'un handler en test, ou phrase sans intention du tout — aucun
+        # déclencheur n'entre, ce qui reste le comportement prudent.
+        retenue = self._intention_courante
+        if retenue:
+            tous, siens = set(), set()
+            for nom, corps in self.lex["intentions"].items():
+                mots = {m for groupe in corps["declencheurs"].values() for m in groupe}
+                tous |= mots
+                if nom == retenue:
+                    siens = mots
+            interessants |= tous - siens
+
+        interessants -= self._outils | self._mots_plage
         return [t for i, t in enumerate(toks)
-                if i not in pris and not t.isdigit() and t in creneaux]
+                if i not in pris and not t.isdigit() and t in interessants]
 
     def _mots(self, toks: list[str], pris: set[int]) -> dict[str, list[str]]:
         """Les deux comptes rendus de mots, à splatter dans une `Traduction`.
@@ -1189,7 +1234,13 @@ class Traducteur:
                 # le mot « couleur »/« color », ne doit pas être supposé
                 # être une palette couleur plutôt qu'une autre famille
                 # (Int/Focus/Beam) que ce traducteur ne couvre pas.
-                if not any(t in ("couleur", "couleurs", "color") for t in toks):
+                # Le mot de famille est marqué consommé : il désigne bien la
+                # cible (Color Palette plutôt qu'Int/Focus/Beam), donc il
+                # travaille. Sans ça, `_ignores` le signalait comme un mot
+                # perdu — c'est un déclencheur de `colorer_selection`, une
+                # autre intention (trouvé le 2026-09-03 en affinant `_ignores`).
+                i_famille = self._indice_mot(toks, pris, {"couleur", "couleurs", "color"})
+                if i_famille is None:
                     return Traduction(statut="incompris", notes=[
                         "Seule la palette couleur est prise en charge — préciser "
                         "« couleur » (les autres familles de palette ne sont pas "

@@ -857,6 +857,30 @@ CAS = [
         "ignores": [],
     },
     {
+        # Cinquième de la famille, trouvé le 2026-09-03 en reprenant la piste
+        # B. « effet » nomme une capacité entière du lexique ; la phrase part
+        # pourtant sur `colorer_selection` et rend un jaune fixe. Le mot
+        # n'était ni « non reconnu » (l'app le connaît) ni « ignoré » (tous
+        # les déclencheurs en étaient exclus) : il disparaissait sans trace.
+        "nom": "un déclencheur d'une AUTRE intention que celle retenue est signalé",
+        "phrase": "je veux un effet jaune clignotant sur les circuits 1 a 5",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Color 3/101 Enter",
+        "non_reconnus": ["je", "veux", "clignotant"],
+        "ignores": ["effet"],
+    },
+    {
+        # Le pendant : le déclencheur de l'intention RETENUE a fait son
+        # travail et ne doit jamais être signalé. C'est ce qui distingue ce
+        # raffinement d'un retour aux 51 faux positifs de la première version.
+        "nom": "le déclencheur de l'intention retenue n'est jamais signalé",
+        "phrase": "lance l'effet 2 sur le groupe 3",
+        "statut": "compris",
+        "rendu": "Group 3 Effect 2 Enter",
+        "non_reconnus": [],
+        "ignores": [],
+    },
+    {
         # Le plus grave des quatre : le bon numéro sur le MAUVAIS objet.
         # « lance » tombe à distance 2 de « lampe » (alias de Chan) et
         # gagnait la place d'objet avant que « groupe » soit seulement
