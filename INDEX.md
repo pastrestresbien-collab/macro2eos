@@ -47,6 +47,11 @@ méthode et [`PLANNING.md`](PLANNING.md) pour les points à valider au banc.
 
 ## Manuels convertis en Markdown
 
+> **Pour trouver un tutoriel, partir de [`manuals/INDEX_TUTOS.md`](manuals/INDEX_TUTOS.md)** —
+> index thématique généré (177 sujets), qui dit *où apprendre X* à travers les 13 documents.
+> Le tableau ci-dessous est un inventaire : il dit ce qui existe et dans quel état, jamais
+> où chercher un sujet. Régénéré par `python3 manuals/build_index_tutos.py`.
+
 | # | Document | Dossier | Statut |
 |---|----------|---------|--------|
 | 1 | Eos Family User Manual v3.2.0 (réf. 4250M1210-3.2.0 Rev A, 2023-04) | [`manuals/operations-manual/`](manuals/operations-manual/) | ✅ Converti intégralement, 32 chapitres (DOCX source inclus) — contient Patch, Setup, Effects, Macros, **Show Control (dictionnaire OSC complet + Eos OSC Keys)** |

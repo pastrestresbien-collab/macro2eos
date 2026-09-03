@@ -46,6 +46,8 @@
 #                 "absence_confirmee"      à ne jamais tenter de générer
 #                 "contradiction"          le dépôt dit autre chose que le manuel
 #                 "doc_a_ecrire"           utile, à consigner dans un .md du dépôt
+#                 "tuto_absent"            sujet cherché, aucun des 13 documents ne
+#                                          le couvre — un trou du fonds, pas du modèle
 #   backlog     - numéro(s) PLANNING.md concerné(s), ou null
 #   traite      - "non" | "oui" | "rejete" — jamais mis à "oui" par du code.
 #                 Passe à "oui" quand la conséquence a été portée dans le
