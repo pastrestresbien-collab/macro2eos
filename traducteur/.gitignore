@@ -1,0 +1,7 @@
+# bytecode Python
+__pycache__/
+
+# artefact compilé — régénérable par `python3 traducteur/build.py`.
+# app/data/lexique.json est une copie séparée pour le navigateur, voir
+# app/build_data.sh — pas la même chose que ce dossier.
+dist/

@@ -1,30 +1,49 @@
-# Refus terrain — journal des rejets réels observés sur console/nomad.
+# Constats terrain — journal des observations réelles sur console/nomad.
 #
-# Chaque refus de la console est une preuve de niveau S (banc réel, la plus haute
-# confiance du projet) — voir APP.md « La console fait autorité ». Ce fichier les
-# accumule au lieu de les jeter : ils alimentent directement les cases `inconnu`
-# de la matrice de légalité (`modele.yaml`) et le backlog (`PLANNING.md`).
+# Élargi le 2026-08-07 : ce fichier couvrait au départ seulement les REFUS
+# (erreur de syntaxe). Il couvre maintenant aussi le cas plus dangereux —
+# la console ACCEPTE mais fait autre chose que prévu, sans lever d'erreur
+# (voir REGLES_POUR_UI.md, règle 4 : c'est la panne la plus grave du projet,
+# parce qu'aucun signal ne la révèle). Le nom du fichier ne change pas
+# (`refus_terrain.yaml`) pour ne pas casser les renvois existants
+# (grammar/README.md, grammar/build.py, PLANNING.md) — seul son contenu
+# s'élargit. Un seul mécanisme, pas deux qui font la même chose sous des
+# noms différents.
+#
+# Chaque constat terrain est une preuve de niveau S (banc réel, la plus haute
+# confiance du projet) — voir APP.md « La console fait autorité ». Ce fichier
+# les accumule au lieu de les jeter : ils alimentent directement les cases
+# `inconnu` de la matrice de légalité (`modele.yaml`) et le backlog
+# (`PLANNING.md`).
 #
 # Alimentation : manuelle pour l'instant (retour verbal → ajouté ici en session).
-# Le jour où l'app existe, elle pourra journaliser ses refus dans le même format
-# pour import automatique.
+# Le jour où l'app existe, elle pourra journaliser ses constats dans le même
+# format pour import automatique.
 #
-# Champs :
+# Champs communs aux deux types :
+#   type            - "refus" | "comportement_inattendu"
 #   date            - AAAA-MM-JJ
 #   demande_nl      - ce que l'utilisateur a demandé en langage naturel
 #   commande        - la macro générée et envoyée
-#   erreur_console  - message de refus renvoyé par Eos (verbatim si possible)
-#   diagnostic      - analyse : pourquoi refusée, ce que ça tranche
+#   diagnostic      - analyse : pourquoi, ce que ça tranche
 #   backlog         - numéro(s) PLANNING.md concerné(s), si applicable
-#   tranche         - "oui" | "non" | "partiel" : le refus résout-il une case inconnue ?
+#   tranche         - "oui" | "non" | "partiel" : le constat résout-il une case inconnue ?
+#
+# Champs propres à type: "refus" :
+#   erreur_console  - message de refus renvoyé par Eos (verbatim si possible)
+#
+# Champs propres à type: "comportement_inattendu" :
+#   attendu         - ce que la commande était censée produire
+#   observe         - ce qu'elle a produit réellement sur la console
 
 meta:
-  version: "0.1"
-  maj: "2026-08-02"
+  version: "0.2"
+  maj: "2026-08-07"
 
 refus: []
-  # Exemple de forme attendue (à dupliquer, jamais laissé actif) :
-  # - date: 2026-08-15
+  # Exemple de forme attendue pour un refus (à dupliquer, jamais laissé actif) :
+  # - type: "refus"
+  #   date: 2026-08-15
   #   demande_nl: "groupe 5 et circuits 1 à 6 en Lee 195"
   #   commande: "Group 5 + 1 Thru 6 Color 3/195 Enter"
   #   erreur_console: "Syntax Error : unexpected '+' after Group"
@@ -34,3 +53,16 @@ refus: []
   #     sélectionner Chan et Group séparément puis appliquer l'action deux fois.
   #   backlog: [4]
   #   tranche: "non"
+  #
+  # Exemple de forme attendue pour un comportement inattendu (accepté, mais faux) :
+  # - type: "comportement_inattendu"
+  #   date: 2026-08-20
+  #   demande_nl: "enregistrer la palette couleur 1 sur le groupe 99"
+  #   commande: "Group 99 Record Color Palette 1 {By Type} Label Rouge Enter"
+  #   attendu: "un seul channel par type de fixture reçoit la valeur par défaut"
+  #   observe: "tous les channels du groupe ont été enregistrés en données discrètes"
+  #   diagnostic: >
+  #     Confirme le piège décrit dans modele.yaml (ne_dispense_pas_de_selection) :
+  #     le groupe de travail contenait plusieurs channels par type, pas un seul.
+  #   backlog: []
+  #   tranche: "oui"

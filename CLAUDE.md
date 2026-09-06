@@ -5,16 +5,24 @@
 **L'environnement d'exécution de cette session (et de toute session future sur ce dépôt)
 ne peut PAS atteindre `etcconnect.com`, `github.com` en téléchargement direct, ni la
 plupart des hôtes externes.** Testé et confirmé bloqué à plusieurs reprises : `curl`,
-`WebFetch` sur des fichiers binaires, `git clone` de dépôts tiers, navigateur headless
-(Playwright) même avec proxy explicite — tout échoue systématiquement (403, connexion
-réinitialisée, ou timeout).
+`WebFetch` (fichiers binaires **et pages HTML** — reconfirmé le 2026-08-03 sur
+leefilters.com, Rosco, thomannmusic.com, lightspares.com et même Wikipedia, 403 partout),
+`git clone` de dépôts tiers, navigateur headless (Playwright) même avec proxy explicite —
+tout échoue systématiquement (403, connexion réinitialisée, ou timeout).
+
+**Correction du 2026-08-03 : `WebFetch` ne marche PAS de façon fiable, contrairement à ce
+qu'affirmait cette règle jusqu'ici.** Seul `WebSearch` fonctionne — il renvoie des extraits
+de pages (titre, snippet, URL source), jamais le contenu intégral d'une page. Utile pour
+vérifier un fait ponctuel et sourcé (voir `reference/lee_filters_theatre.md` pour un
+exemple), inutilisable pour une conversion intégrale de document — ça reste le rôle de la
+procédure d'upload ci-dessous.
 
 **Ne jamais reperdre de temps à re-tenter ces méthodes.** La seule voie qui fonctionne à
-tous les coups dans cette session :
+tous les coups dans cette session pour un document complet :
 
-1. Identifier la source exacte (recherche web via `WebSearch`/`WebFetch` sur des pages
-   HTML publiques — ça, ça marche) et donner à l'utilisateur le **lien direct exact**
-   vers le fichier (PDF, DOCX, etc.).
+1. Identifier la source exacte (recherche web via `WebSearch` — ça, ça marche ; `WebFetch`
+   échoue quasi systématiquement, ne pas compter dessus) et donner à l'utilisateur le
+   **lien direct exact** vers le fichier (PDF, DOCX, etc.).
 2. L'utilisateur télécharge le fichier lui-même sur son appareil.
 3. L'utilisateur l'envoie **directement dans la conversation** (upload dans le chat,
    pas via Git/GitHub — l'upload web GitHub échoue aussi au-delà de 25 Mo et n'est pas
@@ -37,6 +45,19 @@ le travail sans raison si on les rouvre systématiquement.
 que si un besoin précis et avéré l'exige (ex. : doute sur une fidélité de conversion à
 vérifier, contenu manquant suspecté dans le `.md`). Dans ce cas, ne lire que la portion
 nécessaire, pas le fichier entier.
+
+**Cette règle vaut aussi pour les recherches, pas seulement les lectures complètes**
+(ajouté le 2026-08-07, après un audit de consommation de tokens). `manuals/`,
+`reference/` et `corpus/` — la « bibliographie » du projet — pèsent à eux trois plus de
+40 Mo de texte. Un `Grep`/`Glob` sans périmètre explicite balaie tout le dépôt, y compris
+ces dossiers : même sans ouvrir un fichier entier, une recherche large y coûte des tokens
+en sortie pour un résultat presque toujours hors sujet quand le travail porte sur
+`grammar/`, `traducteur/` ou `app/`. **Restreindre `path` (Grep) ou le dossier de départ
+(Glob) au périmètre concerné par défaut** ; n'élargir la recherche à la bibliographie que
+pour une vérification de fidélité précise contre une source primaire (ce que la règle
+n°2 ci-dessus autorise déjà pour la lecture), jamais par réflexe ou par recherche
+exploratoire large. Le principe est le même que pour les PDF : ce n'est pas qu'on n'a
+pas le droit d'y toucher, c'est que la routine doit l'éviter par défaut.
 
 ## Contexte du projet
 
