@@ -469,6 +469,12 @@ class Traducteur:
             "retirer_courbe": self._retirer_courbe,
             "selectionner_partition": self._selectionner_partition,
             "supprimer_partition": self._supprimer_partition,
+            "plein_feu": self._action_sur_selection,
+            "hors_scene": self._action_sur_selection,
+            "sneak": self._action_sur_selection,
+            "update_cue": self._update_cue,
+            "selection_derniere": self._action_sans_argument,
+            "selection_active": self._action_sans_argument,
         }[intention]
 
         # `_ignores` a besoin de savoir quelle intention a été retenue, pour
@@ -610,15 +616,24 @@ class Traducteur:
         # d'un handler en test, ou phrase sans intention du tout — aucun
         # déclencheur n'entre, ce qui reste le comportement prudent.
         retenue = self._intention_courante
+        siens: set[str] = set()
         if retenue:
-            tous, siens = set(), set()
+            tous = set()
             for nom, corps in self.lex["intentions"].items():
                 mots = {m for groupe in corps["declencheurs"].values() for m in groupe}
                 tous |= mots
                 if nom == retenue:
                     siens = mots
-            interessants |= tous - siens
+            interessants |= tous
 
+        # Le retrait des déclencheurs de l'intention retenue se fait EN
+        # DERNIER, sur l'ensemble — pas seulement sur ce qu'on vient
+        # d'ajouter. Un même mot peut appartenir aux deux mondes : « dernière »
+        # est à la fois le déclencheur de `selection_derniere` et un alias de
+        # la cible de cue `Last`. Retiré trop tôt, il rentrait quand même par
+        # la famille de créneau et se faisait signaler sur sa propre phrase
+        # (trouvé le 2026-09-03 en ajoutant la tranche « quotidien »).
+        interessants -= siens
         interessants -= self._outils | self._mots_plage
         return [t for i, t in enumerate(toks)
                 if i not in pris and not t.isdigit() and t in interessants]
@@ -1445,6 +1460,110 @@ class Traducteur:
     def _supprimer_partition(self, toks: list[str], reponses: dict) -> Traduction:
         return self._partition(toks, "supprimer_partition")
 
+    # -- intentions du quotidien (tranche 2026-09-03) ----------------------
+    #
+    # Trois handlers génériques couvrent six intentions, parce que ces
+    # commandes n'ont aucune spécificité de traduction : elles désignent une
+    # sélection (ou rien), et le mot-clé Eos vient du modèle. Le type d'action
+    # est lu dans `self._intention_courante` — le nom de l'intention et celui
+    # de l'action du modèle sont volontairement IDENTIQUES pour ces six-là
+    # (`plein_feu`, `hors_scene`, `sneak`, `update_cue`, `selection_derniere`,
+    # `selection_active`), ce qui évite une table de correspondance qui
+    # n'apporterait rien et pourrait dériver.
+    #
+    # Toute la syntaxe reste au modèle : le générateur sait déjà rendre ces
+    # six actions, et il porte seul les particularités — `Out` s'auto-termine
+    # donc pas d'`Enter`, `Select Last` porte l'avertissement du corpus #083.
+    # Cette tranche n'a ajouté aucune ligne à `grammar/`.
+
+    def _action_sur_selection(self, toks: list[str], reponses: dict) -> Traduction:
+        """`<sélection> <mot-clé>` — Full, Out, Sneak."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris)
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné — cette commande exige une "
+                "sélection explicite."])
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro trouvé pour la sélection."])
+
+        ir = [{"selection": selection,
+               "action": {"type": self._intention_courante}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _action_sans_argument(self, toks: list[str], reponses: dict) -> Traduction:
+        """Mot-clé seul, sans sélection — Select Last, Select Active.
+
+        Ces deux-là agissent sur un état de la console (la sélection
+        précédente, les channels actifs), pas sur une cible nommée dans la
+        phrase : exiger une sélection les rendrait inutilisables.
+
+        Un mot d'objet est donc consommé s'il est là : dans « sélectionne les
+        circuits actifs », « circuits » est du remplissage grammatical, pas une
+        cible perdue — le signaler enseignerait une limite fausse.
+
+        Un NUMÉRO, en revanche, fait refuser la phrase. « sélectionne les
+        circuits 1 à 5 actifs » n'a pas de traduction : la commande ne prend
+        pas de sélection, et laisser filer les nombres serait une perte
+        silencieuse — d'autant plus invisible que ni `_non_reconnus` ni
+        `_ignores` ne rapportent les chiffres."""
+        pris: set[int] = set()
+        self._objet(toks, pris)
+        restants = self._nombres(toks, pris)
+        if restants:
+            mot = self.modele_mot_cle()
+            return Traduction(statut="incompris", notes=[
+                f"« {mot} » ne prend pas de sélection : il agit sur un état de "
+                f"la console (la sélection précédente, ou les circuits actifs). "
+                f"Le numéro {restants[0][1]} n'a donc pas de place ici."])
+
+        ir = [{"action": {"type": self._intention_courante}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def modele_mot_cle(self) -> str:
+        """Le mot-clé Eos de l'intention en cours, pour un message d'erreur.
+
+        Lu dans le modèle, jamais écrit ici : c'est lui qui possède la
+        syntaxe, y compris quand elle ne sert qu'à formuler un refus."""
+        if not self._intention_courante:
+            return "cette commande"
+        try:
+            actions = self._generateur_ou_defaut().modele["actions"]
+        except Exception:                                     # noqa: BLE001
+            # Un message d'erreur ne doit jamais faire échouer une traduction :
+            # à défaut du mot-clé Eos, le nom interne reste lisible.
+            return self._intention_courante
+        return actions.get(self._intention_courante, {}).get(
+            "mot_cle", self._intention_courante)
+
+    def _update_cue(self, toks: list[str], reponses: dict) -> Traduction:
+        """`Update Cue <n>` — la cible est toujours explicite.
+
+        Jamais d'`Update` nu : le modèle porte l'avertissement sourcé qu'une
+        cible implicite dépend de préférences persistantes entre sessions
+        ({Make Absolute}, {Break Nested}). Une phrase sans numéro reste donc
+        `incompris` plutôt que de viser « la cue courante »."""
+        pris: set[int] = set()
+        i_cue = self._indice_objet_cle("Cue", toks, pris)
+        if i_cue is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue désignée — le mot « cue » est requis."])
+
+        cible = None
+        for i, valeur in self._nombres(toks, pris):
+            if i > i_cue:
+                cible, _ = valeur, pris.add(i)
+                break
+        if cible is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro de cue trouvé — un Update sans cible explicite "
+                "dépend d'un état de console que le traducteur ne peut pas lire."])
+
+        ir = [{"action": {"type": "update_cue", "cible": cible}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
     # -- petits extracteurs partagés ---------------------------------------
     def _indice_mot(self, toks: list[str], pris: set[int],
                     mots: set[str]) -> int | None:
@@ -1705,10 +1824,19 @@ class Traducteur:
         et c'est obligatoire en Pyodide, où il n'y a rien à relire."""
         if not traduction.compris:
             raise ValueError("seule une traduction comprise peut être rendue")
-        if self._generateur is not None:
-            return self._generateur.rendre(traduction.ir, **kwargs)
-        from generateur import Generateur
-        return Generateur().rendre(traduction.ir, **kwargs)
+        return self._generateur_ou_defaut().rendre(traduction.ir, **kwargs)
+
+    def _generateur_ou_defaut(self):
+        """Le générateur injecté, ou un chargé à la demande et mémorisé.
+
+        Mémorisé pour ne pas relire `modele.yaml` à chaque appel : depuis que
+        `modele_mot_cle` s'en sert aussi (pour formuler un refus avec le vrai
+        mot-clé Eos plutôt qu'un nom interne), l'accès n'est plus limité au
+        rendu d'une traduction comprise."""
+        if self._generateur is None:
+            from generateur import Generateur
+            self._generateur = Generateur()
+        return self._generateur
 
 
 def _demo() -> None:

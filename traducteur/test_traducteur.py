@@ -856,6 +856,100 @@ CAS = [
         "non_reconnus": [],
         "ignores": [],
     },
+    # ------------------------------------------------------------------
+    # Tranche « quotidien » (2026-09-03) — les commandes tapées des dizaines
+    # de fois par jour. Le modèle les documentait toutes en confiance A et le
+    # générateur les rendait déjà : le trou était entièrement dans le lexique.
+    # ------------------------------------------------------------------
+    {
+        "nom": "plein feu — forme « à fond »",
+        "phrase": "circuits 1 a 5 a fond",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Full Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "plein feu — la locution « plein feu » ne perd pas « feu »",
+        "phrase": "plein feu sur le groupe 3",
+        "statut": "compris",
+        "rendu": "Group 3 Full Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # `Out` s'auto-termine (manuel §00) : pas d'`Enter`, et c'est le
+        # générateur qui le sait — le traducteur n'en décide rien.
+        "nom": "hors scène — Out s'auto-termine, donc sans Enter",
+        "phrase": "eteins les circuits 1 a 5",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Out",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "sneak sur une sélection",
+        "phrase": "sneak les circuits 1 a 5",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Sneak Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "update d'une cue — la cible est toujours explicite",
+        "phrase": "mets a jour la cue 4",
+        "statut": "compris",
+        "rendu": "Update Cue 4 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Jamais d'`Update` nu : le modèle avertit qu'une cible implicite
+        # dépend de préférences persistantes entre sessions.
+        "nom": "update sans numéro — refus assumé plutôt qu'une cible devinée",
+        "phrase": "mets a jour la cue",
+        "statut": "incompris",
+    },
+    {
+        "nom": "Select Last — « dernière » est aussi un alias de cible de cue, sans conflit",
+        "phrase": "selectionne la derniere selection",
+        "statut": "compris",
+        "rendu": "Select Last Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # « circuits » est du remplissage grammatical ici : Select Active ne
+        # prend pas de sélection. Le signaler enseignerait une limite fausse.
+        "nom": "Select Active — le mot d'objet n'est pas signalé comme perdu",
+        "phrase": "selectionne les circuits actifs",
+        "statut": "compris",
+        "rendu": "Select Active Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Mais un NUMÉRO fait refuser : le laisser filer serait une perte
+        # silencieuse, invisible de surcroît (les chiffres ne sont rapportés
+        # ni par `non_reconnus` ni par `ignores`).
+        "nom": "Select Active avec un numéro — refus, jamais un numéro avalé",
+        "phrase": "selectionne les circuits 1 a 5 actifs",
+        "statut": "incompris",
+    },
+    {
+        # Les six nouvelles intentions sont déclarées en dernier : elles ne
+        # doivent voler aucune phrase aux intentions plus spécifiques.
+        "nom": "« sélectionne la partition » reste une partition, pas une sélection d'actifs",
+        "phrase": "selectionne la partition 902",
+        "statut": "compris",
+        "rendu": "Partition 902 Enter",
+    },
+    {
+        "nom": "« sélectionne ce qui est dans… » reste une Query",
+        "phrase": "selectionne ce qui est dans la palette couleur 5",
+        "statut": "compris",
+        "rendu": "Query {Is In} Color Palette 5 Enter",
+    },
+    {
+        "nom": "« à 50 % » reste un niveau, pas un plein feu",
+        "phrase": "circuits 1 a 5 a 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+
     {
         # Cinquième de la famille, trouvé le 2026-09-03 en reprenant la piste
         # B. « effet » nomme une capacité entière du lexique ; la phrase part

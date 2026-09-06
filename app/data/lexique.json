@@ -929,6 +929,165 @@
       },
       "exemple_nl": "supprime la partition 5",
       "origine": "manuel §28, confiance A (`grammar/modele.yaml`, section `actions`/`supprimer_partition`) : « [Delete] {Partition} [5] [Enter] [Enter] » (double confirmation portée par le générateur, pas répétée ici). Refuse sur les quatre partitions préprogrammées (0, 901, 902, 903) — avertissement porté par le générateur (`_verifier_partition_preprogrammee`), pas répété ici.\n"
+    },
+    "plein_feu": {
+      "description": "monter une sélection à pleine intensité",
+      "declencheurs": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "plein": [
+          "fond",
+          "full",
+          "plein",
+          "pleins",
+          "feu",
+          "feux"
+        ]
+      },
+      "exemple_nl": "circuits 1 à 5 à fond ; plein feu sur le groupe 3",
+      "origine": "manuel §6 « [1] [Full] [Full] », confiance A (`grammar/modele.yaml`, section `actions`/`plein_feu`).\n",
+      "note": "Seule la forme simple est produite (`Full` + `Enter`). Le DOUBLE appui `Full Full` est une autre commande, qui s'auto-termine — le modèle le documente, le traducteur ne le génère pas : rien dans une phrase française ne distingue de façon fiable « à fond » d'un double appui.\n"
+    },
+    "hors_scene": {
+      "description": "sortir une sélection de scène (Out)",
+      "declencheurs": {
+        "verbe": [
+          "eteins",
+          "eteindre",
+          "eteint",
+          "eteignez",
+          "coupe",
+          "couper",
+          "out",
+          "sors",
+          "sortir"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "éteins les circuits 1 à 5",
+      "origine": "manuel §00 (liste des commandes auto-terminantes) et §6 « Group 9 Out », confiance A (`grammar/modele.yaml`, section `actions`/`hors_scene`).\n",
+      "note": "`Out` s'AUTO-TERMINE : le générateur ne pose donc pas d'`Enter`, et c'est voulu. À ne pas confondre avec « à 0 % », qui produit `At 0 Enter` — deux commandes différentes pour un même résultat apparent, le modèle les distingue.\n"
+    },
+    "sneak": {
+      "description": "rendre une sélection à son état de fond (Sneak)",
+      "declencheurs": {
+        "verbe": [
+          "sneak",
+          "sneake",
+          "sneaker"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "sneak les circuits 1 à 5",
+      "origine": "manuel §6 et §24 (exemple de macro `Sneak Time 10 Enter`), confiance A (`grammar/modele.yaml`, section `actions`/`sneak`).\n",
+      "note": "Le double appui `Sneak Sneak` pose `{AllNPs} Sneak` et auto-termine (manuel §6) — hors périmètre, même raison que pour `Full Full`.\n"
+    },
+    "update_cue": {
+      "description": "mettre à jour une cue existante avec l'état courant",
+      "declencheurs": {
+        "verbe": [
+          "update",
+          "actualise",
+          "actualiser",
+          "mets",
+          "mettre",
+          "maj",
+          "jour"
+        ],
+        "cue": [
+          "cue",
+          "cues",
+          "memoire",
+          "memoires",
+          "sequence"
+        ]
+      },
+      "exemple_nl": "mets à jour la cue 4",
+      "origine": "manuel §12 « [Update] », confiance A (`grammar/modele.yaml`, section `actions`/`update_cue`).\n",
+      "note": "La cible est TOUJOURS explicite. Le modèle porte l'avertissement correspondant : un `Update` nu dépend d'une cible ambiguë et de préférences persistantes entre sessions ({Make Absolute}, {Break Nested}) — le traducteur n'en génère donc jamais.\n"
+    },
+    "selection_derniere": {
+      "description": "reprendre la sélection précédente (Select Last)",
+      "declencheurs": {
+        "verbe": [
+          "selectionne",
+          "selectionner",
+          "reprends",
+          "reprendre",
+          "rappelle"
+        ],
+        "derniere": [
+          "derniere",
+          "dernier",
+          "last",
+          "precedente",
+          "precedent",
+          "selection",
+          "selections"
+        ]
+      },
+      "exemple_nl": "sélectionne la dernière sélection",
+      "origine": "`reference/eosKeys.ts` (`select_last`→SELECT_LAST), confiance A (`grammar/modele.yaml`, section `actions`/`selection_derniere`).\n",
+      "note": "Le modèle porte un avertissement sourcé : après une Query composée, `Select Last` relancerait la syntaxe de la requête au lieu de renvoyer la sélection (corpus #083, PLANNING #17). Non répété ici — c'est le générateur qui l'émet.\n"
+    },
+    "selection_active": {
+      "description": "sélectionner tous les circuits actifs (Select Active)",
+      "declencheurs": {
+        "verbe": [
+          "selectionne",
+          "selectionner",
+          "prends",
+          "prendre"
+        ],
+        "actif": [
+          "actif",
+          "actifs",
+          "allume",
+          "allumes",
+          "allumees",
+          "actives"
+        ]
+      },
+      "exemple_nl": "sélectionne les circuits actifs",
+      "origine": "`reference/eosKeys.ts` (`select_active`→SELECT_ACTIVE) et manuel §24 (exemple de macro), confiance A (`grammar/modele.yaml`, section `actions`/`selection_active`) : sélectionne tout channel dont l'intensité est supérieure à zéro ou qui est en mouvement.\n"
     }
   },
   "questions": {

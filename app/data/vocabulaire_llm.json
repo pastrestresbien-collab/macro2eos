@@ -242,6 +242,48 @@
         "verbe",
         "partition"
       ]
+    },
+    "plein_feu": {
+      "description": "monter une sélection à pleine intensité",
+      "champs": [
+        "objet",
+        "plein"
+      ]
+    },
+    "hors_scene": {
+      "description": "sortir une sélection de scène (Out)",
+      "champs": [
+        "verbe",
+        "objet"
+      ]
+    },
+    "sneak": {
+      "description": "rendre une sélection à son état de fond (Sneak)",
+      "champs": [
+        "verbe",
+        "objet"
+      ]
+    },
+    "update_cue": {
+      "description": "mettre à jour une cue existante avec l'état courant",
+      "champs": [
+        "verbe",
+        "cue"
+      ]
+    },
+    "selection_derniere": {
+      "description": "reprendre la sélection précédente (Select Last)",
+      "champs": [
+        "verbe",
+        "derniere"
+      ]
+    },
+    "selection_active": {
+      "description": "sélectionner tous les circuits actifs (Select Active)",
+      "champs": [
+        "verbe",
+        "actif"
+      ]
     }
   }
 }

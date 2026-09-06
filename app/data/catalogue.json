@@ -138,5 +138,40 @@
     "intention": "supprimer_partition",
     "phrase": "supprime la partition 5",
     "description": "supprimer une partition préprogrammée"
+  },
+  {
+    "intention": "plein_feu",
+    "phrase": "circuits 1 à 5 à fond",
+    "description": "monter une sélection à pleine intensité"
+  },
+  {
+    "intention": "plein_feu",
+    "phrase": "plein feu sur le groupe 3",
+    "description": "monter une sélection à pleine intensité"
+  },
+  {
+    "intention": "hors_scene",
+    "phrase": "éteins les circuits 1 à 5",
+    "description": "sortir une sélection de scène (Out)"
+  },
+  {
+    "intention": "sneak",
+    "phrase": "sneak les circuits 1 à 5",
+    "description": "rendre une sélection à son état de fond (Sneak)"
+  },
+  {
+    "intention": "update_cue",
+    "phrase": "mets à jour la cue 4",
+    "description": "mettre à jour une cue existante avec l'état courant"
+  },
+  {
+    "intention": "selection_derniere",
+    "phrase": "sélectionne la dernière sélection",
+    "description": "reprendre la sélection précédente (Select Last)"
+  },
+  {
+    "intention": "selection_active",
+    "phrase": "sélectionne les circuits actifs",
+    "description": "sélectionner tous les circuits actifs (Select Active)"
   }
 ]

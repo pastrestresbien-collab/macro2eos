@@ -729,6 +729,107 @@ intentions:
       902, 903) — avertissement porté par le générateur
       (`_verifier_partition_preprogrammee`), pas répété ici.
 
+  # ------------------------------------------------------------------------
+  # LE QUOTIDIEN (tranche du 2026-09-03)
+  #
+  # Les commandes tapées des dizaines de fois par jour, absentes jusqu'ici
+  # alors que le modèle les documente toutes en confiance A et que le
+  # générateur les rendait déjà sans une ligne de code en plus. Le trou était
+  # entièrement dans le lexique.
+  #
+  # Ces six intentions sont déclarées EN DERNIER volontairement : l'ordre de
+  # déclaration fait la priorité de détection (`Traducteur._intention`
+  # retourne la première dont TOUS les groupes sont servis). Placées après
+  # `selectionner_partition` et `selectionner_query`, elles ne peuvent pas
+  # leur voler une phrase — « sélectionne la partition active » reste une
+  # partition, pas une sélection d'actifs.
+  # ------------------------------------------------------------------------
+
+  plein_feu:
+    description: "monter une sélection à pleine intensité"
+    declencheurs:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      plein: [fond, full, plein, pleins, feu, feux]
+    exemple_nl: "circuits 1 à 5 à fond ; plein feu sur le groupe 3"
+    origine: >
+      manuel §6 « [1] [Full] [Full] », confiance A (`grammar/modele.yaml`,
+      section `actions`/`plein_feu`).
+    note: >
+      Seule la forme simple est produite (`Full` + `Enter`). Le DOUBLE appui
+      `Full Full` est une autre commande, qui s'auto-termine — le modèle le
+      documente, le traducteur ne le génère pas : rien dans une phrase
+      française ne distingue de façon fiable « à fond » d'un double appui.
+
+  hors_scene:
+    description: "sortir une sélection de scène (Out)"
+    declencheurs:
+      verbe: [eteins, eteindre, eteint, eteignez, coupe, couper, out, sors, sortir]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "éteins les circuits 1 à 5"
+    origine: >
+      manuel §00 (liste des commandes auto-terminantes) et §6 « Group 9 Out »,
+      confiance A (`grammar/modele.yaml`, section `actions`/`hors_scene`).
+    note: >
+      `Out` s'AUTO-TERMINE : le générateur ne pose donc pas d'`Enter`, et
+      c'est voulu. À ne pas confondre avec « à 0 % », qui produit `At 0 Enter`
+      — deux commandes différentes pour un même résultat apparent, le modèle
+      les distingue.
+
+  sneak:
+    description: "rendre une sélection à son état de fond (Sneak)"
+    declencheurs:
+      verbe: [sneak, sneake, sneaker]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+    exemple_nl: "sneak les circuits 1 à 5"
+    origine: >
+      manuel §6 et §24 (exemple de macro `Sneak Time 10 Enter`), confiance A
+      (`grammar/modele.yaml`, section `actions`/`sneak`).
+    note: >
+      Le double appui `Sneak Sneak` pose `{AllNPs} Sneak` et auto-termine
+      (manuel §6) — hors périmètre, même raison que pour `Full Full`.
+
+  update_cue:
+    description: "mettre à jour une cue existante avec l'état courant"
+    declencheurs:
+      verbe: [update, actualise, actualiser, mets, mettre, maj, jour]
+      cue: [cue, cues, memoire, memoires, sequence]
+    exemple_nl: "mets à jour la cue 4"
+    origine: >
+      manuel §12 « [Update] », confiance A (`grammar/modele.yaml`, section
+      `actions`/`update_cue`).
+    note: >
+      La cible est TOUJOURS explicite. Le modèle porte l'avertissement
+      correspondant : un `Update` nu dépend d'une cible ambiguë et de
+      préférences persistantes entre sessions ({Make Absolute}, {Break
+      Nested}) — le traducteur n'en génère donc jamais.
+
+  selection_derniere:
+    description: "reprendre la sélection précédente (Select Last)"
+    declencheurs:
+      verbe: [selectionne, selectionner, reprends, reprendre, rappelle]
+      derniere: [derniere, dernier, last, precedente, precedent, selection, selections]
+    exemple_nl: "sélectionne la dernière sélection"
+    origine: >
+      `reference/eosKeys.ts` (`select_last`→SELECT_LAST), confiance A
+      (`grammar/modele.yaml`, section `actions`/`selection_derniere`).
+    note: >
+      Le modèle porte un avertissement sourcé : après une Query composée,
+      `Select Last` relancerait la syntaxe de la requête au lieu de renvoyer
+      la sélection (corpus #083, PLANNING #17). Non répété ici — c'est le
+      générateur qui l'émet.
+
+  selection_active:
+    description: "sélectionner tous les circuits actifs (Select Active)"
+    declencheurs:
+      verbe: [selectionne, selectionner, prends, prendre]
+      actif: [actif, actifs, allume, allumes, allumees, actives]
+    exemple_nl: "sélectionne les circuits actifs"
+    origine: >
+      `reference/eosKeys.ts` (`select_active`→SELECT_ACTIVE) et manuel §24
+      (exemple de macro), confiance A (`grammar/modele.yaml`, section
+      `actions`/`selection_active`) : sélectionne tout channel dont
+      l'intensité est supérieure à zéro ou qui est en mouvement.
+
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible
 #
