@@ -309,6 +309,35 @@
       "source": "manuel §16"
     }
   },
+  "durees": {
+    "marqueurs": [
+      "seconde",
+      "secondes",
+      "sec",
+      "secs"
+    ],
+    "marqueurs_postfixes": [
+      "s"
+    ],
+    "sans_temps": [
+      "sec",
+      "secs",
+      "instantane",
+      "instantanee",
+      "immediat",
+      "immediate",
+      "cut"
+    ],
+    "mots_sans": [
+      "sans"
+    ],
+    "mots_temps": [
+      "temps",
+      "temporisation",
+      "timing",
+      "fondu"
+    ]
+  },
   "intentions": {
     "creer_palettes_couleur": {
       "description": "créer une ou plusieurs palettes de couleur à partir de gélatines",
@@ -394,6 +423,37 @@
       "exemple_nl": "parque le circuit 3 à 45 %",
       "origine": "manuel §19 Park, confiance A (`grammar/modele.yaml`, section `park`). Déclaré AVANT `regler_intensite` dans ce fichier : sans cette priorité, une phrase qui contient à la fois un objet et un marqueur de niveau (« % », « intensité »…) déclencherait l'intensité au lieu du parquage, puisque `regler_intensite` ne demande aucun verbe pour se déclencher — c'est la même précaution que celle documentée dans `traducteur/README.md` (« la tolérance aux fautes n'a pas le droit de vote sur l'intention »), appliquée ici à l'ORDRE plutôt qu'à la tolérance elle-même.\n",
       "note": "Cette première tranche ne couvre QUE la forme absolue et déterministe `<chan> At <n> Park Enter` sur un SEUL circuit ou groupe, jamais une plage — volontairement, pas par oubli. « circuit 4 à 50 % » contient un seul « à » qui sert à la fois de séparateur possible de plage et de préposition introduisant le niveau ; sans un second marqueur de position pour trancher (contrairement à `regler_intensite`, qui ne rencontre l'ambiguïté qu'avec DEUX « à » dans la phrase — un pour la plage, un pour le niveau), `self._plage` lirait « 4 à 50 » comme une plage de circuits 4 à 50, jamais comme un circuit et un niveau. Se limiter à un seul circuit/groupe élimine l'ambiguïté à la racine : le numéro qui suit l'objet est toujours celui du circuit, jamais d'une plage. Le niveau réutilise le même extracteur que `regler_intensite` (`self._niveau`, marqueur « % »/« pourcent »/ « intensité »/« niveau » requis, pas optionnel). Le manuel documente aussi une forme bascule, `<chan> At Park Enter` (parque si non parqué, déparque si parqué) — jamais générée ici, car son résultat dépend d'un état console que le traducteur ne peut pas lire (même refus de principe que pour `bump_direction`, où deviner un état console produirait une macro valide et un résultat imprévisible sur scène). Sans marqueur de niveau dans la phrase, la traduction reste `incompris` plutôt que de choisir la forme bascule ou de mésinterpréter un numéro comme une plage. L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse (`Address <n> At <niveau> Park`) restent hors périmètre de cette tranche.\n"
+    },
+    "verifier": {
+      "description": "passer les circuits en revue un par un (Check)",
+      "declencheurs": {
+        "verbe": [
+          "verifie",
+          "verifier",
+          "verification",
+          "check",
+          "checke",
+          "checker",
+          "controle",
+          "controler",
+          "teste",
+          "tester"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj"
+        ]
+      },
+      "exemple_nl": "vérifie les circuits 1 à 20 à 75 %",
+      "origine": "manuel §6 « Address Check » — `[1] [At] [Full]` puis `{Check} [Enter]`, confiance A (`grammar/modele.yaml`, section `actions`/`verifier`).\n",
+      "note": "Le niveau fait partie de la commande : `Chan 1 At 75 Check Enter`. Le modèle porte le reste — `Next`/`Last` font défiler, et toute autre touche sort du mode. Le traducteur ne produit que la mise en route.\n"
     },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
@@ -495,8 +555,9 @@
           "origine"
         ]
       },
-      "exemple_nl": "aller à la cue 5",
-      "origine": "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts"
+      "exemple_nl": "aller à la cue 5 ; va à la cue suivante en 3 secondes ; va à la cue suivante sans les temps\n",
+      "origine": "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts",
+      "note": "La durée est attestée mot pour mot : `[Go to Cue] [Next] [Time] [3] [Enter]` (manuel §16). « Sans les temps » produit `Time 0` et NON un `Time` nu : le manuel §16 précise que `Go To Cue 8 Time Enter` emploie au contraire les temps stockés dans la cue 8. La feuille communautaire « Handy Macros » se trompe exactement là-dessus — sa macro « Quickstep » écrit `[time] [enter]` en annonçant « ignores timing », ce qui produit l'inverse de ce qu'elle promet.\n"
     },
     "enregistrer_sub": {
       "description": "enregistrer une sélection de circuits dans un submaster",
@@ -1016,7 +1077,7 @@
           "group"
         ]
       },
-      "exemple_nl": "sneak les circuits 1 à 5",
+      "exemple_nl": "sneak les circuits 1 à 5 ; sneak les circuits 1 à 5 en 3 secondes",
       "origine": "manuel §6 et §24 (exemple de macro `Sneak Time 10 Enter`), confiance A (`grammar/modele.yaml`, section `actions`/`sneak`).\n",
       "note": "Le double appui `Sneak Sneak` pose `{AllNPs} Sneak` et auto-termine (manuel §6) — hors périmètre, même raison que pour `Full Full`.\n"
     },

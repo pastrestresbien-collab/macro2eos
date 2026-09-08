@@ -57,7 +57,7 @@
 
 meta:
   version: "0.1"
-  maj: "2026-09-03"
+  maj: "2026-09-08"
 
 questions:
   - date: "2026-09-03"
@@ -134,3 +134,99 @@ questions:
     backlog: null
     traite: "non"
     traite_ou: null
+
+  - date: "2026-09-08"
+    question: "Analyse la qualité de trois corpus de macros fournis en conversation."
+    reponse: >-
+      Trois documents, trois natures. Les lots « 100 macros » (1-60 puis
+      61-100) sont inutilisables comme source de syntaxe : 16 noms de commande
+      sans aucune trace dans les 1155 clés OSC ni dans les manuels pour le
+      premier, une douzaine pour le second. La feuille communautaire ETC
+      « Handy Macros » (43 entrées, colonnes Mode et Creator) tient au
+      contraire la vérification : la quasi-totalité de son vocabulaire résout,
+      et quatre de ses entrées recoupent mot pour mot des passages du dépôt.
+    sources:
+      - "reference/eosKeys.ts — 1155 clés"
+      - "manuals/operations-manual/02-system-basics.md:2328 — `[Copy To] [Copy to]` pose Move To"
+      - "manuals/l3-advanced-workbook §Fan — `[Fan] {Center} [Enter]` (l.1006, 1123)"
+      - "manuals/operations-manual/09-mark.md:166 — {Earliest M}"
+      - "manuals/operations-manual/15-advanced-manual-control.md:311-313 — Query Live Moves / Dark Moves"
+      - "manuals/operations-manual/04-patch.md:288 — [Query] {Unpatched}, et non {Unused}"
+      - "manuals/operations-manual/24-macros.md:141-167 — softkeys de l'éditeur de macro"
+      - "corpus/CORPUS_EOS_COMPLET.md #035 — More_SoftKeys ne s'enregistre pas en macro"
+    confiance: "A"
+    consequence: "contradiction"
+    detail: >-
+      Trois défauts systémiques communs aux deux premiers lots. (1) Confusion
+      entre la liste des clés OSC et le vocabulaire de l'éditeur de macro —
+      `macro_wait` est un nom OSC, le softkey s'appelle `{Wait}` (§24). (2)
+      Confusion `[touche]` / `{softkey}` : le manuel précise QUELS modèles de
+      console exigent la forme softkey (`{Fader Control} {Off}` sur Element 2,
+      `[Fader Control] {Freeze}` sur Ion Classic — 20-submasters.md:419, 457),
+      contrainte absente des deux lots. (3) Échelle de confiance incompatible :
+      les lots cotent 4/5 et 5/5 des macros d'origine forum, alors qu'aucune
+      entrée d'origine forum du dépôt ne dépasse B (voir la table « Liste
+      vivante » du corpus). Signal négatif décisif sur la provenance
+      revendiquée : six des tokens les plus distinctifs du second lot (Freeze,
+      Stomp, Fader Page, Unused, Unlock, Clear Tabs) ont zéro occurrence dans
+      les 174 entrées du corpus, pourtant récoltées sur les mêmes forums.
+      La feuille « Handy Macros » a le défaut inverse — dégâts d'export de
+      tableur : 6 entrées sur 43 ont perdu leur syntaxe (« 3 », « 300t3 »,
+      « Q », deux cellules vides, un `805` orphelin), et une est déclarée
+      cassée par son propre auteur. Défaut de complétude, pas d'invention.
+      Retenu du lot 2 malgré tout : `clear_all_tabs` EXISTE bien comme clé OSC
+      — son `{Clear Tabs}` visait une fonction réelle avec un token faux.
+    backlog: null
+    traite: "oui"
+    traite_ou: >-
+      Tranche « conduite » (durées, Check, Go To Cue temporisé) tirée des
+      intentions de la feuille communautaire, syntaxe reprise au manuel seul.
+
+  - date: "2026-09-08"
+    question: "Un submaster accepte-t-il `At <niveau>` ? Le modèle le refuse, le manuel en donne un exemple."
+    reponse: >-
+      Contradiction ouverte. grammar/modele.yaml refuse `Sub` + `intensite`
+      avec la confiance S (constat au banc : le niveau d'un sub passe par le
+      fader ou les bumps). Or le manuel §6 donne `[Sub] [4] [At] [5] [0]
+      [Sneak] [2] [Enter]` — « selects submaster 4 and sneaks it to 50% in 2
+      seconds ». Réconciliation plausible mais NON vérifiée : `At` seul
+      échouerait là où `At <n> Sneak <s>` réussirait, le Sneak étant ce qui
+      exécute le mouvement.
+    sources:
+      - "manuals/operations-manual/06-manual-control.md:1122"
+      - "grammar/modele.yaml — legalite, Sub + intensite, valide: non, confiance S"
+    confiance: "A"
+    consequence: "contradiction"
+    detail: >-
+      Le refus reste EN PLACE : une observation au banc (S) prime sur une
+      ligne de manuel (A), c'est la hiérarchie du projet. À trancher au banc,
+      en testant séparément `Sub 4 At 50 Enter` et `Sub 4 At 50 Sneak 2
+      Enter`. Si le second passe, la règle de légalité doit se resserrer sur
+      la forme nue au lieu de refuser le couple entier.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+
+  - date: "2026-09-08"
+    question: "`Go To Cue <n> Time Enter` ignore-t-il les temps de la cue ?"
+    reponse: >-
+      Non, l'inverse. Le manuel §16 : « `[Go To Cue] [8] [Time] [Enter]` would
+      take you to cue 8 using all timing values stored in cue 8 ». Ce qui
+      ignore la temporisation, c'est `Time 0`. La macro « Quickstep » de la
+      feuille communautaire écrit `[go to cue] [next] [time] [enter]` en
+      annonçant « jumps to next cue but ignores timing » : sa syntaxe fait
+      l'inverse de sa description.
+    sources:
+      - "manuals/operations-manual/16-cue-playback.md:133-141"
+      - "grammar/patrons.yaml — patron noir sec, `Go To Cue Out Time 0 Enter`, confiance A"
+    confiance: "A"
+    consequence: "lexique_manquant"
+    detail: >-
+      Cas d'école : une macro largement diffusée, plausible, écrite par un
+      praticien, et fausse sur le point précis qu'elle revendique. Seule la
+      lecture du manuel la départage. Le traducteur produit désormais `Time 0`
+      pour « sans les temps » et `Time <n>` pour « en n secondes », jamais un
+      `Time` nu.
+    backlog: null
+    traite: "oui"
+    traite_ou: "traducteur/traducteur.py — _sans_temps() et _temps_de_cue()"

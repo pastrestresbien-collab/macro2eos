@@ -314,6 +314,26 @@ cue_cibles:
 # à l'ordre des mots : le français du métier est télégraphique et la dictée
 # vocale ne rendra pas une syntaxe propre.
 # --------------------------------------------------------------------------
+# DURÉES — un créneau partagé, jamais une intention à lui seul
+#
+# « en 20 secondes » ne dit pas QUOI faire ; il précise une commande qui existe
+# déjà. Le mot se lit donc comme le niveau se lit : à son marqueur, jamais par
+# position. Sans marqueur, un nombre reste un numéro de circuit ou de cue.
+#
+# `s` est admis mais UNIQUEMENT collé derrière un nombre (« 20 s »), comme `%`
+# pour les niveaux : isolé, une lettre seule est trop ambiguë pour arbitrer.
+# --------------------------------------------------------------------------
+durees:
+  marqueurs: [seconde, secondes, sec, secs]
+  marqueurs_postfixes: [s]
+  # « sans les temps », « sans temporisation » — le manuel §16 est formel :
+  # `Go To Cue 8 Time Enter` (Time NU) utilise au contraire les temps STOCKÉS
+  # dans la cue. Ce qui ignore la temporisation, c'est `Time 0`.
+  sans_temps: [sec, secs, instantane, instantanee, immediat, immediate, cut]
+  mots_sans: [sans]
+  mots_temps: [temps, temporisation, timing, fondu]
+
+# --------------------------------------------------------------------------
 intentions:
   creer_palettes_couleur:
     description: "créer une ou plusieurs palettes de couleur à partir de gélatines"
@@ -379,6 +399,21 @@ intentions:
       <pourcentage> Park`) et le parquage d'adresse (`Address <n> At
       <niveau> Park`) restent hors périmètre de cette tranche.
 
+  verifier:
+    description: "passer les circuits en revue un par un (Check)"
+    declencheurs:
+      verbe: [verifie, verifier, verification, check, checke, checker, controle,
+              controler, teste, tester]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj]
+    exemple_nl: "vérifie les circuits 1 à 20 à 75 %"
+    origine: >
+      manuel §6 « Address Check » — `[1] [At] [Full]` puis `{Check} [Enter]`,
+      confiance A (`grammar/modele.yaml`, section `actions`/`verifier`).
+    note: >
+      Le niveau fait partie de la commande : `Chan 1 At 75 Check Enter`. Le
+      modèle porte le reste — `Next`/`Last` font défiler, et toute autre touche
+      sort du mode. Le traducteur ne produit que la mise en route.
+
   regler_intensite:
     description: "donner un niveau d'intensité à une sélection"
     declencheurs:
@@ -413,8 +448,18 @@ intentions:
       # « va au noir » n'a pas besoin de dire « cue » pour être compris.
       cible: [cue, cues, memoire, memoires, sequence, out, noir, blackout,
               suivante, next, suivant, precedente, last, derniere, home, origine]
-    exemple_nl: "aller à la cue 5"
+    exemple_nl: >
+      aller à la cue 5 ; va à la cue suivante en 3 secondes ;
+      va à la cue suivante sans les temps
     origine: "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts"
+    note: >
+      La durée est attestée mot pour mot : `[Go to Cue] [Next] [Time] [3]
+      [Enter]` (manuel §16). « Sans les temps » produit `Time 0` et NON un
+      `Time` nu : le manuel §16 précise que `Go To Cue 8 Time Enter` emploie au
+      contraire les temps stockés dans la cue 8. La feuille communautaire
+      « Handy Macros » se trompe exactement là-dessus — sa macro « Quickstep »
+      écrit `[time] [enter]` en annonçant « ignores timing », ce qui produit
+      l'inverse de ce qu'elle promet.
 
   enregistrer_sub:
     description: "enregistrer une sélection de circuits dans un submaster"
@@ -780,7 +825,7 @@ intentions:
     declencheurs:
       verbe: [sneak, sneake, sneaker]
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
-    exemple_nl: "sneak les circuits 1 à 5"
+    exemple_nl: "sneak les circuits 1 à 5 ; sneak les circuits 1 à 5 en 3 secondes"
     origine: >
       manuel §6 et §24 (exemple de macro `Sneak Time 10 Enter`), confiance A
       (`grammar/modele.yaml`, section `actions`/`sneak`).

@@ -892,6 +892,72 @@ CAS = [
         "non_reconnus": [], "ignores": [],
     },
     {
+        # `Sneak Time 3` : SANS destination, le mot-clé `Time` est obligatoire.
+        "nom": "sneak temporisé — la forme sans destination garde `Time`",
+        "phrase": "sneak les circuits 1 a 5 en 3 secondes",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Sneak Time 3 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # `At 50 Sneak 8` : AVEC destination, `Time` disparaît et le nombre se
+        # colle à `Sneak` (manuel §6, « sneaks channel 5 to 50% in 8 seconds »).
+        # Les deux formes ne se déduisent pas l'une de l'autre.
+        "nom": "niveau temporisé — la forme avec destination perd `Time`",
+        "phrase": "circuits 1 a 5 a 50 % en 8 secondes",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Sneak 8 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "durée en postfixe — « 20 s » comme « 50 % »",
+        "phrase": "circuits 1 a 5 a 100 % en 20 s",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 100 Sneak 20 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Sans marqueur de durée, un nombre reste un numéro : le 8 de
+        # « circuits 1 à 8 » ne doit jamais devenir un temps.
+        "nom": "aucune durée sans marqueur — le nombre reste une sélection",
+        "phrase": "circuits 1 a 8 a 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 8 At 50 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "go to cue temporisé",
+        "phrase": "va a la cue suivante en 3 secondes",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Time 3 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Le piège du manuel §16 : `Go To Cue 8 Time Enter` emploie les temps
+        # STOCKÉS dans la cue. Ce qui les ignore, c'est `Time 0`. La feuille
+        # communautaire « Handy Macros » écrit `[time] [enter]` en annonçant
+        # « ignores timing » — sa macro fait l'inverse de sa description.
+        "nom": "« sans les temps » donne `Time 0`, jamais un `Time` nu",
+        "phrase": "va a la cue suivante sans les temps",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Time 0 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "revue circuit par circuit — une seule ligne, un seul Enter",
+        "phrase": "verifie les circuits 1 a 20 a 75 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 20 At 75 Check Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Sans niveau, `Check` n'a rien à amener nulle part : refus plutôt
+        # qu'un niveau par défaut inventé.
+        "nom": "revue sans niveau — refus assumé",
+        "phrase": "verifie les circuits 1 a 20",
+        "statut": "incompris",
+    },
+    {
         "nom": "update d'une cue — la cible est toujours explicite",
         "phrase": "mets a jour la cue 4",
         "statut": "compris",

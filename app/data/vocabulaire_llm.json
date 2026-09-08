@@ -95,6 +95,13 @@
         "objet"
       ]
     },
+    "verifier": {
+      "description": "passer les circuits en revue un par un (Check)",
+      "champs": [
+        "verbe",
+        "objet"
+      ]
+    },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "champs": [

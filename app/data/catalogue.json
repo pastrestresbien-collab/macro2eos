@@ -15,6 +15,11 @@
     "description": "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub"
   },
   {
+    "intention": "verifier",
+    "phrase": "vérifie les circuits 1 à 20 à 75 %",
+    "description": "passer les circuits en revue un par un (Check)"
+  },
+  {
     "intention": "regler_intensite",
     "phrase": "circuits 1 à 5 à 50 %",
     "description": "donner un niveau d'intensité à une sélection"
@@ -27,6 +32,16 @@
   {
     "intention": "aller_a_cue",
     "phrase": "aller à la cue 5",
+    "description": "aller à une cue (Go To Cue)"
+  },
+  {
+    "intention": "aller_a_cue",
+    "phrase": "va à la cue suivante en 3 secondes",
+    "description": "aller à une cue (Go To Cue)"
+  },
+  {
+    "intention": "aller_a_cue",
+    "phrase": "va à la cue suivante sans les temps",
     "description": "aller à une cue (Go To Cue)"
   },
   {
@@ -157,6 +172,11 @@
   {
     "intention": "sneak",
     "phrase": "sneak les circuits 1 à 5",
+    "description": "rendre une sélection à son état de fond (Sneak)"
+  },
+  {
+    "intention": "sneak",
+    "phrase": "sneak les circuits 1 à 5 en 3 secondes",
     "description": "rendre une sélection à son état de fond (Sneak)"
   },
   {

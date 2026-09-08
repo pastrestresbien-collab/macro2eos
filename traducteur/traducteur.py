@@ -184,6 +184,11 @@ class Traducteur:
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
         self._cue_cibles = self._indexer(self.lex["cue_cibles"])
+        d = self.lex["durees"]
+        self._marqueurs_duree = tuple(d["marqueurs"])
+        self._marqueurs_duree_post = tuple(d["marqueurs_postfixes"])
+        self._mots_sans = set(d["mots_sans"])
+        self._mots_temps = set(d["mots_temps"])
         # Intention retenue par l'appel `traduire()` en cours — voir la note
         # de `traduire()`. Champ de travail, pas un état du traducteur : il
         # est posé puis restauré à chaque appel, et vaut None hors appel.
@@ -472,6 +477,7 @@ class Traducteur:
             "plein_feu": self._action_sur_selection,
             "hors_scene": self._action_sur_selection,
             "sneak": self._action_sur_selection,
+            "verifier": self._verifier,
             "update_cue": self._update_cue,
             "selection_derniere": self._action_sans_argument,
             "selection_active": self._action_sans_argument,
@@ -554,6 +560,8 @@ class Traducteur:
         connus = {m for corps in self.lex["intentions"].values()
                   for mots in corps["declencheurs"].values() for m in mots}
         connus |= self._outils | self._mots_plage | {"%"}
+        connus |= set(self._marqueurs_duree) | set(self._marqueurs_duree_post)
+        connus |= self._mots_sans | self._mots_temps
         for index in (self._objets, self._objets_cible, self._nuanciers,
                       self._couleurs, self._cue_cibles):
             connus |= set(index)
@@ -874,6 +882,19 @@ class Traducteur:
 
         action = {"type": "intensite"}
         action.update(niveau)
+
+        # « en 8 secondes » sur un niveau, c'est un SNEAK, pas un `Time` : le
+        # manuel §6 donne `[5] [At] [50] [Sneak] [8] [Enter]` — « sneaks
+        # channel 5 to 50% in 8 seconds ». Et la durée s'y colle sans le
+        # mot-clé `Time`, contrairement au sneak sans destination. Aucune
+        # forme `At <niveau> Time <n>` n'est attestée : on ne l'invente pas.
+        duree = self._duree(toks, pris)
+        if duree is not None:
+            action["sneak"] = duree
+            notes.append(
+                "La durée passe par `Sneak` — c'est la forme documentée pour "
+                "amener une sélection à un niveau en un temps donné.")
+
         ir = [{"selection": selection, "action": action}]
         return Traduction(statut="compris", ir=ir, notes=notes,
                           **self._mots(toks, pris))
@@ -895,6 +916,49 @@ class Traducteur:
                 pris.update({i, i + 1})
                 return {"valeur": int(toks[i + 1])}
         return None
+
+    def _duree(self, toks: list[str], pris: set[int]) -> int | None:
+        """`en 20 secondes` → 20. Lu au marqueur, jamais par position.
+
+        Même principe que `_niveau` et pour la même raison : sans marqueur, un
+        nombre est un numéro de circuit ou de cue. « circuits 1 à 5 en 3
+        secondes » et « circuits 1 à 5 » ne doivent pas se disputer le 3.
+
+        `s` n'est accepté qu'en POSTFIXE collé à un nombre (« 20 s »), comme
+        `%` pour les niveaux : une lettre isolée n'a pas assez de matière pour
+        arbitrer, et la tolérance aux fautes ne s'applique pas sous 4 lettres.
+        """
+        for i, tok in enumerate(toks):
+            if i in pris:
+                continue
+            if tok in self._marqueurs_duree:
+                for j in (i - 1, i + 1):
+                    if 0 <= j < len(toks) and toks[j].isdigit() and j not in pris:
+                        pris.update({i, j})
+                        return int(toks[j])
+            elif tok in self._marqueurs_duree_post:
+                j = i - 1
+                if j >= 0 and toks[j].isdigit() and j not in pris:
+                    pris.update({i, j})
+                    return int(toks[j])
+        return None
+
+    def _sans_temps(self, toks: list[str], pris: set[int]) -> bool:
+        """« sans les temps », « sans temporisation ».
+
+        Rend `Time 0`, jamais un `Time` nu — le manuel §16 est explicite :
+        `Go To Cue 8 Time Enter` emploie au contraire les temps STOCKÉS dans
+        la cue. C'est l'erreur exacte de la macro « Quickstep » de la feuille
+        communautaire, qui écrit `[time] [enter]` en annonçant l'inverse.
+        """
+        for i, tok in enumerate(toks):
+            if i in pris or tok not in self._mots_sans:
+                continue
+            for j in range(i + 1, min(i + 4, len(toks))):
+                if toks[j] in self._mots_temps and j not in pris:
+                    pris.update({i, j})
+                    return True
+        return False
 
     # -- intention : parquer (Park, un seul circuit/groupe, forme absolue) --
     def _parquer(self, toks: list[str], reponses: dict) -> Traduction:
@@ -975,8 +1039,9 @@ class Traducteur:
             cle, _ = self._resoudre(tok, self._cue_cibles)
             if cle:
                 pris.add(i)
-                ir = [{"action": {"type": "go_to_cue", "mot": cle}}]
-                return Traduction(statut="compris", ir=ir,
+                action = {"type": "go_to_cue", "mot": cle}
+                self._temps_de_cue(action, toks, pris)
+                return Traduction(statut="compris", ir=[{"action": action}],
                                   **self._mots(toks, pris))
 
         # Le mot « cue » lui-même : il désigne bien l'objet de l'action, et
@@ -991,9 +1056,24 @@ class Traducteur:
                 "(noir, suivante, précédente, home)."])
         i, cible = libres[0]
         pris.add(i)
-        ir = [{"action": {"type": "go_to_cue", "cible": cible}}]
-        return Traduction(statut="compris", ir=ir,
+        action = {"type": "go_to_cue", "cible": cible}
+        self._temps_de_cue(action, toks, pris)
+        return Traduction(statut="compris", ir=[{"action": action}],
                           **self._mots(toks, pris))
+
+    def _temps_de_cue(self, action: dict, toks: list[str], pris: set[int]) -> None:
+        """Pose le `Time` d'un `Go To Cue`, s'il y en a un dans la phrase.
+
+        Deux formes seulement, et jamais un `Time` nu : « en 3 secondes »
+        donne `Time 3`, « sans les temps » donne `Time 0`. Le manuel §16 est
+        explicite sur le fait qu'un `Time` sans valeur emploie au contraire
+        les temps stockés dans la cue — produire ça pour « sans les temps »
+        serait exactement l'inverse de la demande."""
+        duree = self._duree(toks, pris)
+        if duree is not None:
+            action["temps"] = {"valeur": duree}
+        elif self._sans_temps(toks, pris):
+            action["temps"] = {"valeur": 0}
 
     # -- intention : enregistrer une sélection dans un submaster ------------
     def _enregistrer_sub(self, toks: list[str], reponses: dict) -> Traduction:
@@ -1489,8 +1569,47 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro trouvé pour la sélection."])
 
+        action: dict = {"type": self._intention_courante}
+        # Seul `sneak` porte une durée, et sous la forme SANS destination :
+        # `Sneak Time 3`. La forme avec destination (`At 50 Sneak 8`) est
+        # autre chose, et c'est `_regler_intensite` qui la produit — le modèle
+        # documente pourquoi les deux ne sont pas interchangeables.
+        if self._intention_courante == "sneak":
+            duree = self._duree(toks, pris)
+            if duree is not None:
+                action["temps"] = {"valeur": duree}
+
+        ir = [{"selection": selection, "action": action}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _verifier(self, toks: list[str], reponses: dict) -> Traduction:
+        """`<sélection> At <niveau> Check` — la revue circuit par circuit.
+
+        Le niveau n'est pas décoratif : `{Check}` amène le premier circuit AU
+        niveau donné, puis `Next`/`Last` défilent. Sans niveau, la commande
+        n'a pas de sens, donc pas de valeur par défaut inventée ici."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris) or "Chan"
+        selection = self._selection_de(objet, toks, pris)
+        if selection is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit désigné — préciser les circuits à vérifier."])
+
+        niveau = self._niveau(toks, pris)
+        if niveau is None:
+            return Traduction(statut="incompris", notes=[
+                "Niveau manquant : une vérification amène chaque circuit à un "
+                "niveau donné (« vérifie les circuits 1 à 20 à 75 % »)."])
+        if "de" in niveau:
+            return Traduction(statut="incompris", notes=[
+                "Une vérification prend un niveau unique, pas un dégradé : "
+                "chaque circuit est amené au même niveau à son tour."])
+
+        # UNE seule ligne : `Chan 1 At 75 Check Enter`. Deux étapes d'IR
+        # donneraient deux lignes et deux `Enter`, et le second validerait une
+        # commande vide — le drapeau garde la commande entière.
         ir = [{"selection": selection,
-               "action": {"type": self._intention_courante}}]
+               "action": {"type": "intensite", **niveau, "check": True}}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def _action_sans_argument(self, toks: list[str], reponses: dict) -> Traduction:

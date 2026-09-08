@@ -373,8 +373,22 @@ class Generateur:
             return f"{mot} {act['nuancier']}/{act['teinte']}"
 
         if t == "intensite":
-            return " ".join([mot, self._plage_ou_valeur_pourcentage(act)]
-                            + self._suffixe_fan(act, avert))
+            morceaux = [mot, self._plage_ou_valeur_pourcentage(act)] \
+                + self._suffixe_fan(act, avert)
+            # Une destination étant posée, la durée de sneak se colle au
+            # mot-clé SANS `Time` : `Chan 5 At 50 Sneak 8` (manuel §6). La
+            # forme `Sneak Time <n>` est celle du sneak SANS destination —
+            # les deux ne sont pas interchangeables, `sneak` (l'action) porte
+            # la note qui l'explique.
+            if act.get("check"):
+                morceaux.append(self.modele["actions"]["verifier"]["mot_cle"])
+            if "sneak" in act:
+                # surtout pas `_formater_niveau` : il complète à deux
+                # chiffres (`05` = 5 %), ce qui est juste pour une intensité
+                # et faux pour une durée — `Sneak 08` n'est pas `Sneak 8`.
+                morceaux += [self.modele["actions"]["sneak"]["mot_cle"],
+                             str(act["sneak"])]
+            return " ".join(morceaux)
 
         if t in ("temps", "delai"):
             if "montee" in act:                  # `Time 4/3` — montée / descente
@@ -492,7 +506,8 @@ class Generateur:
             return f"{mot} {act['numero']}"
 
         if t in ("selection_active", "selection_derniere", "retirer_effet",
-                 "hors_scene", "niveau_setup", "incrementer", "decrementer"):
+                 "hors_scene", "niveau_setup", "incrementer", "decrementer",
+                 "verifier"):
             return mot
 
         if t in ("plein_feu", "sneak"):

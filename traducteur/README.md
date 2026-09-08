@@ -291,6 +291,27 @@ tranche ne tranche pas encore. Suppression d'une partition préprogrammée (0, 9
 traducteur (`APP.md`) — mais le générateur porte l'avertissement sourcé (manuel §28,
 « Deleting Partitions », confiance A).
 
+**Durées : deux formes, et elles ne se déduisent pas l'une de l'autre.** « en 3 secondes »
+n'a pas une traduction mais trois, selon la commande — et c'est le manuel qui tranche, pas
+la symétrie. Sans destination, `Sneak` exige le mot-clé : `Sneak Time 3`. Avec une
+destination, `Time` disparaît et le nombre se colle au mot-clé : `At 50 Sneak 8` (manuel
+§6, « sneaks channel 5 to 50% in 8 seconds »). Sur un `Go To Cue`, c'est `Time 3`. Aucune
+forme `At <niveau> Time <n>` n'est attestée : le traducteur ne la produit donc pas.
+
+**« Sans les temps » donne `Time 0`, jamais un `Time` nu.** Le manuel §16 est explicite :
+`Go To Cue 8 Time Enter` emploie au contraire les temps *stockés* dans la cue 8. La macro
+« Quickstep » de la feuille communautaire ETC écrit `[time] [enter]` en annonçant « ignores
+timing » — elle fait l'inverse de ce qu'elle promet. C'est le meilleur argument du dépôt
+pour la règle « n'invente rien » : une macro plausible, diffusée, écrite par un praticien,
+et fausse sur le point exact qu'elle revendique. Seule la lecture du manuel la départage.
+
+**La revue circuit par circuit tient sur une ligne.** `Chan 1 At 75 Check Enter` — le
+niveau fait partie de la commande, puisque `{Check}` amène le premier circuit *à ce
+niveau* avant que `Next`/`Last` ne fassent défiler. Deux étapes d'IR produiraient deux
+`Enter`, dont le second validerait une ligne vide : `Check` est donc un drapeau sur
+l'action d'intensité, pas une action séparée. Sans niveau dans la phrase, refus assumé
+plutôt qu'une valeur par défaut inventée.
+
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
 magic sheets, show control, groupes (au-delà d'une sélection simple) — la majeure partie
 des 79 actions du modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
