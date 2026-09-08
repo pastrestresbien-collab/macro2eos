@@ -230,3 +230,35 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "traducteur/traducteur.py — _sans_temps() et _temps_de_cue()"
+
+  - date: "2026-09-08"
+    question: "Le traducteur sait-il produire ce que les praticiens écrivent vraiment ?"
+    reponse: >-
+      Non : 0 sur 26 entrées comparables de la feuille communautaire ETC.
+      Mesurée contre le modèle du dépôt, la couverture est de 30 intentions
+      pour 80 actions ; mesurée contre un corpus de terrain, elle est nulle.
+      La répartition des échecs importe plus que le total — 9 macros
+      multi-commandes (fonctionnalité absente), 17 trous de vocabulaire, et
+      9 échecs par SÉLECTION IMPLICITE.
+    sources:
+      - "corpus/handy_macros_etc.yaml — 43 entrées, 37 exploitables"
+      - "traducteur/test_corpus_terrain.py — banc de rétro-traduction"
+      - "REGLES_POUR_UI.md règle 5 — ne jamais deviner un état de console"
+    confiance: "A"
+    consequence: "contradiction"
+    detail: >-
+      Tension de conception, pas trou de lexique. Les macros de praticiens
+      sont écrites pour « ce qui est sélectionné en ce moment » — c'est
+      l'intérêt même d'un bouton de magic sheet : `@ Full Sneak Time 20` ne
+      nomme aucun circuit. Le traducteur exige au contraire une cible
+      explicite dans la phrase, par la règle 5. Les deux positions sont
+      défendables et elles s'excluent. Trois issues possibles, aucune
+      tranchée : (a) tenir la règle 5 et assumer de ne pas couvrir cette
+      famille ; (b) introduire une sélection courante EXPLICITE dans l'IR,
+      que l'utilisateur pose en une phrase séparée, ce qui garde la règle 5
+      au niveau de la phrase tout en couvrant l'usage ; (c) un mode « macro »
+      distinct du mode « ligne de commande ». Décision utilisateur, pas
+      technique — elle change ce qu'est le produit.
+    backlog: null
+    traite: "non"
+    traite_ou: null

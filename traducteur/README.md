@@ -291,6 +291,55 @@ tranche ne tranche pas encore. Suppression d'une partition préprogrammée (0, 9
 traducteur (`APP.md`) — mais le générateur porte l'avertissement sourcé (manuel §28,
 « Deleting Partitions », confiance A).
 
+## Le quatrième banc — rétro-traduction contre un corpus de terrain
+
+`test_corpus_terrain.py` est le seul banc du dépôt dont les attentes ne
+viennent pas de moi. Les trois autres (`test_traducteur.py`,
+`test_generateur.py`, `test_catalogue.py`) comparent le traducteur à des cas
+que j'ai écrits : ils protègent des régressions, mais ils ne peuvent
+structurellement pas révéler qu'une attente était fausse dès le départ.
+
+Celui-ci confronte le traducteur à `corpus/handy_macros_etc.yaml` — la feuille
+collaborative ETC « Handy Macros », 43 macros écrites par des praticiens qui
+ne connaissent ni ce lexique ni ce modèle. On donne au traducteur la
+description française de chaque macro, et on compare sa sortie à celle du
+praticien.
+
+**Un désaccord n'est pas un échec du traducteur.** C'est une question, et elle
+se tranche dans les deux sens : le manuel §16 a déjà donné tort à la feuille
+sur « Quickstep ». Seule la RÉGRESSION fait échouer le banc — un verdict qui
+recule par rapport à la référence enregistrée dans le YAML. Une progression
+est signalée et demande une mise à jour de la référence.
+
+**Ce banc ne prouve jamais qu'une macro fonctionne.** La feuille est de
+confiance B ; seul `grammar/refus_terrain.yaml` produit du S.
+
+### Ce qu'il a mesuré à sa mise en service
+
+`0/26` sur les entrées comparables. Le chiffre est brutal et c'est son
+intérêt : la couverture annoncée ailleurs (30 intentions pour 80 actions du
+modèle) se mesure contre *mon* modèle. Mesurée contre ce que les praticiens
+écrivent vraiment, elle est nulle. Deux chiffres très différents, et le second
+est le plus honnête.
+
+La répartition des échecs est plus instructive que le total :
+
+| cause | nombre | nature |
+|---|---|---|
+| macros multi-commandes | 9 | fonctionnalité absente — le traducteur produit des lignes, pas des macros |
+| vocabulaire hors lexique | 17 | trou de lexique, se comble par ajout |
+| **sélection implicite** | **9** | **tension de conception, ne se comble pas par du lexique** |
+| cellules perdues à l'export | 6 | défaut de la feuille |
+| feuille fautive | 2 | Quickstep, réfuté par le manuel §16 |
+
+La ligne qui compte est la troisième. Les macros de praticiens sont
+massivement écrites pour « ce qui est sélectionné en ce moment » — c'est tout
+l'intérêt d'un bouton de magic sheet. Le traducteur, lui, exige une cible
+explicite : c'est la règle 5 de `REGLES_POUR_UI.md`, qui interdit de deviner
+un état de console. Les deux positions sont défendables et elles
+s'excluent. Le banc n'a pas tranché ; il a rendu le conflit visible et
+chiffré, ce qu'aucun des trois autres ne pouvait faire.
+
 **Durées : deux formes, et elles ne se déduisent pas l'une de l'autre.** « en 3 secondes »
 n'a pas une traduction mais trois, selon la commande — et c'est le manuel qui tranche, pas
 la symétrie. Sans destination, `Sneak` exige le mot-clé : `Sneak Time 3`. Avec une

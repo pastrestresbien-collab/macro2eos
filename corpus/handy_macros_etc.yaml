@@ -1,0 +1,454 @@
+# Feuille collaborative ETC « Handy Macros » — transcription pour rétro-traduction.
+#
+# CE FICHIER N'EST PAS UNE SOURCE DE SYNTAXE. Sa syntaxe est de confiance B
+# (praticiens réels, console réelle, non testée ici) et une entrée au moins est
+# démontrablement fausse — voir `Quickstep`, dont le manuel §16 contredit la
+# description. On ne génère JAMAIS depuis ce fichier : il sert d'ORACLE
+# INDÉPENDANT, c'est-à-dire d'occasion de faire échouer le traducteur.
+#
+# Audit complet : reference/journal_questions.yaml, entrée du 2026-09-08.
+#
+# Discipline de rédaction — la seule chose qui rend ce test honnête :
+#   `demande_nl` est écrite depuis les colonnes Label et Note de la feuille,
+#   traduites littéralement, AVANT toute exécution du traducteur. Formuler la
+#   phrase française d'après ce que le lexique sait déjà accepter viderait le
+#   test de son contenu : il ne mesurerait plus que sa propre complaisance.
+#
+# Champs :
+#   id              - identifiant stable
+#   label           - colonne Label de la feuille, verbatim
+#   syntaxe_feuille - colonne Syntax, normalisée aux conventions du dépôt
+#                     (♦ et [Enter] -> Enter ; espaces au lieu des crochets).
+#                     `null` = cellule perdue à l'export du tableur.
+#   mode            - colonne Mode (Foreground/Background), quand renseignée
+#   auteur          - colonne Creator, quand renseignée
+#   demande_nl      - la phrase française donnée au traducteur
+#   verdict         - référence enregistrée, recalculée à chaque exécution :
+#                     "identique"      même commande, aux espaces près
+#                     "equivalent"     forme différente, les deux attestées
+#                     "divergent"      désaccord réel -> question au journal
+#                     "hors_perimetre" le traducteur ne couvre pas encore
+#                     "source_fautive" la feuille est démontrablement fausse
+#                     "illisible"      cellule perdue, rien à comparer
+#   pourquoi        - obligatoire dès que le verdict n'est pas "identique"
+
+meta:
+  version: "0.1"
+  entrees: 43
+  exploitables: 37
+  source: >-
+    Feuille collaborative « Handy Macros », communauté ETC Eos, transmise en
+    conversation le 2026-09-08. En-tête : « Feel free to add things and give
+    some background info as to why this is a handy macro for you. »
+  convention_feuille: >-
+    Touches de face avant entre [crochets], softkeys entre {accolades},
+    frappes simultanées avec « + ». Le ♦ est la convention DE LA FEUILLE pour
+    [Enter] : zéro occurrence dans les 13 manuels du dépôt.
+
+entrees:
+  - id: stop_fx
+    label: "Stop FX"
+    syntaxe_feuille: "Stop_Effect Enter"
+    mode: Background
+    demande_nl: "arrête les effets"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro d'effet trouvé — préciser lequel, ou dire « tous les
+      effets ».
+
+  - id: allnps_recall_update
+    label: "All Non-intensity Parameter recall from last cue and update"
+    syntaxe_feuille: "AllNPs Recall_From Cue Last Enter Update Enter"
+    mode: null
+    demande_nl: "rappelle les paramètres non-intensité de la cue précédente et mets à jour"
+    verdict: multi_commande
+    pourquoi: >-
+      AllNPs Recall_From Cue Last Enter Update Enter
+
+  - id: move_to
+    label: "Move to"
+    syntaxe_feuille: "Copy_To Copy_To"
+    mode: Foreground
+    demande_nl: "déplace"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: gelbook
+    label: "Pick a Gelbook colour"
+    syntaxe_feuille: "Shift+Color 5 /"
+    mode: Foreground
+    demande_nl: "choisis une couleur dans le nuancier Rosco"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: blackout_blind
+    label: "Record a blackout in Blind"
+    syntaxe_feuille: "Blind Cue Wait_For_Enter Enter Select_Active Out Label B/O Enter Live"
+    mode: Background
+    demande_nl: "enregistre un noir en aveugle"
+    verdict: multi_commande
+    pourquoi: >-
+      Blind Cue Wait_For_Enter Enter Select_Active Out Label B/O Enter Live
+
+  - id: blackout_live
+    label: "Record a blackout in Live"
+    syntaxe_feuille: "Select_Active At Out Record Cue Next Block Assert Enter"
+    mode: null
+    demande_nl: "enregistre un noir dans la cue suivante"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: menu_magic_sheet
+    label: "(sans intitulé — menus de magic sheet dans un onglet fixe)"
+    syntaxe_feuille: null
+    mode: Background
+    demande_nl: "ouvre les menus de magic sheet toujours dans le même onglet"
+    verdict: illisible
+    pourquoi: "cellule Syntax réduite à « 3 » — perdue à l'export du tableur"
+
+  - id: clean_partial_block
+    label: "Clean Automatic partial block"
+    syntaxe_feuille: null
+    mode: null
+    demande_nl: "efface les blocages partiels automatiques de la liste de cues"
+    verdict: illisible
+    pourquoi: "cellule Syntax réduite à « 300t3 » — perdue à l'export du tableur"
+
+  - id: mark_qlp20
+    label: "Mark QLP20"
+    syntaxe_feuille: "Go_To_Blind_Macro Wait_For_Enter Mark Cue Last Part x Enter Enter Clear Sneak Enter Go_To_Cue Out Enter AllNPs Home Enter"
+    mode: Foreground
+    demande_nl: "marque les circuits que je vais saisir"
+    verdict: multi_commande
+    pourquoi: >-
+      Go_To_Blind_Macro Wait_For_Enter Mark Cue Last Part x Enter Enter
+      Clear Sneak Enter Go_To_Cue Out Enter AllNPs Home Enter
+
+  - id: scene_label
+    label: "Scene Label"
+    syntaxe_feuille: "Cue Wait_For_Enter Attributes Scene"
+    mode: Foreground
+    demande_nl: "pose une étiquette de scène sur une cue"
+    verdict: multi_commande
+    pourquoi: >-
+      Cue Wait_For_Enter Attributes Scene
+
+  - id: go_to_cue_prior
+    label: "Go to Cue Prior To"
+    syntaxe_feuille: null
+    mode: Foreground
+    demande_nl: "va à la cue d'avant"
+    verdict: illisible
+    pourquoi: "cellule Syntax réduite à « Q » — perdue à l'export du tableur"
+
+  - id: quickstep_avant
+    label: "Quickstep forward"
+    syntaxe_feuille: "Live Go_To_Cue Next Time Enter"
+    mode: null
+    demande_nl: "va à la cue suivante sans les temps"
+    verdict: source_fautive
+    pourquoi: >-
+      Le manuel §16 : « `[Go To Cue] [8] [Time] [Enter]` would take you to
+      cue 8 using all timing values stored in cue 8 ». Un `Time` nu emploie
+      donc les temps STOCKÉS — l'inverse du « ignores timing » annoncé par
+      la feuille. Ce qui les ignore est `Time 0`, ce que produit le
+      traducteur.
+
+  - id: quickstep_arriere
+    label: "Quickstep back"
+    syntaxe_feuille: "Live Go_To_Cue Last Time Enter"
+    mode: null
+    demande_nl: "va à la cue précédente sans les temps"
+    verdict: source_fautive
+    pourquoi: >-
+      Même erreur que `quickstep_avant`, même démonstration (manuel
+      §16:133-141).
+
+  - id: channel_check
+    label: "Channel Check"
+    syntaxe_feuille: "Chan 1 At 75 Check Enter"
+    mode: null
+    demande_nl: "vérifie les circuits à 75 %"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Niveau manquant : une vérification amène chaque circuit à un niveau
+      donné (« vérifie les circuits 1 à 20 à 75 % »).
+
+  - id: address_check
+    label: "Address Check"
+    syntaxe_feuille: "Address 1 At 75 Check Enter"
+    mode: Default
+    demande_nl: "vérifie les adresses à 75 %"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: cue_check
+    label: "Cue Check"
+    syntaxe_feuille: "Go_To_Cue 1/ Out Enter Macro_Loop_Begin Macro_Wait 7 Go_Cuelist 1 Enter Macro_Loop_End"
+    mode: null
+    demande_nl: "passe toutes les cues de la liste 1 en attendant 7 secondes entre chaque"
+    verdict: multi_commande
+    pourquoi: >-
+      Go_To_Cue 1/ Out Enter Macro_Loop_Begin Macro_Wait 7 Go_Cuelist 1
+      Enter Macro_Loop_End
+
+  - id: mirror_pan
+    label: "Mirror Pan"
+    syntaxe_feuille: "Pan / -100 Enter"
+    mode: null
+    demande_nl: "inverse le pan"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: pan_fan_center
+    label: "Pan Fan Center Enter"
+    syntaxe_feuille: "Pan Fan Center Enter"
+    mode: null
+    demande_nl: "étale le pan en éventail depuis le centre"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: mark_clear_live_moves
+    label: "Mark/Clear Live moves"
+    syntaxe_feuille: "Blind Blind Cue Query Live_Moves Mark Earliest_M Query Live_Moves AllNPs At Q_Only"
+    mode: Background
+    demande_nl: "trouve les mouvements visibles de la cue courante et marque-les"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro trouvé pour la cible du marquage.
+
+  - id: clear_dark_moves
+    label: "Clear Dark Moves"
+    syntaxe_feuille: "Blind Blind Cue Query Dark_Moves At Q_Only"
+    mode: Foreground
+    demande_nl: "efface les mouvements dans le noir de la cue courante"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: update_by_type_cp
+    label: "update by type CP (specific to fixture type)"
+    syntaxe_feuille: null
+    mode: null
+    demande_nl: "mets à jour les palettes de couleur par type"
+    verdict: illisible
+    pourquoi: "cellule Syntax vide"
+
+  - id: view_chans
+    label: "View Chans"
+    syntaxe_feuille: "Tab_Down 1 Tab_Up Flexi_Channelmode View_Channels"
+    mode: null
+    demande_nl: "affiche les circuits sélectionnés dans l'onglet 1"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: clean_up_live_moves
+    label: "Clean Up live Moves"
+    syntaxe_feuille: "Chan AllNPs Recall_From Cue Last Update Enter"
+    mode: null
+    demande_nl: "nettoie les mouvements visibles des circuits"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: update_manual_prev_cue
+    label: "Update manual params to the previous cue"
+    syntaxe_feuille: "Select_Manual Update Cue Last Enter"
+    mode: null
+    demande_nl: "mets à jour la cue précédente avec les paramètres manuels"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro de cue trouvé — un Update sans cible explicite dépend
+      d'un état de console que le traducteur ne peut pas lire.
+
+  - id: snapshot_workspace
+    label: "Load Snapshot on Specific Workspace"
+    syntaxe_feuille: null
+    mode: null
+    auteur: "J.Cabrera"
+    demande_nl: "charge le snapshot 1 sur l'espace de travail 1"
+    verdict: illisible
+    pourquoi: "cellule Syntax vide"
+
+  - id: plus_moins_pourcent
+    label: "Plus/minus percentage for specific parameters"
+    syntaxe_feuille: "At + +"
+    mode: Background
+    auteur: "S. Harris"
+    demande_nl: "augmente le paramètre"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: record_preset
+    label: "Record Preset"
+    syntaxe_feuille: "Focus Form Form Record Preset"
+    mode: Foreground
+    demande_nl: "enregistre un preset"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: record_preset_plus
+    label: "Record Preset +"
+    syntaxe_feuille: "Select_Last Make_Manual - Intensity - Color Record Preset Wait_For_Enter"
+    mode: null
+    demande_nl: "enregistre un preset sans l'intensité ni la couleur"
+    verdict: multi_commande
+    pourquoi: >-
+      Select_Last Make_Manual - Intensity - Color Record Preset
+      Wait_For_Enter
+
+  - id: startup
+    label: "Startup"
+    syntaxe_feuille: "Snapshot Enter Live Live"
+    mode: null
+    demande_nl: "rappelle mon snapshot d'accueil et reviens en direct"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro de snapshot trouvé après « snapshot ».
+
+  - id: shutdown
+    label: "Shutdown"
+    syntaxe_feuille: "Clear_Commandline Enter Save_Show Enter Go_To_Cue Out Enter Macro_Wait 1 Enter Park Enter Enter Macro_Wait 2 Enter Fader 1 Thru Home Enter"
+    mode: null
+    demande_nl: "sauve le show, va au noir et remets les faders au repos"
+    verdict: multi_commande
+    pourquoi: >-
+      Clear_Commandline Enter Save_Show Enter Go_To_Cue Out Enter Macro_Wait
+      1 Enter Park Enter Enter Macro_Wait 2 Enter Fader 1 Thru Home Enter
+
+  - id: faders_home
+    label: "All Faders to Home"
+    syntaxe_feuille: "Clear_Commandline Enter Save_Show Enter Go_To_Cue Out Enter Macro_Wait 1 Enter Park Enter Enter Macro_Wait 2 Enter Fader 1 Thru Home Enter"
+    mode: null
+    demande_nl: "remets tous les faders au repos"
+    verdict: divergent
+    pourquoi: >-
+      Défaut de la feuille, pas du traducteur : cette cellule est la COPIE
+      EXACTE de celle de « Shutdown », alors que les deux libellés décrivent
+      des choses différentes. « All Faders to Home » ne devrait sauver aucun
+      show ni aller au noir — probablement `Fader 1 Thru Home Enter` seul.
+      Entrée conservée pour documenter le doublon, jamais comme cible.
+
+  - id: rgbw_test
+    label: "RGBW Test"
+    syntaxe_feuille: null
+    mode: null
+    demande_nl: "teste le rouge le vert le bleu et le blanc l'un après l'autre"
+    verdict: illisible
+    pourquoi: >-
+      Syntaxe tronquée (« Red Q Full », ligne Blue incomplète) et déclarée
+      cassée par son propre contributeur : « I believe this Macro needs some
+      editing ». La seule entrée de la feuille qui s'auto-signale.
+
+  - id: full_20s
+    label: "Full in 20s"
+    syntaxe_feuille: "At Full Sneak Time 20 Enter"
+    mode: Foreground
+    demande_nl: "monte à fond en 20 secondes"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: out_20s
+    label: "Out in 20s"
+    syntaxe_feuille: "At 0 Sneak Time 20 Enter"
+    mode: Foreground
+    demande_nl: "descends à 0 % en 20 secondes"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: out_next_level
+    label: "Out Next Level"
+    syntaxe_feuille: "Out Next Level"
+    mode: Foreground
+    demande_nl: "éteins et passe au circuit suivant"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro trouvé pour la sélection.
+
+  - id: out_last_level
+    label: "Out Last Level"
+    syntaxe_feuille: "Out Last Level"
+    mode: Foreground
+    demande_nl: "éteins et passe au circuit précédent"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro trouvé pour la sélection.
+
+  - id: out_group_next_level
+    label: "Out Group Next Level"
+    syntaxe_feuille: "Out Group Next Level"
+    mode: Foreground
+    demande_nl: "éteins et passe au groupe suivant"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro trouvé pour la sélection.
+
+  - id: out_group_last_level
+    label: "Out Group Last Level"
+    syntaxe_feuille: "Out Group Last Level"
+    mode: Foreground
+    demande_nl: "éteins et passe au groupe précédent"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucun numéro trouvé pour la sélection.
+
+  - id: sub_killer
+    label: "Sub Killer"
+    syntaxe_feuille: "Sub Home Thru Home Enter"
+    mode: null
+    auteur: "Sassy Squatch"
+    demande_nl: "remets tous les submasters au repos"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: color_xfd_0
+    label: "Color Xfd 0"
+    syntaxe_feuille: "Color_Crossfade 0 Enter"
+    mode: null
+    auteur: "Sassy Squatch"
+    demande_nl: "passe le fondu de couleur à 0"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: color_xfd_100
+    label: "Color Xfd 100%"
+    syntaxe_feuille: "Color_Crossfade Full Enter"
+    mode: null
+    auteur: "Sassy Squatch"
+    demande_nl: "passe le fondu de couleur à fond"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: color_xfd_50
+    label: "Color Xfd 50%"
+    syntaxe_feuille: "Color_Crossfade 50 Enter"
+    mode: null
+    auteur: "Sassy Squatch"
+    demande_nl: "passe le fondu de couleur à 50"
+    verdict: hors_perimetre
+    pourquoi: >-
+      Aucune intention reconnue dans la phrase.
+
+  - id: color_temp_intens
+    label: "Color Temp & Intens"
+    syntaxe_feuille: "Color_Temperature Wait_For_Input At Wait_For_Input"
+    mode: null
+    auteur: "Sassy Squatch"
+    demande_nl: "règle la température de couleur puis l'intensité"
+    verdict: multi_commande
+    pourquoi: >-
+      Color_Temperature Wait_For_Input At Wait_For_Input
