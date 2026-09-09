@@ -93,7 +93,7 @@ mots_outils:
   - references
   - numero
   - numeros
-  - no
+  - "no"
   - s
   - il
   - me
@@ -417,8 +417,16 @@ intentions:
   regler_intensite:
     description: "donner un niveau d'intensité à une sélection"
     declencheurs:
-      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
       niveau: [pourcent, "%", intensite, niveau]
+    declencheurs_optionnels:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      # Ces verbes ne changent RIEN au routage — ils sont optionnels, et le
+      # marqueur de niveau reste seul exigé. Ils servent au verrou de la
+      # sélection courante, qui refuse d'agir sans cible dès qu'un mot de la
+      # phrase lui échappe : « descends à 0 % en 20 secondes » butait sur
+      # « descends », pas sur le sens.
+      verbe: [descends, descendez, descendre, baisse, baissez, baisser,
+              diminue, diminuer, amene, amener, mets, met, mettre, regle, regler]
     exemple_nl: "circuits 1 à 5 à 50 %"
     origine: "patron `degrade_intensite` (grammar/patrons.yaml), confiance A"
     note: >
@@ -793,8 +801,13 @@ intentions:
   plein_feu:
     description: "monter une sélection à pleine intensité"
     declencheurs:
-      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
       plein: [fond, full, plein, pleins, feu, feux]
+    declencheurs_optionnels:
+      # `lance` et `allume` sont volontairement absents : le premier a déjà
+      # provoqué un bug documenté (« lance l'effet 2 sur le groupe 3 » partait
+      # sur `Chan 3`), le second est un déclencheur de `selection_active`.
+      verbe: [monte, montez, monter, remonte, remonter, remontez]
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "circuits 1 à 5 à fond ; plein feu sur le groupe 3"
     origine: >
       manuel §6 « [1] [Full] [Full] », confiance A (`grammar/modele.yaml`,
@@ -809,6 +822,7 @@ intentions:
     description: "sortir une sélection de scène (Out)"
     declencheurs:
       verbe: [eteins, eteindre, eteint, eteignez, coupe, couper, out, sors, sortir]
+    declencheurs_optionnels:
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "éteins les circuits 1 à 5"
     origine: >
@@ -824,6 +838,7 @@ intentions:
     description: "rendre une sélection à son état de fond (Sneak)"
     declencheurs:
       verbe: [sneak, sneake, sneaker]
+    declencheurs_optionnels:
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "sneak les circuits 1 à 5 ; sneak les circuits 1 à 5 en 3 secondes"
     origine: >

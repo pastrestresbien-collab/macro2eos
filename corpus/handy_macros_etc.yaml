@@ -354,19 +354,25 @@ entrees:
     syntaxe_feuille: "At Full Sneak Time 20 Enter"
     mode: Foreground
     demande_nl: "monte à fond en 20 secondes"
-    verdict: hors_perimetre
+    verdict: equivalent
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-
+      Même commande à des tokens optionnels près. Le manuel écrit
+      `[Sneak] <Time> [3] [Enter]` et sa convention (§00 l. 339) donne aux
+      crochets angulaires le sens « touches qui n'ont pas à être
+      pressées » ; `[1] [Full]` (§6 l. 314) et `[At] [Full]` (§6 l. 852)
+      sont tous deux attestés.
   - id: out_20s
     label: "Out in 20s"
     syntaxe_feuille: "At 0 Sneak Time 20 Enter"
     mode: Foreground
     demande_nl: "descends à 0 % en 20 secondes"
-    verdict: hors_perimetre
+    verdict: equivalent
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-
+      Même commande à des tokens optionnels près. Le manuel écrit
+      `[Sneak] <Time> [3] [Enter]` et sa convention (§00 l. 339) donne aux
+      crochets angulaires le sens « touches qui n'ont pas à être
+      pressées » ; `[1] [Full]` (§6 l. 314) et `[At] [Full]` (§6 l. 852)
+      sont tous deux attestés.
   - id: out_next_level
     label: "Out Next Level"
     syntaxe_feuille: "Out Next Level"

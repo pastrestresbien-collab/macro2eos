@@ -262,3 +262,64 @@ questions:
     backlog: null
     traite: "non"
     traite_ou: null
+
+  - date: "2026-09-09"
+    question: "Le mot-clé `Time` est-il obligatoire après `Sneak` ?"
+    reponse: >-
+      Non, il est OPTIONNEL. `Sneak 3` et `Sneak Time 3` sont la même
+      commande. Le manuel §6 écrit `[Sneak] <Time> [3] [Enter]`, et sa propre
+      convention de notation le dit : « Optional keys which don't have to be
+      pressed are indicated in <angle brackets> ».
+    sources:
+      - "manuals/operations-manual/00-welcome-introduction.md:339 — convention de notation"
+      - "manuals/operations-manual/06-manual-control.md:1108-1122 — exemples de Sneak"
+      - "manuals/operations-manual/06-manual-control.md:314, 852 — `[1] [Full]` et `[At] [Full]`"
+    confiance: "A"
+    consequence: "contradiction"
+    detail: >-
+      CORRIGE une entrée de la veille. Le 2026-09-08 j'ai écrit dans
+      grammar/modele.yaml que les deux formes de temps du sneak « ne se
+      déduisent pas l'une de l'autre », et j'ai reproché à la feuille
+      communautaire son `@ Full Sneak Time 20`. C'était une erreur de lecture :
+      la convention <angle brackets> n'avait pas été consultée. La feuille
+      avait raison. Même convention pour `[5] [At] [5]<0>`, où le zéro final
+      est implicite. Conséquence outillage : le banc de rétro-traduction
+      connaît désormais deux tokens optionnels prouvés (`Time` après `Sneak`,
+      `At` devant un niveau) et classe ces cas en `equivalent` plutôt qu'en
+      désaccord. La liste est volontairement courte — l'élargir au jugé ferait
+      passer de vrais désaccords pour des équivalences et viderait le banc de
+      son intérêt.
+    backlog: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml actions/sneak/temps_du_sneak ; traducteur/test_corpus_terrain.py OPTIONNELS"
+
+  - date: "2026-09-09"
+    question: "Assouplir la règle 5 pour couvrir les macros sans cible nommée : à quel prix ?"
+    reponse: >-
+      Le prix est de trois verrous, et l'assouplissement n'a rien coûté en
+      syntaxe : le modèle déclarait déjà `selection_courante` valide pour
+      `intensite`, `plein_feu`, `hors_scene` et `sneak`, en confiance A, et le
+      générateur les rendait sans un seul avertissement. Seul le traducteur
+      refusait.
+    sources:
+      - "grammar/modele.yaml — legalite, objet: selection_courante, valide: oui, confiance A"
+      - "manuals/operations-manual/15-advanced-manual-control.md — une sélection déjà posée accepte `At`"
+      - "REGLES_POUR_UI.md règle 4 et règle 5"
+    confiance: "A"
+    consequence: "doc_a_ecrire"
+    detail: >-
+      Les trois verrous, chacun né d'un cas réel et non d'une précaution
+      théorique. (1) Un objet nommé SANS numéro reste une phrase incomplète :
+      sinon un numéro perdu à la frappe devient un ordre sur une sélection
+      inconnue. (2) Un mot de CIBLE (Sub, Preset) interdit le repli — trouvé
+      par régression le jour même : « sub 3 à 50 % » rendait `At 50 Enter`,
+      soit un ordre sur des circuits quelconques, alors que le banc a tranché
+      Sub + At invalide en confiance S. (3) Un seul mot inconnu interdit le
+      repli — trouvé au banc de rétro-traduction : « passe le fondu de couleur
+      à fond » rendait `Full Enter`, envoyant tout le plateau à pleine
+      intensité pour une demande qui ne parlait que de fondu de couleur. Le
+      verrou 3 remplace exprès le filet que le mot d'objet obligatoire
+      fournissait par accident.
+    backlog: null
+    traite: "oui"
+    traite_ou: "traducteur/traducteur.py — _vise_la_selection_courante(), _selection_courante_permise()"

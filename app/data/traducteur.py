@@ -162,6 +162,41 @@ MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
 
 
 # --------------------------------------------------------------------------
+def charger_lexique(chemin):
+    """Charge le lexique en REFUSANT les clés dupliquées.
+
+    `yaml.safe_load` garde silencieusement la dernière valeur quand une clé
+    apparaît deux fois dans le même bloc. Le 2026-09-09, un ajout de verbes a
+    créé un second `declencheurs_optionnels:` sous `plein_feu` : le groupe
+    d'objets du premier bloc a disparu sans erreur, sans avertissement, et le
+    lexique s'est mis à refuser des phrases qu'il acceptait la veille. Une
+    demi-heure de recherche pour une faute invisible à la lecture.
+
+    C'est exactement la classe de panne que le projet combat partout ailleurs
+    (règle 4 de REGLES_POUR_UI.md) : ça marche, ça ne dit rien, et c'est faux.
+    Le lexique mérite le même traitement que les macros."""
+    import yaml
+
+    class SansDoublon(yaml.SafeLoader):
+        pass
+
+    def construire(loader, noeud, deep=False):
+        vues = set()
+        for cle_noeud, _ in noeud.value:
+            cle = loader.construct_object(cle_noeud, deep=deep)
+            if cle in vues:
+                raise ValueError(
+                    f"{chemin} ligne {cle_noeud.start_mark.line + 1} : clé "
+                    f"« {cle} » dupliquée dans le même bloc. YAML garderait "
+                    f"la dernière en silence et perdrait la première.")
+            vues.add(cle)
+        return yaml.SafeLoader.construct_mapping(loader, noeud, deep)
+
+    SansDoublon.add_constructor(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, construire)
+    return yaml.load(chemin.read_text(encoding="utf-8"), Loader=SansDoublon)
+
+
 class Traducteur:
     def __init__(self, lex: dict | None = None, generateur: object | None = None) -> None:
         """`lex` et `generateur` permettent d'injecter des données/instance
@@ -173,8 +208,7 @@ class Traducteur:
         if lex is not None:
             self.lex = lex
         else:
-            import yaml
-            self.lex = yaml.safe_load((RACINE / "lexique.yaml").read_text(encoding="utf-8"))
+            self.lex = charger_lexique(RACINE / "lexique.yaml")
         self._generateur = generateur
         self._ponctuation = self.lex["normalisation"]["ponctuation_ignoree"]
         self._outils = set(self.lex["mots_outils"])
@@ -395,8 +429,31 @@ class Traducteur:
         )
 
     # -- intentions --------------------------------------------------------
+    @staticmethod
+    def _tous_declencheurs(corps: dict) -> dict:
+        """Groupes exigés ET optionnels réunis.
+
+        Sert partout où il s'agit de savoir si un mot APPARTIENT au lexique —
+        `_vocabulaire_connu`, `_ignores` — par opposition à la détection
+        d'intention, seule à distinguer les deux familles. Un mot optionnel
+        reste du vocabulaire connu : l'oublier ferait annoncer « circuits »
+        comme mot inconnu sur une phrase où il est simplement facultatif."""
+        return {**corps["declencheurs"], **corps.get("declencheurs_optionnels", {})}
+
     def _intention(self, toks: list[str]) -> str | None:
-        """Première intention dont TOUS les groupes de déclencheurs sont servis.
+        """Première intention dont tous les groupes EXIGÉS sont servis.
+
+        `declencheurs_optionnels` (2026-09-09) porte les groupes qui nomment
+        la cible sans être nécessaires pour reconnaître l'intention. Un
+        praticien écrit « monte à fond en 20 secondes » sur un bouton de magic
+        sheet : le mot « circuits » n'y est pas, et n'a pas à y être — la
+        commande vise ce qui est sélectionné. Exiger le mot d'objet rendait
+        toute cette famille intraduisible (9 entrées sur 26 au banc de
+        rétro-traduction du 2026-09-08).
+
+        Ce qui protège, ce n'est PAS l'exigence du mot d'objet : c'est
+        `_vise_la_selection_courante`, qui refuse toujours une phrase où
+        l'objet est nommé sans numéro. Voir sa note.
 
         Insensible à l'ordre des mots : le français du métier est télégraphique,
         et la dictée vocale ne rendra pas une syntaxe propre. L'ordre de
@@ -558,7 +615,7 @@ class Traducteur:
         donnée est une autre question, et c'est justement la distinction que
         `_non_reconnus` doit préserver (voir son commentaire)."""
         connus = {m for corps in self.lex["intentions"].values()
-                  for mots in corps["declencheurs"].values() for m in mots}
+                  for mots in self._tous_declencheurs(corps).values() for m in mots}
         connus |= self._outils | self._mots_plage | {"%"}
         connus |= set(self._marqueurs_duree) | set(self._marqueurs_duree_post)
         connus |= self._mots_sans | self._mots_temps
@@ -628,7 +685,8 @@ class Traducteur:
         if retenue:
             tous = set()
             for nom, corps in self.lex["intentions"].items():
-                mots = {m for groupe in corps["declencheurs"].values() for m in groupe}
+                mots = {m for groupe in self._tous_declencheurs(corps).values()
+                        for m in groupe}
                 tous |= mots
                 if nom == retenue:
                     siens = mots
@@ -861,16 +919,31 @@ class Traducteur:
         pris: set[int] = set()
         notes: list[str] = []
 
-        objet = self._objet(toks, pris) or "Chan"
+        objet = self._objet(toks, pris)
 
         # La sélection SE LIT EN PREMIER, et l'ordre compte. « circuits 1 à 5
         # à 50 % » contient deux fois le mot « à » : la première plage désigne
         # les circuits, ce qui reste désigne le niveau. Lire le niveau d'abord
         # ferait comprendre « dégradé de 5 à 50 » sur les circuits 1 seul.
-        selection = self._selection_de(objet, toks, pris)
-        if selection is None:
+        #
+        # Mais ce raisonnement ne vaut QUE si un objet est nommé. Sans lui,
+        # « à 50 % » n'a qu'un seul nombre, et le lire comme une sélection le
+        # confisquait au niveau : la phrase repartait en « niveau introuvable »
+        # alors que le 50 était là, sous les yeux.
+        selection = None
+        if objet is not None:
+            selection = self._selection_de(objet, toks, pris)
+            if selection is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro trouvé pour la sélection."])
+        elif not self._vise_la_selection_courante(toks, pris):
+            return Traduction(statut="incompris",
+                              notes=[self._motif_refus_selection(toks, pris)])
+        elif not self._selection_courante_permise("intensite"):
             return Traduction(statut="incompris", notes=[
                 "Aucun circuit ni groupe désigné dans la phrase."])
+        else:
+            notes.append(self.NOTE_SELECTION_COURANTE)
 
         # Le niveau se lit au marqueur, jamais par position : c'est le nombre
         # qui précède `%`, ou celui qui suit « intensité » / « niveau ».
@@ -895,8 +968,10 @@ class Traducteur:
                 "La durée passe par `Sneak` — c'est la forme documentée pour "
                 "amener une sélection à un niveau en un temps donné.")
 
-        ir = [{"selection": selection, "action": action}]
-        return Traduction(statut="compris", ir=ir, notes=notes,
+        etape: dict = {"action": action}
+        if selection is not None:
+            etape["selection"] = selection
+        return Traduction(statut="compris", ir=[etape], notes=notes,
                           **self._mots(toks, pris))
 
     def _niveau(self, toks: list[str], pris: set[int]) -> dict | None:
@@ -1559,28 +1634,53 @@ class Traducteur:
     def _action_sur_selection(self, toks: list[str], reponses: dict) -> Traduction:
         """`<sélection> <mot-clé>` — Full, Out, Sneak."""
         pris: set[int] = set()
+        notes: list[str] = []
         objet = self._objet(toks, pris)
-        if objet is None:
-            return Traduction(statut="incompris", notes=[
-                "Aucun circuit ni groupe désigné — cette commande exige une "
-                "sélection explicite."])
-        selection = self._selection_de(objet, toks, pris)
+        selection = self._selection_de(objet, toks, pris) if objet else None
+
         if selection is None:
-            return Traduction(statut="incompris", notes=[
-                "Aucun numéro trouvé pour la sélection."])
+            action_type = self._intention_courante or ""
+            if objet is not None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro trouvé pour la sélection."])
+            if not self._vise_la_selection_courante(toks, pris):
+                return Traduction(statut="incompris",
+                                  notes=[self._motif_refus_selection(toks, pris)])
+            if not self._selection_courante_permise(action_type):
+                return Traduction(statut="incompris", notes=[
+                    "Aucun circuit ni groupe désigné, et le modèle n'autorise "
+                    f"pas « {self.modele_mot_cle()} » sur la sélection en cours."])
+            notes.append(self.NOTE_SELECTION_COURANTE)
 
         action: dict = {"type": self._intention_courante}
-        # Seul `sneak` porte une durée, et sous la forme SANS destination :
-        # `Sneak Time 3`. La forme avec destination (`At 50 Sneak 8`) est
-        # autre chose, et c'est `_regler_intensite` qui la produit — le modèle
-        # documente pourquoi les deux ne sont pas interchangeables.
-        if self._intention_courante == "sneak":
-            duree = self._duree(toks, pris)
-            if duree is not None:
-                action["temps"] = {"valeur": duree}
 
-        ir = [{"selection": selection, "action": action}]
-        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+        # Une durée dans la phrase doit TOUJOURS ressortir quelque part :
+        # produite, ou refusée. La laisser tomber donnerait une commande d'air
+        # complet et fausse — « à fond en 20 secondes » rendu `Full Enter`
+        # allume à pleine intensité instantanément, ce qui est exactement le
+        # contraire de la demande, sans le moindre signal.
+        duree = self._duree(toks, pris)
+        if duree is not None:
+            if self._intention_courante == "sneak":
+                action["temps"] = {"valeur": duree}       # `Sneak Time 3`
+            elif self._intention_courante == "plein_feu":
+                action["sneak"] = duree                   # `Full Sneak 20`
+            else:
+                # `Out` n'a aucune forme temporisée attestée. La demande a un
+                # sens et une traduction — mais par un autre chemin, et c'est
+                # à l'utilisateur de le choisir, pas au traducteur de le
+                # supposer.
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme temporisée n'est documentée pour "
+                    f"« {self.modele_mot_cle()} ». Pour une extinction "
+                    f"progressive, passer par un niveau : « à 0 % en "
+                    f"{duree} secondes »."])
+
+        etape: dict = {"action": action}
+        if selection is not None:
+            etape["selection"] = selection
+        return Traduction(statut="compris", ir=[etape], notes=notes,
+                          **self._mots(toks, pris))
 
     def _verifier(self, toks: list[str], reponses: dict) -> Traduction:
         """`<sélection> At <niveau> Check` — la revue circuit par circuit.
@@ -1656,6 +1756,99 @@ class Traducteur:
             return self._intention_courante
         return actions.get(self._intention_courante, {}).get(
             "mot_cle", self._intention_courante)
+
+    def _selection_courante_permise(self, type_action: str) -> bool:
+        """Le modèle autorise-t-il cette action sans objet nommé ?
+
+        L'assouplissement du 2026-09-09 ne relâche RIEN sur la syntaxe : il
+        aligne le traducteur sur ce que `grammar/modele.yaml` déclarait déjà.
+        La table `legalite` porte des entrées `objet: selection_courante`
+        valides en confiance A, sourcées du manuel §15 (« une sélection déjà
+        posée — par Query, Select Active, Select Last ou une étape précédente
+        — accepte directement `At` »). Le générateur les rendait sans un seul
+        avertissement ; seul le traducteur refusait de les produire.
+
+        L'autorisation est donc LUE, jamais codée en dur ici : le jour où le
+        banc réel infirme une de ces cases, c'est le modèle qu'on corrige, et
+        le traducteur suit sans être retouché."""
+        try:
+            legalite = self._generateur_ou_defaut().modele["legalite"]
+        except Exception:                                     # noqa: BLE001
+            return False
+        return any(r.get("objet") == "selection_courante"
+                   and r.get("action") == type_action
+                   and r.get("valide") == "oui"
+                   for r in legalite)
+
+    NOTE_SELECTION_COURANTE = (
+        "Aucune cible nommée : la commande s'appliquera à la SÉLECTION EN "
+        "COURS sur la console. Vérifier ce qui est sélectionné avant d'envoyer."
+    )
+
+    def _motif_refus_selection(self, toks: list[str], pris: set[int]) -> str:
+        """Pourquoi le repli sur la sélection courante est refusé, en clair.
+
+        Trois blocages, trois messages. Répondre « aucun numéro trouvé » quand
+        le vrai obstacle est un mot inconnu apprend à l'utilisateur une limite
+        qui n'existe pas, et le pousse à retirer des mots qui marchent — le
+        même défaut que le bug de `_non_reconnus` corrigé le 2026-08-28."""
+        inconnus = self._non_reconnus(toks, set())
+        if inconnus:
+            mots = ", ".join(f"« {m} »" for m in inconnus[:3])
+            return (f"Sans cible nommée, je n'agis sur la sélection en cours "
+                    f"que si je comprends toute la phrase — or {mots} "
+                    f"m'échappe. Nommer les circuits lèverait le doute.")
+        return "Aucun numéro trouvé pour la sélection."
+
+    def _vise_la_selection_courante(self, toks: list[str], pris: set[int]) -> bool:
+        """Phrase sans cible : commande implicite, ou phrase incomplète ?
+
+        Le garde-fou tient en une ligne et il est indispensable. « monte à
+        fond en 20 secondes » ne nomme aucun objet : l'utilisateur parle de ce
+        qu'il a sous la main, comme le fait n'importe quel bouton de magic
+        sheet. « les circuits à 50 % » nomme un objet mais aucun numéro :
+        c'est une phrase à laquelle il manque un morceau, pas un ordre sur la
+        sélection courante.
+
+        Sans cette distinction, une phrase dont le numéro a été perdu — faute
+        de frappe, mot avalé par la dictée — deviendrait silencieusement un
+        ordre sur une sélection inconnue. C'est précisément la panne que
+        REGLES_POUR_UI.md règle 4 désigne comme la plus grave du projet :
+        la console accepte, et fait autre chose.
+
+        Les CIBLES comptent autant que les objets, et l'oublier a coûté une
+        régression le 2026-09-09 : « sub 3 à 50 % » ne contient aucun mot de
+        `objets` (qui n'a que Chan, Group, Cue), donc la phrase basculait sur
+        la sélection courante et rendait `At 50 Enter`. Or le banc réel a
+        tranché `Sub` + `intensite` INVALIDE en confiance S — le niveau d'un
+        sub passe par le fader ou les bumps. La commande produite aurait donc
+        visé des circuits quelconques au lieu du submaster demandé, sans
+        aucune erreur. Un mot qui nomme une cible, quelle que soit sa famille,
+        interdit le repli."""
+        essai: set[int] = set(pris)
+        if self._objet(toks, essai) is not None:
+            return False
+        if any(self._resoudre(tok, self._objets_cible)[0]
+               for i, tok in enumerate(toks) if i not in pris):
+            return False
+
+        # DERNIER verrou, et le plus important : pas un seul mot inconnu dans
+        # la phrase. Viser la sélection courante, c'est agir sans cible
+        # nommée — on ne peut se le permettre qu'en ayant compris la phrase
+        # ENTIÈRE. Un mot inconnu veut dire qu'elle parle de quelque chose que
+        # le lexique ne connaît pas encore ; produire quand même une commande
+        # sur « ce qui est sélectionné » invente une réponse à une question
+        # qu'on n'a pas comprise.
+        #
+        # Deux cas réels, trouvés au banc de rétro-traduction le jour même de
+        # l'assouplissement, l'un et l'autre silencieux :
+        #   « passe le fondu de couleur à fond »  ->  `Full Enter`
+        #   « vérifie les adresses à 75 % »       ->  `At 75 Enter`
+        # La première envoie tout le plateau à pleine intensité pour une
+        # demande qui ne parlait que de fondu de couleur. Avant
+        # l'assouplissement, le mot d'objet manquant servait de filet par
+        # accident ; ce verrou-ci le remplace exprès.
+        return not self._non_reconnus(toks, set())
 
     def _update_cue(self, toks: list[str], reponses: dict) -> Traduction:
         """`Update Cue <n>` — la cible est toujours explicite.

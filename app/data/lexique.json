@@ -39,7 +39,7 @@
     "references",
     "numero",
     "numeros",
-    false,
+    "no",
     "s",
     "il",
     "me",
@@ -458,6 +458,14 @@
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "declencheurs": {
+        "niveau": [
+          "pourcent",
+          "%",
+          "intensite",
+          "niveau"
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -472,11 +480,22 @@
           "groupes",
           "group"
         ],
-        "niveau": [
-          "pourcent",
-          "%",
-          "intensite",
-          "niveau"
+        "verbe": [
+          "descends",
+          "descendez",
+          "descendre",
+          "baisse",
+          "baissez",
+          "baisser",
+          "diminue",
+          "diminuer",
+          "amene",
+          "amener",
+          "mets",
+          "met",
+          "mettre",
+          "regle",
+          "regler"
         ]
       },
       "exemple_nl": "circuits 1 à 5 à 50 %",
@@ -994,6 +1013,24 @@
     "plein_feu": {
       "description": "monter une sélection à pleine intensité",
       "declencheurs": {
+        "plein": [
+          "fond",
+          "full",
+          "plein",
+          "pleins",
+          "feu",
+          "feux"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "verbe": [
+          "monte",
+          "montez",
+          "monter",
+          "remonte",
+          "remonter",
+          "remontez"
+        ],
         "objet": [
           "circuit",
           "circuits",
@@ -1007,14 +1044,6 @@
           "groupe",
           "groupes",
           "group"
-        ],
-        "plein": [
-          "fond",
-          "full",
-          "plein",
-          "pleins",
-          "feu",
-          "feux"
         ]
       },
       "exemple_nl": "circuits 1 à 5 à fond ; plein feu sur le groupe 3",
@@ -1034,7 +1063,9 @@
           "out",
           "sors",
           "sortir"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -1061,7 +1092,9 @@
           "sneak",
           "sneake",
           "sneaker"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",

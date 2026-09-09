@@ -2020,12 +2020,13 @@
       "source": "manuel §6 ; manuel §24 (exemple de macro `Sneak Time 10 Enter`)",
       "osc": "sneak",
       "note": "`Sneak Sneak` pose `{AllNPs} Sneak` et auto-termine (manuel §6) — encore un double appui qui change la commande.\n",
-      "deux_formes_de_temps": {
+      "temps_du_sneak": {
         "confiance": "A",
-        "source": "manuel §6 « Sneak », liste d'exemples",
-        "sans_destination": "Le mot-clé `Time` est OBLIGATOIRE : `Sneak Time 3 Enter` — « restores all channels with manual values to their background state in 3 seconds » (exemple chiffré du manuel).\n",
-        "avec_destination": "Le mot-clé `Time` DISPARAÎT, le nombre suit directement `Sneak` : `Chan 5 At 50 Sneak 8 Enter` — « sneaks channel 5 to 50% in 8 seconds ». Idem sur un submaster : `Sub 4 At 50 Sneak 2 Enter`.\n",
-        "pourquoi_c_est_piegeux": "Les deux formes se ressemblent et ne se déduisent pas l'une de l'autre. La feuille communautaire « Handy Macros » écrit `@ Full Sneak Time 20`, c'est-à-dire la forme AVEC destination mais en gardant `Time` — aucun exemple du manuel ne fait ça. Non tranché : voir `reference/journal_questions.yaml`.\n"
+        "source": "manuel §6 « Sneak » ; convention de notation §00:339",
+        "regle": "Le mot-clé `Time` est OPTIONNEL après `Sneak`. `Sneak 3` et `Sneak Time 3` sont la même commande.\n",
+        "preuve": "Le manuel écrit `[Sneak] <Time> [3] [Enter]`, et sa propre convention de notation dit : « Optional keys which don't have to be pressed are indicated in <angle brackets> » (§00 « Welcome », l. 339). Les crochets angulaires marquent donc l'optionalité, pas une variante. La même convention explique `[5] [At] [5]<0>` : le zéro final est implicite, Eos lisant déjà `5` comme 50 %.\n",
+        "formes_attestees": "Sans destination : `Sneak Time 3 Enter`. Avec une destination de niveau : `Chan 5 At 50 Sneak 8 Enter`, `Sub 4 At 50 Sneak 2 Enter`. Avec une destination de palette : `Group 3 At Color Palette 1 Sneak Time 7 Enter`. Le générateur choisit `Sneak Time <n>` sans destination et `Sneak <n>` avec — deux formes attestées mot pour mot — mais aucune des deux n'est obligatoire.\n",
+        "correction": "Une version antérieure de cette entrée (2026-09-08) affirmait que les deux formes « ne se déduisent pas l'une de l'autre » et donnait tort à la feuille communautaire, qui écrit `@ Full Sneak Time 20`. C'était une erreur de lecture : la convention <angle brackets> n'avait pas été consultée. La feuille avait raison.\n"
       }
     },
     "verifier": {

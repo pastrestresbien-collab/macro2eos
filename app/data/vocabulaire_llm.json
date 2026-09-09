@@ -105,7 +105,6 @@
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "champs": [
-        "objet",
         "niveau"
       ]
     },
@@ -253,22 +252,19 @@
     "plein_feu": {
       "description": "monter une sélection à pleine intensité",
       "champs": [
-        "objet",
         "plein"
       ]
     },
     "hors_scene": {
       "description": "sortir une sélection de scène (Out)",
       "champs": [
-        "verbe",
-        "objet"
+        "verbe"
       ]
     },
     "sneak": {
       "description": "rendre une sélection à son état de fond (Sneak)",
       "champs": [
-        "verbe",
-        "objet"
+        "verbe"
       ]
     },
     "update_cue": {

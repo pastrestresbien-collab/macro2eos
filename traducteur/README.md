@@ -291,6 +291,60 @@ tranche ne tranche pas encore. Suppression d'une partition préprogrammée (0, 9
 traducteur (`APP.md`) — mais le générateur porte l'avertissement sourcé (manuel §28,
 « Deleting Partitions », confiance A).
 
+## La sélection courante — assouplissement du 2026-09-09, et ses trois verrous
+
+Le traducteur produit désormais des commandes sans cible nommée : « monte à
+fond en 20 secondes » rend `Full Sneak 20 Enter`, qui s'appliquera à ce qui
+est sélectionné sur la console. C'est ce qu'écrivent les praticiens sur leurs
+boutons de magic sheet, et c'était la première cause d'échec au banc de
+rétro-traduction.
+
+**Cet assouplissement n'a rien relâché sur la syntaxe.** `grammar/modele.yaml`
+déclarait déjà `objet: selection_courante` valide pour `intensite`,
+`plein_feu`, `hors_scene` et `sneak` — en confiance A, sourcé du manuel §15 —
+et le générateur les rendait sans un seul avertissement. Seul le traducteur
+refusait de les produire. L'autorisation est LUE dans le modèle
+(`_selection_courante_permise`), jamais codée en dur : le jour où le banc réel
+infirme une de ces cases, on corrige le modèle et le traducteur suit.
+
+Ce qui protège n'est donc plus l'exigence du mot d'objet, mais trois verrous
+explicites. Chacun est né d'un cas réel, aucun d'une précaution théorique.
+
+**Verrou 1 — un objet nommé sans numéro reste une phrase incomplète.**
+« les circuits à fond » est refusé. Sans ça, une phrase dont le numéro a été
+perdu — faute de frappe, mot avalé par la dictée — deviendrait silencieusement
+un ordre sur une sélection inconnue.
+
+**Verrou 2 — un mot de cible interdit le repli.** `objets` ne contient que
+Chan, Group et Cue ; Sub et Preset vivent dans `objets_cible`. L'oublier a
+coûté une régression le jour même : « sub 3 à 50 % » rendait `At 50 Enter`,
+c'est-à-dire un ordre sur des circuits quelconques, alors que le banc réel a
+tranché `Sub` + `At` invalide en confiance S.
+
+**Verrou 3 — un seul mot inconnu interdit le repli.** Le plus important.
+Agir sans cible nommée suppose d'avoir compris la phrase ENTIÈRE ; un mot
+inconnu veut dire qu'elle parle d'autre chose. Trouvé au banc de
+rétro-traduction, deux cas silencieux :
+
+| phrase | ce que rendait le traducteur |
+|---|---|
+| « passe le fondu de couleur à fond » | `Full Enter` |
+| « vérifie les adresses à 75 % » | `At 75 Enter` |
+
+La première envoie tout le plateau à pleine intensité pour une demande qui ne
+parlait que de fondu de couleur. Avant l'assouplissement, le mot d'objet
+manquant servait de filet **par accident** ; le verrou 3 le remplace exprès.
+
+Le refus dit toujours la vraie raison. Répondre « aucun numéro trouvé » quand
+l'obstacle est un mot inconnu apprend une limite qui n'existe pas et pousse
+l'utilisateur à retirer des mots qui marchent — même défaut que le bug de
+`_non_reconnus` corrigé le 2026-08-28.
+
+**Et une durée ne tombe jamais en silence** : produite, ou refusée. `Out` n'a
+aucune forme temporisée attestée, donc « éteins en 20 secondes » est refusé
+avec le chemin qui marche (« à 0 % en 20 secondes ») plutôt que rendu `Out` en
+avalant les vingt secondes.
+
 ## Le quatrième banc — rétro-traduction contre un corpus de terrain
 
 `test_corpus_terrain.py` est le seul banc du dépôt dont les attentes ne

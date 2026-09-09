@@ -107,6 +107,24 @@ def cause_de(motif: str) -> str:
     return "vocabulaire"
 
 
+# Deux tokens qu'Eos accepte sans les exiger. La liste est COURTE et chaque
+# entrée est prouvée par le manuel : élargir cette liste au jugé ferait passer
+# des désaccords réels pour des équivalences, et ce banc n'aurait plus qu'à
+# être supprimé. Toute addition demande une citation.
+#
+#   Time  après `Sneak` : le manuel écrit `[Sneak] <Time> [3] [Enter]`, et sa
+#         convention de notation (§00 « Welcome », l. 339) dit que les crochets
+#         angulaires marquent les touches « which don't have to be pressed ».
+#   At    devant un niveau : `[1] [Full]` (§6 l. 314) et `[At] [Full]`
+#         (§6 l. 852, 988, 1008, 1268) sont tous deux attestés.
+OPTIONNELS = ("time", "at")
+
+
+def sans_optionnels(commande: str) -> str:
+    return " ".join(m for m in normaliser(commande).split()
+                    if m not in OPTIONNELS)
+
+
 def verdict_de(entree: dict, traducteur: Traducteur) -> tuple[str, str, str]:
     """Renvoie (verdict, commande produite, explication)."""
     attendu = entree["syntaxe_feuille"]
@@ -124,6 +142,8 @@ def verdict_de(entree: dict, traducteur: Traducteur) -> tuple[str, str, str]:
     produit = traducteur.rendre(trad).commande
     if normaliser(produit) == normaliser(attendu):
         return "identique", produit, ""
+    if normaliser(sans_optionnels(produit)) == normaliser(sans_optionnels(attendu)):
+        return "equivalent", produit, f"feuille : {attendu}"
     return "divergent", produit, f"feuille : {attendu}"
 
 

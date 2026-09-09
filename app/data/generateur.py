@@ -512,7 +512,15 @@ class Generateur:
 
         if t in ("plein_feu", "sneak"):
             # le double appui est une AUTRE commande, pas une insistance
-            return f"{mot} {mot}" if act.get("double") else mot
+            if act.get("double"):
+                return f"{mot} {mot}"
+            # `Full` est une destination de niveau comme `At 50` : elle accepte
+            # donc le même suffixe de durée (manuel §6). `Time` y est optionnel
+            # — voir actions/sneak/temps_du_sneak.
+            if t == "plein_feu" and "sneak" in act:
+                return " ".join([mot, self.modele["actions"]["sneak"]["mot_cle"],
+                                 str(act["sneak"])])
+            return mot
 
         if t == "valeur_dmx":
             valeur = int(act["valeur"])

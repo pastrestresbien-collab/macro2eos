@@ -958,6 +958,68 @@ CAS = [
         "statut": "incompris",
     },
     {
+        # ASSOUPLISSEMENT DU 2026-09-09. Le modèle déclarait déjà
+        # `selection_courante` valide pour cette action (confiance A, manuel
+        # §15) et le générateur la rendait sans un avertissement : seul le
+        # traducteur refusait de la produire.
+        "nom": "sélection courante — aucune cible nommée, commande implicite",
+        "phrase": "monte a fond",
+        "statut": "compris",
+        "rendu": "Full Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "sélection courante avec durée",
+        "phrase": "monte a fond en 20 secondes",
+        "statut": "compris",
+        "rendu": "Full Sneak 20 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "sélection courante — niveau sans objet nommé",
+        "phrase": "descends a 0 % en 20 secondes",
+        "statut": "compris",
+        "rendu": "At 0 Sneak 20 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # VERROU 1 — un objet nommé sans numéro reste une phrase INCOMPLÈTE,
+        # jamais un ordre implicite. Sans ça, une phrase dont le numéro a été
+        # perdu (frappe, dictée) deviendrait un ordre sur une sélection
+        # inconnue, sans le moindre signal.
+        "nom": "verrou — objet nommé sans numéro : refus, pas de repli",
+        "phrase": "les circuits a fond",
+        "statut": "incompris",
+    },
+    {
+        # VERROU 2 — une CIBLE (Sub, Preset) bloque aussi le repli, même si
+        # elle n'est pas dans `objets`. Régression réelle du 2026-09-09 :
+        # « sub 3 à 50 % » rendait `At 50 Enter`, c'est-à-dire un ordre sur
+        # des circuits quelconques, alors que le banc a tranché Sub + At
+        # invalide en confiance S.
+        "nom": "verrou — un mot de cible interdit le repli",
+        "phrase": "sub 3 a 50 %",
+        "statut": "incompris",
+    },
+    {
+        # VERROU 3 — le plus important. Agir sans cible nommée suppose d'avoir
+        # compris TOUTE la phrase. Trouvé au banc de rétro-traduction le jour
+        # même : « passe le fondu de couleur à fond » rendait `Full Enter`,
+        # envoyant tout le plateau à pleine intensité pour une demande qui ne
+        # parlait que de fondu de couleur.
+        "nom": "verrou — un mot inconnu interdit le repli",
+        "phrase": "passe le fondu de couleur a fond",
+        "statut": "incompris",
+    },
+    {
+        # Une durée doit toujours ressortir : produite, ou refusée. `Out` n'a
+        # aucune forme temporisée attestée — le refus nomme le chemin qui
+        # marche plutôt que de rendre `Out` en avalant les 20 secondes.
+        "nom": "durée sur une commande qui n'en accepte pas — refus, jamais silence",
+        "phrase": "eteins en 20 secondes",
+        "statut": "incompris",
+    },
+    {
         "nom": "update d'une cue — la cible est toujours explicite",
         "phrase": "mets a jour la cue 4",
         "statut": "compris",
