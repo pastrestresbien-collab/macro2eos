@@ -15,6 +15,16 @@
     "description": "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub"
   },
   {
+    "intention": "creer_plage",
+    "phrase": "crée les palettes de couleur 100 à 150",
+    "description": "créer d'un coup toute une plage de palettes ou de groupes"
+  },
+  {
+    "intention": "creer_plage",
+    "phrase": "crée les groupes 1 à 20",
+    "description": "créer d'un coup toute une plage de palettes ou de groupes"
+  },
+  {
     "intention": "copier_libelles",
     "phrase": "copie les libellés des palettes de couleur 1 à 5 vers les cues 3/1",
     "description": "copier les libellés d'une famille de palettes vers des cues"

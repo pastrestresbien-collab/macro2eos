@@ -367,6 +367,13 @@ intentions:
       verbe: [creer, cree, crees, creez, enregistrer, enregistre, record, sauver, sauve, faire, fais, fait]
       objet: [palette, palettes]
       famille: [couleur, couleurs, color]
+      # Un NOM DE TEINTE est exigé depuis le 2026-09-09. Cette intention
+      # remplit des palettes à partir de gélatines : sans teinte nommée elle
+      # n'a rien à mettre dedans. Sans cette exigence, elle capturait « crée
+      # les palettes de couleur 100 à 150 » — une demande de création de
+      # palettes VIDES, qui appartient à `creer_plage` — et répondait
+      # « aucune couleur reconnue » sur une phrase parfaitement claire.
+      teinte: ["@couleurs"]
     exemple_nl: "créer les palettes de couleur 1 à 6 avec les références lee, chaud froid r v b j"
     origine: >
       Demande réelle de l'utilisateur, session 2026-08-03, posée explicitement
@@ -424,6 +431,25 @@ intentions:
       mésinterpréter un numéro comme une plage. L'échelle (`At /
       <pourcentage> Park`) et le parquage d'adresse (`Address <n> At
       <niveau> Park`) restent hors périmètre de cette tranche.
+
+  creer_plage:
+    description: "créer d'un coup toute une plage de palettes ou de groupes"
+    declencheurs:
+      verbe: [cree, creer, creez, genere, generer, fabrique, fabriquer, prepare, preparer]
+      cible: [palette, palettes, groupe, groupes, group]
+    exemple_nl: >
+      crée les palettes de couleur 100 à 150 ; crée les groupes 1 à 20
+    origine: >
+      `grammar/modele.yaml`, `operateurs.creation_plage` — `Thru Thru`,
+      confiance A (manuel §7, §17 l. 147-149, §6 l. 70, workbooks L1 et L3).
+    note: >
+      DEUX commandes se cachent sous un symbole qui se ressemble.
+      `Thru` DÉSIGNE ce qui existe déjà ; `Thru Thru` CRÉE toute la plage.
+      `Cue 1 Part 1 Thru 4` ne crée que les parts 1 et 4 — le manuel §17 le
+      dit noir sur blanc. Un verbe de création dans la phrase française est
+      donc la seule chose qui autorise le double `Thru` : sans lui, la
+      commande produite désigne au lieu de créer, et l'utilisateur se retrouve
+      avec deux palettes au lieu de cinquante.
 
   copier_libelles:
     description: "copier les libellés d'une famille de palettes vers des cues"

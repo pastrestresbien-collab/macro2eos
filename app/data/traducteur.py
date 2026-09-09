@@ -537,6 +537,7 @@ class Traducteur:
             "sneak": self._action_sur_selection,
             "verifier": self._verifier,
             "copier_libelles": self._copier_libelles,
+            "creer_plage": self._creer_plage,
             "update_cue": self._update_cue,
             "selection_derniere": self._action_sans_argument,
             "selection_active": self._action_sans_argument,
@@ -1749,6 +1750,38 @@ class Traducteur:
             options=[Option(cle=o["cle"], libelle=o["libelle"])
                      for o in modele["options"]],
         )
+
+    def _creer_plage(self, toks: list[str], reponses: dict) -> Traduction:
+        """`<cible> <a> Thru Thru <b> Enter` — créer toute une plage d'un coup.
+
+        Le double `Thru` n'est pas une insistance : `Thru` désigne ce qui
+        existe, `Thru Thru` crée. `Cue 1 Part 1 Thru 4` ne crée que les parts
+        1 et 4 (manuel §17 l. 149). Seul un verbe de création dans la phrase
+        l'autorise ici.
+
+        Une plage est EXIGÉE : créer une cible unique n'a pas besoin de cette
+        commande, et « crée la palette 100 » n'aurait aucune raison de devenir
+        `100 Thru Thru 100`."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris)
+        selection: dict = {"creer": True}
+
+        if objet in (None, "Chan"):
+            famille, question = self._famille_palette(toks, pris, reponses)
+            if question is not None:
+                return Traduction(statut="a_preciser", questions=[question])
+            selection["famille"] = famille
+        else:
+            selection["objet"] = objet
+
+        plage = self._plage(toks, pris)
+        if plage is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune plage à créer — `Thru Thru` crée une SÉRIE, il faut "
+                "donc un début et une fin (« 100 à 150 »)."])
+        selection["de"], selection["a"] = plage
+        return Traduction(statut="compris", ir=[{"selection": selection}],
+                          **self._mots(toks, pris))
 
     def _copier_libelles(self, toks: list[str], reponses: dict) -> Traduction:
         """`<famille> <plage> Copy To Cue <liste>/<n> {Labels Only}`.

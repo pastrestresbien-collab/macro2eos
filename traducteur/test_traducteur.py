@@ -376,9 +376,34 @@ CAS = [
         "statut": "incompris",
     },
     {
-        "nom": "palettes sans aucune couleur",
+        # PRÉMISSE CORRIGÉE le 2026-09-09. Ce cas exigeait `incompris` : sans
+        # teinte nommée, `creer_palettes_couleur` n'avait rien à mettre dans
+        # les palettes. Mais la phrase est parfaitement claire — elle demande
+        # de CRÉER des palettes vides, ce qui est la première étape du flux
+        # que les praticiens emploient (créer la plage, puis la remplir en
+        # Blind). Refuser une demande limpide enseignait une limite fausse,
+        # exactement le défaut que ce dépôt combat ailleurs.
+        "nom": "créer des palettes vides — une demande complète, pas une lacune",
         "phrase": "créer les palettes de couleur 1 à 6",
-        "statut": "incompris",
+        "statut": "compris",
+        "rendu": "Color Palette 1 Thru Thru 6 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # `Thru Thru` CRÉE, `Thru` ne fait que désigner ce qui existe : le
+        # manuel §17 l. 149 montre qu'un simple `Thru` ne créerait que les
+        # deux bornes. Un verbe de création dans la phrase est donc la seule
+        # chose qui autorise le double `Thru`.
+        "nom": "création d'une plage de groupes",
+        "phrase": "cree les groupes 1 a 20",
+        "statut": "compris",
+        "rendu": "Group 1 Thru Thru 20 Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "création sans famille nommée — question, pas supposition",
+        "phrase": "cree les palettes 100 a 150",
+        "statut": "a_preciser",
     },
 
     # -------------------------------------------------------- submasters

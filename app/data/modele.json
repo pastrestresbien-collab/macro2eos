@@ -1299,8 +1299,30 @@
     "creation_plage": {
       "symbole": "Thru Thru",
       "confiance": "A",
-      "source": "manuel §7 « [Thru] and [Thru] [Thru] » ; manuel §20 pour les subs",
+      "source": "manuel §7 « [Thru] and [Thru] [Thru] » ; §20 pour les subs ; §6 l. 70 (flexichannel) ; §17 l. 145-149 (parts) ; §6 l. 220 (`Record Cue 1 Thru Thru 100 Offset 10`) ; workbook L1 l. 342-346 ; workbook L3 l. 1655\n",
       "note": "création en série de record targets — ce n'est pas une sélection",
+      "portee_generale": {
+        "confiance": "A",
+        "regle": "`Thru` DÉSIGNE ce qui existe, `Thru Thru` CRÉE toute la plage. Le contraste est le même partout où le dépôt l'a trouvé, ce qui en fait un opérateur général et non une curiosité d'un chapitre :\n",
+        "preuves": [
+          "§17 l. 147-149 — `Cue 1 Part 1 Thru Thru 4` crée les parts 1 à 4 ; avec un seul `Thru` on ne crée QUE les parts 1 et 4",
+          "§6 l. 70 — `Thru Thru` collecte tous les channels d'une plage même hors du mode flexi courant",
+          "workbook L1 l. 342 — même règle énoncée pour l'édition en Flexi",
+          "workbook L3 l. 1655 — `[Blind] [Cue] [104] [Thru] [Thru] [110] [Enter] [Enter]` « creates cues »"
+        ],
+        "note_sur_le_double_enter": "L'exemple du workbook L3 se termine par DEUX `Enter`. Même mécanisme de confirmation que pour `Copy To` (voir actions/copier_vers) : créer en série demande une validation.\n"
+      },
+      "recette_palettes_spectre": {
+        "confiance": "B",
+        "source": "Groupe Facebook « Eos francophone », 2026-09-09 — réponse à un utilisateur cherchant à générer un spectre de palettes de couleur. Confiance B et non A : la recette elle-même n'est dans aucun manuel, mais chacun de ses trois mécanismes y est attesté séparément.\n",
+        "etapes": [
+          "`Color Palette 100 Thru Thru 150 Enter` — crée les palettes vides",
+          "`Blind`, puis `Color Palette 100 Thru 150 Enter` — les ouvre en édition",
+          "sélection de circuits, puis `Saturation 100 Hue 0 Thru 360 Enter` — étale la teinte sur toute la plage"
+        ],
+        "pourquoi_c_est_instructif": "L'étape 3 applique un Fan (`0 Thru 360`) non pas à une sélection de channels mais à une plage de RECORD TARGETS ouverte en Blind. C'est une portée du Fan que le modèle ne documentait pas.\n",
+        "a_verifier_au_banc": "`Hue` et `Saturation` n'apparaissent pas parmi les 1155 noms de touches OSC : ce sont des noms de PARAMÈTRE, adressables par `/eos/param/` plutôt que `/eos/key/`. Le §5 Setup avertit par ailleurs qu'avec les contrôles HSB virtuels désactivés, on ne peut PAS enregistrer Hue ou Saturation seuls dans une palette — condition préalable à toute cette recette, et invisible dans son texte.\n"
+      },
       "regles": [
         {
           "id": "fin_obligatoire",

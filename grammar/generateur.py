@@ -187,7 +187,13 @@ class Generateur:
         thru, plus = self._thru, self._plus
         prefixe = f"{sel['liste']}/" if "liste" in sel else ""
         if "de" in sel:
-            morceaux = [mot, f"{prefixe}{sel['de']}", thru, str(sel["a"])]
+            # `Thru Thru` CRÉE toute la plage, `Thru` ne désigne que ce qui
+            # existe déjà (modele.yaml operateurs/creation_plage). Deux
+            # commandes différentes sous un symbole qui se ressemble : le
+            # drapeau est explicite, jamais déduit d'un contexte.
+            separateur = self.modele["operateurs"]["creation_plage"]["symbole"] \
+                if sel.get("creer") else thru
+            morceaux = [mot, f"{prefixe}{sel['de']}", separateur, str(sel["a"])]
         elif "mot" in sel:                       # Out / Next / Last / Home
             morceaux = [mot, f"{prefixe}{sel['mot']}"]
         elif "numero" in sel:

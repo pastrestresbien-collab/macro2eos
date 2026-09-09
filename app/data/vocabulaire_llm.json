@@ -78,7 +78,8 @@
       "champs": [
         "verbe",
         "objet",
-        "famille"
+        "famille",
+        "teinte"
       ]
     },
     "colorer_selection": {
@@ -93,6 +94,13 @@
       "champs": [
         "verbe",
         "objet"
+      ]
+    },
+    "creer_plage": {
+      "description": "créer d'un coup toute une plage de palettes ou de groupes",
+      "champs": [
+        "verbe",
+        "cible"
       ]
     },
     "copier_libelles": {

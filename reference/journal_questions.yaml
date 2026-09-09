@@ -444,3 +444,84 @@ questions:
     backlog: 22
     traite: "oui"
     traite_ou: "grammar/modele.yaml legalite Sub+intensite"
+
+  - date: "2026-09-09"
+    question: >-
+      Une console Eos localisée en français change-t-elle les mots-clés des
+      macros ?
+    reponse: >-
+      Oui, mais PARTIELLEMENT, et c'est ce qui rend la chose dangereuse. Une
+      capture d'éditeur de macro d'une console francophone montre les deux
+      familles côte à côte dans la même ligne : traduits — `Jusqu'à` (Thru),
+      `Palette_Couleur`, `Circuits_Préc`, `Sélec_Actif_moins_Sub`,
+      `EFFACER_Texte`, `Insert_Dernière_Cible`, `Console_Verrouillée`,
+      `Eteindre_ Activer` ; NON traduits — `Record`, `Label`, `Select_Last`,
+      `Macro_Wait`, `Sneak`, `Home`, `Time`, `Sub`, `GoTo_Cue`. Les noms de
+      commande internes restent anglais (`SET_CHAN_LEVEL` visible en bleu).
+    sources:
+      - "capture d'écran d'éditeur de macro Eos francophone, show réel, 2026-09-09"
+      - "reference/eosKeys.ts en-tête — « versions/localisations peuvent varier »"
+    confiance: "S"
+    consequence: "contradiction"
+    detail: >-
+      Le dépôt tout entier suppose des mots-clés anglais, et l'en-tête de
+      eosKeys.ts avait posé la réserve sans qu'elle soit jamais instruite.
+      Elle l'est maintenant, par observation directe.
+      Ce qui reste vrai : la couche OSC est indifférente à la langue — les
+      noms de touches `/eos/key/<nom>` et les commandes internes sont
+      anglais quelle que soit l'interface. Une macro DÉCLENCHÉE par OSC ne
+      change donc pas.
+      Ce qui devient faux : la promesse de montrer à l'utilisateur la
+      commande « telle qu'il la verra sur sa console ». Sur une console
+      francophone, `Chan 1 Thru 5` s'affiche `Circuits 1 Jusqu'à 5`. Un
+      utilisateur qui recopie à la main ce que produit le traducteur ne
+      retrouvera pas ses mots.
+      QUESTION OUVERTE, à trancher au banc et pas ici : la localisation
+      est-elle purement d'AFFICHAGE — la console acceptant toujours la frappe
+      anglaise — ou la saisie change-t-elle aussi ? Tant que ce n'est pas
+      tranché, ne rien promettre sur la fidélité visuelle du rendu.
+      Ce que ça n'affecte PAS : le partage de show files et l'ASCII, où les
+      mots-clés sont normalisés.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+
+  - date: "2026-09-09"
+    question: >-
+      Comment générer d'un coup une plage de palettes, puis y étaler un
+      spectre de couleurs ?
+    reponse: >-
+      En trois temps, dont le premier repose sur `Thru Thru` : `Color Palette
+      100 Thru Thru 150 Enter` crée les palettes vides ; en Blind, `Color
+      Palette 100 Thru 150 Enter` les ouvre ; puis, sur une sélection de
+      circuits, `Saturation 100 Hue 0 Thru 360 Enter` étale la teinte sur
+      toute la plage.
+    sources:
+      - "groupe Facebook « Eos francophone », 2026-09-09"
+      - "manuals/operations-manual/17-multipart-cues.md:145-149 — `Thru` vs `Thru Thru`"
+      - "manuals/operations-manual/06-manual-control.md:70 — `Thru Thru` hors mode flexi"
+      - "manuals/l3-advanced-workbook:1655 — `[Blind] [Cue] [104] [Thru] [Thru] [110] [Enter] [Enter]` « creates cues »"
+      - "manuals/l1-essentials-workbook:342-346"
+    confiance: "B"
+    consequence: "modele_manquant"
+    detail: >-
+      La recette complète n'est dans aucun manuel — d'où B — mais chacun de
+      ses trois mécanismes y est attesté séparément. `Thru Thru` figurait déjà
+      dans le modèle sous `operateurs.creation_plage`, mais le générateur ne
+      savait pas l'employer : le contraste `Thru` désigne / `Thru Thru` crée
+      n'était documenté en détail que dans la section des cues multipart, comme
+      une curiosité de chapitre. Il est général — cinq sources indépendantes
+      le montrent — et c'est maintenant un drapeau explicite du générateur.
+      L'étape 3 reste hors périmètre et mérite d'être notée pour elle-même :
+      elle applique un Fan (`Hue 0 Thru 360`) non pas à une sélection de
+      channels mais à une plage de RECORD TARGETS ouverte en Blind. Le modèle
+      ne documente pas cette portée du Fan.
+      Deux réserves sur cette recette, invisibles dans son texte : `Hue` et
+      `Saturation` ne figurent pas parmi les 1155 noms de touches OSC (ce sont
+      des PARAMÈTRES, `/eos/param/` et non `/eos/key/`) ; et le §5 Setup
+      avertit qu'avec les contrôles HSB virtuels désactivés, on ne peut PAS
+      enregistrer Hue ou Saturation seuls dans une palette — condition
+      préalable à toute la manœuvre.
+    backlog: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml operateurs/creation_plage ; traducteur intention creer_plage"
