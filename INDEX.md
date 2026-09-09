@@ -3,6 +3,10 @@
 Corpus de référence sur la syntaxe et la grammaire des consoles ETC Eos,
 destiné à un outil de traduction langage naturel → macros Eos (injection OSC / ASCII).
 
+> **Session portant sur le traducteur ?** Commencer par
+> [`HANDOFF_TRADUCTEUR.md`](HANDOFF_TRADUCTEUR.md) — périmètre courant,
+> doctrine, pièges déjà payés et questions ouvertes.
+
 **Point d'entrée** : [`reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md`](reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md)
 pour la syntaxe Eos de référence · [`PLANNING.md`](PLANNING.md) pour l'état d'avancement
 et le backlog de travail · [`REGLES_POUR_UI.md`](REGLES_POUR_UI.md) pour **développer
