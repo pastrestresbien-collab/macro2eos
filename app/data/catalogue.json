@@ -190,6 +190,11 @@
     "description": "mettre à jour une cue existante avec l'état courant"
   },
   {
+    "intention": "selection_manuelle",
+    "phrase": "sélectionne le manuel",
+    "description": "sélectionner tous les circuits porteurs de données manuelles"
+  },
+  {
     "intention": "selection_derniere",
     "phrase": "sélectionne la dernière sélection",
     "description": "reprendre la sélection précédente (Select Last)"

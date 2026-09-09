@@ -560,9 +560,9 @@ class Generateur:
         if t == "appel_macro":
             return f"{mot} {act['numero']}"
 
-        if t in ("selection_active", "selection_derniere", "retirer_effet",
-                 "hors_scene", "niveau_setup", "incrementer", "decrementer",
-                 "verifier"):
+        if t in ("selection_active", "selection_derniere", "selection_manuelle",
+                 "retirer_effet", "hors_scene", "niveau_setup", "incrementer",
+                 "decrementer", "verifier"):
             return mot
 
         if t in ("plein_feu", "sneak"):

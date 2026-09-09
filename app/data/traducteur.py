@@ -540,6 +540,7 @@ class Traducteur:
             "update_cue": self._update_cue,
             "selection_derniere": self._action_sans_argument,
             "selection_active": self._action_sans_argument,
+            "selection_manuelle": self._action_sans_argument,
         }[intention]
 
         # `_ignores` a besoin de savoir quelle intention a été retenue, pour
@@ -1869,9 +1870,21 @@ class Traducteur:
                    and r.get("valide") == "oui"
                    for r in legalite)
 
+    # Renforcée le 2026-09-09. La première version disait « vérifier ce qui est
+    # sélectionné », ce qui laissait croire que le risque était l'inattention
+    # de l'opérateur. Le manuel §24 l. 105-109 dit autre chose et de plus
+    # grave : en Background, la macro « will run on the MASTER DEVICE » — pas
+    # sur l'appareil de l'opérateur. La sélection courante n'est alors PAS la
+    # sienne, et la commande peut ne rien faire du tout sans lever d'erreur.
+    # Le nom interne du mode Foreground le confirme : `foreground_mode` vaut
+    # MACRO_USER.
     NOTE_SELECTION_COURANTE = (
-        "Aucune cible nommée : la commande s'appliquera à la SÉLECTION EN "
-        "COURS sur la console. Vérifier ce qui est sélectionné avant d'envoyer."
+        "Aucune cible nommée : la commande vise la SÉLECTION EN COURS. "
+        "Attention si elle part dans une macro en mode Background — celle-ci "
+        "s'exécute sur l'appareil maître, pas sur celui de l'opérateur, donc "
+        "sur une autre sélection, voire aucune : la commande ne fera alors "
+        "rien, en silence. Poser la sélection dans la macro (« sélectionne le "
+        "manuel », « sélectionne les circuits actifs ») lève le doute."
     )
 
     def _motif_refus_selection(self, toks: list[str], pris: set[int]) -> str:

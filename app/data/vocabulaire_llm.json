@@ -281,6 +281,13 @@
         "cue"
       ]
     },
+    "selection_manuelle": {
+      "description": "sélectionner tous les circuits porteurs de données manuelles",
+      "champs": [
+        "verbe",
+        "manuel"
+      ]
+    },
     "selection_derniere": {
       "description": "reprendre la sélection précédente (Select Last)",
       "champs": [

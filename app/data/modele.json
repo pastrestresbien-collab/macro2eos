@@ -359,6 +359,14 @@
     "mode_macro": {
       "regle": "Une macro déclenchée par évènement s'exécute SANS interagir avec la ligne de commande, sauf si elle est en mode Foreground.\n",
       "confiance": "A",
+      "consequence_sur_la_selection_courante": {
+        "confiance": "A",
+        "source": "manuel §24 l. 105-109 ; reference/eosKeys.ts (`foreground_mode` -> MACRO_USER)",
+        "regle": "En Background, la macro ne s'exécute PAS dans le contexte de l'opérateur. Le manuel : « A macro in background mode that is run from a cue or via show control will run on the MASTER DEVICE but will not affect the master's command line. » Le nom interne du mode Foreground le dit aussi — `foreground_mode` vaut MACRO_USER.\n",
+        "consequence": "Toute commande qui repose sur « la sélection en cours » — `Sneak Enter`, `Full Enter`, `At 50 Enter` sans cible nommée — vise la sélection de CET appareil-là, pas celle de l'opérateur. En Background elle peut donc ne rien faire du tout, sans lever la moindre erreur.\n",
+        "remede": "Poser la sélection DANS la macro : `Select_Manual` (tous les channels porteurs de données manuelles, §6 l. 1204), `Select_Active` (intensité non nulle) ou `Select_Last`. Un `Sneak Enter` nu n'est fiable qu'en Foreground, et encore.\n",
+        "origine": "Diagnostic apporté par la communauté le 2026-09-09 sur une macro « PRESET SUB OFF » qui se terminait par `Clear_CmdLine Sneak`. Il recoupe la règle que le corpus avait déjà retenue pour d'autres raisons — « Foreground par défaut » — et lui donne son motif le plus clair.\n"
+      },
       "tension_avec_la_doctrine": "Le projet impose Foreground par défaut (règle héritée du corpus #068 sur `{Target}`). Or c'est précisément le mode qui fait qu'une macro déclenchée par show control écrit sur la ligne de commande de l'opérateur. Les deux règles ne se contredisent pas — elles arbitrent différemment — mais le choix doit être conscient et expliqué à l'utilisateur.\n"
     },
     "numeros_instables": {
@@ -2626,6 +2634,18 @@
       "source": "eosKeys.ts `select_active`→SELECT_ACTIVE ; manuel §24 (exemple de macro)",
       "note": "sélectionne tous les channels actifs — intensité > 0 ou en mouvement"
     },
+    "selection_manuelle": {
+      "mot_cle": "Select Manual",
+      "attend": "aucun",
+      "auto_termine": false,
+      "contextes": [
+        "Live"
+      ],
+      "confiance": "A",
+      "source": "manuel §6 l. 1202-1204 « Select Manual »",
+      "osc": "select_manual",
+      "note": "Sélectionne tous les channels porteurs de données MANUELLES — c'est-à-dire ce que l'opérateur vient de toucher et qui n'est pas encore enregistré. À ne pas confondre avec `Select Active` (intensité non nulle, d'où qu'elle vienne). C'est la sélection à poser en tête d'une macro qui doit agir sur du manuel sans dépendre du contexte de l'appareil — voir `macros.mode_macro.consequence_sur_la_selection_courante`. `Select Manual Enter Select Last` reposte la liste numérique des channels sur la ligne de commande (§6 l. 1194-1198).\n"
+    },
     "selection_derniere": {
       "mot_cle": "Select Last",
       "attend": "aucun",
@@ -3465,9 +3485,10 @@
     {
       "objet": "Sub",
       "action": "intensite",
-      "valide": "non",
-      "confiance": "S",
-      "note": "Le pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At`. Entrée conservée pour que le générateur refuse explicitement au lieu de tomber dans le trou « combinaison absente du modèle ».\n"
+      "valide": "inconnu",
+      "backlog": 22,
+      "confiance": "C",
+      "note": "REQUALIFIÉ le 2026-09-09, de `non`/S vers `inconnu`/C. L'entrée affirmait « le pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At` » en confiance S — la plus haute du projet, celle réservée au banc réel. Or `grammar/refus_terrain.yaml`, seul dépôt des constats de banc, ne contient AUCUNE entrée sur les subs : la confiance S n'avait aucune observation derrière elle. C'est exactement la faute que REGLES_POUR_UI.md documente comme la plus grave du projet, une confiance empruntée sans vérification. Deux éléments à charge contre le refus : le manuel §6 l. 1122 donne `[Sub] [4] [At] [5] [0] [Sneak] [2] [Enter]` — « selects submaster 4 and sneaks it to 50% in 2 seconds » ; et une capture d'éditeur de macro d'un show réel (2026-09-09) montre des macros de production bâties sur `Sub 905 @ Full` et `Sub 905 @ Out`. `inconnu` plutôt que `oui` : constater qu'une syntaxe est écrite et documentée ne prouve pas qu'elle fasse ce qu'on croit. Le générateur avertit désormais au lieu de refuser — et au lieu de se taire.\n"
     },
     {
       "objet": "Sub",
@@ -3616,6 +3637,13 @@
       "action": "sneak",
       "valide": "oui",
       "confiance": "A"
+    },
+    {
+      "objet": "selection_courante",
+      "action": "selection_manuelle",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "ne dépend d'aucune sélection — elle en POSE une"
     },
     {
       "objet": "Chan",

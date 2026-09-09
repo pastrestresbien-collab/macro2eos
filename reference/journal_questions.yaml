@@ -362,3 +362,85 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "grammar/modele.yaml actions/copier_vers + modificateurs ; traducteur intention copier_libelles"
+
+  - date: "2026-09-09"
+    question: >-
+      Pourquoi un `Sneak` nu en fin de macro ne rend-il pas la main aux
+      circuits ?
+    reponse: >-
+      Parce qu'en mode Background la macro ne s'exécute pas dans le contexte
+      de l'opérateur. Le manuel §24 : « A macro in background mode that is run
+      from a cue or via show control will run on the MASTER DEVICE but will
+      not affect the master's command line. » La « sélection en cours » qu'un
+      `Sneak Enter` nu vise est donc celle de cet appareil-là. Le remède est
+      de poser la sélection dans la macro — `Select_Manual`, `Select_Active`
+      ou `Select_Last`.
+    sources:
+      - "manuals/operations-manual/24-macros.md:97-111 — les trois modes"
+      - "manuals/operations-manual/06-manual-control.md:1194-1204 — Select Manual"
+      - "reference/eosKeys.ts — foreground_mode -> MACRO_USER, select_manual -> SELECT_MANUAL"
+      - "corpus/CORPUS_EOS_COMPLET.md l. 290, 294, 384 — « Foreground par défaut »"
+    confiance: "A"
+    consequence: "modele_manquant"
+    detail: >-
+      Diagnostic apporté par la communauté sur une macro « PRESET SUB OFF » se
+      terminant par `Clear_CmdLine Sneak`. Il donne son motif le plus clair à
+      une règle que le corpus avait déjà retenue pour d'autres raisons
+      (« Foreground par défaut »), et il QUALIFIE directement l'assouplissement
+      de la veille : le traducteur produit désormais des commandes sans cible
+      nommée, et sa note disait « vérifier ce qui est sélectionné » — comme si
+      le risque était l'inattention. Il est plus grave : en Background la
+      commande peut ne rien faire du tout, sans erreur. Note réécrite, et
+      `Select Manual` ajouté au modèle (il manquait) et au lexique.
+    backlog: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml macros/mode_macro + actions/selection_manuelle ; traducteur NOTE_SELECTION_COURANTE"
+
+  - date: "2026-09-09"
+    question: "Le ♦ des corpus de macros est-il une convention externe ou de l'Eos ?"
+    reponse: >-
+      C'est Eos. Une capture de l'éditeur de macro d'une console réelle montre
+      le ♦ dans la colonne « Macro Contents » : c'est ainsi que la console
+      affiche `Enter`. Le ♦♦ y marque deux Enter consécutifs.
+    sources:
+      - "capture d'écran d'éditeur de macro Eos, show réel, 2026-09-09"
+    confiance: "S"
+    consequence: "contradiction"
+    detail: >-
+      CORRIGE une affirmation du 2026-09-08 : j'avais écrit dans
+      corpus/handy_macros_etc.yaml que le ♦ était « la convention DE LA
+      FEUILLE pour [Enter] : zéro occurrence dans les 13 manuels ». L'absence
+      était réelle dans les .md convertis, mais elle ne prouvait rien — un
+      glyphe se perd à la conversion PDF -> Markdown. REGLES_POUR_UI.md règle 6
+      l'interdit explicitement : une absence ne se prouve pas par une
+      citation. Corollaire précieux : la même capture montre `Macro 941
+      Copy_To Macro 940 ♦♦` — deux Enter après un `Copy_To`, ce qui confirme
+      au banc réel l'avertissement de confirmation ajouté la veille, jusque-là
+      seulement documenté (§10 l. 413).
+    backlog: null
+    traite: "oui"
+    traite_ou: "corpus/handy_macros_etc.yaml meta/correction_du_losange"
+
+  - date: "2026-09-09"
+    question: "La légalité `Sub` + `intensite` mérite-t-elle sa confiance S ?"
+    reponse: >-
+      Non. `grammar/refus_terrain.yaml`, seul dépôt des constats de banc du
+      projet, ne contient AUCUNE entrée sur les subs : la confiance S n'avait
+      aucune observation derrière elle. Requalifié `inconnu` / C.
+    sources:
+      - "grammar/refus_terrain.yaml — aucune entrée Sub"
+      - "manuals/operations-manual/06-manual-control.md:1122 — `[Sub] [4] [At] [5][0] [Sneak] [2] [Enter]`"
+      - "capture d'éditeur de macro, show réel — macros bâties sur `Sub 905 @ Full` et `Sub 905 @ Out`"
+    confiance: "A"
+    consequence: "contradiction"
+    detail: >-
+      Même faute que celle documentée dans REGLES_POUR_UI.md comme la plus
+      grave du projet : une confiance empruntée d'un document à l'autre sans
+      vérification. Requalifié en `inconnu` et non en `oui` — constater qu'une
+      syntaxe est écrite et documentée ne prouve pas qu'elle fasse ce qu'on
+      croit. Le générateur avertit désormais au lieu de refuser, et au lieu de
+      se taire. À trancher au banc en testant séparément `Sub 4 At 50 Enter`
+      et `Sub 4 At 50 Sneak 2 Enter`.
+    backlog: 22
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml legalite Sub+intensite"

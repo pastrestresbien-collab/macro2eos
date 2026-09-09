@@ -1215,6 +1215,29 @@
       "origine": "manuel §12 « [Update] », confiance A (`grammar/modele.yaml`, section `actions`/`update_cue`).\n",
       "note": "La cible est TOUJOURS explicite. Le modèle porte l'avertissement correspondant : un `Update` nu dépend d'une cible ambiguë et de préférences persistantes entre sessions ({Make Absolute}, {Break Nested}) — le traducteur n'en génère donc jamais.\n"
     },
+    "selection_manuelle": {
+      "description": "sélectionner tous les circuits porteurs de données manuelles",
+      "declencheurs": {
+        "verbe": [
+          "selectionne",
+          "selectionner",
+          "prends",
+          "prendre",
+          "capture",
+          "capturer"
+        ],
+        "manuel": [
+          "manuel",
+          "manuels",
+          "manuelle",
+          "manuelles",
+          "manuellement"
+        ]
+      },
+      "exemple_nl": "sélectionne le manuel",
+      "origine": "manuel §6 l. 1202-1204 « Select Manual », confiance A (`grammar/modele.yaml`, action `selection_manuelle`).\n",
+      "note": "À ne pas confondre avec `selection_active`, qui prend tout ce dont l'intensité n'est pas nulle, d'où qu'elle vienne. `Select Manual` ne prend que ce que l'opérateur a touché sans l'enregistrer. C'est la sélection à poser en TÊTE d'une macro qui doit agir sur du manuel : en mode Background une macro s'exécute sur l'appareil maître (manuel §24 l. 105-109), donc sur une autre sélection que celle de l'opérateur — un `Sneak` nu peut n'y rien faire du tout.\n"
+    },
     "selection_derniere": {
       "description": "reprendre la sélection précédente (Select Last)",
       "declencheurs": {

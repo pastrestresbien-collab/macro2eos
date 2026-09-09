@@ -1044,6 +1044,23 @@ CAS = [
         "statut": "a_preciser",
     },
     {
+        # Le remède nommé par la communauté au problème du mode Background :
+        # poser la sélection DANS la macro plutôt que d'espérer celle de
+        # l'opérateur, qui n'est pas celle de l'appareil maître.
+        "nom": "Select Manual — poser la sélection au lieu de l'espérer",
+        "phrase": "selectionne le manuel",
+        "statut": "compris",
+        "rendu": "Select Manual Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "Select Manual ≠ Select Active",
+        "phrase": "selectionne les circuits actifs",
+        "statut": "compris",
+        "rendu": "Select Active Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
         "nom": "update d'une cue — la cible est toujours explicite",
         "phrase": "mets a jour la cue 4",
         "statut": "compris",

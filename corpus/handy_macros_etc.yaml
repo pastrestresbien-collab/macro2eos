@@ -42,8 +42,19 @@ meta:
     some background info as to why this is a handy macro for you. »
   convention_feuille: >-
     Touches de face avant entre [crochets], softkeys entre {accolades},
-    frappes simultanées avec « + ». Le ♦ est la convention DE LA FEUILLE pour
-    [Enter] : zéro occurrence dans les 13 manuels du dépôt.
+    frappes simultanées avec « + ».
+  correction_du_losange: >-
+    CORRIGÉ le 2026-09-09. Cette note affirmait que le ♦ était « la convention
+    DE LA FEUILLE pour [Enter] : zéro occurrence dans les 13 manuels ». Faux,
+    et faux d'une façon que le dépôt interdit explicitement : une capture de
+    l'éditeur de macro d'une console réelle montre le ♦ dans la colonne
+    « Macro Contents » — c'est EOS lui-même qui affiche Enter comme ça, pas la
+    feuille. Le ♦♦ y marque deux Enter consécutifs. L'absence dans les
+    manuels convertis ne prouvait rien : un glyphe se perd à la conversion
+    PDF -> Markdown. REGLES_POUR_UI.md règle 6 le dit — une absence ne se
+    prouve pas par une citation — et je l'ai enfreinte en l'écrivant.
+    La transcription ci-dessous garde `Enter` en toutes lettres, ce qui reste
+    juste : c'est la même touche, écrite autrement.
 
 entrees:
   - id: stop_fx
