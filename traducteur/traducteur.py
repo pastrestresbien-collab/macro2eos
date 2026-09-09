@@ -218,6 +218,7 @@ class Traducteur:
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
         self._cue_cibles = self._indexer(self.lex["cue_cibles"])
+        self._familles = self._indexer(self.lex["familles_palette"])
         d = self.lex["durees"]
         self._marqueurs_duree = tuple(d["marqueurs"])
         self._marqueurs_duree_post = tuple(d["marqueurs_postfixes"])
@@ -535,6 +536,7 @@ class Traducteur:
             "hors_scene": self._action_sur_selection,
             "sneak": self._action_sur_selection,
             "verifier": self._verifier,
+            "copier_libelles": self._copier_libelles,
             "update_cue": self._update_cue,
             "selection_derniere": self._action_sans_argument,
             "selection_active": self._action_sans_argument,
@@ -1710,6 +1712,93 @@ class Traducteur:
         # commande vide — le drapeau garde la commande entière.
         ir = [{"selection": selection,
                "action": {"type": "intensite", **niveau, "check": True}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _famille_palette(self, toks: list[str], pris: set[int],
+                         reponses: dict | None = None):
+        """La famille de palettes nommée dans la phrase, ou une question.
+
+        Jamais de famille par défaut. Les quatre familles d'Eos ont des
+        mots-clés différents et aucune n'est plus probable qu'une autre quand
+        la phrase dit seulement « palettes » : deviner produirait une commande
+        parfaitement valide visant la mauvaise famille — erreur silencieuse,
+        la pire du catalogue (REGLES_POUR_UI.md règle 4)."""
+        reponses = reponses or {}
+        choisie = reponses.get("famille_palette")
+        if choisie:
+            return choisie, None
+        # Exact d'abord, flou ensuite — même correctif que `_objet` après le
+        # bug « lance l'effet 2 sur le groupe 3 » : un mot de la phrase peut
+        # être à distance 1 d'un candidat sans être celui-là, et le premier
+        # passage flou gagnerait sur un mot exact placé plus loin.
+        for exact in (True, False):
+            for i, tok in enumerate(toks):
+                if i in pris:
+                    continue
+                cle = self._familles.get(tok) if exact \
+                    else self._resoudre(tok, self._familles)[0]
+                if cle:
+                    pris.add(i)
+                    return cle, None
+        modele = self.lex["questions"]["famille_palette"]
+        return None, Question(
+            id="famille_palette",
+            texte=modele["texte"],
+            pourquoi=" ".join(modele["pourquoi"].split()),
+            options=[Option(cle=o["cle"], libelle=o["libelle"])
+                     for o in modele["options"]],
+        )
+
+    def _copier_libelles(self, toks: list[str], reponses: dict) -> Traduction:
+        """`<famille> <plage> Copy To Cue <liste>/<n> {Labels Only}`.
+
+        Renommer des cues d'après les palettes dont elles viennent : le
+        manuel §15 autorise la copie de libellés « between any target types
+        that can have labels », ce qui couvre palette -> cue alors qu'aucun
+        exemple chiffré ne montre ce couple précis.
+
+        La borne haute de la destination n'est jamais demandée ni produite :
+        la console la déduit de la longueur de la source (manuel §10 l. 379,
+        « You do not have to supply the end value »). En réclamer une
+        apprendrait une syntaxe qui n'existe pas."""
+        pris: set[int] = set()
+        famille, question = self._famille_palette(toks, pris, reponses)
+        if question is not None:
+            return Traduction(statut="a_preciser", questions=[question])
+
+        plage = self._plage(toks, pris)
+        if plage is None:
+            nombres = self._nombres(toks, pris)
+            if not nombres:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro de palette — préciser lesquelles copier."])
+            i, n = nombres[0]
+            pris.add(i)
+            plage = (n, n)
+
+        restants = self._nombres(toks, pris)
+        if not restants:
+            return Traduction(statut="incompris", notes=[
+                "Aucune cue de destination — préciser où les libellés vont."])
+        i, cible = restants[0]
+        pris.add(i)
+        destination: dict = {"objet": "Cue", "cible": cible}
+        # `Cue 3/1` : une seconde valeur libre est le numéro dans la liste.
+        suite = self._nombres(toks, pris)
+        if suite:
+            j, dedans = suite[0]
+            pris.add(j)
+            destination = {"objet": "Cue", "liste": cible, "cible": dedans}
+
+        selection: dict = {"famille": famille}
+        if plage[0] == plage[1]:
+            selection["numero"] = plage[0]
+        else:
+            selection["de"], selection["a"] = plage
+
+        ir = [{"selection": selection,
+               "action": {"type": "copier_vers", "destination": destination},
+               "modificateurs": ["Labels Only"]}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def _action_sans_argument(self, toks: list[str], reponses: dict) -> Traduction:

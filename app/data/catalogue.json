@@ -15,6 +15,11 @@
     "description": "figer une sélection de circuits à un niveau, hors de portée du contrôle manuel/cue/sub"
   },
   {
+    "intention": "copier_libelles",
+    "phrase": "copie les libellés des palettes de couleur 1 à 5 vers les cues 3/1",
+    "description": "copier les libellés d'une famille de palettes vers des cues"
+  },
+  {
     "intention": "verifier",
     "phrase": "vérifie les circuits 1 à 20 à 75 %",
     "description": "passer les circuits en revue un par un (Check)"

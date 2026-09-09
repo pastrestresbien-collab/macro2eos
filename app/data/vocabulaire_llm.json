@@ -95,6 +95,13 @@
         "objet"
       ]
     },
+    "copier_libelles": {
+      "description": "copier les libellés d'une famille de palettes vers des cues",
+      "champs": [
+        "verbe",
+        "libelle"
+      ]
+    },
     "verifier": {
       "description": "passer les circuits en revue un par un (Check)",
       "champs": [

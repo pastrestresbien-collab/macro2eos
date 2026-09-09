@@ -29,6 +29,8 @@
     "en",
     "avec",
     "dans",
+    "vers",
+    "depuis",
     "sur",
     "pour",
     "au",
@@ -338,6 +340,42 @@
       "fondu"
     ]
   },
+  "familles_palette": {
+    "Color Palette": {
+      "alias": [
+        "couleur",
+        "couleurs",
+        "color",
+        "colour",
+        "teinte",
+        "teintes"
+      ]
+    },
+    "Focus Palette": {
+      "alias": [
+        "focus",
+        "position",
+        "positions",
+        "pointage"
+      ]
+    },
+    "Int Palette": {
+      "alias": [
+        "intensite",
+        "intensites",
+        "int"
+      ]
+    },
+    "Beam Palette": {
+      "alias": [
+        "beam",
+        "faisceau",
+        "faisceaux",
+        "gobo",
+        "gobos"
+      ]
+    }
+  },
   "intentions": {
     "creer_palettes_couleur": {
       "description": "créer une ou plusieurs palettes de couleur à partir de gélatines",
@@ -423,6 +461,45 @@
       "exemple_nl": "parque le circuit 3 à 45 %",
       "origine": "manuel §19 Park, confiance A (`grammar/modele.yaml`, section `park`). Déclaré AVANT `regler_intensite` dans ce fichier : sans cette priorité, une phrase qui contient à la fois un objet et un marqueur de niveau (« % », « intensité »…) déclencherait l'intensité au lieu du parquage, puisque `regler_intensite` ne demande aucun verbe pour se déclencher — c'est la même précaution que celle documentée dans `traducteur/README.md` (« la tolérance aux fautes n'a pas le droit de vote sur l'intention »), appliquée ici à l'ORDRE plutôt qu'à la tolérance elle-même.\n",
       "note": "Cette première tranche ne couvre QUE la forme absolue et déterministe `<chan> At <n> Park Enter` sur un SEUL circuit ou groupe, jamais une plage — volontairement, pas par oubli. « circuit 4 à 50 % » contient un seul « à » qui sert à la fois de séparateur possible de plage et de préposition introduisant le niveau ; sans un second marqueur de position pour trancher (contrairement à `regler_intensite`, qui ne rencontre l'ambiguïté qu'avec DEUX « à » dans la phrase — un pour la plage, un pour le niveau), `self._plage` lirait « 4 à 50 » comme une plage de circuits 4 à 50, jamais comme un circuit et un niveau. Se limiter à un seul circuit/groupe élimine l'ambiguïté à la racine : le numéro qui suit l'objet est toujours celui du circuit, jamais d'une plage. Le niveau réutilise le même extracteur que `regler_intensite` (`self._niveau`, marqueur « % »/« pourcent »/ « intensité »/« niveau » requis, pas optionnel). Le manuel documente aussi une forme bascule, `<chan> At Park Enter` (parque si non parqué, déparque si parqué) — jamais générée ici, car son résultat dépend d'un état console que le traducteur ne peut pas lire (même refus de principe que pour `bump_direction`, où deviner un état console produirait une macro valide et un résultat imprévisible sur scène). Sans marqueur de niveau dans la phrase, la traduction reste `incompris` plutôt que de choisir la forme bascule ou de mésinterpréter un numéro comme une plage. L'échelle (`At / <pourcentage> Park`) et le parquage d'adresse (`Address <n> At <niveau> Park`) restent hors périmètre de cette tranche.\n"
+    },
+    "copier_libelles": {
+      "description": "copier les libellés d'une famille de palettes vers des cues",
+      "declencheurs": {
+        "verbe": [
+          "copie",
+          "copier",
+          "copiez",
+          "reporte",
+          "reporter",
+          "renomme",
+          "renommer"
+        ],
+        "libelle": [
+          "libelle",
+          "libelles",
+          "label",
+          "labels",
+          "nom",
+          "noms",
+          "intitule",
+          "intitules"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "palette": [
+          "palette",
+          "palettes"
+        ],
+        "cue": [
+          "cue",
+          "cues",
+          "memoire",
+          "memoires"
+        ]
+      },
+      "exemple_nl": "copie les libellés des palettes de couleur 1 à 5 vers les cues 3/1\n",
+      "origine": "manuel §15 l. 93 — « The [Copy To] and Move To commands can be used to copy or move labels between any target types that can have labels. A {Labels Only} softkey will display. » Confiance A (`grammar/modele.yaml`, action `copier_vers`, modificateur `Labels Only`).\n",
+      "note": "Le libellé SEUL est copié, jamais les données : c'est tout l'intérêt de `{Labels Only}` pour renommer des cues d'après les palettes dont elles viennent. Deux précisions que le modèle porte et que le traducteur ne répète pas. D'abord l'orthographe : `{Labels Only}` est au PLURIEL, la forme singulière n'existe ni dans les manuels ni dans les 1155 clés OSC. Ensuite le second `Enter` de confirmation, qui dépend d'un réglage de Setup invisible dans le texte de la macro — le générateur l'avertit à chaque fois plutôt que de choisir à la place de l'utilisateur. La borne haute de la destination ne se donne jamais (manuel §10 l. 379).\n"
     },
     "verifier": {
       "description": "passer les circuits en revue un par un (Check)",
@@ -1202,6 +1279,28 @@
           "libelle": "Une palette sur des circuits précis",
           "detail": "La palette capture l'état exact des circuits donnés.",
           "demande_valeur": true
+        }
+      ]
+    },
+    "famille_palette": {
+      "texte": "Quelle famille de palettes ?",
+      "pourquoi": "Eos a quatre familles de palettes et le mot-clé change avec elle : `Color Palette`, `Focus Palette`, `Int Palette`, `Beam Palette`. Aucune n'est plus probable que les autres dans une phrase qui dit seulement « palettes » — deviner produirait une commande valide visant la mauvaise famille, c'est-à-dire une erreur silencieuse.\n",
+      "options": [
+        {
+          "cle": "Color Palette",
+          "libelle": "Couleur"
+        },
+        {
+          "cle": "Focus Palette",
+          "libelle": "Focus (position)"
+        },
+        {
+          "cle": "Int Palette",
+          "libelle": "Intensité"
+        },
+        {
+          "cle": "Beam Palette",
+          "libelle": "Beam (faisceau)"
         }
       ]
     },

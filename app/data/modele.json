@@ -2358,6 +2358,28 @@
       "source": "manuel §10 « Recalling Palettes »",
       "avertissement": "Ne s'applique qu'aux channels SÉLECTIONNÉS — il faut sélectionner avant. Un channel sans valeur stockée dans la palette reste dans son état.\n"
     },
+    "copier_vers": {
+      "mot_cle": "Copy To",
+      "attend": "cible_destination",
+      "auto_termine": false,
+      "contextes": [
+        "Live",
+        "Blind"
+      ],
+      "confiance": "A",
+      "source": "manuel §15 « Using [Copy To] » ; §10 Palettes ; §20 Submasters",
+      "osc": "copy_to",
+      "exemples_manuel": [
+        "`Chan 2 Copy To Cue 5 Enter` — §15 l. 31",
+        "`Cue 1/1 Thru 10 Copy To Cue 5/5 Enter` — §15 l. 45, une plage vers un début de plage",
+        "`Cue 2/ Copy To Cue 7/ Enter` — §15 l. 43, une liste entière vers une autre",
+        "`Color Palette 2 Copy To 9 Enter Enter` — §10 l. 413",
+        "`Sub 2 Copy To Sub 9 {Labels Only} Enter Enter` — §20 l. 453"
+      ],
+      "fin_de_plage_implicite": "La borne haute de la destination ne se donne pas : `1 Thru 5 Copy To 9` remplit 9 à 13. Le manuel le dit pour les palettes (§10 l. 379, « You do not have to supply the end value ») et le montre pour les cues (§15 l. 45).\n",
+      "double_appui": "`Copy To Copy To` pose `Move To` sur la ligne de commande (§02 l. 2328). Ce n'est pas une insistance : Move To DÉPLACE, la source est vidée.\n",
+      "avertissement": "RISQUE CONTEXTUEL. Écraser une cible existante demande une CONFIRMATION, c'est-à-dire un SECOND `Enter` — « The second [Enter] is not required if you have disabled confirmations in setup » (§10 l. 413). Une macro dépend donc ici d'un réglage de Setup invisible dans son texte : écrite avec un seul `Enter` elle reste en attente sur une console où les confirmations sont actives, écrite avec deux elle valide la ligne suivante sur une console où elles ne le sont pas. Même famille de piège que `Q Only` / `Track`. Non tranché : à porter au banc.\n"
+    },
     "rappeler_depuis": {
       "mot_cle": "Recall From",
       "attend": "famille_puis_cible",
@@ -2682,6 +2704,49 @@
       "source": "manuel §12 « Cue Only / Track »",
       "osc": "cueonly",
       "note": "`Q Only` et `Track` sont la MÊME touche physique : elle prend le sens inverse du réglage système. Le générateur doit connaître le mode de la console pour poser le bon mot — sinon il inverse le comportement voulu.\n"
+    },
+    "Labels Only": {
+      "mot_cle": "{Labels Only}",
+      "porte_sur": [
+        "copier_vers"
+      ],
+      "confiance": "A",
+      "source": "manuel §15 l. 93-97 ; §20 l. 453",
+      "osc": "only_labels",
+      "note": "Le manuel est explicite et GÉNÉRAL : « The [Copy To] and Move To commands can be used to copy or move labels between any target types that can have labels. A {Labels Only} softkey will display » (§15 l. 93). C'est ce qui autorise palette -> cue, alors qu'aucun exemple chiffré ne montre ce couple précis. Orthographe au PLURIEL : `{Label Only}` au singulier n'existe nulle part, ni dans les manuels ni dans les 1155 clés OSC (`only_labels` -> ONLY_LABELS).\n"
+    },
+    "Notes Only": {
+      "mot_cle": "{Notes Only}",
+      "porte_sur": [
+        "copier_vers"
+      ],
+      "confiance": "A",
+      "source": "manuel §15 l. 97 — « Labels, scenes, and notes can be copied or moved between cues »"
+    },
+    "Scene Only": {
+      "mot_cle": "{Scene Only}",
+      "porte_sur": [
+        "copier_vers"
+      ],
+      "confiance": "A",
+      "source": "manuel §15 l. 97"
+    },
+    "Only Levels": {
+      "mot_cle": "{Only Levels}",
+      "porte_sur": [
+        "copier_vers"
+      ],
+      "confiance": "A",
+      "source": "manuel §15 l. 49 — `[1] [Copy To] [2][0] {Only Levels} [Enter]`",
+      "osc": "only_levels"
+    },
+    "Attrs Only": {
+      "mot_cle": "{Attrs Only}",
+      "porte_sur": [
+        "copier_vers"
+      ],
+      "confiance": "A",
+      "source": "manuel §02 l. 2212 — copie les propriétés d'un fader sans niveaux ni libellés"
     },
     "Track": {
       "mot_cle": "Track",
@@ -3551,6 +3616,41 @@
       "action": "sneak",
       "valide": "oui",
       "confiance": "A"
+    },
+    {
+      "objet": "Chan",
+      "action": "copier_vers",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`Chan 2 Copy To Cue 5 Enter` — §15 l. 31"
+    },
+    {
+      "objet": "Group",
+      "action": "copier_vers",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`Group 3 Copy To Preset 6 Enter` — §15 l. 35"
+    },
+    {
+      "objet": "Cue",
+      "action": "copier_vers",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`Cue 1/1 Thru 10 Copy To Cue 5/5 Enter` — §15 l. 45"
+    },
+    {
+      "objet": "Sub",
+      "action": "copier_vers",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`Sub 2 Copy To Sub 9 {Labels Only} Enter Enter` — §20 l. 453"
+    },
+    {
+      "objet": "Palette",
+      "action": "copier_vers",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`Color Palette 2 Copy To 9 Enter Enter` — §10 l. 413. La destination hors famille palette (une cue, par exemple) n'a AUCUN exemple chiffré : elle repose sur la phrase générale du §15 l. 93, qui suffit pour les libellés (`{Labels Only}`) mais pas pour un copier de données complet.\n"
     },
     {
       "objet": "Chan",

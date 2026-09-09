@@ -83,6 +83,8 @@ mots_outils:
   - en
   - avec
   - dans
+  - vers
+  - depuis
   - sur
   - pour
   - au
@@ -334,6 +336,30 @@ durees:
   mots_temps: [temps, temporisation, timing, fondu]
 
 # --------------------------------------------------------------------------
+# FAMILLES DE PALETTES — les quatre du modèle, plus la forme générique
+#
+# Le traducteur écrivait « Color Palette » en dur là où il en avait besoin
+# (`_creer_palettes_couleur`). Dès qu'une commande porte sur une famille
+# quelconque — copier des libellés, par exemple — il faut pouvoir la nommer.
+# Les clés sont celles de `grammar/modele.yaml`, section `palettes.familles`.
+# --------------------------------------------------------------------------
+familles_palette:
+  Color Palette:
+    alias: [couleur, couleurs, color, colour, teinte, teintes]
+  Focus Palette:
+    alias: [focus, position, positions, pointage]
+  Int Palette:
+    alias: [intensite, intensites, int]
+  Beam Palette:
+    alias: [beam, faisceau, faisceaux, gobo, gobos]
+  # `Palette` (la famille générique du modèle) n'est VOLONTAIREMENT pas ici.
+  # Elle ne doit jamais être devinée : le mot « palettes » d'une phrase est du
+  # remplissage grammatical, pas le choix d'une famille. L'y mettre a
+  # immédiatement produit `Palette 1 Thru 5` là où l'utilisateur avait écrit
+  # « palettes de couleur » — la correspondance floue attrapait « palettes »
+  # avant d'arriver à « couleur ».
+
+# --------------------------------------------------------------------------
 intentions:
   creer_palettes_couleur:
     description: "créer une ou plusieurs palettes de couleur à partir de gélatines"
@@ -398,6 +424,32 @@ intentions:
       mésinterpréter un numéro comme une plage. L'échelle (`At /
       <pourcentage> Park`) et le parquage d'adresse (`Address <n> At
       <niveau> Park`) restent hors périmètre de cette tranche.
+
+  copier_libelles:
+    description: "copier les libellés d'une famille de palettes vers des cues"
+    declencheurs:
+      verbe: [copie, copier, copiez, reporte, reporter, renomme, renommer]
+      libelle: [libelle, libelles, label, labels, nom, noms, intitule, intitules]
+    declencheurs_optionnels:
+      palette: [palette, palettes]
+      cue: [cue, cues, memoire, memoires]
+    exemple_nl: >
+      copie les libellés des palettes de couleur 1 à 5 vers les cues 3/1
+    origine: >
+      manuel §15 l. 93 — « The [Copy To] and Move To commands can be used to
+      copy or move labels between any target types that can have labels. A
+      {Labels Only} softkey will display. » Confiance A
+      (`grammar/modele.yaml`, action `copier_vers`, modificateur `Labels Only`).
+    note: >
+      Le libellé SEUL est copié, jamais les données : c'est tout l'intérêt de
+      `{Labels Only}` pour renommer des cues d'après les palettes dont elles
+      viennent. Deux précisions que le modèle porte et que le traducteur ne
+      répète pas. D'abord l'orthographe : `{Labels Only}` est au PLURIEL, la
+      forme singulière n'existe ni dans les manuels ni dans les 1155 clés OSC.
+      Ensuite le second `Enter` de confirmation, qui dépend d'un réglage de
+      Setup invisible dans le texte de la macro — le générateur l'avertit à
+      chaque fois plutôt que de choisir à la place de l'utilisateur.
+      La borne haute de la destination ne se donne jamais (manuel §10 l. 379).
 
   verifier:
     description: "passer les circuits en revue un par un (Check)"
@@ -929,6 +981,20 @@ questions:
         libelle: "Une palette sur des circuits précis"
         detail: "La palette capture l'état exact des circuits donnés."
         demande_valeur: true
+
+  famille_palette:
+    texte: "Quelle famille de palettes ?"
+    pourquoi: >
+      Eos a quatre familles de palettes et le mot-clé change avec elle :
+      `Color Palette`, `Focus Palette`, `Int Palette`, `Beam Palette`. Aucune
+      n'est plus probable que les autres dans une phrase qui dit seulement
+      « palettes » — deviner produirait une commande valide visant la mauvaise
+      famille, c'est-à-dire une erreur silencieuse.
+    options:
+      - { cle: "Color Palette", libelle: "Couleur" }
+      - { cle: "Focus Palette", libelle: "Focus (position)" }
+      - { cle: "Int Palette",   libelle: "Intensité" }
+      - { cle: "Beam Palette",  libelle: "Beam (faisceau)" }
 
   couleur_ambigue:
     texte: "Quelle nuance exactement ?"

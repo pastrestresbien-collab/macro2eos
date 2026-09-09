@@ -1020,6 +1020,30 @@ CAS = [
         "statut": "incompris",
     },
     {
+        # Exemple apporté par la communauté le 2026-09-09 : renommer à la
+        # volée des cues d'après les palettes dont elles viennent.
+        "nom": "copie de libellés palette -> cue",
+        "phrase": "copie les libelles des palettes de couleur 1 a 5 vers les cues 3 1",
+        "statut": "compris",
+        "rendu": "Color Palette 1 Thru 5 Copy To Cue 3/1 {Labels Only} Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        "nom": "copie de libellés — autre famille, autre mot-clé",
+        "phrase": "renomme les cues 3 1 avec les noms des palettes de focus 1 a 8",
+        "statut": "compris",
+        "rendu": "Focus Palette 1 Thru 8 Copy To Cue 3/1 {Labels Only} Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Aucune famille par défaut : les quatre ont des mot-clés différents
+        # et aucune n'est plus probable. Deviner produirait une commande
+        # valide visant la mauvaise famille — erreur silencieuse.
+        "nom": "famille de palette non nommée — question, pas supposition",
+        "phrase": "copie les libelles des palettes 1 a 5 vers les cues 3 1",
+        "statut": "a_preciser",
+    },
+    {
         "nom": "update d'une cue — la cible est toujours explicite",
         "phrase": "mets a jour la cue 4",
         "statut": "compris",

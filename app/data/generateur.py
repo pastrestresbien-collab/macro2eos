@@ -162,13 +162,30 @@ class Generateur:
         if "sous_groupes" in sel:
             return self._rendre_sous_groupes(sel["sous_groupes"])
 
+        # Une source de palettes n'est pas un `objet` du modèle : les familles
+        # vivent sous `palettes.familles`. `Color Palette 1 Thru 5 Copy To ...`
+        # en a besoin (§10 l. 413).
+        if "famille" in sel:
+            famille = self.modele["palettes"]["familles"].get(sel["famille"])
+            if famille is None:
+                avert.append(
+                    f"famille de palette `{sel['famille']}` absente du modèle")
+                mot = str(sel["famille"])
+            else:
+                mot = famille["mot_cle"]
+            sel = {k: v for k, v in sel.items() if k != "famille"}
+            return self._rendre_avec_mot(mot, sel, avert)
+
         objet = sel["objet"]
         mot = self.modele["objets"][objet]["mot_cle"]
+        return self._rendre_avec_mot(mot, sel, avert, objet)
+
+    def _rendre_avec_mot(self, mot: str, sel: dict, avert: list[str],
+                         objet: str | None = None) -> str:
+        """Partie commune du rendu d'une sélection, une fois le mot-clé
+        connu — qu'il vienne de `objets` ou de `palettes.familles`."""
         thru, plus = self._thru, self._plus
-
-        # préfixe de cue list : `Cue 2/5`
         prefixe = f"{sel['liste']}/" if "liste" in sel else ""
-
         if "de" in sel:
             morceaux = [mot, f"{prefixe}{sel['de']}", thru, str(sel["a"])]
         elif "mot" in sel:                       # Out / Next / Last / Home
@@ -193,7 +210,7 @@ class Generateur:
         if "plus_plage" in sel:
             debut, fin = sel["plus_plage"]
             morceaux += [plus, str(debut), thru, str(fin)]
-            self._verifier_combinaison(f"{objet} <n> +", avert)
+            self._verifier_combinaison(f"{objet or mot} <n> +", avert)
 
         if "part" in sel:
             part = sel["part"]
@@ -466,6 +483,44 @@ class Generateur:
                 out += f" Label {act['label']}"
                 self._verifier_label(act["label"], avert)
             return out
+
+        if t == "copier_vers":
+            # Le second `Enter` de confirmation dépend d'un réglage de Setup
+            # que le texte de la macro ne montre pas. Le générateur ne le pose
+            # pas — il ne peut pas savoir — mais il ne se tait pas non plus.
+            avert.append(self.modele["actions"]["copier_vers"]["avertissement"].strip())
+            # La source est déjà posée par la sélection ; l'action ne porte
+            # que la destination. Sa borne haute ne se donne jamais : le
+            # manuel §10 l. 379 est explicite, « You do not have to supply the
+            # end value » — la console déduit la longueur de la source.
+            dest = act.get("destination")
+            if not isinstance(dest, dict):
+                avert.append("`Copy To` sans destination")
+                return f"{mot} ?"
+            morceaux = [mot]
+            objet = dest.get("objet")
+            if objet:
+                regle = self.modele["objets"].get(objet)
+                if regle is None:
+                    avert.append(f"objet de destination `{objet}` absent du modèle")
+                    morceaux.append(str(objet))
+                else:
+                    morceaux.append(regle["mot_cle"])
+            elif dest.get("famille"):
+                famille = self.modele["palettes"]["familles"].get(dest["famille"])
+                if famille is None:
+                    avert.append(
+                        f"famille de destination `{dest['famille']}` absente du modèle")
+                    morceaux.append(str(dest["famille"]))
+                else:
+                    morceaux.append(famille["mot_cle"])
+            if "liste" in dest:
+                morceaux.append(f"{dest['liste']}/{dest['cible']}")
+            elif "cible" in dest:
+                morceaux.append(str(dest["cible"]))
+            else:
+                avert.append("`Copy To` sans numéro de destination")
+            return " ".join(morceaux)
 
         if t == "go_to_cue":
             cible = act.get("mot", act.get("cible"))

@@ -323,3 +323,42 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "traducteur/traducteur.py — _vise_la_selection_courante(), _selection_courante_permise()"
+
+  - date: "2026-09-09"
+    question: >-
+      Renommer à la volée des cues d'après les palettes dont elles viennent —
+      la réponse de la communauté « (Focus/color etc) Palette x thru x copy to
+      cue x/x soft key {label only} » tient-elle ?
+    reponse: >-
+      Oui sur le mécanisme, avec une correction d'orthographe et un piège
+      omis. Le manuel §15 est explicite et GÉNÉRAL : « The [Copy To] and Move
+      To commands can be used to copy or move labels between any target types
+      that can have labels. A {Labels Only} softkey will display. » C'est ce
+      qui autorise palette -> cue, alors qu'aucun exemple chiffré ne montre ce
+      couple précis.
+    sources:
+      - "manuals/operations-manual/15-advanced-manual-control.md:93, 97"
+      - "manuals/operations-manual/20-submasters.md:453 — `[Sub] [2] [Copy To] [Sub 9] {Labels Only} [Enter][Enter]`"
+      - "manuals/operations-manual/10-palettes.md:379, 413"
+      - "reference/eosKeys.ts — only_labels -> ONLY_LABELS"
+    confiance: "A"
+    consequence: "modele_manquant"
+    detail: >-
+      Trois écarts avec la réponse reçue. (1) ORTHOGRAPHE : le softkey est
+      `{Labels Only}` au PLURIEL — 4 occurrences dans les manuels, clé OSC
+      `only_labels`. La forme singulière `{Label Only}` n'existe nulle part.
+      (2) PIÈGE OMIS, et c'est le point important : écraser une cible
+      existante demande une confirmation, donc un SECOND `Enter` — « The
+      second [Enter] is not required if you have disabled confirmations in
+      setup » (§10 l. 413). Une macro dépend ici d'un réglage de Setup
+      invisible dans son texte : écrite avec un seul `Enter` elle reste en
+      attente sur une console où les confirmations sont actives ; écrite avec
+      deux, le second valide la ligne suivante là où elles ne le sont pas.
+      Même famille que le piège `Q Only`/`Track`. Non tranché, à porter au
+      banc. (3) La borne haute de la destination ne se donne jamais (§10
+      l. 379). Lacune du dépôt révélée au passage : `Copy To` — un des verbes
+      majeurs d'Eos — était ABSENT du modèle, qui ne connaissait que
+      `Recall From`. Ajouté avec cinq modificateurs de la famille `... Only`.
+    backlog: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml actions/copier_vers + modificateurs ; traducteur intention copier_libelles"
