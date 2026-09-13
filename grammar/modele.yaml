@@ -2028,10 +2028,21 @@ actions:
       du fixture, SANS aucun message d'avertissement — et `CIE Y` peut changer
       en même temps que `CIE X`, alors que lui seul avait été saisi. Une macro
       qui vise une teinte précise via CIE X/Y peut donc produire une couleur
-      différente de celle demandée, sans que rien ne le signale. Existence
-      d'une forme combinée `CIE XYY` (`CIE_XYY` en interne) observée au banc
-      le même jour, non caractérisée : nombre d'arguments et comportement non
-      vérifiés.
+      différente de celle demandée, sans que rien ne le signale.
+    combinaison_verifiee: >
+      Confirmé au banc le 2026-09-13 : `<sélection> CIE X <valeur> CIE Y
+      <valeur> Enter` — UN SEUL `Enter` final, aucun `Enter` intermédiaire
+      entre les deux paramètres. Ligne observée : `Groupe 100 CIE X .20 CIE Y
+      .50` suivi d'un seul `♦`, résultat exact (x=0.2000, y=0.5000, dans le
+      gamut du fixture, donc pas de projection).
+    forme_combinee_invalide: >
+      `CIE XYY` (`CIE_XYY` en interne, suggéré par l'autocomplétion de la
+      console au moment de taper "cie") a été testé au banc le 2026-09-13 et
+      produit systématiquement une erreur de syntaxe — y compris précédé
+      d'une sélection valide (`Groupe 100`). Ce n'est PAS une commande de
+      ligne valide malgré l'autocomplétion ; probablement le nom interne
+      d'une catégorie de paramètres virtuels (regroupant CIE X, CIE Y,
+      Luminosité), pas un token saisissable tel quel.
   cie_y:
     mot_cle: "CIE Y"
     attend: valeur                # 0.0 à 1.0, chromaticité CIE 1931 xy
