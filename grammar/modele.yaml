@@ -439,6 +439,22 @@ saisie_niveau:
     Vaut pour l'intensité, les incréments (`At + 3` = +30 %), les échelles
     (`At / 3` = 30 %) et les points de courbe. Ce n'est pas propre à une
     commande, c'est la lecture du clavier numérique.
+  echelle_generalisee_hors_at:
+    confiance: B
+    source: >
+      Vidéo tutoriel officiel ETC sur les macros (transcription fournie
+      2026-09-13, chaîne ETC) : `Saturation /90 Enter` sur une sélection
+      réduit sa saturation ; réappliqué deux fois de suite, l'effet
+      s'accumule (« another 10% less saturate » à chaque appel).
+    diagnostic: >
+      Confirme que l'échelle proportionnelle par `/` n'est pas propre à `At`
+      (intensité) ni à `Park` (déjà documentés ci-dessus et sous
+      `parquer_echelle`) : le même mécanisme s'applique à `Saturation`, donc
+      vraisemblablement à d'autres paramètres. `/90` MULTIPLIE la valeur
+      courante par 0.90 (échelle relative, cumulative à chaque appel) — pas
+      une valeur absolue, sans quoi une seconde application n'aurait aucun
+      effet. Non testé au banc ; confiance B seulement, à confirmer avant
+      de généraliser au traducteur.
   consequence_generateur:
     gravite: haute
     description: >
@@ -3058,6 +3074,31 @@ macro:
     note: >
       Trois touches OSC distinctes, pas trois positions d'un même softkey
       (correction corpus vague 29 via eosKeys.ts).
+    comportement_default:
+      confiance: A
+      source: "manuel §24 l. 101"
+      regle: >
+        Une macro en mode Default (colonne Mode vide) s'exécute en
+        Foreground si elle est déclenchée manuellement (ligne de commande,
+        direct select), et en Background si elle est déclenchée par le
+        système (cue, show control). Confirmé mot pour mot par une vidéo
+        tutoriel officielle ETC sur les macros (2026-09-13). Cohérent avec
+        `defaut_projet: Foreground` ci-dessus, qui vise justement le cas
+        d'une macro tapée à la main.
+  regle_syntaxe_incompatible_foreground:
+    confiance: B
+    source: >
+      Vidéo tutoriel officiel ETC (2026-09-13) : `1 Thru 10` puis l'appel
+      d'une macro Foreground contenant `Fader 1 Thru Home` produit une
+      erreur de syntaxe — un softkey Fader ne peut rien faire avec des
+      channels déjà sur la ligne de commande. Le mode Background évite ce
+      conflit : la macro s'exécute sans toucher à ce qui est déjà tapé.
+    diagnostic: >
+      Une macro Foreground n'est donc pas seulement "elle apparaît sur la
+      ligne de commande" — elle peut activement ÉCHOUER si son contenu est
+      syntaxiquement incompatible avec ce qui s'y trouve déjà. Non testé à
+      notre banc ; à garder en tête pour tout avertissement de composition
+      de macro multi-commandes.
 
   controle:
     Loop Begin:
