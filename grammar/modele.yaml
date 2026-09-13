@@ -3173,6 +3173,24 @@ macro:
         Les commandes de la macro background s'insèrent dans l'édition en cours.
         Corruption silencieuse, confirmée S.
       confiance: S
+    - id: fin_volontairement_non_terminee
+      regle: >
+        Une macro peut se terminer SANS `Enter` final, exprès, pour laisser la
+        ligne de commande ouverte à l'opérateur.
+      motif: >
+        Démontré dans une vidéo tutoriel officielle ETC (2026-09-13) :
+        `Record Focus Palette {Wait for Input}` (pause, saisie du numéro,
+        reprise sur [Macro]) puis `Label` SANS `Enter` — le softkey {Delete}
+        sert à retirer l'Enter de clôture à l'édition. La macro rend la main
+        avec `... Label ` en attente ; l'opérateur tape le texte et valide
+        lui-même. Distinct de `{Wait for Input}` : ici il n'y a plus de
+        reprise automatique du tout, la macro s'arrête pour de bon.
+      confiance: B
+      note: >
+        Non trouvé dans le texte du manuel malgré recherche ciblée — à
+        vérifier au banc avant de l'utiliser dans une macro générée
+        automatiquement par ce projet, puisque rendre_macro() termine
+        aujourd'hui systématiquement par un `Enter`.
 
 # --------------------------------------------------------------------------
 # OSC — couche d'injection
