@@ -127,8 +127,7 @@
       "description": "enregistrer une sélection de circuits dans une cue existante",
       "champs": [
         "verbe",
-        "cue",
-        "objet"
+        "cue"
       ]
     },
     "aller_a_cue": {
@@ -142,8 +141,7 @@
       "description": "enregistrer une sélection de circuits dans un submaster",
       "champs": [
         "verbe",
-        "sub",
-        "objet"
+        "sub"
       ]
     },
     "appliquer_effet": {
@@ -172,16 +170,14 @@
       "description": "enregistrer une sélection de circuits dans un preset",
       "champs": [
         "verbe",
-        "preset",
-        "objet"
+        "preset"
       ]
     },
     "rappeler_preset": {
       "description": "appliquer un preset existant à une sélection de circuits",
       "champs": [
         "verbe",
-        "preset",
-        "objet"
+        "preset"
       ]
     },
     "appel_macro": {

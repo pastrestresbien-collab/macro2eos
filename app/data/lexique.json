@@ -626,7 +626,9 @@
           "memoire",
           "memoires",
           "sequence"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -703,7 +705,9 @@
           "submasters",
           "sousmaster",
           "sousmasters"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -810,7 +814,9 @@
         "preset": [
           "preset",
           "presets"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -844,7 +850,9 @@
         "preset": [
           "preset",
           "presets"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",

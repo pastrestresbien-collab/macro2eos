@@ -518,6 +518,17 @@ intentions:
     declencheurs:
       verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
       cue: [cue, cues, memoire, memoires, sequence]
+    declencheurs_optionnels:
+      # Déplacé de `declencheurs` le 2026-09-13 — même correctif que
+      # `plein_feu`/`intensite` du 2026-09-09, appliqué ici à une intention où
+      # la sélection reste de toute façon TOUJOURS exigée par le handler
+      # (`_enregistrer_cue` refuse sans jamais deviner, règle 5). Avant ce
+      # changement, « enregistre dans la cue 4 » répondait « aucune intention
+      # reconnue dans la phrase » — un mensonge sur la vraie cause, puisque
+      # verbe+cue suffisaient déjà à identifier l'intention sans ambiguïté.
+      # Le handler donne maintenant le vrai motif : « aucun circuit ni groupe
+      # désigné ». `cue` reste seul dans `declencheurs` : c'est lui qui
+      # distingue cette intention de toute autre, pas `objet`.
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "enregistrer les circuits 1 à 5 dans la cue 4"
     origine: >
@@ -552,6 +563,10 @@ intentions:
     declencheurs:
       verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
       sub: [sub, subs, submaster, submasters, sousmaster, sousmasters]
+    declencheurs_optionnels:
+      # Voir le commentaire identique sous `enregistrer_cue` (2026-09-13) —
+      # `sub` distingue déjà l'intention, `objet` ne fait que nommer la
+      # sélection que le handler exige de toute façon.
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "enregistrer les circuits 1 à 5 dans le sub 3"
     origine: >
@@ -613,6 +628,10 @@ intentions:
     declencheurs:
       verbe: [enregistrer, enregistre, record, sauver, sauve, graver, grave]
       preset: [preset, presets]
+    declencheurs_optionnels:
+      # Voir le commentaire identique sous `enregistrer_cue` (2026-09-13) —
+      # `preset` distingue déjà l'intention, `objet` ne fait que nommer la
+      # sélection que le handler exige de toute façon.
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "enregistrer les circuits 1 à 5 dans le preset 2"
     origine: >
@@ -633,6 +652,10 @@ intentions:
     declencheurs:
       verbe: [rappeler, rappelle, appliquer, applique, charger, charge]
       preset: [preset, presets]
+    declencheurs_optionnels:
+      # Voir le commentaire identique sous `enregistrer_cue` (2026-09-13) —
+      # `preset` distingue déjà l'intention, `objet` ne fait que nommer la
+      # sélection que le handler exige de toute façon.
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "rappelle le preset 2 sur les circuits 1 à 5"
     origine: >

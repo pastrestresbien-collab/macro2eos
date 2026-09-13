@@ -160,6 +160,17 @@ MARQUEURS_NIVEAU = ("%", "pourcent", "intensite", "niveau")
 # traiter comme `%`/`pourcent` casserait cette forme déjà correcte.
 MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
 
+# Sépare une phrase en plusieurs COMMANDES séquentielles, pour bâtir une
+# macro multi-lignes plutôt qu'une seule ligne. Volontairement restreint à
+# « puis » et « ; » — des connecteurs qui ne servent JAMAIS à autre chose en
+# français de métier. « et » est exclu à dessein : il sert déjà à l'intérieur
+# d'une seule commande (« circuits 1 et 3 », listes de couleurs...) et le
+# lire comme séparateur de commandes couperait des phrases simples en plein
+# milieu, sans qu'aucun mot ne le signale. Élargir cette liste est le genre
+# d'assouplissement que la doctrine du projet encourage (2026-09-09) — mais
+# seulement un connecteur sourcé sans double-sens à la fois, jamais par lot.
+SEPARATEUR_COMMANDES = re.compile(r"\bpuis\b|;", re.IGNORECASE)
+
 
 # --------------------------------------------------------------------------
 def charger_lexique(chemin):
@@ -493,13 +504,70 @@ class Traducteur:
 
     # -- point d'entrée ----------------------------------------------------
     def traduire(self, phrase: str, reponses: dict | None = None) -> Traduction:
-        """Traduit une phrase. `reponses` porte les questions déjà tranchées.
+        """Traduit une phrase, éventuellement composée de plusieurs commandes
+        séquentielles séparées par `SEPARATEUR_COMMANDES` (« puis », « ; »).
 
-        Le même appel, relancé avec la réponse, doit reprendre où il s'était
-        arrêté : c'est ce qui permet à l'app de poser une question puis de
-        continuer sans redemander le reste.
+        `reponses` porte les questions déjà tranchées. Le même appel, relancé
+        avec la réponse, doit reprendre où il s'était arrêté : c'est ce qui
+        permet à l'app de poser une question puis de continuer sans redemander
+        le reste.
         """
         reponses = reponses or {}
+        segments = [s.strip() for s in SEPARATEUR_COMMANDES.split(phrase) if s.strip()]
+        if len(segments) > 1:
+            return self._traduire_composee(segments, reponses)
+        return self._traduire_simple(phrase, reponses)
+
+    def _traduire_composee(self, segments: list[str], reponses: dict) -> Traduction:
+        """Traduit chaque segment indépendamment et assemble une seule IR
+        multi-lignes — le contenu d'une macro, pas encore la macro elle-même
+        (`Learn`/`Enter`/`Learn` restent la responsabilité de l'appelant, via
+        `grammar/generateur.py:rendre_macro`).
+
+        Règle : TOUT doit être `compris` pour composer quoi que ce soit. Une
+        étape ambiguë ou incomprise fait échouer la phrase entière plutôt que
+        de produire une macro à moitié traduite — même principe que « rien ne
+        tombe en silence » appliqué à l'échelle de la phrase composée : mieux
+        vaut nommer l'étape qui bloque que publier une macro tronquée.
+        """
+        ir: list[dict] = []
+        notes: list[str] = []
+        non_reconnus: list[str] = []
+        ignores: list[str] = []
+        hypotheses: list = []
+
+        for i, segment in enumerate(segments, start=1):
+            trad = self._traduire_simple(segment, reponses)
+
+            if trad.statut == "a_preciser":
+                return Traduction(
+                    statut="a_preciser", questions=trad.questions,
+                    notes=notes + [
+                        f"Étape {i} (« {segment} ») demande une précision "
+                        "avant de composer la macro."],
+                )
+            if trad.statut != "compris":
+                raison = "; ".join(trad.notes) if trad.notes else "non comprise."
+                return Traduction(
+                    statut="incompris",
+                    notes=notes + [f"Étape {i} (« {segment} ») : {raison}"],
+                    non_reconnus=non_reconnus + trad.non_reconnus,
+                    ignores=ignores + trad.ignores,
+                )
+
+            ir += trad.ir
+            notes += [f"Étape {i} : {n}" for n in trad.notes]
+            non_reconnus += trad.non_reconnus
+            ignores += trad.ignores
+            hypotheses += trad.hypotheses
+
+        return Traduction(statut="compris", ir=ir, notes=notes,
+                          non_reconnus=non_reconnus, ignores=ignores,
+                          hypotheses=hypotheses, intention="composee")
+
+    def _traduire_simple(self, phrase: str, reponses: dict) -> Traduction:
+        """Corps de `traduire()` pour UNE seule commande — inchangé, juste
+        renommé pour laisser `traduire()` gérer la composition en tête."""
         toks = tokeniser(normaliser(phrase, self._ponctuation))
         intention = self._intention(toks)
 
