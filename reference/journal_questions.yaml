@@ -441,9 +441,15 @@ questions:
       croit. Le générateur avertit désormais au lieu de refuser, et au lieu de
       se taire. À trancher au banc en testant séparément `Sub 4 At 50 Enter`
       et `Sub 4 At 50 Sneak 2 Enter`.
+
+      TRANCHÉ 2026-09-13, confiance S : les deux formes testées au banc réel,
+      acceptées sans erreur, fader du Sub 1 observé montant physiquement à
+      50 % en 2 secondes. `valide: oui` désormais dans `modele.yaml`. Le
+      traducteur route « sub 3 à 50 % » vers `Sub 3 At 50 Enter` depuis le
+      même jour (`traducteur/traducteur.py:_regler_intensite`).
     backlog: 22
     traite: "oui"
-    traite_ou: "grammar/modele.yaml legalite Sub+intensite"
+    traite_ou: "grammar/modele.yaml legalite Sub+intensite ; traducteur/traducteur.py _regler_intensite"
 
   - date: "2026-09-09"
     question: >-
@@ -482,9 +488,24 @@ questions:
       tranché, ne rien promettre sur la fidélité visuelle du rendu.
       Ce que ça n'affecte PAS : le partage de show files et l'ASCII, où les
       mots-clés sont normalisés.
+
+      MISE À JOUR 2026-09-13, confiance B (show réel d'un tiers, transmis en
+      conversation, non testé à notre banc) : la question précédente est
+      TRANCHÉE dans le sens le plus dangereux des deux. Une trentaine de
+      macros réelles montrent des tokens français DANS LE CONTENU STOCKÉ de
+      la macro elle-même (`Attente_Enter`, `Effacer_Ligne_Cmd`, `Par_Type`,
+      `Convertir_en_Manuel`, `Conv_en_val_absolue`, `Cue Précédent`...), pas
+      seulement dans un affichage — le contenu de macro EST ce qui a été
+      frappé/enregistré. Chaque token vérifié contre `reference/eosKeys.ts`
+      avant d'être retenu (voir `corpus/macros_show_reel.yaml`). Ce n'est
+      donc plus une question d'affichage : la SAISIE change avec la langue
+      de la console, au moins pour ces tokens-là. Reste ouvert : la liste
+      complète des mots affectés, et si la frappe anglaise reste acceptée en
+      parallèle sur une console francophone (aucune des deux hypothèses
+      testée ici).
     backlog: null
-    traite: "non"
-    traite_ou: null
+    traite: "partiel"
+    traite_ou: "corpus/macros_show_reel.yaml"
 
   - date: "2026-09-09"
     question: >-
