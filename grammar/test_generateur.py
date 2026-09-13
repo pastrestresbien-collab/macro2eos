@@ -305,13 +305,13 @@ CAS = [
         "avertissements": 0,
     },
     {
-        "nom": "`At` sur un Sub — refusé par le modèle (Assert n'a pas de mot-clé)",
+        "nom": "`At` sur un Sub — confirmé au banc réel le 2026-09-13",
         "ir": [
             {"selection": {"objet": "Sub", "numero": 4},
              "action": {"type": "intensite", "valeur": 50}},
         ],
         "attendu": "Sub 4 At 50 Enter",
-        "avertissements": 1,
+        "avertissements": 0,
     },
 
     # --------------------------------------------------------- Query (§15)

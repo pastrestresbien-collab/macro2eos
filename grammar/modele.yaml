@@ -3630,26 +3630,23 @@ legalite:
 
   - objet: Sub
     action: intensite
-    valide: inconnu
+    valide: oui
     backlog: 22
-    confiance: C
+    confiance: S
     note: >
-      REQUALIFIÉ le 2026-09-09, de `non`/S vers `inconnu`/C. L'entrée
-      affirmait « le pilotage de niveau d'un sub passe par le fader ou les
-      bumps, pas par `At` » en confiance S — la plus haute du projet, celle
-      réservée au banc réel. Or `grammar/refus_terrain.yaml`, seul dépôt des
-      constats de banc, ne contient AUCUNE entrée sur les subs : la confiance
-      S n'avait aucune observation derrière elle. C'est exactement la faute
-      que REGLES_POUR_UI.md documente comme la plus grave du projet, une
-      confiance empruntée sans vérification.
-      Deux éléments à charge contre le refus : le manuel §6 l. 1122 donne
-      `[Sub] [4] [At] [5] [0] [Sneak] [2] [Enter]` — « selects submaster 4 and
-      sneaks it to 50% in 2 seconds » ; et une capture d'éditeur de macro d'un
-      show réel (2026-09-09) montre des macros de production bâties sur
-      `Sub 905 @ Full` et `Sub 905 @ Out`.
-      `inconnu` plutôt que `oui` : constater qu'une syntaxe est écrite et
-      documentée ne prouve pas qu'elle fasse ce qu'on croit. Le générateur
-      avertit désormais au lieu de refuser — et au lieu de se taire.
+      TRANCHÉ au banc réel le 2026-09-13, après un aller-retour édifiant sur
+      la confiance de cette case. Historique complet, à garder :
+      d'abord `non`/S (aucune observation derrière) ; REQUALIFIÉ `inconnu`/C
+      le 2026-09-09, faute d'entrée dans `grammar/refus_terrain.yaml`, seul
+      dépôt des constats de banc du projet — exactement la faute documentée
+      par REGLES_POUR_UI.md comme la plus grave, une confiance empruntée sans
+      vérification. Testé au banc le 2026-09-13, sur console réelle :
+      `Sub 1 At 50 Enter` accepté sans erreur ; puis `Sub 1 At 50 Sneak 0:02
+      Enter` accepté, fader du Sub 1 observé montant physiquement à 50 % en
+      2 secondes. Conforme au manuel §6 l. 1122 (`[Sub] [4] [At] [5][0]
+      [Sneak] [2] [Enter]`) et aux macros de production déjà repérées
+      (`Sub 905 @ Full`, `Sub 905 @ Out`). Le générateur peut cesser
+      d'avertir : la case est `oui`, en confiance S, avec observation.
 
   - objet: Sub
     action: asserter
