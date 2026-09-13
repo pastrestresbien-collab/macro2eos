@@ -428,6 +428,11 @@
       }
     ],
     "portee": "Vaut pour l'intensité, les incréments (`At + 3` = +30 %), les échelles (`At / 3` = 30 %) et les points de courbe. Ce n'est pas propre à une commande, c'est la lecture du clavier numérique.\n",
+    "echelle_generalisee_hors_at": {
+      "confiance": "B",
+      "source": "Vidéo tutoriel officiel ETC sur les macros (transcription fournie 2026-09-13, chaîne ETC) : `Saturation /90 Enter` sur une sélection réduit sa saturation ; réappliqué deux fois de suite, l'effet s'accumule (« another 10% less saturate » à chaque appel).\n",
+      "diagnostic": "Confirme que l'échelle proportionnelle par `/` n'est pas propre à `At` (intensité) ni à `Park` (déjà documentés ci-dessus et sous `parquer_echelle`) : le même mécanisme s'applique à `Saturation`, donc vraisemblablement à d'autres paramètres. `/90` MULTIPLIE la valeur courante par 0.90 (échelle relative, cumulative à chaque appel) — pas une valeur absolue, sans quoi une seconde application n'aurait aucun effet. Non testé au banc ; confiance B seulement, à confirmer avant de généraliser au traducteur.\n"
+    },
     "consequence_generateur": {
       "gravite": "haute",
       "description": "Une demande « mets les circuits à 5 % » traduite naïvement en `At 5` produit 50 % — un facteur dix, silencieux, sans erreur de syntaxe. C'est le seul piège rencontré jusqu'ici qui transforme une commande valide en résultat faux d'un ordre de grandeur.\n",
@@ -1789,6 +1794,31 @@
       "confiance": "A",
       "source": "manuel §10 Palettes"
     },
+    "cie_x": {
+      "mot_cle": "CIE X",
+      "attend": "valeur",
+      "contextes": [
+        "Live",
+        "Blind"
+      ],
+      "confiance": "A",
+      "source": "manuel §6 « Manual Control », section CIE xy Control",
+      "note": "Paramètre virtuel, pas une touche de `eosKeys.ts` — même famille que `Hue`/`Saturation` (voir `recette_palettes_spectre` plus haut), adressable par `/eos/param/` et non `/eos/key/`. Confirmé au banc réel le 2026-09-13 : la console traduit une valeur entière saisie en décimale relative (« 43 » affiché « .43 » sur la ligne de commande), conforme au manuel.\n",
+      "avertissement": "Confirmé au banc réel le 2026-09-13, sur un fixture à gamut restreint : la valeur demandée n'est PAS stockée telle quelle si le fixture ne peut pas l'atteindre. Eos projette silencieusement le point sur le gamut réel du fixture, SANS aucun message d'avertissement — et `CIE Y` peut changer en même temps que `CIE X`, alors que lui seul avait été saisi. Une macro qui vise une teinte précise via CIE X/Y peut donc produire une couleur différente de celle demandée, sans que rien ne le signale.\n",
+      "combinaison_verifiee": "Confirmé au banc le 2026-09-13 : `<sélection> CIE X <valeur> CIE Y <valeur> Enter` — UN SEUL `Enter` final, aucun `Enter` intermédiaire entre les deux paramètres. Ligne observée : `Groupe 100 CIE X .20 CIE Y .50` suivi d'un seul `♦`, résultat exact (x=0.2000, y=0.5000, dans le gamut du fixture, donc pas de projection).\n",
+      "forme_combinee_invalide": "`CIE XYY` (`CIE_XYY` en interne, suggéré par l'autocomplétion de la console au moment de taper \"cie\") a été testé au banc le 2026-09-13 et produit systématiquement une erreur de syntaxe — y compris précédé d'une sélection valide (`Groupe 100`). Ce n'est PAS une commande de ligne valide malgré l'autocomplétion ; probablement le nom interne d'une catégorie de paramètres virtuels (regroupant CIE X, CIE Y, Luminosité), pas un token saisissable tel quel.\n"
+    },
+    "cie_y": {
+      "mot_cle": "CIE Y",
+      "attend": "valeur",
+      "contextes": [
+        "Live",
+        "Blind"
+      ],
+      "confiance": "A",
+      "source": "manuel §6 « Manual Control », section CIE xy Control",
+      "note": "voir cie_x — même paramètre virtuel, même avertissement de projection sur le gamut."
+    },
     "palette_intensite": {
       "mot_cle": "Int Palette",
       "attend": "cible_numerotee",
@@ -2930,7 +2960,17 @@
         "interne": "MACRO_MODE",
         "confiance": "A"
       },
-      "note": "Trois touches OSC distinctes, pas trois positions d'un même softkey (correction corpus vague 29 via eosKeys.ts).\n"
+      "note": "Trois touches OSC distinctes, pas trois positions d'un même softkey (correction corpus vague 29 via eosKeys.ts).\n",
+      "comportement_default": {
+        "confiance": "A",
+        "source": "manuel §24 l. 101",
+        "regle": "Une macro en mode Default (colonne Mode vide) s'exécute en Foreground si elle est déclenchée manuellement (ligne de commande, direct select), et en Background si elle est déclenchée par le système (cue, show control). Confirmé mot pour mot par une vidéo tutoriel officielle ETC sur les macros (2026-09-13). Cohérent avec `defaut_projet: Foreground` ci-dessus, qui vise justement le cas d'une macro tapée à la main.\n"
+      }
+    },
+    "regle_syntaxe_incompatible_foreground": {
+      "confiance": "B",
+      "source": "Vidéo tutoriel officiel ETC (2026-09-13) : `1 Thru 10` puis l'appel d'une macro Foreground contenant `Fader 1 Thru Home` produit une erreur de syntaxe — un softkey Fader ne peut rien faire avec des channels déjà sur la ligne de commande. Le mode Background évite ce conflit : la macro s'exécute sans toucher à ce qui est déjà tapé.\n",
+      "diagnostic": "Une macro Foreground n'est donc pas seulement \"elle apparaît sur la ligne de commande\" — elle peut activement ÉCHOUER si son contenu est syntaxiquement incompatible avec ce qui s'y trouve déjà. Non testé à notre banc ; à garder en tête pour tout avertissement de composition de macro multi-commandes.\n"
     },
     "controle": {
       "Loop Begin": {
@@ -3016,6 +3056,13 @@
         "regle": "ne pas déclencher de macro pendant qu'une édition de macro est ouverte (Tab 18)",
         "motif": "Les commandes de la macro background s'insèrent dans l'édition en cours. Corruption silencieuse, confirmée S.\n",
         "confiance": "S"
+      },
+      {
+        "id": "fin_volontairement_non_terminee",
+        "regle": "Une macro peut se terminer SANS `Enter` final, exprès, pour laisser la ligne de commande ouverte à l'opérateur.\n",
+        "motif": "Démontré dans une vidéo tutoriel officielle ETC (2026-09-13) : `Record Focus Palette {Wait for Input}` (pause, saisie du numéro, reprise sur [Macro]) puis `Label` SANS `Enter` — le softkey {Delete} sert à retirer l'Enter de clôture à l'édition. La macro rend la main avec `... Label ` en attente ; l'opérateur tape le texte et valide lui-même. Distinct de `{Wait for Input}` : ici il n'y a plus de reprise automatique du tout, la macro s'arrête pour de bon.\n",
+        "confiance": "B",
+        "note": "Non trouvé dans le texte du manuel malgré recherche ciblée — à vérifier au banc avant de l'utiliser dans une macro générée automatiquement par ce projet, puisque rendre_macro() termine aujourd'hui systématiquement par un `Enter`.\n"
       }
     ]
   },
@@ -3507,10 +3554,10 @@
     {
       "objet": "Sub",
       "action": "intensite",
-      "valide": "inconnu",
+      "valide": "oui",
       "backlog": 22,
-      "confiance": "C",
-      "note": "REQUALIFIÉ le 2026-09-09, de `non`/S vers `inconnu`/C. L'entrée affirmait « le pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At` » en confiance S — la plus haute du projet, celle réservée au banc réel. Or `grammar/refus_terrain.yaml`, seul dépôt des constats de banc, ne contient AUCUNE entrée sur les subs : la confiance S n'avait aucune observation derrière elle. C'est exactement la faute que REGLES_POUR_UI.md documente comme la plus grave du projet, une confiance empruntée sans vérification. Deux éléments à charge contre le refus : le manuel §6 l. 1122 donne `[Sub] [4] [At] [5] [0] [Sneak] [2] [Enter]` — « selects submaster 4 and sneaks it to 50% in 2 seconds » ; et une capture d'éditeur de macro d'un show réel (2026-09-09) montre des macros de production bâties sur `Sub 905 @ Full` et `Sub 905 @ Out`. `inconnu` plutôt que `oui` : constater qu'une syntaxe est écrite et documentée ne prouve pas qu'elle fasse ce qu'on croit. Le générateur avertit désormais au lieu de refuser — et au lieu de se taire.\n"
+      "confiance": "S",
+      "note": "TRANCHÉ au banc réel le 2026-09-13, après un aller-retour édifiant sur la confiance de cette case. Historique complet, à garder : d'abord `non`/S (aucune observation derrière) ; REQUALIFIÉ `inconnu`/C le 2026-09-09, faute d'entrée dans `grammar/refus_terrain.yaml`, seul dépôt des constats de banc du projet — exactement la faute documentée par REGLES_POUR_UI.md comme la plus grave, une confiance empruntée sans vérification. Testé au banc le 2026-09-13, sur console réelle : `Sub 1 At 50 Enter` accepté sans erreur ; puis `Sub 1 At 50 Sneak 0:02 Enter` accepté, fader du Sub 1 observé montant physiquement à 50 % en 2 secondes. Conforme au manuel §6 l. 1122 (`[Sub] [4] [At] [5][0] [Sneak] [2] [Enter]`) et aux macros de production déjà repérées (`Sub 905 @ Full`, `Sub 905 @ Out`). Le générateur peut cesser d'avertir : la case est `oui`, en confiance S, avec observation.\n"
     },
     {
       "objet": "Sub",

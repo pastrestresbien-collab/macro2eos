@@ -427,15 +427,17 @@ CAS = [
         "statut": "incompris",
     },
     {
-        # Le cas qui a motivé `objets_cible` plutôt que d'ajouter Sub à
-        # `objets` : le modèle interdit `Sub + intensite` (confiance S,
-        # « le pilotage de niveau d'un sub passe par le fader ou les bumps,
-        # pas par At »). Si « sub » était un objet générique, cette phrase
-        # aurait pu passer par `regler_intensite` et produire une commande
-        # qu'on sait déjà fausse. Elle ne doit reconnaître AUCUNE intention.
-        "nom": "sub + pourcentage — jamais routé vers l'intensité (Sub+At invalide, confiance S)",
+        # Renversé le 2026-09-13 : `Sub + At` a longtemps été interdit ici
+        # (confiance S empruntée sans observation, voir modele.yaml legalite
+        # Sub+intensite) puis testé au banc réel — `Sub 1 At 50 Sneak 0:02
+        # Enter` accepté, fader observé montant à 50 % en 2 s. `Sub` reste
+        # dans `objets_cible`, pas `objets` (voir le commentaire du
+        # lexique) : `_regler_intensite` le cherche explicitement, un seul
+        # numéro, jamais une plage `Thru` (non sourcée pour Sub+At).
+        "nom": "sub + pourcentage — routé vers l'intensité (Sub+At confirmé au banc, confiance S)",
         "phrase": "sub 3 à 50 %",
-        "statut": "incompris",
+        "statut": "compris",
+        "rendu": "Sub 3 At 50 Enter",
     },
 
     # -------------------------------------------------------------- effets
@@ -1020,10 +1022,13 @@ CAS = [
         # VERROU 2 — une CIBLE (Sub, Preset) bloque aussi le repli, même si
         # elle n'est pas dans `objets`. Régression réelle du 2026-09-09 :
         # « sub 3 à 50 % » rendait `At 50 Enter`, c'est-à-dire un ordre sur
-        # des circuits quelconques, alors que le banc a tranché Sub + At
-        # invalide en confiance S.
+        # des circuits quelconques. Depuis le 2026-09-13, `Sub` + `intensite`
+        # est confirmé au banc (voir plus haut) et sort donc par sa propre
+        # branche AVANT ce verrou — `Preset` reprend le rôle de démonstration
+        # ici, toujours bloqué par `_vise_la_selection_courante`, jamais
+        # ajouté à `objets_cible` d'exception.
         "nom": "verrou — un mot de cible interdit le repli",
-        "phrase": "sub 3 a 50 %",
+        "phrase": "preset 3 a 50 %",
         "statut": "incompris",
     },
     {

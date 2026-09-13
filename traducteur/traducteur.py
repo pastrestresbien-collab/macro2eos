@@ -935,11 +935,32 @@ class Traducteur:
         # confisquait au niveau : la phrase repartait en « niveau introuvable »
         # alors que le 50 était là, sous les yeux.
         selection = None
+        i_sub = None if objet is not None else \
+            self._indice_objet_cle("Sub", toks, pris, index=self._objets_cible)
         if objet is not None:
             selection = self._selection_de(objet, toks, pris)
             if selection is None:
                 return Traduction(statut="incompris", notes=[
                     "Aucun numéro trouvé pour la sélection."])
+        elif i_sub is not None:
+            # `Sub` + `At` : refusé en confiance S jusqu'au 2026-09-09, puis
+            # requalifié `inconnu` faute d'observation (voir modele.yaml,
+            # legalite Sub+intensite) — TRANCHÉ `oui` au banc réel le
+            # 2026-09-13 (`Sub 1 At 50 Enter`, fader du sub observé montant à
+            # 50 %). Un seul numéro, jamais une plage `Thru` : aucune source
+            # du dépôt n'atteste `Sub <a> Thru <b> At <n>`, donc on ne
+            # l'invente pas — seul `self._selection_de` (via `self._objet`)
+            # gère les plages, volontairement contourné ici.
+            cible = None
+            for i, valeur in self._nombres(toks, pris):
+                if i > i_sub:
+                    cible = valeur
+                    pris.add(i)
+                    break
+            if cible is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro de sub trouvé après « sub »."])
+            selection = {"objet": "Sub", "numero": cible}
         elif not self._vise_la_selection_courante(toks, pris):
             return Traduction(statut="incompris",
                               notes=[self._motif_refus_selection(toks, pris)])
