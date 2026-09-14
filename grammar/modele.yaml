@@ -2066,6 +2066,36 @@ actions:
     confiance: A
     source: "manuel §6 « Manual Control », section CIE xy Control"
     note: "voir cie_x — même paramètre virtuel, même avertissement de projection sur le gamut."
+  pan:
+    mot_cle: "Pan"
+    attend: valeur                # degrés, signé
+    contextes: [Live, Blind]
+    confiance: A
+    source: "manuel §6 « Manual Control », section Adjusting Parameters Using [+] and [-]"
+    note: >
+      Quatre formes distinctes, toutes chiffrées au manuel — ne pas les
+      confondre : `Pan <n>` pose une valeur ABSOLUE en degrés (`Pan 10`) ;
+      `Pan + <n>` AJOUTE n degrés à la valeur courante ; `Pan - <n>` pose une
+      valeur absolue NÉGATIVE (`Pan -10`, pas une soustraction) ; `Pan + - <n>`
+      RETIRE n degrés (c'est le `+` qui introduit un ajustement relatif, le
+      `-` qui suit en donne le signe). Piège direct : lire `Pan - 10` comme
+      « retirer 10° » serait faux — c'est `Pan + - 10` qu'il faut pour ça.
+      Distinct de `Pan / / <n>` (valeur DMX brute, mécanisme différent,
+      voir `saisie_niveau` note `dmx`) et de `Pan / <n>` (échelle
+      proportionnelle, voir `saisie_niveau.echelle_generalisee_hors_at` —
+      confirmé par la macro communautaire « Mirror Pan » : `Pan / -100 Enter`
+      inverse le pan en le multipliant par -1, confiance B, non démontré au
+      manuel pour ce paramètre précis).
+  tilt:
+    mot_cle: "Tilt"
+    attend: valeur                # degrés, signé
+    contextes: [Live, Blind]
+    confiance: A
+    source: >
+      manuel §6 — Pan et Tilt toujours traités comme une paire dans le texte
+      (« Pan/Tilt section », l.398/506/516/882), mais AUCUN exemple chiffré
+      propre à Tilt n'existe dans cette section, contrairement à Pan.
+    note: "même mécanisme que `pan` par analogie directe — voir son commentaire pour le détail des quatre formes."
   palette_intensite:
     mot_cle: "Int Palette"
     attend: cible_numerotee
