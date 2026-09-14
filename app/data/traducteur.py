@@ -1161,16 +1161,33 @@ class Traducteur:
                 i_valeur, valeur = min(candidats, key=lambda iv: abs(iv[0] - i_verbe))
                 pris.add(i_valeur)
 
-        # 3. la sélection — même schéma que `_regler_intensite`, sans la
-        #    branche Sub : aucun paramètre de focus n'a de sens documenté sur
-        #    un submaster.
+        # 3. la sélection — PAS `_selection_de` (qui essaie `_plage` en
+        #    premier) : rien ne source de plage/fan de circuits pour ces
+        #    paramètres, et « hue du circuit 1 à 180 » se ferait lire comme
+        #    une plage de circuits 1-180 (bug réel trouvé en session), le
+        #    « à » jouant à la fois le rôle de séparateur de plage et de
+        #    préposition vers la valeur — même famille de piège que celui
+        #    déjà documenté pour `_regler_intensite`, mais sans marqueur
+        #    (`%`/« degrés ») pour le lever ici. On ne cherche donc que le
+        #    nombre COLLÉ à l'objet, jamais plus loin.
+        avant = set(pris)
         objet = self._objet(toks, pris)
         selection = None
         if objet is not None:
-            selection = self._selection_de(objet, toks, pris)
-            if selection is None:
+            i_objet = next(iter(pris - avant))
+            candidat = None
+            if i_objet + 1 < len(toks) and toks[i_objet + 1].isdigit() \
+                    and (i_objet + 1) not in pris:
+                candidat = (i_objet + 1, int(toks[i_objet + 1]))
+            elif i_objet - 1 >= 0 and toks[i_objet - 1].isdigit() \
+                    and (i_objet - 1) not in pris:
+                candidat = (i_objet - 1, int(toks[i_objet - 1]))
+            if candidat is None:
                 return Traduction(statut="incompris", notes=[
                     "Aucun numéro trouvé pour la sélection."])
+            i_num, numero = candidat
+            pris.add(i_num)
+            selection = {"objet": objet, "numero": numero}
         elif not self._vise_la_selection_courante(toks, pris):
             return Traduction(statut="incompris",
                               notes=[self._motif_refus_selection(toks, pris)])

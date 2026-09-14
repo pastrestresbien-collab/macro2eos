@@ -1272,6 +1272,55 @@ CAS = [
         "statut": "compris",
         "rendu": "Chan 1 Thru 5 At 50 Enter",
     },
+
+    # -------------------------------------- regler_parametre — Edge/Hue/Saturation
+    {
+        "nom": "regler_parametre — Edge absolu",
+        "phrase": "mets le edge du circuit 1 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Edge 50 Enter",
+    },
+    {
+        # RÉGRESSION RÉELLE trouvée en session : sans marqueur d'unité fiable
+        # (Hue n'a pas d'équivalent à « degrés »), `_selection_de` (via
+        # `_plage`) lisait « circuit 1 à 180 » comme une plage de circuits
+        # 1-180, avalant la valeur. `_regler_parametre` ne passe plus du
+        # tout par `_plage` pour sa sélection — voir son code.
+        "nom": "regler_parametre — Hue absolu, sélection puis paramètre puis valeur",
+        "phrase": "mets le hue du circuit 1 à 180",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+    {
+        "nom": "regler_parametre — Hue absolu, paramètre puis sélection puis valeur",
+        "phrase": "circuit 1 hue à 180",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+    {
+        # Pire cas : sans le fix, cette phrase ne retombait pas en incompris
+        # mais produisait un résultat FAUX EN SILENCE — `Chan 180 Hue 1`,
+        # la valeur et le numéro de circuit échangés. La pire classe
+        # d'erreur du projet (règle 4, REGLES_POUR_UI.md).
+        "nom": "regler_parametre — Hue absolu, valeur avant la sélection dans la phrase",
+        "phrase": "hue à 180 sur le circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+    {
+        "nom": "regler_parametre — Saturation absolue",
+        "phrase": "mets la saturation du circuit 1 à 100",
+        "statut": "compris",
+        "rendu": "Chan 1 Saturation 100 Enter",
+    },
+    {
+        # Boucle refermée avec la transcription vidéo officielle ETC captée
+        # plus tôt en session (Saturation /90 Enter).
+        "nom": "regler_parametre — Saturation échelle (vidéo officielle ETC)",
+        "phrase": "inverse la saturation du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Saturation / -100 Enter",
+    },
 ]
 
 

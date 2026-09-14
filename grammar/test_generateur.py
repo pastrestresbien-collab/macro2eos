@@ -1161,6 +1161,36 @@ CAS = [
         "attendu": "Chan 1 Iris 50 Enter",
         "avertissements": 1,
     },
+    {
+        "nom": "regler_parametre — Edge absolu, même exemple chiffré que Zoom/Iris",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Edge",
+                        "forme": "absolue", "valeur": 50}},
+        ],
+        "attendu": "Chan 1 Edge 50 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "regler_parametre — Hue absolu, degrés littéraux, aucun zéro implicite",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Hue",
+                        "forme": "absolue", "valeur": 180}},
+        ],
+        "attendu": "Chan 1 Hue 180 Enter",
+        "avertissements": 1,      # confiance B, aucune source manuel directe
+    },
+    {
+        "nom": "regler_parametre — Saturation échelle (vidéo officielle ETC, boucle refermée)",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Saturation",
+                        "forme": "echelle", "valeur": -90}},
+        ],
+        "attendu": "Chan 1 Saturation / -90 Enter",
+        "avertissements": 1,
+    },
 ]
 
 CAS_MACRO = [

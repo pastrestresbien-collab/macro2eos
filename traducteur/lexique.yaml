@@ -192,6 +192,26 @@ parametres:
   Iris:
     alias: [iris]
     source: "parametres.Iris du modèle (grammar/modele.yaml) ; manuel §6"
+  Edge:
+    alias: [edge]
+    source: "parametres.Edge du modèle (grammar/modele.yaml) ; manuel §6"
+  Hue:
+    # PAS "teinte" en alias : ce mot est déjà pris par `famille` dans
+    # `creer_palettes_couleur` (couleur/couleurs/color/colour/teinte/teintes)
+    # — un couplage évitable entre deux intentions sans rapport, pour un mot
+    # dont l'usage réel ("teinte" pour CE paramètre précis, pas pour une
+    # couleur de gel) n'est de toute façon pas sourcé.
+    alias: [hue]
+    source: >
+      parametres.Hue du modèle (grammar/modele.yaml) ; confiance B, recette
+      communautaire seulement — aucune source manuel directe pour ce
+      paramètre.
+  Saturation:
+    alias: [saturation]
+    source: >
+      parametres.Saturation du modèle (grammar/modele.yaml) ; confiance B,
+      recette communautaire (absolue) + vidéo tutoriel officielle ETC
+      (echelle).
 
 # --------------------------------------------------------------------------
 # NUANCIERS — bibliothèques de gélatines
@@ -523,7 +543,7 @@ intentions:
   regler_parametre:
     description: "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser"
     declencheurs:
-      parametre: [pan, tilt, zoom, iris]
+      parametre: [pan, tilt, zoom, iris, edge, hue, saturation]
     declencheurs_optionnels:
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
       # Ces verbes ne changent rien au ROUTAGE (seul `parametre` compte) :

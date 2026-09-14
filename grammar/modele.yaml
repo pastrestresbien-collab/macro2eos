@@ -614,6 +614,78 @@ parametres:
     # `[+%]`/`[-%]` (touche générique à pas fixe) est sourcé, mécanisme
     # différent non modélisé ici.
 
+  Edge:
+    mot_cle: "Edge"
+    unite: "%"
+    confiance: A
+    source: >
+      manuel §6 — même phrase que Zoom/Iris : `[5] {Iris} [5] {Zoom} [6][5]
+      {Edge} [5] [Enter]` : « ... an edge value of 50% ». Troisième paramètre
+      de la même famille (dureté du bord de faisceau), même réserve
+      `[+%]`/`[-%]`.
+    formes:
+      absolue:
+        confiance: A
+        exemple: "`Edge 50` — pose 50 %, même exemple chiffré que Zoom/Iris"
+        piege: "même piège que Zoom/Iris — paramètre en pourcentage, voir sa note"
+    # Même réserve que Zoom/Iris : pas de forme relative, seul [+%]/[-%]
+    # (mécanisme générique différent) est sourcé.
+
+  Hue:
+    mot_cle: "Hue"
+    unite: "degrés"    # angle 0-360, PAS un pourcentage — aucune source ne
+                        # documente de zéro implicite pour ce paramètre
+    confiance: B
+    source: >
+      AUCUNE source manuel directe avec valeur chiffrée pour `Hue` seul —
+      absent des recherches ciblées dans le manuel principal (contrairement
+      à Pan/Tilt/Zoom/Iris/Edge). Seule source : recette communautaire
+      Facebook « Eos francophone » (2026-09-09, confiance B, voir
+      `saisie_niveau.echelle_generalisee_hors_at` et le commentaire
+      `recette_palettes_spectre` plus haut dans ce fichier) — `Saturation
+      100 Hue 0 Thru 360 Enter`. Rappel de la réserve déjà notée ailleurs :
+      `Hue`/`Saturation` sont des PARAMÈTRES (`/eos/param/`), absents des
+      1155 clés OSC, et leur enregistrement dans une palette dépend d'un
+      réglage Setup (Create Virtual HSB) invisible dans le texte d'une macro.
+    formes:
+      absolue:
+        confiance: B
+        exemple: "`Hue 0` — déduit de `Hue 0 Thru 360` (recette communautaire), jamais démontré isolément"
+    # PAS d'echelle ni de forme relative — aucune source, communautaire ou
+    # manuel, ne les documente pour Hue.
+
+  Saturation:
+    mot_cle: "Saturation"
+    # PAS d'`unite` ici, volontairement — voir le piège ci-dessous. Une
+    # unité pourcentage appliquerait `_formater_niveau` et changerait
+    # SILENCIEUSEMENT la valeur rendue pour tout chiffre 1-9 ; contrairement
+    # à Zoom/Iris/Edge, aucune source ne confirme que Saturation suit cette
+    # règle. Mieux vaut un rendu littéral non vérifié qu'une transformation
+    # non sourcée.
+    confiance: B
+    source: >
+      Recette communautaire Facebook « Eos francophone » (2026-09-09,
+      confiance B) : `Saturation 100 Hue 0 Thru 360 Enter`. La forme
+      `echelle` vient d'une source SÉPARÉE et INDÉPENDANTE : une vidéo
+      tutoriel officielle ETC sur les macros (2026-09-13), `Saturation /90
+      Enter` — voir `saisie_niveau.echelle_generalisee_hors_at`. Même
+      réserve que Hue sur le statut de paramètre virtuel et le prérequis
+      Setup.
+    formes:
+      absolue:
+        confiance: B
+        exemple: "`Saturation 100` — recette communautaire, jamais démontré au manuel"
+        piege: >
+          Probablement en pourcentage (0-100, cohérent avec « Saturation
+          100 » = saturation maximale), mais AUCUNE source ne confirme la
+          règle du zéro implicite pour ce paramètre précis — contrairement à
+          Zoom/Iris/Edge, sourcés directement. `unite` reste volontairement
+          absent du modèle : ne pas supposer que `Saturation 5` vaut 50 %.
+      echelle:
+        confiance: B
+        exemple: "`Saturation /90 Enter` — vidéo tutoriel officielle ETC (2026-09-13), réduit la saturation courante de 10 %"
+    # PAS de relatif_ajout/relatif_retrait — non sourcé.
+
 # --------------------------------------------------------------------------
 # COURBES — une relation entre le temps et le niveau
 # --------------------------------------------------------------------------

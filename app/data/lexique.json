@@ -146,6 +146,24 @@
         "iris"
       ],
       "source": "parametres.Iris du modèle (grammar/modele.yaml) ; manuel §6"
+    },
+    "Edge": {
+      "alias": [
+        "edge"
+      ],
+      "source": "parametres.Edge du modèle (grammar/modele.yaml) ; manuel §6"
+    },
+    "Hue": {
+      "alias": [
+        "hue"
+      ],
+      "source": "parametres.Hue du modèle (grammar/modele.yaml) ; confiance B, recette communautaire seulement — aucune source manuel directe pour ce paramètre.\n"
+    },
+    "Saturation": {
+      "alias": [
+        "saturation"
+      ],
+      "source": "parametres.Saturation du modèle (grammar/modele.yaml) ; confiance B, recette communautaire (absolue) + vidéo tutoriel officielle ETC (echelle).\n"
     }
   },
   "nuanciers": {
@@ -594,7 +612,10 @@
           "pan",
           "tilt",
           "zoom",
-          "iris"
+          "iris",
+          "edge",
+          "hue",
+          "saturation"
         ]
       },
       "declencheurs_optionnels": {
