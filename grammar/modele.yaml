@@ -567,6 +567,53 @@ parametres:
       # communautaire) ne parle que de Pan. L'absence ici est un choix, pas
       # un oubli — voir la règle en tête de cette section.
 
+  Zoom:
+    mot_cle: "Zoom"
+    unite: "%"
+    confiance: A
+    source: >
+      manuel §6 — `[5] {Iris} [5] {Zoom} [6][5] {Edge} [5] [Enter]` : « sets
+      channel 5 to ... a zoom value of 65% ». Cohérent avec la macro réelle
+      « ZOOM -% »/« ZOOM +% » observée au banc le 2026-09-13
+      (`corpus/macros_show_reel.yaml`, macros 151/152).
+    formes:
+      absolue:
+        confiance: A
+        exemple: "`Zoom 65` — pose 65 % ; `Zoom 5` pose 5 %, PAS 50 % (voir piège)"
+        piege: >
+          Paramètre en POURCENTAGE, pas en degrés (contrairement à Pan/Tilt) :
+          un chiffre unique reçoit un zéro implicite côté console, comme
+          `At`. `Zoom 5` seul seraît lu 50 % — écrire `Zoom 05` pour 5 %
+          (manuel §6, notation `<0>`). Le générateur applique cette règle
+          automatiquement (`unite: "%"` ci-dessus) ; ne jamais la contourner
+          en composant la chaîne à la main.
+    # PAS de `relatif_ajout`/`relatif_retrait` — piège trouvé le 2026-09-14 en
+    # cherchant la source : le manuel documente `[+%]`/`[-%]` pour Zoom
+    # (§6, « Using [+%] and [-%] », section Non-Intensity Parameters), mais
+    # c'est une TOUCHE GÉNÉRIQUE au pas fixe (10 par défaut, réglable en
+    # Setup), appliquée à ce qui est actuellement ciblé aux encodeurs — pas
+    # la syntaxe `<mot> + <n>` que ce catalogue modélise pour Pan. Déclarer
+    # `relatif_ajout`/`relatif_retrait` ici produirait `Zoom + 10`, une
+    # syntaxe JAMAIS vue dans aucune source. Mécanisme non modélisé, pas
+    # oublié.
+
+  Iris:
+    mot_cle: "Iris"
+    unite: "%"
+    confiance: A
+    source: >
+      manuel §6 — `[1] {Iris} [5] [Enter]` : « Places the iris parameter of
+      channel 1 at 50% ». Même famille que Zoom, même réserve sur `[+%]`/
+      `[-%]`.
+    formes:
+      absolue:
+        confiance: A
+        exemple: "`Iris 50` — pose 50 %, confirmé par l'exemple chiffré du manuel"
+        piege: "même piège que Zoom — paramètre en pourcentage, voir sa note"
+    # Même réserve que Zoom : PAS de relatif_ajout/relatif_retrait, seul
+    # `[+%]`/`[-%]` (touche générique à pas fixe) est sourcé, mécanisme
+    # différent non modélisé ici.
+
 # --------------------------------------------------------------------------
 # COURBES — une relation entre le temps et le niveau
 # --------------------------------------------------------------------------

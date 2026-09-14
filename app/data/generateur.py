@@ -727,7 +727,15 @@ class Generateur:
                     avert.append(f"`{mot_param}` {forme} : {forme_spec['piege']}")
 
         valeur = act["valeur"]
+        # Paramètres en pourcentage (Iris, Zoom...) : même convention que
+        # `At` — un chiffre unique reçoit un zéro implicite côté CONSOLE, donc
+        # le générateur doit l'écrire sur deux chiffres pour rester lu comme
+        # le pourcentage voulu (`_formater_niveau`, sourcé manuel §6). Les
+        # paramètres en degrés (Pan, Tilt) n'ont AUCUNE règle de ce genre —
+        # `Pan 5` vaut 5°, jamais 50° — d'où le test explicite sur `unite`.
         if forme == "absolue":
+            if spec_param is not None and spec_param.get("unite") == "%":
+                valeur = self._formater_niveau(valeur)
             return f"{mot_param} {valeur}"
         if forme == "relatif_ajout":
             return f"{mot_param} + {abs(valeur)}"

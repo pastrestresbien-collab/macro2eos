@@ -184,6 +184,14 @@ parametres:
   Tilt:
     alias: [tilt]
     source: "parametres.Tilt du modèle (grammar/modele.yaml) ; manuel §6, par analogie avec Pan"
+  Zoom:
+    alias: [zoom]
+    source: >
+      parametres.Zoom du modèle ; manuel §6 ; confirmé par une macro réelle
+      (« ZOOM -%»/« ZOOM +% », corpus/macros_show_reel.yaml, 2026-09-13).
+  Iris:
+    alias: [iris]
+    source: "parametres.Iris du modèle (grammar/modele.yaml) ; manuel §6"
 
 # --------------------------------------------------------------------------
 # NUANCIERS — bibliothèques de gélatines
@@ -515,7 +523,7 @@ intentions:
   regler_parametre:
     description: "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser"
     declencheurs:
-      parametre: [pan, tilt]
+      parametre: [pan, tilt, zoom, iris]
     declencheurs_optionnels:
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
       # Ces verbes ne changent rien au ROUTAGE (seul `parametre` compte) :

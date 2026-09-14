@@ -134,6 +134,18 @@
         "tilt"
       ],
       "source": "parametres.Tilt du modèle (grammar/modele.yaml) ; manuel §6, par analogie avec Pan"
+    },
+    "Zoom": {
+      "alias": [
+        "zoom"
+      ],
+      "source": "parametres.Zoom du modèle ; manuel §6 ; confirmé par une macro réelle (« ZOOM -%»/« ZOOM +% », corpus/macros_show_reel.yaml, 2026-09-13).\n"
+    },
+    "Iris": {
+      "alias": [
+        "iris"
+      ],
+      "source": "parametres.Iris du modèle (grammar/modele.yaml) ; manuel §6"
     }
   },
   "nuanciers": {
@@ -580,7 +592,9 @@
       "declencheurs": {
         "parametre": [
           "pan",
-          "tilt"
+          "tilt",
+          "zoom",
+          "iris"
         ]
       },
       "declencheurs_optionnels": {

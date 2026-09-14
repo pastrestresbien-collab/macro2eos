@@ -1131,6 +1131,36 @@ CAS = [
         "attendu": "Chan 1 Tilt / -100 Enter",
         "avertissements": 1,      # forme non déclarée pour Tilt
     },
+    {
+        "nom": "regler_parametre — Zoom absolu, deux chiffres, pas de zéro implicite",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Zoom",
+                        "forme": "absolue", "valeur": 65}},
+        ],
+        "attendu": "Chan 1 Zoom 65 Enter",
+        "avertissements": 1,      # piège pourcentage, toujours signalé
+    },
+    {
+        "nom": "regler_parametre — Zoom absolu, zéro implicite comme At (manuel §6)",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Zoom",
+                        "forme": "absolue", "valeur": 5}},
+        ],
+        "attendu": "Chan 1 Zoom 05 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "regler_parametre — Iris absolu, cas d'ancrage du manuel §6",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Iris",
+                        "forme": "absolue", "valeur": 50}},
+        ],
+        "attendu": "Chan 1 Iris 50 Enter",
+        "avertissements": 1,
+    },
 ]
 
 CAS_MACRO = [

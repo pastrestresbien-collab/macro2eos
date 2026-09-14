@@ -499,6 +499,32 @@
           "exemple": "`Tilt / / 25` — par analogie avec Pan"
         }
       }
+    },
+    "Zoom": {
+      "mot_cle": "Zoom",
+      "unite": "%",
+      "confiance": "A",
+      "source": "manuel §6 — `[5] {Iris} [5] {Zoom} [6][5] {Edge} [5] [Enter]` : « sets channel 5 to ... a zoom value of 65% ». Cohérent avec la macro réelle « ZOOM -% »/« ZOOM +% » observée au banc le 2026-09-13 (`corpus/macros_show_reel.yaml`, macros 151/152).\n",
+      "formes": {
+        "absolue": {
+          "confiance": "A",
+          "exemple": "`Zoom 65` — pose 65 % ; `Zoom 5` pose 5 %, PAS 50 % (voir piège)",
+          "piege": "Paramètre en POURCENTAGE, pas en degrés (contrairement à Pan/Tilt) : un chiffre unique reçoit un zéro implicite côté console, comme `At`. `Zoom 5` seul seraît lu 50 % — écrire `Zoom 05` pour 5 % (manuel §6, notation `<0>`). Le générateur applique cette règle automatiquement (`unite: \"%\"` ci-dessus) ; ne jamais la contourner en composant la chaîne à la main.\n"
+        }
+      }
+    },
+    "Iris": {
+      "mot_cle": "Iris",
+      "unite": "%",
+      "confiance": "A",
+      "source": "manuel §6 — `[1] {Iris} [5] [Enter]` : « Places the iris parameter of channel 1 at 50% ». Même famille que Zoom, même réserve sur `[+%]`/ `[-%]`.\n",
+      "formes": {
+        "absolue": {
+          "confiance": "A",
+          "exemple": "`Iris 50` — pose 50 %, confirmé par l'exemple chiffré du manuel",
+          "piege": "même piège que Zoom — paramètre en pourcentage, voir sa note"
+        }
+      }
     }
   },
   "courbes": {

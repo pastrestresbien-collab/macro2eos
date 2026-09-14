@@ -1236,6 +1236,42 @@ CAS = [
         "phrase": "inverse le tilt du circuit 1",
         "statut": "incompris",
     },
+    {
+        # Zoom/Iris : paramètres en POURCENTAGE (contrairement à Pan/Tilt en
+        # degrés). Ajouté le 2026-09-14 pour valider que le mécanisme
+        # générique s'étend vraiment sans code neuf — seule une entrée de
+        # catalogue de chaque côté (lexique.yaml + modele.yaml).
+        "nom": "regler_parametre — Zoom absolu, cas d'ancrage du manuel §6",
+        "phrase": "mets le zoom du circuit 1 à 65 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Zoom 65 Enter",
+    },
+    {
+        "nom": "regler_parametre — Iris absolu",
+        "phrase": "iris du circuit 1 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Iris 50 Enter",
+    },
+    {
+        # Verrou : `[+%]`/`[-%]` du manuel est une touche générique à pas
+        # fixe, PAS la syntaxe `<mot> + <n>` — Zoom ne déclare donc aucune
+        # forme relative dans le modèle, et la phrase doit rester incomprise
+        # plutôt que de produire un `Zoom + 10` jamais vu dans aucune source.
+        "nom": "regler_parametre — Zoom relatif refusé, seul [+%]/[-%] est sourcé (mécanisme différent)",
+        "phrase": "ajoute 10 au zoom du circuit 1",
+        "statut": "incompris",
+    },
+    {
+        # Non-régression sur le routage : `regler_parametre` est déclaré
+        # AVANT `regler_intensite` dans lexique.yaml — une phrase sans mot de
+        # paramètre (Pan/Tilt/Zoom/Iris) doit continuer à passer par
+        # `regler_intensite` normalement, "%" seul ne doit jamais suffire à
+        # basculer vers `regler_parametre`.
+        "nom": "regler_parametre ne vole pas le routage à regler_intensite",
+        "phrase": "circuits 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
 ]
 
 

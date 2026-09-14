@@ -1116,6 +1116,7 @@ class Traducteur:
         i_retrait = self._indice_mot(toks, pris, {"retire", "retirer", "enleve", "enlever",
                                                     "descend", "descends", "descendre"})
 
+        i_valeur = None    # index du jeton valeur, pour consommer un `%` adjacent au 4.
         if i_inverse is not None:
             if "echelle" not in formes_dispo:
                 return Traduction(statut="incompris", notes=[
@@ -1188,6 +1189,15 @@ class Traducteur:
                     f"Aucune valeur trouvée pour « {parametre} »."])
             i_valeur, valeur = candidats[0]
             pris.add(i_valeur)
+
+        # `%`/« pourcent » juste après la valeur (Zoom, Iris...) : purement
+        # décoratif une fois la valeur trouvée — `_plage` l'excluait déjà
+        # d'une plage (MARQUEURS_NIVEAU_POSTFIXES) — mais un mot CONNU laissé
+        # de côté est un `ignores`, pas un silence acceptable (règle 4).
+        if i_valeur is not None and i_valeur + 1 < len(toks) \
+                and toks[i_valeur + 1] in MARQUEURS_NIVEAU_POSTFIXES \
+                and (i_valeur + 1) not in pris:
+            pris.add(i_valeur + 1)
 
         etape: dict = {"action": {"type": "regler_parametre", "parametre": parametre,
                                   "forme": forme, "valeur": valeur}}
