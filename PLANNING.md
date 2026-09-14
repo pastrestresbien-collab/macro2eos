@@ -13,24 +13,32 @@ backlog résolus avec leur justification complète vivent dans
 pour cette raison précise : ce fichier était relu en entier à chaque session et grossissait
 sans fin. Rien n'a été supprimé, seulement déplacé.
 
-Dernière mise à jour : 2026-08-07.
+Dernière mise à jour : 2026-09-14.
 
-**Une seule branche de travail désormais : `claude/macro2eos-app-design-autk7k`.**
-Elle portait le prototype d'interface, développé séparément le temps que le
-traducteur existe ; les deux ont divergé, puis ont été fusionnés le 2026-08-07
-(voir le commit de fusion). L'ancienne branche `claude/extend-grammar-modele-legvkj`
-est superflue à partir de maintenant — toute nouvelle session doit repartir d'ici,
-pas de là-bas, pour éviter de recréer la même divergence.
+**Une seule branche de travail désormais : `claude/macro2eos-app-design-d9c3ou`.**
+Elle succède à `claude/macro2eos-app-design-autk7k`, qui portait le prototype
+d'interface développé séparément le temps que le traducteur existe ; les deux avaient
+divergé, puis ont été fusionnés le 2026-08-07. Toute nouvelle session repart d'ici.
 
-**Dernières nouveautés (2026-08-07)** — détail complet dans `PLANNING_HISTORIQUE.md` :
-- `app/prototype.html` fait tourner le vrai `traducteur/`/`grammar/generateur.py` dans le
-  navigateur via Pyodide (plus de moteur de démonstration), testé de bout en bout avec
-  Playwright.
-- `traducteur/` passe de 5 à 9 intentions (v0.2) — submasters, effets. Garde-fou à
-  connaître : `Sub` n'est **pas** un objet de sélection générique dans le traducteur
-  (`grammar/modele.yaml` interdit `Sub + intensite` au niveau de confiance S), donc une
-  phrase comme « sub 3 à 50 % » ne peut structurellement pas produire cette commande.
-- Ce fichier lui-même a été scindé (voir ci-dessus).
+**Dernières nouveautés (2026-09-12 → 2026-09-14)** — détail dans l'historique Git :
+- **Le traducteur compose les macros multi-commandes** (« puis », « ; »). C'était le plus
+  gros bloc de la passation ; il est fait. Chaque segment est traduit séparément et doit
+  être `compris` pour que l'ensemble le soit.
+- **Mécanisme générique `regler_parametre`** : un seul chemin de code couvre Pan, Tilt,
+  Zoom, Iris, Edge, Hue et Saturation, avec cinq formes possibles (absolue, relatif +/-,
+  échelle `/`, DMX `//`). **Chaque paramètre ne déclare que les formes qu'une source
+  atteste pour LUI** — rien n'est emprunté à un paramètre voisin. Ajouter un huitième
+  paramètre est désormais une entrée de données, pas du code.
+- **`Sub` + `intensite` est valide** — confirmé au banc réel le 2026-09-13, confiance S.
+  Ceci **annule** l'avertissement inverse que ce fichier portait depuis le 2026-08-07 :
+  « sub 3 à 50 % » produit aujourd'hui `Sub 3 At 50 Enter`. Ceci close la question datée
+  du 2026-08-07 dans `reference/journal_questions.yaml` (elle n'a jamais eu de numéro de
+  backlog propre ici — voir la note de correction dans ce fichier).
+- **`CIE X` / `CIE Y`** documentés au banc : la forme qui marche est `CIE X <v> CIE Y <v>`
+  avec **un seul** `Enter` final. `CIE XYY` est proposé par l'autocomplétion mais **invalide**
+  en ligne de commande — piège encodé dans le modèle.
+- **Corpus d'un show réel francophone** archivé (`corpus/macros_show_reel.yaml`, confiance B),
+  qui tranche en partie la question de localisation de la console.
 
 ---
 
@@ -53,19 +61,22 @@ utile est dans le dépôt.
 
 **Phase 2 — exploitation : axe A terminé, axes B et C ouverts.**
 
-[`grammar/`](grammar/README.md) porte un modèle typé de **79 actions et 164 règles de
-légalité**, compilé en JSON, avec un générateur qui produit trois sorties distinctes
-(ligne de commande, contenu de macro, paquets OSC) et **114 cas de non-régression**, dont
-la majorité sont des exemples chiffrés du manuel officiel recopiés verbatim.
+[`grammar/`](grammar/README.md) porte un modèle typé de **85 actions et 178 règles de
+légalité**, plus un catalogue de **7 paramètres de projecteur** (Pan, Tilt, Zoom, Iris,
+Edge, Hue, Saturation) rendus par un mécanisme générique unique. Le tout compilé en JSON,
+avec un générateur qui produit trois sorties distinctes (ligne de commande, contenu de
+macro, paquets OSC) et **125 cas de non-régression**, dont la majorité sont des exemples
+chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 23 intentions, 97 cas de non-régression, portée détaillée dans
-son propre README.
+générateur rend ensuite — 34 intentions, 155 cas de traduction + 9 cas de correction,
+et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
+README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.10 — 23 intentions, 97 tests. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.13 — 34 intentions, 155 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -131,7 +142,7 @@ sur scène : le pire des trois échecs possibles parce qu'il est **silencieux**.
 tranche).
 
 **Reste à couvrir** : cue lists multiples, cues multipart, patch, magic sheets, show
-control — la majeure partie des 79 actions du modèle. Mark, Park, Assert, Filtres,
+control — la majeure partie des 85 actions du modèle. Mark, Park, Assert, Filtres,
 Snapshots et Courbes (v0.5 → v0.9) ne couvrent chacun qu'une forme restreinte — voir
 `traducteur/README.md` pour le détail exact des limites assumées. Contrôle partitionné
 (v0.10) : seulement sélectionner/supprimer une partition, l'idiome `+`/`-` (ajouter/
@@ -224,6 +235,80 @@ fait autorité »). Au lieu de se perdre, ces constats s'enregistrent dans
 signale si un constat tranche un point encore marqué `inconnu` dans `grammar/modele.yaml`
 mais pas encore reporté. Le banc réel devient ainsi cumulatif plutôt qu'une session isolée
 à programmer.
+
+---
+
+## Prochaine session — plan de travail (établi le 2026-09-14)
+
+Établi après relecture de l'état réel, **pas d'après une intuition de priorité** : le
+classement ci-dessous vient de `test_corpus_terrain.py`, qui mesure les 23 entrées encore
+hors périmètre et affiche lui-même leurs causes. Le résultat est contre-intuitif et c'est
+l'intérêt de l'avoir mesuré : **le plus gros gisement n'est pas du code, c'est une
+décision.**
+
+### 0. À trancher avec l'utilisateur AVANT d'écrire une ligne — la sélection implicite
+
+**11 entrées sur 23**, soit près de la moitié du reste, échouent pour une seule et même
+raison : les macros écrites par des praticiens visent « ce qui est sélectionné » et le
+traducteur exige une cible nommée (`out_next_level`, `out_last_level`,
+`out_group_next_level`, `out_group_last_level`, `address_check`, `pan_fan_center`,
+`color_xfd_100`…).
+
+Ce n'est **pas** un bug et ça ne se corrige pas au clavier : les trois verrous qui
+produisent ce refus ont été posés délibérément le 2026-09-09 après une régression réelle,
+et un assouplissement mal posé rouvrirait la panne que `REGLES_POUR_UI.md` règle 4 désigne
+comme la plus grave du projet (la console accepte, et fait autre chose). Les trois issues
+possibles sont listées au `reference/journal_questions.yaml`. **C'est un arbitrage produit :
+il revient à l'utilisateur, pas à la session.** Tant qu'il n'est pas rendu, le score du
+banc terrain ne peut structurellement pas dépasser ~12/26 — le savoir évite de courir
+après le chiffre.
+
+*Durée estimée : une conversation, pas une tranche de travail.*
+
+### 1. `Color_Crossfade` — meilleur rapport rendu/effort du reste
+
+Trois entrées du corpus (`color_xfd_0`, `color_xfd_50`, `color_xfd_100`) pour **une seule
+action à modéliser**. Aucune autre ligne du backlog n'a ce ratio. Elle est déjà nommée dans
+la liste « actions absentes du modèle » de la passation.
+
+Ordre imposé par le motif récurrent de la passation (`grammar/` est régulièrement en avance
+sur `traducteur/`) : **chercher d'abord dans les manuels, puis tester le générateur sur
+l'IR visée, et seulement ensuite toucher au traducteur.** Ne rien écrire sans exemple
+chiffré ; si le manuel n'en donne pas, la confiance est B et doit être écrite comme telle.
+
+### 2. Navigation `Next` / `Last` — un mécanisme, quatre entrées
+
+Les quatre entrées `out_*_level` partagent le même besoin : désigner « le circuit suivant »
+ou « le précédent » plutôt qu'un numéro. À instruire **après** le point 0, dont elles
+dépendent en partie — inutile de construire la navigation si la sélection implicite est
+tranchée dans un sens qui la reformule.
+
+### 3. Huitième paramètre (Frost, Gobo…) — seulement si une source existe
+
+Le mécanisme `regler_parametre` est prouvé sur 7 paramètres et 3 unités différentes ;
+ajouter le huitième est désormais une **entrée de données**, pas du code. C'est donc une
+tâche courte — mais elle ne vaut d'être faite que si le manuel donne un exemple chiffré
+pour CE paramètre. Rappel de la doctrine, réappris deux fois cette semaine : **une forme
+ne s'emprunte pas à un paramètre voisin** (`Zoom + 10` n'est attesté nulle part, malgré
+`Pan + 10`).
+
+### 4. Dette de méthode à ne pas laisser filer
+
+- **Vérifier qu'une confiance S porte sur une OBSERVATION, pas sur une pratique.** Le
+  précédent `Sub + intensite` (cinq semaines de refus injustifié, corrigé le 2026-09-13)
+  est documenté au journal. Il y a probablement d'autres S de cette nature dans le modèle :
+  un audit ciblé des légalités `valide: non` en confiance S serait utile, et il est
+  faisable sans console.
+- **Trois ordres de mots minimum** avant de committer toute extraction de nombre
+  (piège payé le 2026-09-14, passation §7).
+
+### Ce qu'il ne faut PAS faire la prochaine session
+
+- Faire monter le score du banc terrain en reformulant les phrases du corpus au goût du
+  lexique — le banc ne mesurerait plus que sa propre complaisance (passation §4).
+- Ajouter des paramètres au catalogue « parce que c'est facile maintenant » sans source
+  propre à chacun.
+- Rouvrir les verrous de sélection sans le point 0 tranché.
 
 ---
 

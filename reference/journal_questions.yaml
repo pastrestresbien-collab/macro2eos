@@ -203,9 +203,17 @@ questions:
       en testant séparément `Sub 4 At 50 Enter` et `Sub 4 At 50 Sneak 2
       Enter`. Si le second passe, la règle de légalité doit se resserrer sur
       la forme nue au lieu de refuser le couple entier.
+
+      TRANCHÉ 2026-09-13 : les DEUX formes passent au banc réel. Ce n'est donc
+      pas la forme nue qui était en cause — c'est le constat S d'origine qui
+      était une sur-interprétation (« je pilote mes subs au fader » n'est pas
+      « At est refusé »). Le manuel (A) avait raison contre le banc (S) parce
+      que le banc n'avait jamais testé la commande, seulement l'habitude.
+      Précédent à retenir : vérifier qu'une confiance S porte bien sur une
+      OBSERVATION et non sur une pratique.
     backlog: null
-    traite: "non"
-    traite_ou: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml legalite Sub+intensite (valide: oui, S)"
 
   - date: "2026-09-08"
     question: "`Go To Cue <n> Time Enter` ignore-t-il les temps de la cue ?"
@@ -447,7 +455,12 @@ questions:
       50 % en 2 secondes. `valide: oui` désormais dans `modele.yaml`. Le
       traducteur route « sub 3 à 50 % » vers `Sub 3 At 50 Enter` depuis le
       même jour (`traducteur/traducteur.py:_regler_intensite`).
-    backlog: 22
+    # CORRIGÉ 2026-09-14 : ce renvoi portait « backlog: 22 », mais le point 22 de
+    # PLANNING.md est « {Insert Before} / {Insert After} », sans rapport. Renvoi croisé
+    # faux, probablement une frappe. Les numéros de backlog étant des identifiants
+    # stables et jamais renumérotés, cette question n'en reçoit pas rétroactivement :
+    # elle est tranchée, donc elle n'a plus besoin d'entrer au backlog.
+    backlog: null
     traite: "oui"
     traite_ou: "grammar/modele.yaml legalite Sub+intensite ; traducteur/traducteur.py _regler_intensite"
 

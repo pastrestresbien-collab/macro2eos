@@ -158,12 +158,14 @@ qu'elle parle d'autre chose.
 ## 4. Les quatre bancs, et pourquoi le quatrième compte
 
 ```
-grammar/test_generateur.py          115 cas
-traducteur/test_traducteur.py       139 cas de traduction + 9 de correction
+grammar/test_generateur.py          125 cas
+traducteur/test_traducteur.py       155 cas de traduction + 9 de correction
 traducteur/test_interpreter_flou.py   8 cas
-traducteur/test_catalogue.py         43 phrases, 33 intentions
+traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
 ```
+(chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
+ainsi que `./app/build_data.sh --verifier`.)
 
 Les quatre premiers comparent le traducteur à des attentes écrites par
 l'agent. Ils protègent des régressions mais ne peuvent **structurellement
@@ -184,19 +186,26 @@ Un désaccord n'est **pas** un échec du traducteur : c'est une question, et ell
 se tranche dans les deux sens. Le manuel §16 a déjà donné tort à la feuille sur
 sa macro « Quickstep ». Seule la **régression** fait échouer le banc.
 
-Score actuel : **2/26** sur les entrées comparables. Le chiffre est bas et
-c'est son intérêt — la couverture mesurée contre le modèle du dépôt (33
-intentions pour 82 actions) est un tout autre nombre que celle mesurée contre
-ce que les praticiens écrivent.
+Score actuel : **3/26** sur les entrées comparables (2026-09-14). Le chiffre est bas
+et c'est son intérêt — la couverture mesurée contre le modèle du dépôt (34 intentions
+pour 85 actions) est un tout autre nombre que celle mesurée contre ce que les
+praticiens écrivent. **Ne pas chercher à faire monter ce score directement** : il
+monte quand un mécanisme réel arrive, jamais en pliant une entrée du corpus au
+lexique. Les deux causes dominantes du reste sont mesurées et affichées par le banc
+lui-même : 11 entrées par sélection implicite, 12 par vocabulaire absent.
 
 ---
 
 ## 5. Ce qui reste à faire, par taille de bloc
 
+**Mis à jour le 2026-09-14.** Deux lignes de ce tableau ont bougé — lire l'état, pas
+le souvenir.
+
 | famille | n | état |
 |---|---|---|
-| **macros multi-commandes** | 9 | `rendre_macro()` existe déjà dans le générateur — c'est le traducteur qui ne compose pas. Le plus gros bloc. |
-| **actions absentes du modèle** | ~8 | `Color_Crossfade`, `Pan`/`Fan`/`Center`, `Query Live Moves`/`Dark Moves`, `Flexi`, `Form`, `Make Manual`. Chacune demande une recherche dans les manuels. |
+| **macros multi-commandes** | 9 | **Le mécanisme est fait** (`_traduire_composee`, séparateurs « puis » et « ; »). Les 9 entrées du corpus ne passent toujours pas, mais plus pour cette raison : elles demandent des mécanismes entiers encore absents (`AllNPs`, `Macro_Loop`, capture `Wait_For_Input` en cours de macro). À re-qualifier une par une avant d'y retoucher. |
+| **paramètres de projecteur** | 7 faits | **Résolu par la généricité, pas par l'accumulation.** Pan, Tilt, Zoom, Iris, Edge, Hue, Saturation passent tous par un seul chemin (`regler_parametre`), catalogués dans `grammar/modele.yaml` → `parametres:`. Ajouter Frost, Gobo ou autre = une entrée de données + une source, pas du code. |
+| **actions absentes du modèle** | ~6 | Ce qui reste après les paramètres : `Color_Crossfade`, `Fan`/`Center`, `Query Live Moves`/`Dark Moves`, `Flexi`, `Form`, `Make Manual`. Chacune demande une recherche dans les manuels. |
 | **vocabulaire seul** | ~7 | verbes et noms, aucun changement de règle. Le moins cher. |
 
 Motif récurrent, à vérifier **avant** d'écrire du code : **`grammar/` est
@@ -214,11 +223,18 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
 - **La console peut être localisée**, et partiellement : sur une console
   francophone, `Jusqu'à` remplace `Thru` et `Palette_Couleur` remplace
   `Color Palette`, mais `Record`, `Label`, `Sneak`, `Time`, `Sub` restent
-  anglais. OSC est indifférent à la langue. Ouvert : la localisation est-elle
-  purement d'affichage, ou la saisie change-t-elle aussi ? Tant que ce n'est
-  pas su, **ne rien promettre sur la fidélité visuelle du rendu.**
-- **`Sub` + `intensite`** : `inconnu`, backlog #22. À trancher en testant
-  séparément `Sub 4 At 50 Enter` et `Sub 4 At 50 Sneak 2 Enter`.
+  anglais. OSC est indifférent à la langue. **Partiellement tranché le 2026-09-13**
+  (`corpus/macros_show_reel.yaml`, show réel francophone, confiance B) : la saisie
+  change aussi, pas seulement l'affichage — les deux familles de mots coexistent dans
+  la même ligne de macro. Reste ouvert : la liste exacte des mots traduits, qui n'est
+  documentée nulle part. Tant que ce n'est pas su, **ne rien promettre sur la fidélité
+  visuelle du rendu.**
+- ~~**`Sub` + `intensite`**~~ — **TRANCHÉ au banc le 2026-09-13, confiance S.** Les
+  deux formes passent ; le fader du Sub a été observé montant physiquement à 50 % en
+  2 s. `valide: oui` dans le modèle, et « sub 3 à 50 % » se traduit. Laissé ici barré
+  et non supprimé : ce document a affirmé le contraire pendant cinq semaines, avec une
+  confiance S imméritée. **C'est le rappel le plus utile de la section** — une absence
+  d'observation n'est pas une observation d'absence.
 - **Le second `Enter` de confirmation** sur `Copy To` et sur les créations en
   série : dépend d'un réglage de Setup invisible dans le texte de la macro.
   Le générateur avertit et ne choisit pas.
@@ -253,6 +269,14 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
   intensité, faux pour une durée : `Sneak 08` n'est pas `Sneak 8`.
 - **`Out` s'auto-termine** : pas d'`Enter`. `Full Full` et `Sneak Sneak` aussi,
   mais pas leur forme simple.
+- **`_selection_de` / `_plage` mangent les nombres voisins** (payé le 2026-09-14, le
+  pire bug de la session). Sans marqueur d'unité fiable, « hue à 180 sur le circuit 1 »
+  rendait `Chan 180 Hue 1` — valeur et numéro **échangés**, statut `compris`, aucun
+  avertissement. Un faux résultat silencieux, exactement ce que la règle 4 interdit.
+  `_regler_parametre` n'appelle donc plus ces helpers du tout : il ne prend que le
+  nombre **collé** au mot d'objet. Leçon générale : un helper générique qui lit « N à M »
+  comme une plage est un piège dès qu'un autre nombre de la phrase n'est pas un circuit.
+  **Tester au moins trois ordres de mots** avant de committer une extraction de nombre.
 
 ---
 

@@ -2209,12 +2209,20 @@ class Traducteur:
         Les CIBLES comptent autant que les objets, et l'oublier a coûté une
         régression le 2026-09-09 : « sub 3 à 50 % » ne contient aucun mot de
         `objets` (qui n'a que Chan, Group, Cue), donc la phrase basculait sur
-        la sélection courante et rendait `At 50 Enter`. Or le banc réel a
-        tranché `Sub` + `intensite` INVALIDE en confiance S — le niveau d'un
-        sub passe par le fader ou les bumps. La commande produite aurait donc
-        visé des circuits quelconques au lieu du submaster demandé, sans
-        aucune erreur. Un mot qui nomme une cible, quelle que soit sa famille,
-        interdit le repli."""
+        la sélection courante et rendait `At 50 Enter` — une commande visant
+        des circuits quelconques au lieu du submaster demandé, sans aucune
+        erreur.
+
+        NOTE 2026-09-14 : ce verrou était alors justifié par « le banc a
+        tranché Sub + intensite INVALIDE ». C'est FAUX depuis le 2026-09-13,
+        où le banc a tranché l'inverse (valide, confiance S), et
+        `_regler_intensite` a désormais une branche Sub explicite. Le verrou
+        reste néanmoins nécessaire, pour sa raison propre et suffisante : la
+        phrase DÉSIGNE une cible, donc se replier sur « ce qui est
+        sélectionné » viserait autre chose que ce qui est demandé. Un mot qui
+        nomme une cible, quelle que soit sa famille, interdit le repli — la
+        légalité de l'action sur cette cible est une question séparée, et elle
+        se lit dans le modèle."""
         essai: set[int] = set(pris)
         if self._objet(toks, essai) is not None:
             return False
