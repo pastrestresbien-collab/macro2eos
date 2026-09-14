@@ -1185,6 +1185,57 @@ CAS = [
         "rendu": "Group 3 Effect 2 Enter",
         "ignores": [],
     },
+
+    # ------------------------------------------- regler_parametre (2026-09-14)
+    {
+        # Cas d'ancrage : c'est l'exemple_nl du lexique, donc aussi le
+        # catalogue. Piège trouvé en écrivant ce test : sans le marqueur
+        # d'unité (« degrés »), `_plage` lit « 1 à 10 » comme une plage de
+        # circuits 1-10 et il ne reste plus rien pour la valeur.
+        "nom": "regler_parametre — Pan absolu, cas d'ancrage du catalogue",
+        "phrase": "mets le pan du circuit 1 à 10 degrés",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan 10 Enter",
+    },
+    {
+        "nom": "regler_parametre — Pan absolu, sélection puis valeur (ordre naturel)",
+        "phrase": "circuit 1 pan à 10 degrés",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan 10 Enter",
+    },
+    {
+        # Régression réelle trouvée en session : « ajoute 10 au pan du
+        # circuit 1 » place la VALEUR avant le numéro de sélection dans
+        # l'ordre des mots — l'inverse de `regler_intensite`. Une première
+        # version prenait « le premier nombre libre » pour la sélection et
+        # rendait `Chan 10 Pan + 1`, le mauvais circuit avec la mauvaise
+        # valeur.
+        "nom": "regler_parametre — relatif_ajout, valeur avant sélection dans la phrase",
+        "phrase": "ajoute 10 au pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan + 10 Enter",
+    },
+    {
+        "nom": "regler_parametre — relatif_retrait",
+        "phrase": "retire 10 au tilt du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Tilt + - 10 Enter",
+    },
+    {
+        # « Mirror Pan » du corpus communautaire — seule forme `echelle`
+        # sourcée, et seulement pour Pan.
+        "nom": "regler_parametre — inverse (échelle -100), Pan seulement",
+        "phrase": "inverse le pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan / -100 Enter",
+    },
+    {
+        # Verrou : Tilt ne déclare pas `echelle` dans le modèle — jamais une
+        # extrapolation silencieuse depuis Pan, même mécanisme de paramètre.
+        "nom": "regler_parametre — inverse refusé pour Tilt, forme non sourcée pour lui",
+        "phrase": "inverse le tilt du circuit 1",
+        "statut": "incompris",
+    },
 ]
 
 

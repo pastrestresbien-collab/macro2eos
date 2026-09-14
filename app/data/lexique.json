@@ -122,6 +122,20 @@
       "source": "objets.Preset du modèle (grammar/modele.yaml) ; manuel §11 Presets"
     }
   },
+  "parametres": {
+    "Pan": {
+      "alias": [
+        "pan"
+      ],
+      "source": "parametres.Pan du modèle (grammar/modele.yaml) ; manuel §6"
+    },
+    "Tilt": {
+      "alias": [
+        "tilt"
+      ],
+      "source": "parametres.Tilt du modèle (grammar/modele.yaml) ; manuel §6, par analogie avec Pan"
+    }
+  },
   "nuanciers": {
     "lee": {
       "numero": 3,
@@ -560,6 +574,57 @@
       "exemple_nl": "vérifie les circuits 1 à 20 à 75 %",
       "origine": "manuel §6 « Address Check » — `[1] [At] [Full]` puis `{Check} [Enter]`, confiance A (`grammar/modele.yaml`, section `actions`/`verifier`).\n",
       "note": "Le niveau fait partie de la commande : `Chan 1 At 75 Check Enter`. Le modèle porte le reste — `Next`/`Last` font défiler, et toute autre touche sort du mode. Le traducteur ne produit que la mise en route.\n"
+    },
+    "regler_parametre": {
+      "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser",
+      "declencheurs": {
+        "parametre": [
+          "pan",
+          "tilt"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "verbe": [
+          "mets",
+          "met",
+          "mettre",
+          "regle",
+          "règle",
+          "regler",
+          "pose",
+          "ajoute",
+          "ajouter",
+          "monte",
+          "monter",
+          "retire",
+          "retirer",
+          "enleve",
+          "enlever",
+          "descend",
+          "descends",
+          "descendre",
+          "inverse",
+          "inverser",
+          "inversez"
+        ]
+      },
+      "exemple_nl": "mets le pan du circuit 1 à 10 degrés",
+      "origine": "manuel §6 « Manual Control », sections « Setting Parameters with the Keypad » et « Adjusting Parameters Using [+] and [-] », confiance A — voir `grammar/modele.yaml:parametres` pour le détail par paramètre et par forme (une forme B/C/D est signalée par le générateur, jamais cachée).\n",
+      "note": "Intention GÉNÉRIQUE (2026-09-14), remplace deux actions dédiées Pan/ Tilt d'une session précédente — ajouter un paramètre ne demande plus qu'une entrée dans `parametres` (ce fichier) et `grammar/modele.yaml`, aucun code. La forme « inverse » n'a qu'UNE source (« Mirror Pan », `corpus/handy_macros_etc.yaml`, confiance B) : `_regler_parametre` refuse « inverse le tilt » puisque Tilt ne déclare pas cette forme dans le modèle — jamais une extrapolation depuis Pan.\n"
     },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",

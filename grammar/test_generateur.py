@@ -1089,6 +1089,48 @@ CAS = [
         "attendu": "Effect 1 {BPM} 190 Enter",
         "avertissements": 0,
     },
+
+    # ------------------------------------------- paramètres génériques (§6)
+    {
+        "nom": "regler_parametre — Pan absolu",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Pan",
+                        "forme": "absolue", "valeur": 10}},
+        ],
+        "attendu": "Chan 1 Pan 10 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "regler_parametre — Pan relatif retrait, piège toujours signalé",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Pan",
+                        "forme": "relatif_retrait", "valeur": 10}},
+        ],
+        "attendu": "Chan 1 Pan + - 10 Enter",
+        "avertissements": 1,      # le piège absolue-vs-retrait, même en confiance A
+    },
+    {
+        "nom": "regler_parametre — Pan échelle (confiance B, Mirror Pan)",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Pan",
+                        "forme": "echelle", "valeur": -100}},
+        ],
+        "attendu": "Chan 1 Pan / -100 Enter",
+        "avertissements": 1,      # confiance B signalée
+    },
+    {
+        "nom": "regler_parametre — Tilt échelle NON déclarée, jamais empruntée à Pan",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Tilt",
+                        "forme": "echelle", "valeur": -100}},
+        ],
+        "attendu": "Chan 1 Tilt / -100 Enter",
+        "avertissements": 1,      # forme non déclarée pour Tilt
+    },
 ]
 
 CAS_MACRO = [

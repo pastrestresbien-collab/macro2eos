@@ -35,6 +35,11 @@
     "description": "passer les circuits en revue un par un (Check)"
   },
   {
+    "intention": "regler_parametre",
+    "phrase": "mets le pan du circuit 1 à 10 degrés",
+    "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser"
+  },
+  {
     "intention": "regler_intensite",
     "phrase": "circuits 1 à 5 à 50 %",
     "description": "donner un niveau d'intensité à une sélection"

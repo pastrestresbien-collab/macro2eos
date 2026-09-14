@@ -212,9 +212,11 @@ entrees:
     syntaxe_feuille: "Pan / -100 Enter"
     mode: null
     demande_nl: "inverse le pan"
-    verdict: hors_perimetre
+    verdict: identique
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
+      Pan / -100 Enter — résolu le 2026-09-14 par l'intention générique
+      `regler_parametre`, forme `echelle` (confiance B, cette macro même en
+      est la seule source).
 
   - id: pan_fan_center
     label: "Pan Fan Center Enter"

@@ -160,6 +160,12 @@ MARQUEURS_NIVEAU = ("%", "pourcent", "intensite", "niveau")
 # traiter comme `%`/`pourcent` casserait cette forme déjà correcte.
 MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
 
+# Unité postfixe propre à `_regler_parametre` (Pan/Tilt : degrés). Même rôle
+# que `MARQUEURS_NIVEAU_POSTFIXES` pour `%` — désambiguïser « circuit 1 à 10
+# degrés » (une sélection ET une valeur, pas une plage 1-10) sans toucher au
+# mécanisme partagé `_plage`, qui n'a aucune raison de connaître les degrés.
+MARQUEURS_UNITE_PARAMETRE = ("degres", "degre")
+
 # Sépare une phrase en plusieurs COMMANDES séquentielles, pour bâtir une
 # macro multi-lignes plutôt qu'une seule ligne. Volontairement restreint à
 # « puis » et « ; » — des connecteurs qui ne servent JAMAIS à autre chose en
@@ -226,6 +232,7 @@ class Traducteur:
         self._mots_plage = set(self.lex["plage"]["mots"])
         self._objets = self._indexer(self.lex["objets"])
         self._objets_cible = self._indexer(self.lex["objets_cible"])
+        self._parametres = self._indexer(self.lex["parametres"])
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
         self._cue_cibles = self._indexer(self.lex["cue_cibles"])
@@ -580,6 +587,7 @@ class Traducteur:
             "creer_palettes_couleur": self._creer_palettes_couleur,
             "colorer_selection": self._colorer_selection,
             "regler_intensite": self._regler_intensite,
+            "regler_parametre": self._regler_parametre,
             "enregistrer_cue": self._enregistrer_cue,
             "aller_a_cue": self._aller_a_cue,
             "enregistrer_sub": self._enregistrer_sub,
@@ -691,8 +699,9 @@ class Traducteur:
         connus |= self._outils | self._mots_plage | {"%"}
         connus |= set(self._marqueurs_duree) | set(self._marqueurs_duree_post)
         connus |= self._mots_sans | self._mots_temps
+        connus |= set(MARQUEURS_UNITE_PARAMETRE)
         for index in (self._objets, self._objets_cible, self._nuanciers,
-                      self._couleurs, self._cue_cibles):
+                      self._couleurs, self._cue_cibles, self._parametres):
             connus |= set(index)
         return connus
 
@@ -1066,6 +1075,136 @@ class Traducteur:
             etape["selection"] = selection
         return Traduction(statut="compris", ir=[etape], notes=notes,
                           **self._mots(toks, pris))
+
+    # -- intention : régler un paramètre générique (Pan, Tilt...) -----------
+    def _regler_parametre(self, toks: list[str], reponses: dict) -> Traduction:
+        """Une seule fonction pour tout paramètre déclaré dans
+        `lexique.yaml:parametres` / `grammar/modele.yaml:parametres` — voir
+        leurs commentaires. Ajouter un paramètre n'ajoute aucun code ici."""
+        pris: set[int] = set()
+        notes: list[str] = []
+
+        # 1. quel paramètre ? Même discipline que `_objet` : correspondance
+        #    exacte sur toute la phrase d'abord, tolérance seulement au
+        #    second passage — la détection reste un routeur, pas un créneau.
+        parametre = None
+        for exact in (True, False):
+            for i, tok in enumerate(toks):
+                if i in pris:
+                    continue
+                if exact:
+                    cle = self._parametres.get(tok)
+                else:
+                    cle, _ = self._resoudre(tok, self._parametres)
+                if cle:
+                    parametre = cle
+                    pris.add(i)
+                    break
+            if parametre is not None:
+                break
+        if parametre is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun paramètre reconnu (Pan, Tilt...)."])
+
+        # 2. quelle forme ? Lue dans le modèle pour CE paramètre précis,
+        #    jamais supposée : « inverse le tilt » doit rester incompris tant
+        #    que Tilt ne déclare pas `echelle` (seule Pan la déclare, source
+        #    « Mirror Pan », confiance B — voir grammar/modele.yaml).
+        formes_dispo = self._formes_parametre(parametre)
+        i_inverse = self._indice_mot(toks, pris, {"inverse", "inverser", "inversez"})
+        i_ajout = self._indice_mot(toks, pris, {"ajoute", "ajouter", "monte", "monter"})
+        i_retrait = self._indice_mot(toks, pris, {"retire", "retirer", "enleve", "enlever",
+                                                    "descend", "descends", "descendre"})
+
+        if i_inverse is not None:
+            if "echelle" not in formes_dispo:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme d'inversion sourcée pour « {parametre} »."])
+            forme, valeur = "echelle", -100
+        else:
+            forme = ("relatif_ajout" if i_ajout is not None else
+                     "relatif_retrait" if i_retrait is not None else "absolue")
+            if forme not in formes_dispo:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme « {forme} » sourcée pour « {parametre} »."])
+
+            if forme == "absolue":
+                # Par défaut, même convention que `_regler_intensite` : la
+                # SÉLECTION se lit en premier (voir plus bas), la valeur est
+                # le nombre libre restant. Mais si un nombre est immédiatement
+                # suivi d'une unité (« 10 degrés »), il est pris ICI, avant la
+                # sélection — sinon « circuit 1 à 10 degrés » lirait « 1 à 10 »
+                # comme une PLAGE de circuits (`_plage` ne connaît pas les
+                # degrés, seulement `%`/« pourcent ») et n'aurait plus rien
+                # pour la valeur. Même principe que le verrou verbe ci-dessus,
+                # avec un marqueur d'unité au lieu d'un verbe.
+                valeur = None
+                for i, tok in enumerate(toks):
+                    if (i not in pris and tok.isdigit()
+                            and i + 1 < len(toks) and toks[i + 1] in MARQUEURS_UNITE_PARAMETRE
+                            and (i + 1) not in pris):
+                        valeur = int(tok)
+                        pris.update({i, i + 1})
+                        break
+            else:
+                # « ajoute »/« retire » inversent cet ordre habituel : « ajoute
+                # 10 au pan du circuit 1 » place la valeur AVANT le numéro de
+                # sélection. Le nombre le plus proche du verbe est donc pris
+                # ICI, avant la sélection — ce qui reste ira nécessairement à
+                # elle, quel que soit l'ordre d'écriture par ailleurs.
+                candidats = self._nombres(toks, pris)
+                if not candidats:
+                    return Traduction(statut="incompris", notes=[
+                        f"Aucune valeur trouvée pour « {parametre} »."])
+                i_verbe = i_ajout if i_ajout is not None else i_retrait
+                i_valeur, valeur = min(candidats, key=lambda iv: abs(iv[0] - i_verbe))
+                pris.add(i_valeur)
+
+        # 3. la sélection — même schéma que `_regler_intensite`, sans la
+        #    branche Sub : aucun paramètre de focus n'a de sens documenté sur
+        #    un submaster.
+        objet = self._objet(toks, pris)
+        selection = None
+        if objet is not None:
+            selection = self._selection_de(objet, toks, pris)
+            if selection is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro trouvé pour la sélection."])
+        elif not self._vise_la_selection_courante(toks, pris):
+            return Traduction(statut="incompris",
+                              notes=[self._motif_refus_selection(toks, pris)])
+        elif not self._selection_courante_permise("regler_parametre"):
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+        else:
+            notes.append(self.NOTE_SELECTION_COURANTE)
+
+        # 4. forme absolue : la valeur est ce qu'il reste, une fois la
+        #    sélection retirée du jeu de nombres libres.
+        if valeur is None:
+            candidats = self._nombres(toks, pris)
+            if not candidats:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune valeur trouvée pour « {parametre} »."])
+            i_valeur, valeur = candidats[0]
+            pris.add(i_valeur)
+
+        etape: dict = {"action": {"type": "regler_parametre", "parametre": parametre,
+                                  "forme": forme, "valeur": valeur}}
+        if selection is not None:
+            etape["selection"] = selection
+        return Traduction(statut="compris", ir=[etape], notes=notes,
+                          **self._mots(toks, pris))
+
+    def _formes_parametre(self, parametre: str) -> set[str]:
+        """Formes sourcées pour CE paramètre précis, lues dans
+        `grammar/modele.yaml:parametres` — jamais empruntées à un paramètre
+        voisin. Même pattern d'accès que `_selection_courante_permise`."""
+        try:
+            catalogue = self._generateur_ou_defaut().modele["parametres"]
+            return set(catalogue.get(parametre, {}).get("formes", {}))
+        except Exception:                                     # noqa: BLE001
+            return set()
 
     def _niveau(self, toks: list[str], pris: set[int]) -> dict | None:
         """`50 %` → {valeur: 50}. `10 a 50 %` → dégradé {de: 10, a: 50}."""

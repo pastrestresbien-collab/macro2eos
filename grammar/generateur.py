@@ -392,6 +392,9 @@ class Generateur:
                 f"({spec.get('source', 'source non précisée')})"
             )
 
+        if t == "regler_parametre":
+            return self._rendre_parametre(act, avert)
+
         if t == "couleur_gel":
             return f"{mot} {act['nuancier']}/{act['teinte']}"
 
@@ -691,6 +694,50 @@ class Generateur:
             return f"{{{mot}}} {act['valeur']}"
 
         raise ValueError(f"action non gérée : {t}")
+
+    def _rendre_parametre(self, act: dict, avert: list[str]) -> str:
+        """Rendu générique de `regler_parametre` — voir `modele.yaml:parametres`.
+
+        Un paramètre ne rend QUE les formes qu'IL déclare pour lui-même ;
+        jamais d'extrapolation silencieuse depuis un paramètre voisin qui la
+        déclarerait (Pan a une `echelle` sourcée, Tilt non — voir le modèle).
+        """
+        nom = act["parametre"]
+        forme = act["forme"]
+        spec_param = self.modele.get("parametres", {}).get(nom)
+
+        if spec_param is None:
+            avert.append(f"paramètre `{nom}` absent du modèle (`parametres`) — non vérifiable")
+            mot_param = nom
+        else:
+            mot_param = spec_param["mot_cle"]
+            forme_spec = spec_param.get("formes", {}).get(forme)
+            if forme_spec is None:
+                avert.append(
+                    f"forme `{forme}` non déclarée pour le paramètre `{mot_param}` — "
+                    "aucune source ne l'atteste pour CE paramètre, rendu quand même"
+                )
+            else:
+                if forme_spec.get("confiance") in ("B", "C", "D"):
+                    avert.append(
+                        f"`{mot_param}` forme `{forme}` : confiance "
+                        f"{forme_spec['confiance']} ({forme_spec.get('exemple', 'source non précisée')})"
+                    )
+                if "piege" in forme_spec:
+                    avert.append(f"`{mot_param}` {forme} : {forme_spec['piege']}")
+
+        valeur = act["valeur"]
+        if forme == "absolue":
+            return f"{mot_param} {valeur}"
+        if forme == "relatif_ajout":
+            return f"{mot_param} + {abs(valeur)}"
+        if forme == "relatif_retrait":
+            return f"{mot_param} + - {abs(valeur)}"
+        if forme == "echelle":
+            return f"{mot_param} / {valeur}"
+        if forme == "dmx":
+            return f"{mot_param} / / {valeur}"
+        raise ValueError(f"forme de paramètre non gérée : {forme}")
 
     def _verifier_mode_patch(self, act: dict, avert: list[str]) -> None:
         """`5 At 100` patche le channel 5 à l'adresse 100 en mode par channel,

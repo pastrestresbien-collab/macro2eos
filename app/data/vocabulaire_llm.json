@@ -117,6 +117,12 @@
         "objet"
       ]
     },
+    "regler_parametre": {
+      "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser",
+      "champs": [
+        "parametre"
+      ]
+    },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "champs": [

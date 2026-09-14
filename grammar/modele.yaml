@@ -488,6 +488,86 @@ saisie_niveau:
       est propre à `At`, pas au clavier numérique en général.
 
 # --------------------------------------------------------------------------
+# PARAMÈTRES GÉNÉRIQUES — catalogue pour l'action `regler_parametre`
+#
+# Tout paramètre numérique de fixture (Pan, Tilt, Zoom, Iris...) partage la
+# même grammaire de saisie (manuel §6, sections citées dans `regler_parametre`
+# ci-dessus) : une valeur ABSOLUE, un ajustement RELATIF (`+ <n>` ajoute,
+# `+ - <n>` retire — un `-` seul pose une valeur absolue négative, PAS une
+# soustraction), une ÉCHELLE proportionnelle (`/`, voir
+# `saisie_niveau.echelle_generalisee_hors_at`), et un accès DMX brut (`/ /`,
+# voir `saisie_niveau` note `dmx`).
+#
+# Ajouter un paramètre ici suffit à l'exposer à `regler_parametre` — aucun
+# code à écrire côté générateur NI côté traducteur. C'est tout l'intérêt de
+# cette factorisation (2026-09-14), remplaçant les actions dédiées `pan`/
+# `tilt` d'une session précédente.
+#
+# RÈGLE : chaque paramètre déclare SEULEMENT les formes qu'une source
+# atteste POUR LUI. Jamais d'extrapolation silencieuse d'un paramètre
+# voisin — deux paramètres qui se ressemblent peuvent diverger (Pan a une
+# échelle sourcée par le corpus communautaire, Tilt non : sa note le dit).
+# --------------------------------------------------------------------------
+parametres:
+  Pan:
+    mot_cle: "Pan"
+    unite: "degrés"
+    confiance: A
+    source: "manuel §6 « Manual Control », section Adjusting Parameters Using [+] and [-]"
+    formes:
+      absolue:
+        confiance: A
+        exemple: "`Pan 10` — pose 10°"
+      relatif_ajout:
+        confiance: A
+        exemple: "`Pan + 10` — ajoute 10° à la valeur courante"
+      relatif_retrait:
+        confiance: A
+        exemple: "`Pan + - 10` — retire 10° à la valeur courante"
+        piege: >
+          `Pan - 10` (sans le `+` devant) pose l'ABSOLUE -10°, il ne retire
+          rien. Le `+` introduit l'ajustement relatif ; le `-` qui suit en
+          est seulement le signe.
+      echelle:
+        confiance: B
+        exemple: >
+          `Pan / -100 Enter` — « Mirror Pan », macro communautaire ETC
+          (corpus/handy_macros_etc.yaml, id mirror_pan) : multiplie la
+          valeur courante par -1. Non démontré au manuel pour ce paramètre
+          précis — seule l'échelle sur `At`/`Park`/`Saturation` (vidéo) l'est.
+      dmx:
+        confiance: A
+        exemple: "`Pan / / 25` — valeur DMX brute (manuel §6 l.370)"
+
+  Tilt:
+    mot_cle: "Tilt"
+    unite: "degrés"
+    confiance: A
+    source: >
+      manuel §6 — Pan et Tilt toujours traités comme une paire dans le texte
+      (« Pan/Tilt section », l.398/506/516/882), mais AUCUN exemple chiffré
+      propre à Tilt n'existe dans cette section. Les formes ci-dessous sont
+      retenues PAR ANALOGIE directe avec Pan — même mécanisme de paramètre,
+      pas une source qui les chiffre pour Tilt spécifiquement.
+    formes:
+      absolue:
+        confiance: A
+        exemple: "`Tilt 10` — par analogie avec Pan"
+      relatif_ajout:
+        confiance: A
+        exemple: "`Tilt + 10` — par analogie avec Pan"
+      relatif_retrait:
+        confiance: A
+        exemple: "`Tilt + - 10` — par analogie avec Pan"
+        piege: "même piège que Pan — voir sa note `relatif_retrait`"
+      dmx:
+        confiance: A
+        exemple: "`Tilt / / 25` — par analogie avec Pan"
+      # PAS d'`echelle` : la seule source de cette forme (Mirror Pan, corpus
+      # communautaire) ne parle que de Pan. L'absence ici est un choix, pas
+      # un oubli — voir la règle en tête de cette section.
+
+# --------------------------------------------------------------------------
 # COURBES — une relation entre le temps et le niveau
 # --------------------------------------------------------------------------
 courbes:
@@ -2066,36 +2146,27 @@ actions:
     confiance: A
     source: "manuel §6 « Manual Control », section CIE xy Control"
     note: "voir cie_x — même paramètre virtuel, même avertissement de projection sur le gamut."
-  pan:
-    mot_cle: "Pan"
-    attend: valeur                # degrés, signé
-    contextes: [Live, Blind]
-    confiance: A
-    source: "manuel §6 « Manual Control », section Adjusting Parameters Using [+] and [-]"
-    note: >
-      Quatre formes distinctes, toutes chiffrées au manuel — ne pas les
-      confondre : `Pan <n>` pose une valeur ABSOLUE en degrés (`Pan 10`) ;
-      `Pan + <n>` AJOUTE n degrés à la valeur courante ; `Pan - <n>` pose une
-      valeur absolue NÉGATIVE (`Pan -10`, pas une soustraction) ; `Pan + - <n>`
-      RETIRE n degrés (c'est le `+` qui introduit un ajustement relatif, le
-      `-` qui suit en donne le signe). Piège direct : lire `Pan - 10` comme
-      « retirer 10° » serait faux — c'est `Pan + - 10` qu'il faut pour ça.
-      Distinct de `Pan / / <n>` (valeur DMX brute, mécanisme différent,
-      voir `saisie_niveau` note `dmx`) et de `Pan / <n>` (échelle
-      proportionnelle, voir `saisie_niveau.echelle_generalisee_hors_at` —
-      confirmé par la macro communautaire « Mirror Pan » : `Pan / -100 Enter`
-      inverse le pan en le multipliant par -1, confiance B, non démontré au
-      manuel pour ce paramètre précis).
-  tilt:
-    mot_cle: "Tilt"
-    attend: valeur                # degrés, signé
+  regler_parametre:
+    mot_cle: "(dynamique — résolu depuis `parametres.<nom>.mot_cle`, jamais utilisé tel quel)"
+    attend: parametre_et_forme
     contextes: [Live, Blind]
     confiance: A
     source: >
-      manuel §6 — Pan et Tilt toujours traités comme une paire dans le texte
-      (« Pan/Tilt section », l.398/506/516/882), mais AUCUN exemple chiffré
-      propre à Tilt n'existe dans cette section, contrairement à Pan.
-    note: "même mécanisme que `pan` par analogie directe — voir son commentaire pour le détail des quatre formes."
+      manuel §6 « Manual Control » — mécanisme commun à tous les paramètres
+      numériques (« Setting Parameters with the Keypad », « Adjusting
+      Parameters Using [+] and [-] »). Voir la section `parametres`
+      ci-dessous pour le détail sourcé PAR PARAMÈTRE.
+    note: >
+      Action GÉNÉRIQUE, ajoutée le 2026-09-14 pour couvrir tout paramètre
+      numérique (Pan, Tilt, et au-delà) sans dupliquer une action dédiée par
+      paramètre — Pan et Tilt en étaient les deux premiers exemples avant
+      cette factorisation. `act["parametre"]` nomme l'entrée de
+      `parametres` (ex. "Pan"), `act["forme"]` une des formes qu'ELLE
+      déclare (`absolue`, `relatif_ajout`, `relatif_retrait`, `echelle`,
+      `dmx`). Le générateur refuse de rendre une forme qu'un paramètre ne
+      déclare pas pour lui-même — jamais une extrapolation silencieuse d'un
+      paramètre à l'autre, même quand deux paramètres se ressemblent (Pan a
+      une échelle sourcée, Tilt non : voir sa note dans `parametres`).
   palette_intensite:
     mot_cle: "Int Palette"
     attend: cible_numerotee
@@ -3519,6 +3590,24 @@ legalite:
     action: intensite
     valide: oui
     confiance: A
+
+  - objet: Chan
+    action: regler_parametre
+    valide: oui
+    confiance: A
+    note: "manuel §6 — tout paramètre numérique de fixture s'applique à une sélection de channels"
+
+  - objet: Group
+    action: regler_parametre
+    valide: oui
+    confiance: A
+    note: "même source que Chan + regler_parametre"
+
+  - objet: selection_courante
+    action: regler_parametre
+    valide: oui
+    confiance: A
+    note: "même mécanisme que intensite + selection_courante ci-dessous — aucune restriction sourcée propre aux paramètres de focus/couleur"
 
   - objet: selection_courante
     action: record_palette_couleur
