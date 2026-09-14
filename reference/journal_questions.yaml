@@ -248,6 +248,15 @@ questions:
       La répartition des échecs importe plus que le total — 9 macros
       multi-commandes (fonctionnalité absente), 17 trous de vocabulaire, et
       9 échecs par SÉLECTION IMPLICITE.
+
+      CORRIGÉ 2026-09-14 : le dernier chiffre est FAUX, et le suivi l'a porté
+      à 11 avant qu'on le vérifie. Il venait d'un classement automatique du
+      banc, qui cherchait « aucun numéro » dans le message de refus. Une
+      qualification à la main des 23 entrées hors périmètre donne ZÉRO
+      sélection implicite : les entrées ainsi rangées nomment leur cible
+      (`Chan 1 At 75 Check`), ou visent un réglage global sans sélection
+      (`Color_Crossfade 50`), ou demandent la navigation Next/Last. La cause
+      est désormais déclarée entrée par entrée dans le corpus.
     sources:
       - "corpus/handy_macros_etc.yaml — 43 entrées, 37 exploitables"
       - "traducteur/test_corpus_terrain.py — banc de rétro-traduction"
@@ -559,3 +568,48 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "grammar/modele.yaml operateurs/creation_plage ; traducteur intention creer_plage"
+
+  - date: "2026-09-14"
+    question: >-
+      Les 23 entrées hors périmètre du banc terrain sont-elles bien bloquées
+      par ce que le banc dit ?
+    reponse: >-
+      Non. Le banc annonçait 11 échecs par « sélection implicite » ; une
+      qualification à la main des 23 entrées en donne ZÉRO. Le classement
+      était produit par un `if` sur trois chaînes de caractères cherchées
+      dans le MESSAGE DE REFUS (« aucun numéro », « aucune sélection »,
+      « niveau manquant »). Or un refus dit ce que le traducteur a remarqué
+      en premier, pas ce qui bloque.
+    sources:
+      - "corpus/handy_macros_etc.yaml — champ `cause:`, 23 entrées qualifiées à la main"
+      - "traducteur/test_corpus_terrain.py — ancien `cause_de()`, supprimé"
+    confiance: "A"
+    consequence: "outillage"
+    detail: >-
+      Trois contre-exemples suffisent. `channel_check` = `Chan 1 At 75 Check
+      Enter` nomme explicitement sa cible et se plaint d'un niveau manquant :
+      il lui manque `Check`. `address_check` = `Address 1 At 75 Check` idem.
+      `color_xfd_50` = `Color_Crossfade 50 Enter` est un réglage GLOBAL de
+      console, qui ne prend aucune sélection — la règle 5 ne s'y applique même
+      pas. Les quatre `out_*_level` demandent la navigation `Next`/`Last`.
+      `record_preset` et `startup` sont des macros volontairement non
+      terminées, concept DÉJÀ modélisé.
+
+      Le coût réel n'est pas l'erreur de comptage : c'est qu'elle avait fait
+      inscrire au planning du jour, en priorité numéro un, un arbitrage
+      produit sur la sélection implicite — présenté à l'utilisateur comme « le
+      plus gros gisement, 11 entrées sur 23 » — qui ne débloquait AUCUNE
+      entrée. Un indicateur dérivé, non vérifié, a orienté une décision de
+      priorisation pendant six jours.
+
+      Correctif structurel plutôt que ponctuel : la cause est désormais un
+      champ `cause:` + `cause_detail:` écrit à la main dans le corpus, en
+      regard de `syntaxe_feuille` et jamais d'après le refus ; huit valeurs
+      admises ; et une entrée hors périmètre SANS cause fait échouer le banc
+      (vérifié : code 1). La sélection implicite reste une question de
+      conception légitime, mais elle sort du chemin critique — elle sera
+      tranchée quand un usage réel la réclamera, pas pour faire monter un
+      score.
+    backlog: null
+    traite: "oui"
+    traite_ou: "corpus/handy_macros_etc.yaml champ cause ; traducteur/test_corpus_terrain.py CAUSES_CONNUES ; PLANNING.md plan révisé"

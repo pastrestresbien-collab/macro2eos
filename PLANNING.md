@@ -238,77 +238,97 @@ mais pas encore reporté. Le banc réel devient ainsi cumulatif plutôt qu'une s
 
 ---
 
-## Prochaine session — plan de travail (établi le 2026-09-14)
+## Prochaine session — plan de travail (révisé le 2026-09-14, après mesure)
 
-Établi après relecture de l'état réel, **pas d'après une intuition de priorité** : le
-classement ci-dessous vient de `test_corpus_terrain.py`, qui mesure les 23 entrées encore
-hors périmètre et affiche lui-même leurs causes. Le résultat est contre-intuitif et c'est
-l'intérêt de l'avoir mesuré : **le plus gros gisement n'est pas du code, c'est une
-décision.**
+**Ce plan a été écrit une première fois le matin même, puis jeté.** Sa priorité n°0
+— « trancher la sélection implicite, 11 entrées sur 23 » — était fausse. Elle venait du
+banc terrain, qui *devinait* la cause d'un échec en cherchant « aucun numéro » dans le
+texte du message de refus. Une qualification à la main des 23 entrées a montré que
+**zéro** d'entre elles est bloquée par cet arbitrage :
 
-### 0. À trancher avec l'utilisateur AVANT d'écrire une ligne — la sélection implicite
+- `channel_check` = `Chan 1 At 75 Check Enter` → cible **explicite**, il manque `Check` ;
+- `address_check` = `Address 1 At 75 Check` → cible **explicite** ;
+- `color_xfd_50` = `Color_Crossfade 50 Enter` → réglage **global**, sans sélection ;
+- `out_next_level` = `Out Next Level` → navigation `Next`/`Last` ;
+- `record_preset`, `startup` → macros **volontairement non terminées**, concept déjà modélisé.
 
-**11 entrées sur 23**, soit près de la moitié du reste, échouent pour une seule et même
-raison : les macros écrites par des praticiens visent « ce qui est sélectionné » et le
-traducteur exige une cible nommée (`out_next_level`, `out_last_level`,
-`out_group_next_level`, `out_group_last_level`, `address_check`, `pan_fan_center`,
-`color_xfd_100`…).
+Un message de refus dit ce que le traducteur a remarqué **en premier**, pas ce qui bloque.
+Les deux coïncident rarement. La cause est désormais un champ `cause:` écrit à la main
+dans `corpus/handy_macros_etc.yaml`, et une entrée hors périmètre sans cause **fait
+échouer le banc** — pour qu'aucune ne s'ajoute plus en silence.
 
-Ce n'est **pas** un bug et ça ne se corrige pas au clavier : les trois verrous qui
-produisent ce refus ont été posés délibérément le 2026-09-09 après une régression réelle,
-et un assouplissement mal posé rouvrirait la panne que `REGLES_POUR_UI.md` règle 4 désigne
-comme la plus grave du projet (la console accepte, et fait autre chose). Les trois issues
-possibles sont listées au `reference/journal_questions.yaml`. **C'est un arbitrage produit :
-il revient à l'utilisateur, pas à la session.** Tant qu'il n'est pas rendu, le score du
-banc terrain ne peut structurellement pas dépasser ~12/26 — le savoir évite de courir
-après le chiffre.
+**La sélection implicite reste une vraie question de conception** (les boutons de magic
+sheet visent bien « ce qui est sélectionné »), mais elle ne bloque aucune entrée mesurée :
+elle sort donc du chemin critique. À trancher quand un usage réel la réclamera, pas pour
+faire monter un score.
 
-*Durée estimée : une conversation, pas une tranche de travail.*
+### Classement réel, par cause déclarée
 
-### 1. `Color_Crossfade` — meilleur rapport rendu/effort du reste
+| n | cause | ce que ça veut dire |
+|---|---|---|
+| 6 | `action_absente` | le mot-clé Eos n'est pas dans le modèle |
+| 5 | `mecanisme_absent` | chaîne entière à construire |
+| 4 | `navigation_relative` | désigne par position (`Next`/`Last`), pas par numéro |
+| 3 | `forme_absente` | l'action existe, pas sous cette forme |
+| 2 | `hors_ligne_de_commande` | pilote l'affichage — hors périmètre **par nature** |
+| 2 | `macro_non_terminee` | finit exprès sans valeur, l'opérateur complète |
+| 1 | `source_douteuse` | cellule de la feuille inexploitable |
 
-Trois entrées du corpus (`color_xfd_0`, `color_xfd_50`, `color_xfd_100`) pour **une seule
-action à modéliser**. Aucune autre ligne du backlog n'a ce ratio. Elle est déjà nommée dans
-la liste « actions absentes du modèle » de la passation.
+Les 3 dernières lignes (5 entrées) ne sont **pas** du travail à faire : deux sont hors
+périmètre par nature, deux relèvent d'un concept déjà modélisé
+(`regles_generation.fin_volontairement_non_terminee`) qu'il suffira de câbler, une est
+une source perdue. Le gisement réel est donc de 18 entrées, pas 23.
 
-Ordre imposé par le motif récurrent de la passation (`grammar/` est régulièrement en avance
-sur `traducteur/`) : **chercher d'abord dans les manuels, puis tester le générateur sur
-l'IR visée, et seulement ensuite toucher au traducteur.** Ne rien écrire sans exemple
-chiffré ; si le manuel n'en donne pas, la confiance est B et doit être écrite comme telle.
+### 1. Navigation `Next` / `Last` — 4 entrées pour un seul mécanisme
 
-### 2. Navigation `Next` / `Last` — un mécanisme, quatre entrées
+`Out Next Level`, `Out Last Level`, et les deux variantes `Group`. Meilleur ratio du
+backlog, et le mécanisme resservira bien au-delà de ces quatre entrées (`Cue Next`,
+`Cue Last` apparaissent dans trois autres macros classées `mecanisme_absent`).
+Commencer par chercher dans le manuel ce que `Next`/`Last` font exactement sur une
+sélection vide — ne rien supposer.
 
-Les quatre entrées `out_*_level` partagent le même besoin : désigner « le circuit suivant »
-ou « le précédent » plutôt qu'un numéro. À instruire **après** le point 0, dont elles
-dépendent en partie — inutile de construire la navigation si la sélection implicite est
-tranchée dans un sens qui la reformule.
+### 2. `Color_Crossfade` — 3 entrées pour une seule action
 
-### 3. Huitième paramètre (Frost, Gobo…) — seulement si une source existe
+`color_xfd_0`, `color_xfd_50`, `color_xfd_100`. Point important relevé à la
+qualification : c'est un réglage **global de console**, il ne prend aucune sélection.
+Le modèle suppose aujourd'hui qu'une action s'applique à une cible — vérifier que
+`legalite` sait exprimer « sans objet » avant d'écrire quoi que ce soit.
 
-Le mécanisme `regler_parametre` est prouvé sur 7 paramètres et 3 unités différentes ;
-ajouter le huitième est désormais une **entrée de données**, pas du code. C'est donc une
-tâche courte — mais elle ne vaut d'être faite que si le manuel donne un exemple chiffré
-pour CE paramètre. Rappel de la doctrine, réappris deux fois cette semaine : **une forme
-ne s'emprunte pas à un paramètre voisin** (`Zoom + 10` n'est attesté nulle part, malgré
-`Pan + 10`).
+### 3. `Check` — 2 entrées, et un vrai outil de conduite
 
-### 4. Dette de méthode à ne pas laisser filer
+`Chan 1 At 75 Check` est le circuit-par-circuit classique. `address_check` demande en
+plus `Address` comme objet de sélection.
 
-- **Vérifier qu'une confiance S porte sur une OBSERVATION, pas sur une pratique.** Le
-  précédent `Sub + intensite` (cinq semaines de refus injustifié, corrigé le 2026-09-13)
-  est documenté au journal. Il y a probablement d'autres S de cette nature dans le modèle :
-  un audit ciblé des légalités `valide: non` en confiance S serait utile, et il est
-  faisable sans console.
-- **Trois ordres de mots minimum** avant de committer toute extraction de nombre
-  (piège payé le 2026-09-14, passation §7).
+### 4. Câbler la macro volontairement non terminée — 2 entrées, concept déjà écrit
 
-### Ce qu'il ne faut PAS faire la prochaine session
+`record_preset` et `startup` finissent exprès sans valeur. La règle est **déjà** dans
+`grammar/modele.yaml` (confiance B, transcription vidéo ETC) ; il reste à ce que le
+traducteur sache produire une macro qui s'arrête là, au lieu de refuser faute de numéro.
 
-- Faire monter le score du banc terrain en reformulant les phrases du corpus au goût du
-  lexique — le banc ne mesurerait plus que sa propre complaisance (passation §4).
-- Ajouter des paramètres au catalogue « parce que c'est facile maintenant » sans source
-  propre à chacun.
-- Rouvrir les verrous de sélection sans le point 0 tranché.
+### Ordre imposé, quelle que soit la tâche choisie
+
+Le motif récurrent de la passation : **`grammar/` est régulièrement en avance sur
+`traducteur/`**. Chercher dans les manuels → tester le générateur sur l'IR visée →
+seulement ensuite toucher au traducteur. Ne rien écrire sans exemple chiffré ; sans
+exemple, la confiance est B et doit être écrite comme telle.
+
+### Ce qu'il ne faut PAS faire
+
+- Faire monter le score du banc en reformulant les phrases du corpus au goût du lexique :
+  le banc ne mesurerait plus que sa propre complaisance (passation §4).
+- Ajouter un 8ᵉ paramètre au catalogue « parce que c'est facile maintenant » sans source
+  propre à celui-là. `Zoom + 10` n'est attesté nulle part, malgré `Pan + 10`.
+- Rouvrir les verrous de sélection : plus rien ne le réclame.
+
+### Dette de méthode
+
+- **Vérifier qu'une confiance S porte sur une OBSERVATION, pas sur une pratique.**
+  Précédent `Sub + intensite` : cinq semaines de refus injustifié. Un audit des
+  légalités `valide: non` en confiance S est faisable sans console.
+- **Se méfier d'un indicateur dérivé.** Celui-ci a orienté un planning entier pendant
+  six jours. Quand un chiffre sert à prioriser, vérifier d'abord **comment il est
+  calculé** — ici, un `if` sur trois chaînes de caractères.
+- **Trois ordres de mots minimum** avant de committer toute extraction de nombre.
 
 ---
 

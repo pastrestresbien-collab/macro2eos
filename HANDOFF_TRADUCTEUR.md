@@ -191,8 +191,13 @@ et c'est son intérêt — la couverture mesurée contre le modèle du dépôt (
 pour 85 actions) est un tout autre nombre que celle mesurée contre ce que les
 praticiens écrivent. **Ne pas chercher à faire monter ce score directement** : il
 monte quand un mécanisme réel arrive, jamais en pliant une entrée du corpus au
-lexique. Les deux causes dominantes du reste sont mesurées et affichées par le banc
-lui-même : 11 entrées par sélection implicite, 12 par vocabulaire absent.
+lexique. Les causes du reste sont **déclarées entrée par entrée** dans le corpus (champ
+`cause:`) et affichées par le banc. Elles ne sont plus déduites du message de refus :
+ce classement-là était faux, et il avait produit six jours de fausse priorité (voir
+§7). Répartition au 2026-09-14 : 6 `action_absente`, 5 `mecanisme_absent`,
+4 `navigation_relative`, 3 `forme_absente`, 2 `hors_ligne_de_commande`,
+2 `macro_non_terminee`, 1 `source_douteuse` — et **zéro** `selection_implicite`.
+Une entrée hors périmètre sans cause déclarée fait échouer le banc.
 
 ---
 
@@ -269,6 +274,14 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
   intensité, faux pour une durée : `Sneak 08` n'est pas `Sneak 8`.
 - **`Out` s'auto-termine** : pas d'`Enter`. `Full Full` et `Sneak Sneak` aussi,
   mais pas leur forme simple.
+- **Un indicateur dérivé peut mentir pendant des jours** (payé le 2026-09-14). Ce banc
+  devinait la cause d'un échec en cherchant « aucun numéro » dans le texte du refus, et
+  en concluait « sélection implicite ». Sur 11 entrées ainsi classées, **aucune** ne
+  l'était : `Chan 1 At 75 Check` nomme sa cible et se plaint d'un niveau ;
+  `Color_Crossfade 50` est un réglage global sans sélection. Le chiffre avait fait
+  inscrire au planning, en priorité n°1, un arbitrage produit qui ne débloquait rien.
+  **Un message de refus dit ce que le traducteur a remarqué en premier, pas ce qui
+  bloque.** Quand un chiffre sert à prioriser, lire d'abord comment il est calculé.
 - **`_selection_de` / `_plage` mangent les nombres voisins** (payé le 2026-09-14, le
   pire bug de la session). Sans marqueur d'unité fiable, « hue à 180 sur le circuit 1 »
   rendait `Chan 180 Hue 1` — valeur et numéro **échangés**, statut `compris`, aucun
