@@ -33,7 +33,10 @@
 #                     n'en a pas. Valeurs admises : action_absente,
 #                     forme_absente, navigation_relative, mecanisme_absent,
 #                     macro_non_terminee, hors_ligne_de_commande,
-#                     source_douteuse, selection_implicite.
+#                     source_douteuse, selection_implicite,
+#                     sens_non_atteste (la feuille suggère un sens qu'aucune
+#                     source ne confirme — refuser vaut mieux que rendre une
+#                     commande valide qui fait autre chose).
 #   cause_detail    - la justification, en clair, de la valeur ci-dessus
 #   verdict         - référence enregistrée, recalculée à chaque exécution :
 #                     "identique"      même commande, aux espaces près
@@ -466,26 +469,15 @@ entrees:
     label: "Out Next Level"
     syntaxe_feuille: "Out Next Level"
     mode: Foreground
-    demande_nl: "éteins et passe au circuit suivant"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucun numéro trouvé pour la sélection.
-    cause: navigation_relative
-    cause_detail: >-
-      `Next` désigne par position, pas par numéro. Aucun rapport avec la règle
-      5.
+    demande_nl: "éteins, puis va au circuit suivant, puis mets-le au level"
+    verdict: identique
 
   - id: out_last_level
     label: "Out Last Level"
     syntaxe_feuille: "Out Last Level"
     mode: Foreground
-    demande_nl: "éteins et passe au circuit précédent"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucun numéro trouvé pour la sélection.
-    cause: navigation_relative
-    cause_detail: >-
-      `Last` désigne par position, pas par numéro.
+    demande_nl: "éteins, puis va au circuit précédent, puis mets-le au level"
+    verdict: identique
 
   - id: out_group_next_level
     label: "Out Group Next Level"
@@ -495,9 +487,15 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucun numéro trouvé pour la sélection.
-    cause: navigation_relative
+    cause: sens_non_atteste
     cause_detail: >-
-      `Group Next` — même mécanisme, appliqué aux groupes.
+      La feuille écrit `Out Group Next Level` et le label se lit « passe au
+      groupe suivant ». Or le manuel §7 l. 175 dit l'inverse : après une
+      sélection de groupe, `Next` accède au PREMIER CIRCUIT ORDONNÉ du groupe
+      et parcourt ses circuits — il ne passe pas au groupe suivant. Aucune
+      source n'atteste le sens que le label suggère. Le traducteur refuse donc
+      en l'expliquant plutôt que de rendre un `Next` qui serait syntaxiquement
+      valide et ferait autre chose que la demande.
 
   - id: out_group_last_level
     label: "Out Group Last Level"
@@ -507,9 +505,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucun numéro trouvé pour la sélection.
-    cause: navigation_relative
+    cause: sens_non_atteste
     cause_detail: >-
-      `Group Last` — même mécanisme, appliqué aux groupes.
+      Symétrique de out_group_next_level — même conflit entre le label de la
+      feuille et le manuel §7.
 
   - id: sub_killer
     label: "Sub Killer"

@@ -571,7 +571,8 @@ class Generateur:
 
         if t in ("selection_active", "selection_derniere", "selection_manuelle",
                  "retirer_effet", "hors_scene", "niveau_setup", "incrementer",
-                 "decrementer", "verifier"):
+                 "decrementer", "verifier",
+                 "selection_suivante", "selection_precedente"):
             return mot
 
         if t in ("plein_feu", "sneak"):

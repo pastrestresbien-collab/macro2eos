@@ -50,6 +50,16 @@
     "description": "enregistrer une sélection de circuits dans une cue existante"
   },
   {
+    "intention": "selection_suivante",
+    "phrase": "va au circuit suivant",
+    "description": "avancer d'un cran DANS la sélection courante (Next)"
+  },
+  {
+    "intention": "selection_precedente",
+    "phrase": "va au circuit précédent",
+    "description": "reculer d'un cran DANS la sélection courante (Last)"
+  },
+  {
     "intention": "aller_a_cue",
     "phrase": "aller à la cue 5",
     "description": "aller à une cue (Go To Cue)"
@@ -183,6 +193,11 @@
     "intention": "plein_feu",
     "phrase": "plein feu sur le groupe 3",
     "description": "monter une sélection à pleine intensité"
+  },
+  {
+    "intention": "niveau_setup",
+    "phrase": "mets les circuits 1 à 5 au level",
+    "description": "amener la sélection au niveau de la touche Level (réglé en Setup)"
   },
   {
     "intention": "hors_scene",

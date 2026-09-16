@@ -136,6 +136,20 @@
         "cue"
       ]
     },
+    "selection_suivante": {
+      "description": "avancer d'un cran DANS la sélection courante (Next)",
+      "champs": [
+        "objet",
+        "direction"
+      ]
+    },
+    "selection_precedente": {
+      "description": "reculer d'un cran DANS la sélection courante (Last)",
+      "champs": [
+        "objet",
+        "direction"
+      ]
+    },
     "aller_a_cue": {
       "description": "aller à une cue (Go To Cue)",
       "champs": [
@@ -270,6 +284,12 @@
       "description": "monter une sélection à pleine intensité",
       "champs": [
         "plein"
+      ]
+    },
+    "niveau_setup": {
+      "description": "amener la sélection au niveau de la touche Level (réglé en Setup)",
+      "champs": [
+        "level"
       ]
     },
     "hors_scene": {

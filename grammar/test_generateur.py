@@ -438,6 +438,51 @@ CAS = [
         "avertissements": 0,
     },
     {
+        "nom": "manuel §6 l. 76-98 — `Next` se déplace dans la sélection",
+        # [1][0] [Enter] puis [Next] : channel 11 devient le seul sélectionné
+        "ir": [{"action": {"type": "selection_suivante"}}],
+        "attendu": "Next",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 l. 76-98 — `Last` est le symétrique de `Next`",
+        "ir": [{"action": {"type": "selection_precedente"}}],
+        "attendu": "Last",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 l. 175 — `Group n Next` entre dans les circuits du groupe",
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 3},
+             "action": {"type": "selection_suivante"}},
+        ],
+        "attendu": "Group 3 Next",
+        "avertissements": 0,
+    },
+    {
+        "nom": "feuille ETC « Out Next Level » — trois touches auto-terminantes",
+        # Aucune n'attend d'Enter : la macro tient en trois lignes.
+        "ir": [
+            {"action": {"type": "hors_scene"}},
+            {"action": {"type": "selection_suivante"}},
+            {"action": {"type": "niveau_setup"}},
+        ],
+        "attendu": "Out\nNext\nLevel",
+        "avertissements": 0,
+    },
+    {
+        "nom": "`Cue` + `Next` n'est pas modélisé — le générateur le dit",
+        # Next a un second sens derrière une cible (§10 « Record Beam Palette
+        # Next »), délibérément NON modélisé : le générateur doit refuser de
+        # cautionner la combinaison plutôt que de la rendre en silence.
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 3},
+             "action": {"type": "selection_suivante"}},
+        ],
+        "attendu": "Cue 3 Next",
+        "avertissements": 1,
+    },
+    {
         "nom": "manuel §6 — `Level` prend sa valeur du Setup et s'auto-termine",
         # [1] [Level]
         "ir": [

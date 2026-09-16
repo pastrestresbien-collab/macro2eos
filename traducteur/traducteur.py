@@ -611,6 +611,9 @@ class Traducteur:
             "plein_feu": self._action_sur_selection,
             "hors_scene": self._action_sur_selection,
             "sneak": self._action_sur_selection,
+            "niveau_setup": self._action_sur_selection,
+            "selection_suivante": self._naviguer_selection,
+            "selection_precedente": self._naviguer_selection,
             "verifier": self._verifier,
             "copier_libelles": self._copier_libelles,
             "creer_plage": self._creer_plage,
@@ -1940,6 +1943,85 @@ class Traducteur:
             etape["selection"] = selection
         return Traduction(statut="compris", ir=[etape], notes=notes,
                           **self._mots(toks, pris))
+
+    # mots de groupe reconnus mais REFUSÉS par _naviguer_selection : voir
+    # la note de refus dans cette méthode.
+    MOTS_GROUPE_NAVIGATION = ("groupe", "groupes", "group")
+
+    def _naviguer_selection(self, toks: list[str], reponses: dict) -> Traduction:
+        """`Next` / `Last` — se déplacer DANS la sélection, pas la remplacer.
+
+        Pourquoi un handler à part plutôt que `_action_sur_selection` : la
+        phrase a une autre forme. « passe au circuit suivant » nomme un objet
+        SANS numéro, ce que le verrou 1 refuse à juste titre partout
+        ailleurs — un numéro perdu à la frappe ne doit pas devenir un ordre
+        sur une sélection inconnue. Ici « circuit » ne désigne aucune cible :
+        il fait partie de la locution « le circuit suivant ». Il est donc
+        consommé AVANT tout examen de sélection, et seulement s'il est
+        adjacent au mot de direction — « circuit 5 suivant » n'entre pas dans
+        ce cas et retombe sur le refus normal.
+        """
+        pris: set[int] = set()
+        notes: list[str] = []
+        type_action = self._intention_courante or ""
+
+        mots_direction = ({"suivant", "suivante", "next"}
+                          if type_action == "selection_suivante"
+                          else {"precedent", "precedente", "last"})
+        i_dir = self._indice_mot(toks, pris, mots_direction)
+        if i_dir is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun sens de déplacement reconnu (suivant / précédent)."])
+
+        # le mot d'objet, seulement s'il est collé au mot de direction
+        i_objet = None
+        for i in (i_dir - 1, i_dir + 1):
+            if 0 <= i < len(toks) and i not in pris and self._objets.get(toks[i]):
+                i_objet = i
+                break
+        if i_objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Préciser ce qui avance : « passe au circuit suivant »."])
+
+        # `Next` sur un GROUPE ne veut pas dire « groupe suivant ». Le manuel
+        # §7 l. 175 est explicite : après une sélection de groupe, `Next`
+        # accède au PREMIER CIRCUIT ORDONNÉ du groupe, puis parcourt ses
+        # circuits. Aucune source n'atteste « passer au groupe suivant ».
+        # Rendre `Next` ici produirait une commande valide qui ne fait pas ce
+        # que la phrase demande — le pire des deux mondes.
+        if toks[i_objet] in self.MOTS_GROUPE_NAVIGATION:
+            return Traduction(statut="incompris", notes=[
+                "« groupe suivant / précédent » n'est pas attesté : après une "
+                "sélection de groupe, Next accède au premier circuit DU groupe "
+                "et parcourt ses circuits (manuel §7), il ne passe pas au "
+                "groupe suivant."])
+        pris.update({i_dir, i_objet})
+
+        # Une durée dans la phrase doit TOUJOURS ressortir — produite, ou
+        # refusée. `Next` et `Last` sont des touches de déplacement immédiat :
+        # aucune source ne leur donne de forme temporisée. Rendre `Next` en
+        # laissant tomber « en 3 secondes » donnerait une commande qui a l'air
+        # juste et fait autre chose, sans le moindre signal — et ici la durée
+        # ne ressortait même pas dans `ignores`, donc en silence complet.
+        duree = self._duree(toks, pris)
+        if duree is not None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune forme temporisée n'est documentée pour un déplacement "
+                "de sélection : Next et Last agissent immédiatement. Pour un "
+                "changement progressif, passer par un niveau et un sneak."])
+
+        if not self._vise_la_selection_courante(toks, pris):
+            return Traduction(statut="incompris",
+                              notes=[self._motif_refus_selection(toks, pris)])
+        if not self._selection_courante_permise(type_action):
+            return Traduction(statut="incompris", notes=[
+                "Le modèle n'autorise pas ce déplacement sur la sélection "
+                "en cours."])
+        notes.append(self.NOTE_SELECTION_COURANTE)
+
+        return Traduction(statut="compris",
+                          ir=[{"action": {"type": type_action}}],
+                          notes=notes, **self._mots(toks, pris))
 
     def _verifier(self, toks: list[str], reponses: dict) -> Traduction:
         """`<sélection> At <niveau> Check` — la revue circuit par circuit.

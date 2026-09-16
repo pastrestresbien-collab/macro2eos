@@ -116,6 +116,7 @@ CAUSES_CONNUES = {
     "hors_ligne_de_commande": "pilote l'affichage, pas la conduite",
     "source_douteuse": "cellule de la feuille inexploitable",
     "selection_implicite": "vise « ce qui est sélectionné » — règle 5",
+    "sens_non_atteste": "la feuille suggère un sens qu'aucune source ne confirme",
 }
 
 

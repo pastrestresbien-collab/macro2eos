@@ -613,3 +613,41 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "corpus/handy_macros_etc.yaml champ cause ; traducteur/test_corpus_terrain.py CAUSES_CONNUES ; PLANNING.md plan révisé"
+
+  - date: "2026-09-16"
+    question: >-
+      Le verrou 3 (« un seul mot inconnu interdit le repli sur la sélection
+      courante ») protège-t-il durablement ?
+    reponse: >-
+      Non, et ça s'est vu le jour même. Le verrou ne tient que tant que le mot
+      reste INCONNU du lexique — il s'use donc mécaniquement à mesure que le
+      vocabulaire grandit, sans que personne ne touche au verrou lui-même.
+    sources:
+      - "reference/journal_questions.yaml — entrée du 2026-09-09, verrou 3"
+      - "traducteur/test_corpus_terrain.py — entrée color_xfd_100"
+    confiance: "A"
+    consequence: "fragilite_connue"
+    detail: >-
+      Cas concret. En ajoutant les intentions de navigation Next/Last, le mot
+      « passe » est entré dans les déclencheurs optionnels — donc dans le
+      vocabulaire connu. Aussitôt, « passe le fondu de couleur à fond » a
+      cessé d'être refusée et a rendu `Full Enter` : tout le plateau à pleine
+      intensité pour une demande qui ne parlait que de fondu de couleur.
+      C'est EXACTEMENT le bug qui avait motivé la création du verrou 3 le
+      2026-09-09. Le banc de rétro-traduction l'a rattrapé en le signalant
+      comme divergence.
+
+      Parade immédiate, volontairement minimale : « passe » a été retiré des
+      déclencheurs (les exemples disent « va au circuit suivant »). C'est un
+      CONTOURNEMENT, pas une correction — la mine reste posée, et elle sautera
+      à la première intention qui aura légitimement besoin de « passe ».
+
+      La vraie correction est ailleurs et elle est déjà au planning :
+      `plein_feu` ne devrait pas pouvoir revendiquer une phrase qui parle de
+      « fondu de couleur ». Cela suppose de modéliser `Color_Crossfade`, point
+      2 du plan. Tant que ce n'est pas fait, toute session qui élargit le
+      vocabulaire doit relancer le banc terrain et regarder les DIVERGENCES,
+      pas seulement le score.
+    backlog: null
+    traite: "partiel"
+    traite_ou: "traducteur/lexique.yaml — « passe » retiré ; correction de fond en attente de Color_Crossfade"

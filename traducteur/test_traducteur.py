@@ -440,6 +440,78 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ navigation Next / Last
+    {
+        "nom": "navigation — « circuit suivant » rend Next, pas un saut de cue",
+        "phrase": "va au circuit suivant",
+        "statut": "compris",
+        "rendu": "Next",
+    },
+    {
+        # RÉGRESSION 2026-09-16. `aller_a_cue` accepte « suivant » dans son
+        # groupe `cible` : cette phrase rendait `Go To Cue Next Enter`, statut
+        # `compris`, le mot « circuit » relégué dans `ignores`. Un saut de cue
+        # au lieu d'un déplacement de sélection. Ce qui protège est l'ORDRE de
+        # déclaration — selection_suivante AVANT aller_a_cue — donc ce cas et
+        # le suivant doivent rester côte à côte.
+        "nom": "navigation — la cue garde ses phrases à elle",
+        "phrase": "va à la cue suivante",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Enter",
+    },
+    {
+        "nom": "navigation — « circuit précédent » rend Last",
+        "phrase": "va au circuit précédent",
+        "statut": "compris",
+        "rendu": "Last",
+    },
+    {
+        # Sans mot d'objet, la phrase est ambiguë et c'est `aller_a_cue` qui
+        # la garde — comportement ANTÉRIEUR, laissé tel quel volontairement :
+        # pour un régisseur, « va au suivant » tout court désigne la cue
+        # suivante. Le déplacement de sélection exige donc de nommer ce qui
+        # avance. Ce cas fixe cette frontière pour qu'elle ne bouge pas sans
+        # qu'on s'en aperçoive.
+        "nom": "navigation — sans mot d'objet, la cue garde la phrase",
+        "phrase": "va au suivant",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Enter",
+    },
+    {
+        # Manuel §7 l. 175 : après une sélection de groupe, Next accède au
+        # premier circuit DU groupe. « groupe suivant » n'existe pas. On
+        # refuse en l'expliquant plutôt que de rendre un Next trompeur.
+        "nom": "navigation — « groupe suivant » refusé, sens non attesté",
+        "phrase": "va au groupe suivant",
+        "statut": "incompris",
+    },
+    {
+        # Next agit immédiatement : aucune forme temporisée n'est documentée.
+        # Avant le garde-fou, la durée ne ressortait même pas dans `ignores`.
+        "nom": "navigation — une durée est refusée, jamais laissée tomber",
+        "phrase": "va au circuit suivant en 3 secondes",
+        "statut": "incompris",
+    },
+    {
+        "nom": "level — la touche Level, valeur réglée en Setup",
+        "phrase": "mets les circuits 1 à 5 au level",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Level",
+    },
+    {
+        # « niveau » reste à regler_intensite : le 50 ne doit pas disparaître.
+        "nom": "level — « au niveau 50 » n'est pas la touche Level",
+        "phrase": "circuits 1 à 5 au niveau 50",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        "nom": "feuille ETC « Out Next Level » — macro en trois temps",
+        "phrase": "éteins, puis va au circuit suivant, puis mets-le au level",
+        "statut": "compris",
+        "rendu": "Out\nNext\nLevel",
+    },
+
     # -------------------------------------------------------------- effets
     {
         # Reprend l'exemple chiffré du manuel §18 recopié dans

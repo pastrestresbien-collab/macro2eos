@@ -2191,6 +2191,33 @@
       "source": "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »",
       "osc": "-%"
     },
+    "selection_suivante": {
+      "mot_cle": "Next",
+      "attend": "aucun",
+      "auto_termine": true,
+      "contextes": [
+        "Live",
+        "Blind"
+      ],
+      "confiance": "A",
+      "source": "manuel §6 l. 76-98 ; manuel §7 l. 175-177",
+      "osc": "next",
+      "note": "Navigue DANS la sélection courante, il ne la remplace pas. Un seul circuit sélectionné : passe au suivant. Une LISTE sélectionnée (plage ou groupe) : isole le PREMIER circuit de la liste, puis les appuis suivants parcourent la liste — `Select Last` resélectionne l'ensemble (§6 l. 96). Dans un groupe, l'ordre parcouru est l'ordre d'ENREGISTREMENT du groupe, pas l'ordre numérique (§7 l. 71, 85) : un groupe enregistré 10 → 2 se parcourt 10, 9, 8… Et le parcours boucle (§7 l. 175).\n",
+      "piege": "`Next` a un SECOND sens, non modélisé ici : derrière un type de cible, il désigne la cible suivante à créer — `Record Beam Palette Next` enregistre dans la palette de faisceau suivante (§10 l. 135, 159), et `At Next` en patch cherche la prochaine adresse libre (§4 l. 168). Ces emplois ne sont PAS une navigation de sélection et ne doivent pas être rendus par cette action.\n"
+    },
+    "selection_precedente": {
+      "mot_cle": "Last",
+      "attend": "aucun",
+      "auto_termine": true,
+      "contextes": [
+        "Live",
+        "Blind"
+      ],
+      "confiance": "A",
+      "source": "manuel §6 l. 76-98 ; manuel §7 l. 177",
+      "osc": "last",
+      "note": "Symétrique de `selection_suivante`. Un seul circuit : décrémente d'un. Une liste sélectionnée : isole le DERNIER circuit de la liste (§6 l. 90). À ne pas confondre avec `Select Last` (`selection_derniere`), qui resélectionne l'ensemble au lieu de se déplacer dedans.\n"
+    },
     "valeur_dmx": {
       "mot_cle": "At / /",
       "attend": "valeur",
@@ -3835,6 +3862,38 @@
     {
       "objet": "Chan",
       "action": "niveau_setup",
+      "valide": "oui",
+      "confiance": "A"
+    },
+    {
+      "objet": "selection_courante",
+      "action": "niveau_setup",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "Ajouté le 2026-09-16. Le manuel §6 l. 288 traite `Level`, `+%` et `-%` d'un seul tenant — « affect the intensity value of selected channels ». Les deux dernières avaient leur ligne `selection_courante`, pas `Level` : un oubli, pas une restriction. Signalé par le générateur lui-même, qui avertissait « combinaison absente du modèle ».\n"
+    },
+    {
+      "objet": "selection_courante",
+      "action": "selection_suivante",
+      "valide": "oui",
+      "confiance": "A"
+    },
+    {
+      "objet": "selection_courante",
+      "action": "selection_precedente",
+      "valide": "oui",
+      "confiance": "A"
+    },
+    {
+      "objet": "Group",
+      "action": "selection_suivante",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`[Group] [n] [Enter] [Next]` accède au premier circuit ORDONNÉ du groupe (§7 l. 175). Ce n'est donc PAS « passer au groupe suivant » : rien dans le manuel n'atteste ce sens-là pour un groupe.\n"
+    },
+    {
+      "objet": "Group",
+      "action": "selection_precedente",
       "valide": "oui",
       "confiance": "A"
     },

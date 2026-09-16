@@ -61,22 +61,22 @@ utile est dans le dépôt.
 
 **Phase 2 — exploitation : axe A terminé, axes B et C ouverts.**
 
-[`grammar/`](grammar/README.md) porte un modèle typé de **85 actions et 178 règles de
+[`grammar/`](grammar/README.md) porte un modèle typé de **87 actions et 183 règles de
 légalité**, plus un catalogue de **7 paramètres de projecteur** (Pan, Tilt, Zoom, Iris,
 Edge, Hue, Saturation) rendus par un mécanisme générique unique. Le tout compilé en JSON,
 avec un générateur qui produit trois sorties distinctes (ligne de commande, contenu de
-macro, paquets OSC) et **125 cas de non-régression**, dont la majorité sont des exemples
+macro, paquets OSC) et **130 cas de non-régression**, dont la majorité sont des exemples
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 34 intentions, 155 cas de traduction + 9 cas de correction,
+générateur rend ensuite — 37 intentions, 164 cas de traduction + 9 cas de correction,
 et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
 README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.13 — 34 intentions, 155 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.14 — 37 intentions, 164 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -279,13 +279,20 @@ périmètre par nature, deux relèvent d'un concept déjà modélisé
 (`regles_generation.fin_volontairement_non_terminee`) qu'il suffira de câbler, une est
 une source perdue. Le gisement réel est donc de 18 entrées, pas 23.
 
-### 1. Navigation `Next` / `Last` — 4 entrées pour un seul mécanisme
+### 1. ~~Navigation `Next` / `Last`~~ — **fait le 2026-09-16**
 
-`Out Next Level`, `Out Last Level`, et les deux variantes `Group`. Meilleur ratio du
-backlog, et le mécanisme resservira bien au-delà de ces quatre entrées (`Cue Next`,
-`Cue Last` apparaissent dans trois autres macros classées `mecanisme_absent`).
-Commencer par chercher dans le manuel ce que `Next`/`Last` font exactement sur une
-sélection vide — ne rien supposer.
+`Out Next Level` et `Out Last Level` se traduisent (banc terrain 3/26 → 5/26). Les deux
+variantes `Group` ont été **refusées volontairement** : le manuel §7 l. 175 dit que
+`Next` après une sélection de groupe accède au premier circuit DU groupe, pas au groupe
+suivant — le label de la feuille suggère un sens qu'aucune source ne confirme, et le
+traducteur l'explique au lieu de rendre un `Next` trompeur (cause `sens_non_atteste`).
+
+Deux trouvailles à ne pas perdre, détaillées au journal :
+- « va au circuit suivant » rendait `Go To Cue Next Enter` — un saut de cue au lieu d'un
+  déplacement de sélection, statut `compris`. Réglé par l'ORDRE de déclaration.
+- **Le verrou 3 s'use tout seul.** Il ne tient que tant que le mot reste inconnu du
+  lexique : ajouter « passe » a suffi à rouvrir le bug de `Full Enter` sur « passe le
+  fondu de couleur à fond ». Contourné, pas corrigé — la vraie parade est le point 2.
 
 ### 2. `Color_Crossfade` — 3 entrées pour une seule action
 
