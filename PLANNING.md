@@ -354,6 +354,32 @@ exemple, la confiance est B et doit être écrite comme telle.
   propre à celui-là. `Zoom + 10` n'est attesté nulle part, malgré `Pan + 10`.
 - Rouvrir les verrous de sélection : plus rien ne le réclame.
 
+### Chasse au silence du 2026-09-17 — ce qu'elle a changé
+
+Une session entière d'autonomie sur le dépôt (aucun test au banc réel, qui demande la
+console). **Onze pannes silencieuses trouvées et corrigées**, toutes de la même famille :
+la commande a l'air juste, le statut est `compris`, rien n'est signalé, et le résultat ne
+répond pas à la demande.
+
+| ce qui était écrit | ce qui sortait |
+|---|---|
+| `circuits 1 et 5 à 50 %` | `Chan 1 At 05 Thru 50` — malformé |
+| `circuits 2 à 8 sauf le 5 à 50 %` | le retrait disparaissait |
+| `va à la cue 3/1` | `Go To Cue 3` — **une autre cue** |
+| `rouge 3 à 50 %` | `Group 3 At 50` — « rouge » approximé en « groupe » |
+| `parque le circuit 3 à 45 % en 2 s` | la durée disparaissait (32 intentions sur 38) |
+| `pan des circuits 1 à 5 à 50 degrés` | plage tronquée à un circuit |
+| `en Lee 195 et Lee 201` | le second gel disparaissait |
+
+**Trois d'entre elles venaient de mes propres corrections antérieures** — le piège de
+plage introduit en réparant celui de Hue, et `corriger` laissé en arrière des listes de
+sélection que je venais d'ajouter. Leçon écrite à la passation : une clé d'IR nouvelle
+doit être cherchée partout où l'IR est **lue**, pas seulement là où elle est écrite.
+
+Deux corrections sont CENTRALES plutôt que répétées — durées et tolérance — donc elles
+valent d'office pour toute intention future. C'est le bon réflexe : une liste de
+correctifs ne protège que ce qu'elle énumère.
+
 ### Nouveau garde-fou — le banc des silences
 
 `traducteur/test_silences.py` (2026-09-17) est le sixième banc, et le seul qui ne
