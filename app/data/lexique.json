@@ -159,6 +159,14 @@
       ],
       "source": "parametres.Hue du modèle (grammar/modele.yaml) ; confiance B, recette communautaire seulement — aucune source manuel directe pour ce paramètre.\n"
     },
+    "Color_Crossfade": {
+      "alias": [
+        "crossfade",
+        "xfade",
+        "xfd"
+      ],
+      "source": "parametres.Color_Crossfade du modèle (grammar/modele.yaml) ; confiance B, feuille communautaire seulement. Son statut même de paramètre (et non de touche) est une INFÉRENCE de confiance C — voir `classement_incertain` dans le modèle.\n"
+    },
     "Saturation": {
       "alias": [
         "saturation"
@@ -661,6 +669,58 @@
       "origine": "manuel §6 « Manual Control », sections « Setting Parameters with the Keypad » et « Adjusting Parameters Using [+] and [-] », confiance A — voir `grammar/modele.yaml:parametres` pour le détail par paramètre et par forme (une forme B/C/D est signalée par le générateur, jamais cachée).\n",
       "note": "Intention GÉNÉRIQUE (2026-09-14), remplace deux actions dédiées Pan/ Tilt d'une session précédente — ajouter un paramètre ne demande plus qu'une entrée dans `parametres` (ce fichier) et `grammar/modele.yaml`, aucun code. La forme « inverse » n'a qu'UNE source (« Mirror Pan », `corpus/handy_macros_etc.yaml`, confiance B) : `_regler_parametre` refuse « inverse le tilt » puisque Tilt ne déclare pas cette forme dans le modèle — jamais une extrapolation depuis Pan.\n"
     },
+    "regler_fondu_couleur": {
+      "description": "régler le paramètre de fondu de couleur (Color_Crossfade)",
+      "declencheurs": {
+        "fondu": [
+          "fondu",
+          "fondus",
+          "crossfade",
+          "xfade",
+          "xfd"
+        ],
+        "couleur": [
+          "couleur",
+          "couleurs",
+          "color",
+          "colour"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "verbe": [
+          "mets",
+          "met",
+          "mettre",
+          "regle",
+          "règle",
+          "regler",
+          "passe",
+          "passer",
+          "monte",
+          "monter",
+          "amene",
+          "amener"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "parametre_impose": "Color_Crossfade",
+      "exemple_nl": "passe le fondu de couleur à 50",
+      "origine": "Feuille collaborative ETC « Handy Macros », trois macros de l'auteur « Sassy Squatch » — confiance B (`grammar/modele.yaml`, section `parametres`/`Color_Crossfade`). Aucune source manuel.\n",
+      "note": "DEUX groupes EXIGÉS, et c'est le point de toute l'entrée. Le mot « fondu » seul appartient à `mots_temps` et désigne une durée ; le mot « couleur » seul appartient à `creer_palettes_couleur`. Exiger la PAIRE capte « passe le fondu de couleur à 50 » sans voler ni « un fondu de 3 secondes », ni « crée les palettes de couleur ».\nDÉCLARÉE AVANT `regler_intensite` et `plein_feu`, et c'est structurel : « passe le fondu de couleur à fond » rendait `Full Enter` — tout le plateau à pleine intensité pour une demande qui ne parle que de fondu de couleur. Ce bug n'était retenu que par le verrou 3, c'est-à-dire par le hasard que le mot « passe » soit resté inconnu du lexique ; il a resurgi le 2026-09-16 dès que « passe » est entré. Router la phrase AVANT `plein_feu` la protège vraiment, au lieu de compter sur un mot qui manque.\n`parametre_impose` sert parce qu'aucun mot de la phrase française ne nomme le paramètre : `fondu`+`couleur` le désignent ensemble, sans qu'aucun des deux ne puisse porter l'alias seul.\n"
+    },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "declencheurs": {
@@ -775,6 +835,8 @@
           "va",
           "vas",
           "aller",
+          "passe",
+          "passer",
           "avance",
           "avancer",
           "selectionne",
@@ -785,7 +847,7 @@
           "met"
         ]
       },
-      "exemple_nl": "va au circuit suivant",
+      "exemple_nl": "passe au circuit suivant",
       "origine": "manuel §6 l. 76-98 et §7 l. 175-177, confiance A (`grammar/modele.yaml`, section `actions`/`selection_suivante`).\n",
       "note": "DÉCLARÉE AVANT `aller_a_cue`, et c'est le seul mécanisme qui protège. `aller_a_cue` accepte « suivant » dans son groupe `cible` : avant le 2026-09-16, « va au circuit suivant » rendait donc `Go To Cue Next Enter` — un saut de cue au lieu d'un déplacement de sélection, statut `compris`, le mot « circuit » relégué dans `ignores`. Exiger ici un mot d'objet de CIRCUIT règle le conflit sans nouveau verrou : une phrase qui nomme un circuit arrive ici, une phrase qui nomme une cue n'y arrive jamais. Ne pas déplacer cette intention après `aller_a_cue`.\nLes mots de GROUPE figurent bien dans le groupe `objet`, alors que le handler les refuse. C'est voulu : les exclure ici rendait « passe au groupe suivant » simplement non reconnu, et l'explication — pourquoi Next ne passe pas au groupe suivant — devenait inatteignable. Router pour refuser en expliquant vaut mieux que ne pas router.\n"
     },
@@ -817,6 +879,8 @@
           "va",
           "vas",
           "aller",
+          "passe",
+          "passer",
           "recule",
           "reculer",
           "reviens",
@@ -829,7 +893,7 @@
           "met"
         ]
       },
-      "exemple_nl": "va au circuit précédent",
+      "exemple_nl": "passe au circuit précédent",
       "origine": "manuel §6 l. 76-98 et §7 l. 177, confiance A (`grammar/modele.yaml`, section `actions`/`selection_precedente`).\n",
       "note": "Même contrainte d'ordre que `selection_suivante`. À NE PAS confondre avec `selection_derniere` (`Select Last`), qui resélectionne l'ensemble au lieu de se déplacer dedans — deux touches différentes pour deux gestes opposés.\n"
     },
@@ -866,6 +930,12 @@
           "derniere",
           "home",
           "origine"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "temps": [
+          "fondu",
+          "fondus"
         ]
       },
       "exemple_nl": "aller à la cue 5 ; va à la cue suivante en 3 secondes ; va à la cue suivante sans les temps\n",
@@ -1329,7 +1399,12 @@
           "monter",
           "remonte",
           "remonter",
-          "remontez"
+          "remontez",
+          "mets",
+          "met",
+          "mettre",
+          "passe",
+          "passer"
         ],
         "objet": [
           "circuit",
@@ -1365,7 +1440,9 @@
           "monte",
           "monter",
           "amene",
-          "amener"
+          "amener",
+          "passe",
+          "passer"
         ],
         "objet": [
           "circuit",

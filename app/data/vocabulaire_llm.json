@@ -123,6 +123,13 @@
         "parametre"
       ]
     },
+    "regler_fondu_couleur": {
+      "description": "régler le paramètre de fondu de couleur (Color_Crossfade)",
+      "champs": [
+        "fondu",
+        "couleur"
+      ]
+    },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "champs": [

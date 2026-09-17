@@ -685,6 +685,53 @@ parametres:
         confiance: B
         exemple: "`Saturation /90 Enter` — vidéo tutoriel officielle ETC (2026-09-13), réduit la saturation courante de 10 %"
     # PAS de relatif_ajout/relatif_retrait — non sourcé.
+  Color_Crossfade:
+    mot_cle: "Color_Crossfade"
+    # PAS d'`unite`, même raison que Saturation : le label de la feuille dit
+    # « 50% » et « 100% », mais rien ne confirme la règle du zéro implicite
+    # pour CE paramètre. Une unité `%` ferait rendre `Color_Crossfade 00`
+    # là où la feuille écrit `Color_Crossfade 0` — une transformation
+    # silencieuse d'une valeur, sur une simple présomption.
+    confiance: B
+    source: >
+      Feuille collaborative ETC « Handy Macros », trois macros de l'auteur
+      « Sassy Squatch » (`corpus/handy_macros_etc.yaml`, confiance B) :
+      `Color_Crossfade 0 Enter`, `Color_Crossfade 50 Enter`,
+      `Color_Crossfade Full Enter`.
+    formes:
+      absolue:
+        confiance: B
+        exemple: "`Color_Crossfade 50 Enter` — feuille communautaire, aucun exemple au manuel"
+      plein:
+        confiance: B
+        exemple: "`Color_Crossfade Full Enter` — feuille communautaire"
+    # PAS de relatif / echelle / dmx — non sourcés pour ce paramètre.
+    classement_incertain: >
+      CE QUI EST SÛR : la feuille écrit ces trois macros, et `Color_Crossfade`
+      est introuvable dans les 1155 touches OSC de `reference/eosKeys.ts`
+      comme dans tout le manuel officiel.
+
+      CE QUI EST INFÉRÉ, et donc de confiance C : qu'il s'agisse d'un
+      PARAMÈTRE de projecteur et non d'une touche. Trois indices concordants,
+      aucune preuve. (1) Hue et Saturation sont eux aussi absents d'eosKeys
+      pour cette raison précise — ce sont des paramètres (`/eos/param/`), pas
+      des touches (`/eos/key/`) ; c'est déjà consigné au journal. (2) Une
+      discussion de la communauté ETC mentionne un paramètre de crossfade sur
+      des projecteurs LED de cinéma (Arri SkyPanel, Astera Titan Tube,
+      Digital Sputnik), qui mélange entre mode RGB et mode calibré.
+      (3) La syntaxe `<mot> <valeur> Enter` est celle d'un paramètre.
+
+      CONSÉQUENCE PRATIQUE : si c'est bien un paramètre de projecteur, il
+      n'existe que sur les projecteurs qui le portent — une macro qui
+      l'emploie ne fera rien sur un plateau qui n'en a pas, sans erreur.
+      À TRANCHER AU BANC : le nom exact qu'affiche la console, et si
+      `Color Scrub` (touche réellement présente dans eosKeys, non documentée
+      au manuel) est la même chose ou autre chose.
+    piege: >
+      NE PAS confondre avec le `{Crossfade}` du serveur média virtuel
+      (workbook VMS : `{Crossfade} [100] [Enter]`), qui règle une priorité
+      entre canaux serveur et canaux console. Même mot, autre fonction, et le
+      serveur média virtuel est hors périmètre du projet.
 
 # --------------------------------------------------------------------------
 # COURBES — une relation entre le temps et le niveau

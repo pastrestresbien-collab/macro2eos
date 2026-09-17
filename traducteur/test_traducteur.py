@@ -440,6 +440,60 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ fondu de couleur
+    {
+        "nom": "fondu de couleur — valeur chiffrée",
+        "phrase": "passe le fondu de couleur à 50",
+        "statut": "compris",
+        "rendu": "Color_Crossfade 50 Enter",
+    },
+    {
+        "nom": "fondu de couleur — zéro rendu littéralement, jamais « 00 »",
+        "phrase": "passe le fondu de couleur à 0",
+        "statut": "compris",
+        "rendu": "Color_Crossfade 0 Enter",
+    },
+    {
+        # RÉGRESSION HISTORIQUE, deux fois payée. Cette phrase rendait
+        # `Full Enter` — TOUT le plateau à pleine intensité pour une demande
+        # qui ne parle que de fondu de couleur. Elle n'était retenue que par
+        # le verrou 3, c'est-à-dire par le hasard que « passe » soit resté
+        # inconnu du lexique ; elle a resurgi le 2026-09-16 dès que « passe »
+        # est entré avec la navigation Next/Last. Ce qui protège désormais
+        # est structurel : `regler_fondu_couleur` est déclarée AVANT
+        # `plein_feu`. Ne pas déplacer cette intention.
+        "nom": "fondu de couleur — « à fond » ne part plus sur Full",
+        "phrase": "passe le fondu de couleur à fond",
+        "statut": "compris",
+        "rendu": "Color_Crossfade Full Enter",
+    },
+    {
+        "nom": "fondu de couleur — « crossfade » nomme aussi le paramètre",
+        "phrase": "mets le crossfade de couleur à 50",
+        "statut": "compris",
+        "rendu": "Color_Crossfade 50 Enter",
+    },
+    {
+        # « fondu » seul appartient à mots_temps : la paire fondu+couleur est
+        # exigée, donc une durée n'est pas volée par cette intention.
+        "nom": "fondu de couleur — une durée reste une durée",
+        "phrase": "va à la cue 5 avec un fondu de 3 secondes",
+        "statut": "compris",
+        "rendu": "Go To Cue 5 Time 3 Enter",
+    },
+    {
+        "nom": "fondu de couleur — « à fond » sur un circuit reste Full",
+        "phrase": "passe le circuit 3 à fond",
+        "statut": "compris",
+        "rendu": "Chan 3 Full Enter",
+    },
+    {
+        # La forme `plein` n'est déclarée que pour Color_Crossfade.
+        "nom": "« zoom à fond » refusé — forme non sourcée pour Zoom",
+        "phrase": "mets le zoom à fond",
+        "statut": "incompris",
+    },
+
     # ------------------------------------------ navigation Next / Last
     {
         "nom": "navigation — « circuit suivant » rend Next, pas un saut de cue",
@@ -1105,12 +1159,23 @@ CAS = [
     },
     {
         # VERROU 3 — le plus important. Agir sans cible nommée suppose d'avoir
-        # compris TOUTE la phrase. Trouvé au banc de rétro-traduction le jour
-        # même : « passe le fondu de couleur à fond » rendait `Full Enter`,
-        # envoyant tout le plateau à pleine intensité pour une demande qui ne
-        # parlait que de fondu de couleur.
+        # compris TOUTE la phrase.
+        #
+        # Ce cas portait « passe le fondu de couleur a fond », qui rendait
+        # `Full Enter` — tout le plateau à pleine intensité pour une demande
+        # qui ne parlait que de fondu de couleur. Cette phrase a maintenant
+        # une VRAIE traduction (`Color_Crossfade Full Enter`, voir plus haut),
+        # donc elle ne peut plus servir de témoin ici.
+        #
+        # Le témoin est remplacé par un mot franchement inconnu, et c'est plus
+        # honnête : l'ancienne phrase ne testait le verrou que par accident,
+        # parce que « passe » manquait au lexique. Elle a d'ailleurs cessé de
+        # le tester le 2026-09-16, dès que « passe » est entré — sans que rien
+        # ne le signale, puisque le test passait toujours pour une autre
+        # raison. Un test dont la raison de passer change en silence ne
+        # protège plus de rien.
         "nom": "verrou — un mot inconnu interdit le repli",
-        "phrase": "passe le fondu de couleur a fond",
+        "phrase": "envoie le bidule a fond",
         "statut": "incompris",
     },
     {

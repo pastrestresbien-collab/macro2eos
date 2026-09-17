@@ -438,6 +438,44 @@ CAS = [
         "avertissements": 0,
     },
     {
+        "nom": "feuille ETC — `Color_Crossfade 50`, paramètre de confiance B",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Color_Crossfade",
+                           "forme": "absolue", "valeur": 50}}],
+        "attendu": "Color_Crossfade 50 Enter",
+        "avertissements": 1,      # confiance B : le générateur le signale
+    },
+    {
+        # Le zéro NE DOIT PAS être complété en « 00 » : `unite` est
+        # volontairement absent du modèle pour ce paramètre (précédent
+        # Saturation), faute de source sur la règle du zéro implicite.
+        "nom": "feuille ETC — `Color_Crossfade 0` reste 0, jamais « 00 »",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Color_Crossfade",
+                           "forme": "absolue", "valeur": 0}}],
+        "attendu": "Color_Crossfade 0 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "feuille ETC — `Color_Crossfade Full`, forme `plein`",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Color_Crossfade",
+                           "forme": "plein", "valeur": None}}],
+        "attendu": "Color_Crossfade Full Enter",
+        "avertissements": 1,
+    },
+    {
+        # La forme `plein` n'est déclarée QUE pour Color_Crossfade : aucune
+        # source ne l'atteste pour Zoom. Le générateur rend quand même, mais
+        # il le dit — une forme ne s'emprunte pas à un paramètre voisin.
+        "nom": "`Zoom Full` n'est sourcé nulle part — le générateur le signale",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Zoom",
+                           "forme": "plein", "valeur": None}}],
+        "attendu": "Zoom Full Enter",
+        "avertissements": 1,
+    },
+    {
         "nom": "manuel §6 l. 76-98 — `Next` se déplace dans la sélection",
         # [1][0] [Enter] puis [Next] : channel 11 devient le seul sélectionné
         "ir": [{"action": {"type": "selection_suivante"}}],

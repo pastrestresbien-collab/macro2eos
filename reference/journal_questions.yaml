@@ -589,9 +589,12 @@ questions:
       Trois contre-exemples suffisent. `channel_check` = `Chan 1 At 75 Check
       Enter` nomme explicitement sa cible et se plaint d'un niveau manquant :
       il lui manque `Check`. `address_check` = `Address 1 At 75 Check` idem.
-      `color_xfd_50` = `Color_Crossfade 50 Enter` est un réglage GLOBAL de
-      console, qui ne prend aucune sélection — la règle 5 ne s'y applique même
-      pas. Les quatre `out_*_level` demandent la navigation `Next`/`Last`.
+      `color_xfd_50` = `Color_Crossfade 50 Enter` ne nomme aucune cible.
+      (CORRIGÉ le 2026-09-17 : j'avais écrit ici « réglage GLOBAL de console,
+      qui ne prend aucune sélection ». C'était une supposition, et elle est
+      probablement fausse — tout indique un PARAMÈTRE de projecteur, donc
+      appliqué à la sélection courante comme Pan ou Hue. Voir l'entrée du
+      2026-09-17.) Les quatre `out_*_level` demandent la navigation `Next`/`Last`.
       `record_preset` et `startup` sont des macros volontairement non
       terminées, concept DÉJÀ modélisé.
 
@@ -651,3 +654,82 @@ questions:
     backlog: null
     traite: "partiel"
     traite_ou: "traducteur/lexique.yaml — « passe » retiré ; correction de fond en attente de Color_Crossfade"
+
+  - date: "2026-09-17"
+    question: >-
+      Qu'est-ce que le `Color_Crossfade` de la feuille communautaire, absent
+      du manuel comme des 1155 touches OSC ?
+    reponse: >-
+      Très probablement un PARAMÈTRE de projecteur, pas une touche ni un
+      réglage global de console. Trois indices concordants, aucune preuve —
+      l'inférence est donc de confiance C, alors que la SYNTAXE elle-même est
+      de confiance B (la feuille).
+    sources:
+      - "corpus/handy_macros_etc.yaml — color_xfd_0/50/100, auteur « Sassy Squatch »"
+      - "reference/eosKeys.ts — `Color_Crossfade` absent des 1155 touches ; `color_scrub`→COLOR_SCRUB présent"
+      - "manuals/operations-manual/31-show-control.md:4448 — color_scrub, sans syntaxe ni exemple"
+      - "manuals/virtual-media-server-workbook — `{Crossfade} [100] [Enter]`, AUTRE chose"
+      - "communauté ETC (recherche web 2026-09-17) — paramètre de crossfade sur Arri SkyPanel, Astera Titan Tube, Digital Sputnik"
+    confiance: "B"
+    consequence: "modele_complete"
+    detail: >-
+      Les trois indices. (1) Son absence d'eosKeys ne prouve rien contre lui :
+      Hue et Saturation en sont absents pour la même raison, ce sont des
+      PARAMÈTRES (`/eos/param/`) et non des touches (`/eos/key/`) — déjà
+      consigné à l'entrée sur la recette de palettes. (2) La communauté ETC
+      décrit un paramètre de crossfade sur des projecteurs LED de cinéma, qui
+      mélange entre mode RGB et mode calibré. (3) La syntaxe `<mot> <valeur>
+      Enter` est celle d'un paramètre.
+
+      CE QUE J'AVAIS ÉCRIT DE FAUX, et qui est corrigé : le 2026-09-14, en
+      qualifiant les causes du corpus, j'ai écrit que c'était « un réglage
+      GLOBAL de console, qui ne prend aucune sélection ». C'était une
+      supposition présentée comme un constat, tirée du seul fait que la macro
+      ne nomme pas de cible — or une macro de bouton ne nomme jamais sa cible,
+      elle agit sur la sélection courante. La note du corpus est corrigée.
+
+      NE PAS CONFONDRE avec le `{Crossfade}` du serveur média virtuel, qui
+      règle une priorité entre canaux serveur et canaux console. Même mot,
+      autre fonction, et le VMS est hors périmètre du projet.
+
+      À TRANCHER AU BANC, deux questions distinctes : (a) le nom exact
+      qu'affiche la console — `Color_Crossfade` n'est peut-être qu'un libellé
+      de version ou de gabarit de projecteur ; (b) si `Color Scrub` (touche
+      réellement présente dans eosKeys, absente du manuel) est la même chose
+      ou autre chose. Si c'est bien un paramètre de projecteur, une macro qui
+      l'emploie ne fera RIEN sur un plateau dont les projecteurs ne le portent
+      pas, et sans erreur.
+    backlog: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml parametres/Color_Crossfade ; traducteur intention regler_fondu_couleur"
+
+  - date: "2026-09-17"
+    question: >-
+      La mine du verrou 3 signalée la veille est-elle désamorcée ?
+    reponse: >-
+      Oui, et structurellement cette fois. « passe le fondu de couleur à fond »
+      ne peut plus atteindre `plein_feu` : l'intention `regler_fondu_couleur`
+      est déclarée AVANT elle et capte la phrase. Le mot « passe » a donc pu
+      être remis dans les déclencheurs de navigation, ce qui était un
+      contournement assumé le 2026-09-16.
+    sources:
+      - "traducteur/lexique.yaml — regler_fondu_couleur, déclarée avant regler_intensite et plein_feu"
+      - "traducteur/test_traducteur.py — cas « à fond » ne part plus sur Full"
+    confiance: "A"
+    consequence: "fragilite_reduite"
+    detail: >-
+      La leçon générale tient toujours et ne doit pas être oubliée : le
+      verrou 3 s'use à mesure que le vocabulaire grandit, puisqu'il ne repose
+      que sur l'ignorance d'un mot. Ce qui vient d'être fait ne le renforce
+      pas — cela retire UNE phrase de sa charge, en la routant ailleurs avant
+      qu'elle ne l'atteigne. C'est la bonne parade, mais elle est à refaire
+      pour chaque famille de phrases exposée.
+
+      Deux groupes de déclencheurs EXIGÉS (fondu ET couleur) plutôt qu'un
+      alias : « fondu » seul appartient à `mots_temps` et marque une durée,
+      « couleur » seul appartient à `creer_palettes_couleur`. Exiger la paire
+      capte la bonne phrase sans voler ni l'une ni l'autre — vérifié par test
+      dans les deux sens.
+    backlog: null
+    traite: "oui"
+    traite_ou: "traducteur/lexique.yaml regler_fondu_couleur ; « passe » réintroduit dans selection_suivante/precedente"

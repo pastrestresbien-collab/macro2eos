@@ -530,13 +530,7 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "passe le fondu de couleur à 0"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: action_absente
-    cause_detail: >-
-      `Color_Crossfade` absent du modèle. C'est un réglage GLOBAL de console :
-      il ne prend aucune sélection, donc la règle 5 ne s'y applique même pas.
+    verdict: identique
 
   - id: color_xfd_100
     label: "Color Xfd 100%"
@@ -544,13 +538,7 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "passe le fondu de couleur à fond"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: action_absente
-    cause_detail: >-
-      `Color_Crossfade` absent ; `Full` comme valeur de ce réglage l'est
-      aussi. Réglage global, sans sélection.
+    verdict: identique
 
   - id: color_xfd_50
     label: "Color Xfd 50%"
@@ -558,12 +546,7 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "passe le fondu de couleur à 50"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: action_absente
-    cause_detail: >-
-      `Color_Crossfade` absent du modèle. Réglage global, sans sélection.
+    verdict: identique
 
   - id: color_temp_intens
     label: "Color Temp & Intens"

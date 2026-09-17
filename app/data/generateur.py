@@ -742,6 +742,10 @@ class Generateur:
             return f"{mot_param} + {abs(valeur)}"
         if forme == "relatif_retrait":
             return f"{mot_param} + - {abs(valeur)}"
+        if forme == "plein":
+            # `Full` est une DESTINATION, pas un nombre : ni zéro de tête, ni
+            # mise en forme de niveau ne s'y appliquent.
+            return f"{mot_param} {self.modele['actions']['plein_feu']['mot_cle']}"
         if forme == "echelle":
             return f"{mot_param} / {valeur}"
         if forme == "dmx":

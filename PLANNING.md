@@ -65,18 +65,18 @@ utile est dans le dépôt.
 légalité**, plus un catalogue de **7 paramètres de projecteur** (Pan, Tilt, Zoom, Iris,
 Edge, Hue, Saturation) rendus par un mécanisme générique unique. Le tout compilé en JSON,
 avec un générateur qui produit trois sorties distinctes (ligne de commande, contenu de
-macro, paquets OSC) et **130 cas de non-régression**, dont la majorité sont des exemples
+macro, paquets OSC) et **134 cas de non-régression**, dont la majorité sont des exemples
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 37 intentions, 164 cas de traduction + 9 cas de correction,
+générateur rend ensuite — 38 intentions, 171 cas de traduction + 9 cas de correction,
 et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
 README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.14 — 37 intentions, 164 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.15 — 38 intentions, 171 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -294,12 +294,20 @@ Deux trouvailles à ne pas perdre, détaillées au journal :
   lexique : ajouter « passe » a suffi à rouvrir le bug de `Full Enter` sur « passe le
   fondu de couleur à fond ». Contourné, pas corrigé — la vraie parade est le point 2.
 
-### 2. `Color_Crossfade` — 3 entrées pour une seule action
+### 2. ~~`Color_Crossfade`~~ — **fait le 2026-09-17**
 
-`color_xfd_0`, `color_xfd_50`, `color_xfd_100`. Point important relevé à la
-qualification : c'est un réglage **global de console**, il ne prend aucune sélection.
-Le modèle suppose aujourd'hui qu'une action s'applique à une cible — vérifier que
-`legalite` sait exprimer « sans objet » avant d'écrire quoi que ce soit.
+Les trois entrées se traduisent (banc terrain 5/26 → **8/26**). Ce n'est PAS un réglage
+global de console comme je l'avais écrit le 2026-09-14 — c'est un **paramètre de
+projecteur**, donc le mécanisme générique `regler_parametre` l'a absorbé sans code
+nouveau, avec une forme `plein` en plus (`Color_Crossfade Full`). Syntaxe en confiance B
+(feuille), classement en paramètre en confiance **C** (inférence) : à trancher au banc,
+avec la question de savoir si `Color Scrub` est la même chose.
+
+**La mine du verrou 3 est désamorcée** : `regler_fondu_couleur` est déclarée avant
+`plein_feu`, donc « passe le fondu de couleur à fond » ne peut plus rendre `Full Enter`.
+« passe » est revenu dans les déclencheurs de navigation. Mais la leçon générale tient :
+le verrou 3 s'use à mesure que le vocabulaire grandit, et cette parade est à refaire
+pour chaque famille de phrases exposée.
 
 ### 3. `Check` — 2 entrées, et un vrai outil de conduite
 

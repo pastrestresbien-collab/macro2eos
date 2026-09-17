@@ -206,6 +206,18 @@ parametres:
       parametres.Hue du modèle (grammar/modele.yaml) ; confiance B, recette
       communautaire seulement — aucune source manuel directe pour ce
       paramètre.
+  Color_Crossfade:
+    # PAS "fondu" en alias : ce mot appartient à `mots_temps` (temps,
+    # temporisation, timing, fondu) et sert à repérer une DURÉE. Le capter
+    # ici casserait « un fondu de 3 secondes ». L'intention
+    # `regler_fondu_couleur` récupère la formulation française par une autre
+    # voie : elle exige la PAIRE fondu+couleur et impose le paramètre.
+    alias: [crossfade, xfade, xfd]
+    source: >
+      parametres.Color_Crossfade du modèle (grammar/modele.yaml) ; confiance
+      B, feuille communautaire seulement. Son statut même de paramètre (et
+      non de touche) est une INFÉRENCE de confiance C — voir
+      `classement_incertain` dans le modèle.
   Saturation:
     alias: [saturation]
     source: >
@@ -573,6 +585,41 @@ intentions:
       refuse « inverse le tilt » puisque Tilt ne déclare pas cette forme
       dans le modèle — jamais une extrapolation depuis Pan.
 
+  regler_fondu_couleur:
+    description: "régler le paramètre de fondu de couleur (Color_Crossfade)"
+    declencheurs:
+      fondu: [fondu, fondus, crossfade, xfade, xfd]
+      couleur: [couleur, couleurs, color, colour]
+    declencheurs_optionnels:
+      verbe: [mets, met, mettre, regle, règle, regler, passe, passer,
+              monte, monter, amene, amener]
+      objet: [circuit, circuits, chan, chans, channel, channels,
+              projecteur, projecteurs, proj, groupe, groupes, group]
+    parametre_impose: Color_Crossfade
+    exemple_nl: "passe le fondu de couleur à 50"
+    origine: >
+      Feuille collaborative ETC « Handy Macros », trois macros de l'auteur
+      « Sassy Squatch » — confiance B (`grammar/modele.yaml`, section
+      `parametres`/`Color_Crossfade`). Aucune source manuel.
+    note: >
+      DEUX groupes EXIGÉS, et c'est le point de toute l'entrée. Le mot
+      « fondu » seul appartient à `mots_temps` et désigne une durée ; le mot
+      « couleur » seul appartient à `creer_palettes_couleur`. Exiger la PAIRE
+      capte « passe le fondu de couleur à 50 » sans voler ni « un fondu de 3
+      secondes », ni « crée les palettes de couleur ».
+
+      DÉCLARÉE AVANT `regler_intensite` et `plein_feu`, et c'est structurel :
+      « passe le fondu de couleur à fond » rendait `Full Enter` — tout le
+      plateau à pleine intensité pour une demande qui ne parle que de fondu
+      de couleur. Ce bug n'était retenu que par le verrou 3, c'est-à-dire par
+      le hasard que le mot « passe » soit resté inconnu du lexique ; il a
+      resurgi le 2026-09-16 dès que « passe » est entré. Router la phrase
+      AVANT `plein_feu` la protège vraiment, au lieu de compter sur un mot
+      qui manque.
+
+      `parametre_impose` sert parce qu'aucun mot de la phrase française ne
+      nomme le paramètre : `fondu`+`couleur` le désignent ensemble, sans
+      qu'aucun des deux ne puisse porter l'alias seul.
   regler_intensite:
     description: "donner un niveau d'intensité à une sélection"
     declencheurs:
@@ -625,9 +672,9 @@ intentions:
               projecteur, projecteurs, proj, groupe, groupes, group]
       direction: [suivant, suivante, next]
     declencheurs_optionnels:
-      verbe: [va, vas, aller, avance, avancer,
+      verbe: [va, vas, aller, passe, passer, avance, avancer,
               selectionne, selectionner, prends, prendre, mets, met]
-    exemple_nl: "va au circuit suivant"
+    exemple_nl: "passe au circuit suivant"
     origine: >
       manuel §6 l. 76-98 et §7 l. 175-177, confiance A
       (`grammar/modele.yaml`, section `actions`/`selection_suivante`).
@@ -653,9 +700,9 @@ intentions:
               projecteur, projecteurs, proj, groupe, groupes, group]
       direction: [precedent, precedente, last]
     declencheurs_optionnels:
-      verbe: [va, vas, aller, recule, reculer, reviens, revenir,
+      verbe: [va, vas, aller, passe, passer, recule, reculer, reviens, revenir,
               selectionne, selectionner, prends, prendre, mets, met]
-    exemple_nl: "va au circuit précédent"
+    exemple_nl: "passe au circuit précédent"
     origine: >
       manuel §6 l. 76-98 et §7 l. 177, confiance A
       (`grammar/modele.yaml`, section `actions`/`selection_precedente`).
@@ -672,6 +719,13 @@ intentions:
       # « va au noir » n'a pas besoin de dire « cue » pour être compris.
       cible: [cue, cues, memoire, memoires, sequence, out, noir, blackout,
               suivante, next, suivant, precedente, last, derniere, home, origine]
+    declencheurs_optionnels:
+      # `fondu` appartient à `mots_temps` et désigne ici la durée du
+      # transfert. Depuis qu'il déclenche aussi `regler_fondu_couleur`, un
+      # « fondu » non consommé ressortait en `ignores` sur une phrase pourtant
+      # correctement traduite — le lister ici dit qu'il appartient bien aussi
+      # à cette intention.
+      temps: [fondu, fondus]
     exemple_nl: >
       aller à la cue 5 ; va à la cue suivante en 3 secondes ;
       va à la cue suivante sans les temps
@@ -1034,7 +1088,14 @@ intentions:
       # `lance` et `allume` sont volontairement absents : le premier a déjà
       # provoqué un bug documenté (« lance l'effet 2 sur le groupe 3 » partait
       # sur `Chan 3`), le second est un déclencheur de `selection_active`.
-      verbe: [monte, montez, monter, remonte, remonter, remontez]
+      # « mets » et « passe » sont des déclencheurs d'AUTRES intentions
+      # (regler_parametre, navigation). Sans être listés ici, ils
+      # ressortaient en `ignores` sur « mets le circuit 3 à fond » — un
+      # signalement exact mais inutile, puisque la phrase est parfaitement
+      # traduite. Le cas de « mets » est ANTÉRIEUR à l'ajout de la
+      # navigation ; « passe » l'a seulement rendu plus visible.
+      verbe: [monte, montez, monter, remonte, remonter, remontez,
+              mets, met, mettre, passe, passer]
       objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "circuits 1 à 5 à fond ; plein feu sur le groupe 3"
     origine: >
@@ -1051,7 +1112,7 @@ intentions:
     declencheurs:
       level: [level]
     declencheurs_optionnels:
-      verbe: [mets, met, mettre, monte, monter, amene, amener]
+      verbe: [mets, met, mettre, monte, monter, amene, amener, passe, passer]
       objet: [circuit, circuits, chan, chans, channel, channels,
               projecteur, projecteurs, proj, groupe, groupes, group]
     exemple_nl: "mets les circuits 1 à 5 au level"

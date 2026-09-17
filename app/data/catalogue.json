@@ -40,6 +40,11 @@
     "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser"
   },
   {
+    "intention": "regler_fondu_couleur",
+    "phrase": "passe le fondu de couleur à 50",
+    "description": "régler le paramètre de fondu de couleur (Color_Crossfade)"
+  },
+  {
     "intention": "regler_intensite",
     "phrase": "circuits 1 à 5 à 50 %",
     "description": "donner un niveau d'intensité à une sélection"
@@ -51,12 +56,12 @@
   },
   {
     "intention": "selection_suivante",
-    "phrase": "va au circuit suivant",
+    "phrase": "passe au circuit suivant",
     "description": "avancer d'un cran DANS la sélection courante (Next)"
   },
   {
     "intention": "selection_precedente",
-    "phrase": "va au circuit précédent",
+    "phrase": "passe au circuit précédent",
     "description": "reculer d'un cran DANS la sélection courante (Last)"
   },
   {

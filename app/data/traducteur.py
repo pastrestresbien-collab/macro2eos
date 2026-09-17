@@ -588,6 +588,8 @@ class Traducteur:
             "colorer_selection": self._colorer_selection,
             "regler_intensite": self._regler_intensite,
             "regler_parametre": self._regler_parametre,
+            # même handler : le paramètre est imposé par le lexique
+            "regler_fondu_couleur": self._regler_parametre,
             "enregistrer_cue": self._enregistrer_cue,
             "aller_a_cue": self._aller_a_cue,
             "enregistrer_sub": self._enregistrer_sub,
@@ -1106,8 +1108,18 @@ class Traducteur:
             if parametre is not None:
                 break
         if parametre is None:
-            return Traduction(statut="incompris", notes=[
-                "Aucun paramètre reconnu (Pan, Tilt...)."])
+            # Une intention peut IMPOSER son paramètre quand aucun mot
+            # français ne le nomme à lui seul. `regler_fondu_couleur` est ce
+            # cas : « fondu » ET « couleur » désignent Color_Crossfade
+            # ensemble, et ni l'un ni l'autre ne peut porter l'alias — le
+            # premier marque une durée, le second appartient aux palettes.
+            impose = (self.lex["intentions"]
+                      .get(self._intention_courante or "", {})
+                      .get("parametre_impose"))
+            if impose is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun paramètre reconnu (Pan, Tilt...)."])
+            parametre = impose
 
         # 2. quelle forme ? Lue dans le modèle pour CE paramètre précis,
         #    jamais supposée : « inverse le tilt » doit rester incompris tant
@@ -1119,8 +1131,20 @@ class Traducteur:
         i_retrait = self._indice_mot(toks, pris, {"retire", "retirer", "enleve", "enlever",
                                                     "descend", "descends", "descendre"})
 
+        # « à fond » n'est pas une valeur chiffrée : c'est la destination
+        # `Full`. Testé AVANT les autres formes, sinon la phrase finirait au
+        # 4 à chercher un nombre qu'elle n'a pas.
+        i_plein = self._indice_mot(toks, pris, {"fond", "full"})
+
         i_valeur = None    # index du jeton valeur, pour consommer un `%` adjacent au 4.
-        if i_inverse is not None:
+        if i_plein is not None:
+            if "plein" not in formes_dispo:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme « à fond » sourcée pour « {parametre} » — "
+                    "donner une valeur chiffrée."])
+            pris.add(i_plein)
+            forme, valeur = "plein", None
+        elif i_inverse is not None:
             if "echelle" not in formes_dispo:
                 return Traduction(statut="incompris", notes=[
                     f"Aucune forme d'inversion sourcée pour « {parametre} »."])
@@ -1202,7 +1226,7 @@ class Traducteur:
 
         # 4. forme absolue : la valeur est ce qu'il reste, une fois la
         #    sélection retirée du jeu de nombres libres.
-        if valeur is None:
+        if valeur is None and forme != "plein":
             candidats = self._nombres(toks, pris)
             if not candidats:
                 return Traduction(statut="incompris", notes=[
