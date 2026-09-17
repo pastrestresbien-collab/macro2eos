@@ -155,16 +155,20 @@ qu'elle parle d'autre chose.
 
 ---
 
-## 4. Les six bancs, et pourquoi les deux derniers comptent
+## 4. Les sept bancs, et pourquoi les deux derniers comptent
 
 ```
 grammar/test_generateur.py          125 cas
 traducteur/test_traducteur.py       201 cas de traduction + 12 de correction
-traducteur/test_interpreter_flou.py   8 cas
+traducteur/test_interpreter_flou.py  11 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
 traducteur/test_silences.py         215 vérifications — INVARIANTS
+app/test_llm_bridge.js               20 cas — NODE, pas Python
 ```
+Le septième ne se lance pas comme les autres : `node app/test_llm_bridge.js`.
+Il ne figurait dans aucune liste de ce document jusqu'au 2026-09-17, ce qui
+est la meilleure façon de ne jamais le lancer.
 (chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
 ainsi que `./app/build_data.sh --verifier`.)
 

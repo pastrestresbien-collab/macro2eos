@@ -2922,7 +2922,18 @@ class Traducteur:
         if base.statut != "a_preciser" or not base.questions:
             return base
 
-        reponses_llm = (sortie_llm or {}).get("reponses") or {}
+        # Une sortie LLM est une donnée EXTERNE : sa forme n'est jamais
+        # garantie, même quand le prompt la décrit. `{"reponses": "haut"}` —
+        # une chaîne au lieu d'un dict — faisait lever un AttributeError, donc
+        # planter l'app dans le navigateur au lieu de simplement ignorer une
+        # réponse mal formée. Trouvé le 2026-09-17 en sondant ce chemin avec
+        # des sorties hostiles. Tout le reste tenait déjà : option inventée,
+        # clé inconnue, valeur nulle, tentative d'injection — toutes
+        # retombaient proprement sur `a_preciser`, le LLM ne pouvant rien
+        # forcer. Seule la FORME du conteneur n'était pas vérifiée.
+        reponses_llm = sortie_llm.get("reponses") if isinstance(sortie_llm, dict) else None
+        if not isinstance(reponses_llm, dict):
+            reponses_llm = {}
         reponses_completees = dict(reponses or {})
         questions_restantes: list[Question] = []
         toutes_resolues = True
