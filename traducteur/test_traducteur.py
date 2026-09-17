@@ -440,6 +440,46 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ plages de paramètres
+    {
+        # RÉGRESSION 2026-09-17, trouvée par le banc des silences. Rendait
+        # `Chan 1 Pan 50` : la plage TRONQUÉE à un seul circuit, sans aucun
+        # signal. Défaut introduit le 2026-09-14 en retirant `_plage` de
+        # `_regler_parametre` pour tuer le bug inverse — une correction qui
+        # avait échangé un silence contre un autre.
+        "nom": "paramètre — une plage de circuits n'est pas tronquée",
+        "phrase": "mets le pan des circuits 1 à 5 à 50 degres",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Pan 50 Enter",
+    },
+    {
+        # Même phrase avec `%` : rendait `Chan 1 Zoom 05` — plage tronquée ET
+        # valeur fausse (5 % au lieu de 50), la borne de plage ayant pris la
+        # place de la valeur. Le marqueur `%` vaut « degrés » pour désigner
+        # une valeur sans ambiguïté.
+        "nom": "paramètre — plage et valeur en pourcentage",
+        "phrase": "mets le zoom des circuits 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Zoom 50 Enter",
+    },
+    {
+        # Sans marqueur d'unité, « circuits 1 à 5 à 180 » est RÉELLEMENT
+        # ambigu : le « à » sépare une plage et introduit une valeur. Rendait
+        # `Chan 1 Hue 5` — la valeur 180 remplacée par une borne. Un nombre
+        # nu n'étant pas du vocabulaire, `ignores` ne le rattrapait pas :
+        # d'où le garde-fou « nombre inemployé ». Une question vaut mieux
+        # qu'une commande plausible et fausse.
+        "nom": "paramètre — ambiguïté sans unité : on demande, on ne devine pas",
+        "phrase": "mets le hue des circuits 1 à 5 à 180",
+        "statut": "incompris",
+    },
+    {
+        "nom": "paramètre — un seul circuit reste un seul circuit",
+        "phrase": "mets le hue du circuit 1 à 180",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+
     # ------------------------------------------ vérification / adresses
     {
         # RÉGRESSION. `_selection_de` prenait 75 pour un NUMÉRO DE CIRCUIT

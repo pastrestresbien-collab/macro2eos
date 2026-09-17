@@ -155,7 +155,7 @@ qu'elle parle d'autre chose.
 
 ---
 
-## 4. Les quatre bancs, et pourquoi le quatrième compte
+## 4. Les six bancs, et pourquoi les deux derniers comptent
 
 ```
 grammar/test_generateur.py          125 cas
@@ -163,6 +163,7 @@ traducteur/test_traducteur.py       155 cas de traduction + 9 de correction
 traducteur/test_interpreter_flou.py   8 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
+traducteur/test_silences.py         149 vérifications — INVARIANTS
 ```
 (chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
 ainsi que `./app/build_data.sh --verifier`.)
@@ -170,7 +171,19 @@ ainsi que `./app/build_data.sh --verifier`.)
 Les quatre premiers comparent le traducteur à des attentes écrites par
 l'agent. Ils protègent des régressions mais ne peuvent **structurellement
 pas** révéler qu'une attente était fausse dès le départ — même boucle fermée
-que les corpus de macros fabriqués audités dans cette session.
+que les corpus de macros fabriqués audités dans cette session. Les deux
+derniers sortent de cette boucle, chacun à sa façon.
+
+`test_silences.py` (2026-09-17) ne compare à AUCUNE attente : il vérifie des
+invariants que toute traduction correcte respecte, quelle que soit la phrase.
+Un nombre écrit doit se retrouver dans la commande ou être signalé ; le
+changer doit changer la commande ; la même demande dans plusieurs ordres de
+mots doit donner la même commande. C'est le seul banc capable de trouver ce à
+quoi personne n'a pensé — il a livré trois pannes silencieuses le jour de sa
+création, toutes sur des plages de circuits. **Attention à son angle mort
+propre** : une famille dont plus aucune tournure ne se traduit ne prouve plus
+rien, donc il le signale explicitement (« FAMILLE MUETTE ») au lieu de passer
+au vert.
 
 `test_corpus_terrain.py` confronte le traducteur à `corpus/handy_macros_etc.yaml`,
 la feuille collaborative ETC « Handy Macros » : 43 macros écrites par des

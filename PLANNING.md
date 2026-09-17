@@ -69,14 +69,14 @@ macro, paquets OSC) et **137 cas de non-régression**, dont la majorité sont de
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 38 intentions, 176 cas de traduction + 9 cas de correction,
+générateur rend ensuite — 38 intentions, 180 cas de traduction + 9 cas de correction,
 et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
 README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.16 — 38 intentions, 176 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.17 — 38 intentions, 180 + 9 tests, 149 invariants, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -353,6 +353,18 @@ exemple, la confiance est B et doit être écrite comme telle.
 - Ajouter un 8ᵉ paramètre au catalogue « parce que c'est facile maintenant » sans source
   propre à celui-là. `Zoom + 10` n'est attesté nulle part, malgré `Pan + 10`.
 - Rouvrir les verrous de sélection : plus rien ne le réclame.
+
+### Nouveau garde-fou — le banc des silences
+
+`traducteur/test_silences.py` (2026-09-17) est le sixième banc, et le seul qui ne
+compare à aucune attente écrite : il vérifie des **invariants** (un nombre écrit se
+retrouve dans la commande ou est signalé ; le changer change la commande ; plusieurs
+ordres de mots donnent la même commande). C'est le seul capable de trouver ce à quoi
+personne n'a pensé — il a livré trois pannes silencieuses le jour même.
+
+**À lancer avant tout commit**, au même titre que les cinq autres. Et à ÉLARGIR quand
+on touche à une famille de phrases qu'il ne couvre pas : il n'aurait pas trouvé le bug
+de plage si les familles de plage n'y avaient pas été ajoutées à la main.
 
 ### Dette de méthode
 

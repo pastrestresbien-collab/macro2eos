@@ -1166,10 +1166,18 @@ class Traducteur:
                 # degrés, seulement `%`/« pourcent ») et n'aurait plus rien
                 # pour la valeur. Même principe que le verrou verbe ci-dessus,
                 # avec un marqueur d'unité au lieu d'un verbe.
+                # Les DEUX familles de marqueurs comptent : « degrés » (Pan,
+                # Tilt) et « % »/« pourcent » (Zoom, Iris, Edge). Un nombre
+                # suivi de l'un ou de l'autre est une VALEUR, jamais un numéro
+                # de sélection — c'est déjà la règle de `_plage` pour ses
+                # bornes. Ne reconnaître que « degrés » ici laissait « le zoom
+                # des circuits 1 à 5 à 50 % » sans valeur pré-extraite, donc
+                # sans moyen de lire « 1 à 5 » comme une plage.
+                marqueurs = tuple(MARQUEURS_UNITE_PARAMETRE) + tuple(MARQUEURS_NIVEAU_POSTFIXES)
                 valeur = None
                 for i, tok in enumerate(toks):
                     if (i not in pris and tok.isdigit()
-                            and i + 1 < len(toks) and toks[i + 1] in MARQUEURS_UNITE_PARAMETRE
+                            and i + 1 < len(toks) and toks[i + 1] in marqueurs
                             and (i + 1) not in pris):
                         valeur = int(tok)
                         pris.update({i, i + 1})
@@ -1215,6 +1223,30 @@ class Traducteur:
             i_num, numero = candidat
             pris.add(i_num)
             selection = {"objet": objet, "numero": numero}
+
+            # PLAGE — mais seulement si la VALEUR est déjà connue.
+            #
+            # C'est toute la difficulté de ce handler, et elle tient à un seul
+            # mot : « à » sépare une plage (« circuits 1 à 5 ») ET introduit
+            # une valeur (« à 180 »). Le critère qui les départage n'est pas
+            # dans la phrase, il est dans l'état : si la valeur a DÉJÀ été
+            # trouvée — parce qu'un marqueur d'unité la désignait sans
+            # ambiguïté — alors un « N à M » restant ne peut plus être qu'une
+            # plage. Sinon c'est la valeur, et lire une plage produirait
+            # « hue du circuit 1 à 180 » -> circuits 1 à 180.
+            #
+            # Sans cette branche, « le pan des circuits 1 à 5 à 50 degrés »
+            # rendait `Chan 1 Pan 50` : la plage TRONQUÉE à un seul circuit,
+            # en silence. Défaut introduit le 2026-09-14 en retirant `_plage`
+            # d'ici pour tuer le bug inverse — une correction qui avait
+            # échangé un silence contre un autre.
+            if valeur is not None and i_num + 2 < len(toks) \
+                    and toks[i_num + 1] in self._mots_plage \
+                    and toks[i_num + 2].isdigit() \
+                    and (i_num + 1) not in pris and (i_num + 2) not in pris:
+                pris.update({i_num + 1, i_num + 2})
+                selection = {"objet": objet, "de": numero,
+                             "a": int(toks[i_num + 2])}
         elif not self._vise_la_selection_courante(toks, pris):
             return Traduction(statut="incompris",
                               notes=[self._motif_refus_selection(toks, pris)])
@@ -1242,6 +1274,22 @@ class Traducteur:
                 and toks[i_valeur + 1] in MARQUEURS_NIVEAU_POSTFIXES \
                 and (i_valeur + 1) not in pris:
             pris.add(i_valeur + 1)
+
+        # GARDE-FOU — règle 4 appliquée aux NOMBRES. Un chiffre écrit dans la
+        # phrase et non employé veut dire que la commande ne répond pas à la
+        # demande : « le hue des circuits 1 à 5 à 180 » rendait `Chan 1 Hue 5`,
+        # la valeur 180 remplacée par une borne de plage, statut `compris` et
+        # `ignores` vide — un nombre nu n'est pas du vocabulaire, donc rien ne
+        # le rattrapait. Mieux vaut une question qu'une commande plausible et
+        # fausse : ici la phrase est réellement ambiguë (« à » sépare une plage
+        # ET introduit une valeur, sans marqueur d'unité pour trancher).
+        restants = [toks[i] for i in range(len(toks))
+                    if i not in pris and toks[i].isdigit()]
+        if restants:
+            return Traduction(statut="incompris", notes=[
+                f"Nombre inemployé dans la phrase : {', '.join(restants)}. "
+                f"Préciser l'unité de la valeur (« à 50 % », « à 50 degrés ») "
+                f"pour lever l'ambiguïté avec une plage de circuits."])
 
         etape: dict = {"action": {"type": "regler_parametre", "parametre": parametre,
                                   "forme": forme, "valeur": valeur}}
