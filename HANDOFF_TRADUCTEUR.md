@@ -159,11 +159,11 @@ qu'elle parle d'autre chose.
 
 ```
 grammar/test_generateur.py          125 cas
-traducteur/test_traducteur.py       201 cas de traduction + 12 de correction
+traducteur/test_traducteur.py       203 cas de traduction + 12 de correction
 traducteur/test_interpreter_flou.py  11 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
-traducteur/test_silences.py         215 vérifications — INVARIANTS
+traducteur/test_silences.py       1415 vérifications — INVARIANTS
 app/test_llm_bridge.js               20 cas — NODE, pas Python
 ```
 Le septième ne se lance pas comme les autres : `node app/test_llm_bridge.js`.
@@ -191,6 +191,13 @@ n'est pas rattrapé par `_ignores`. Corrigée par un garde-fou central dans
 propre** : une famille dont plus aucune tournure ne se traduit ne prouve plus
 rien, donc il le signale explicitement (« FAMILLE MUETTE ») au lieu de passer
 au vert.
+
+Il porte aussi un FUZZER à graine fixe (1200 phrases composées au hasard depuis
+le vrai vocabulaire). La graine est fixe exprès : un banc qui change de verdict
+d'une exécution à l'autre ne dit jamais si une correction a marché. Beaucoup de
+ces phrases n'ont aucun sens, et c'est l'intérêt — personne ne les écrirait à la
+main, et le traducteur doit REFUSER proprement plutôt que rendre une commande
+qui n'obéit qu'à la moitié de la phrase.
 
 `test_corpus_terrain.py` confronte le traducteur à `corpus/handy_macros_etc.yaml`,
 la feuille collaborative ETC « Handy Macros » : 43 macros écrites par des

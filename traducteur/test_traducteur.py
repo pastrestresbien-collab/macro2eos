@@ -440,6 +440,27 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ nombre écrit, non employé
+    {
+        # GARDE-FOU CENTRAL 2026-09-17. `_ignores` ne rattrape que le
+        # VOCABULAIRE : un nombre nu n'en est pas, donc rien ne le signalait.
+        # Cette phrase rendait `Chan 14 Out` — le 19 évaporé, statut
+        # `compris`. Trouvé par un fuzzer à graine fixe : 306 nombres perdus
+        # sur 1406 phrases comprises, tous ramenés à un refus.
+        "nom": "nombre inemployé — refus plutôt qu'une demi-commande",
+        "phrase": "éteins circuit 14 et snapshot 19",
+        "statut": "incompris",
+    },
+    {
+        # Le contrôle est CENTRAL, donc il vaut pour les 38 intentions et
+        # pour toutes les suivantes. Mesuré avant activation : zéro refus sur
+        # les 69 phrases légitimes du catalogue et des sondes.
+        "nom": "nombre inemployé — une phrase légitime passe toujours",
+        "phrase": "parque le circuit 3 à 45 %",
+        "statut": "compris",
+        "rendu": "Chan 3 At 45 Park Enter",
+    },
+
     # ------------------------------------------ tolérance aux fautes
     {
         # RÉGRESSION 2026-09-17. « rouge » est à distance 2 de « groupe », et

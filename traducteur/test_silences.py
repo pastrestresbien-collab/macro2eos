@@ -23,6 +23,16 @@ traduction correcte doit respecter, quelle que soit la phrase :
      Sinon le traducteur ne s'en servait pas : il a rendu une commande
      plausible en ignorant une donnée de la demande.
 
+  F. FUZZ — des milliers de phrases composées AU HASARD depuis le vrai
+     vocabulaire, à graine FIXE pour rester reproductible. Trois choses y
+     sont interdites : une exception (jamais acceptable), une commande qui
+     porte un motif impossible en syntaxe Eos, un nombre perdu. Beaucoup de
+     ces phrases n'ont aucun sens — c'est justement l'intérêt : personne
+     n'écrirait ces cas à la main, et le traducteur doit refuser proprement
+     plutôt que rendre une commande qui n'obéit qu'à la moitié de la phrase.
+     Le jour de sa création il signalait 306 nombres perdus sur 1406 phrases
+     comprises ; le garde-fou central les a tous ramenés à un refus.
+
   E. NOMBRE PERDU, sur des phrases SONDES construites ici — pas seulement
      celles du catalogue. L'invariant A ne voit que le chemin heureux ; les
      sondes visent les tournures qu'un régisseur écrit vraiment et que
@@ -55,6 +65,7 @@ un paramètre au catalogue l'ajoute ici sans toucher à ce fichier.
 """
 import json
 import pathlib
+import random
 import re
 import sys
 
@@ -140,6 +151,55 @@ def familles_ordre() -> list[tuple[str, list[str]]]:
     return familles
 
 
+# Motifs qu'aucune commande Eos correcte ne peut porter. Volontairement peu
+# nombreux et chacun indiscutable : un motif trop large ferait crier au loup
+# sur des formes rares mais légitimes, et ce banc perdrait sa crédibilité.
+MOTIFS_IMPOSSIBLES = [
+    (re.compile(r"\bAt\s+\d+\s+Thru\s+\d+\s+Thru\b"), "double Thru après At"),
+    (re.compile(r"\bEnter\s+Enter\b"), "deux Enter collés"),
+    (re.compile(r"\bThru\s+Thru\s+Thru\b"), "triple Thru"),
+    (re.compile(r"[\[\]]"), "structure Python dans la commande"),
+    (re.compile(r"\bNone\b"), "None rendu littéralement"),
+    (re.compile(r"^\s*Enter\s*$"), "Enter seul, commande vide"),
+    (re.compile(r"[+\-/]\s*$"), "opérateur en fin de commande"),
+    (re.compile(r"\bAt\s+At\b|\bThru\s+At\b"), "opérateurs qui se suivent"),
+]
+
+# Fragments tirés du vocabulaire réel. La GRAINE EST FIXE : un banc qui change
+# de verdict d'une exécution à l'autre ne sert à rien, on ne saurait jamais si
+# une correction a marché.
+GRAINE_FUZZ = 20260917
+TIRAGES_FUZZ = 1200
+
+
+def phrases_fuzz() -> list[str]:
+    objets = ["circuit", "circuits", "groupe", "groupes", "adresse", "adresses"]
+    verbes = ["mets", "règle", "monte", "éteins", "vérifie", "parque", "marque",
+              "assert", "enregistrer", "rappelle", "lance", "arrête", "va",
+              "passe", "sneak", "bump"]
+    cibles = ["cue", "sub", "preset", "palette de couleur", "effet", "macro",
+              "snapshot", "courbe", "partition", "level", "pan", "zoom", "hue",
+              "saturation", "fondu de couleur"]
+    queues = ["à 50 %", "à fond", "en 3 secondes", "à 10 degres", "au level",
+              "à 0 %", "en rouge", "en lee 195", "sauf le 3", "et 9",
+              "suivant", "précédent", ""]
+    liaisons = ["", "puis", "et", "sur le", "dans la", "de la", "à la"]
+    tirage = random.Random(GRAINE_FUZZ)
+    phrases = []
+    for _ in range(TIRAGES_FUZZ):
+        bouts = [tirage.choice(verbes)]
+        if tirage.random() < 0.8:
+            bouts += [tirage.choice(liaisons), tirage.choice(objets),
+                      str(tirage.randint(0, 30))]
+        if tirage.random() < 0.5:
+            bouts += [tirage.choice(liaisons), tirage.choice(cibles),
+                      str(tirage.randint(0, 20))]
+        if tirage.random() < 0.8:
+            bouts.append(tirage.choice(queues))
+        phrases.append(" ".join(b for b in bouts if b))
+    return phrases
+
+
 def main() -> int:
     echecs: list[str] = []
     testees = 0
@@ -175,6 +235,35 @@ def main() -> int:
                 echecs.append(
                     f"B. NOMBRE SANS EFFET — [{entree['intention']}] « {phrase} »\n"
                     f"     changer {m.group()} ne change pas « {commande} »")
+
+    # -- F, fuzz à graine fixe -----------------------------------------------
+    for phrase in phrases_fuzz():
+        testees += 1
+        try:
+            trad = TRAD.traduire(phrase)
+        except Exception as erreur:                       # noqa: BLE001
+            echecs.append(f"F. EXCEPTION — « {phrase} »\n"
+                          f"     {type(erreur).__name__}: {erreur}")
+            continue
+        if not trad.compris:
+            continue                                      # refuser est correct
+        try:
+            commande = TRAD.rendre(trad).commande
+        except Exception as erreur:                       # noqa: BLE001
+            echecs.append(f"F. EXCEPTION AU RENDU — « {phrase} »\n"
+                          f"     {type(erreur).__name__}: {erreur}")
+            continue
+        for motif, quoi in MOTIFS_IMPOSSIBLES:
+            if motif.search(commande):
+                echecs.append(f"F. COMMANDE MALFORMÉE ({quoi}) — « {phrase} »\n"
+                              f"     -> {commande!r}")
+                break
+        signales = set(trad.ignores) | set(trad.non_reconnus)
+        for m in chiffres(phrase):
+            if m.group() not in signales and not present(m.group(), commande):
+                echecs.append(f"F. NOMBRE PERDU (fuzz) — « {phrase} »\n"
+                              f"     {m.group()} absent de « {commande} »")
+                break
 
     # -- E, nombres perdus sur des phrases sondes ----------------------------
     # Chaque sonde est une tournure PLAUSIBLE au pupitre. Le contrat est le

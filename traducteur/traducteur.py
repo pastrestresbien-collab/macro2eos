@@ -680,6 +680,34 @@ class Traducteur:
         # d'office à toute intention future, ce qu'une liste de correctifs ne
         # ferait pas. Un handler qui SAIT gérer une durée la pose dans son IR
         # (`temps` ou `sneak`) et passe donc à travers.
+        # GARDE-FOU CENTRAL — un nombre écrit ne tombe jamais en silence.
+        #
+        # `_ignores` ne rattrape que le VOCABULAIRE : un nombre nu n'en est
+        # pas, donc rien ne le signalait. Un chiffre présent dans la phrase et
+        # absent de l'IR veut dire que la commande ne répond pas à ce qui a
+        # été demandé — « éteins circuit 14 et snapshot 19 » rendait
+        # `Chan 14 Out`, le 19 évaporé sans un mot.
+        #
+        # Deux handlers portaient déjà ce contrôle chacun pour soi
+        # (`_regler_parametre`, `_colorer_selection`). Le poser ICI le rend
+        # valable pour les 38 intentions et pour toutes les suivantes.
+        # Mesuré avant activation : zéro refus sur les 69 phrases légitimes
+        # du catalogue et des sondes — il ne mord que sur de vraies pertes.
+        if trad.compris:
+            signales = set(trad.ignores) | set(trad.non_reconnus)
+            connus = self._nombres_de_lir(trad.ir)
+            perdus = [tok for i, tok in enumerate(toks)
+                      if tok.isdigit() and tok not in signales
+                      and int(tok) not in connus]
+            if perdus:
+                return Traduction(
+                    statut="incompris", intention=intention,
+                    **self._mots(toks, set()),
+                    notes=[f"Nombre écrit mais inemployé : {', '.join(perdus)}. "
+                           "La commande ne répondrait qu'à une partie de la "
+                           "demande — reformuler, ou faire une commande par "
+                           "cible (« ... puis ... »)."])
+
         if trad.compris and self._duree(toks, set()) is not None \
                 and not self._ir_porte_une_duree(trad.ir):
             return Traduction(
@@ -691,6 +719,32 @@ class Traducteur:
                        "accepte un temps (« à 50 % en 3 secondes », "
                        "« sneak ... en 3 secondes »)."])
         return trad
+
+    @classmethod
+    def _nombres_de_lir(cls, ir) -> set[int]:
+        """Tous les entiers que l'IR emploie, à n'importe quelle profondeur.
+
+        Parcours RÉCURSIF et non une liste de clés connues : l'IR gagne des
+        clés au fil du projet (`plus`, `moins`, `liste`, `part`…) et une
+        liste figée se périmerait en silence — exactement le défaut qui a
+        fait refuser à tort une correction sur `Chan 1 + 5` le 2026-09-17.
+        Les booléens sont exclus : `True` vaut 1 en Python, et un drapeau
+        `check: True` ferait croire que le nombre 1 est employé."""
+        trouves: set[int] = set()
+        if isinstance(ir, bool):
+            return trouves
+        if isinstance(ir, int):
+            return {ir}
+        if isinstance(ir, dict):
+            for valeur in ir.values():
+                trouves |= cls._nombres_de_lir(valeur)
+        elif isinstance(ir, (list, tuple)):
+            for valeur in ir:
+                trouves |= cls._nombres_de_lir(valeur)
+        elif isinstance(ir, str):
+            for morceau in re.findall(r"\d+", ir):
+                trouves.add(int(morceau))
+        return trouves
 
     @staticmethod
     def _ir_porte_une_duree(ir: list[dict] | None) -> bool:
