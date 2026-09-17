@@ -66,3 +66,21 @@ refus: []
   #     le groupe de travail contenait plusieurs channels par type, pas un seul.
   #   backlog: []
   #   tranche: "oui"
+  #
+  # Gabarit prêt pour le protocole FCB (reference/journal_questions.yaml,
+  # entrée 2026-09-17, champ `protocole_banc`) — dupliquer une entrée par
+  # étape exécutée, remplir avec ce qui a été observé, jamais laisser active :
+  # - type: "refus"   # ou "comportement_inattendu" si Eos accepte mais fait autre chose
+  #   date: AAAA-MM-JJ
+  #   demande_nl: "circuits <A> à <C>, sans intensité mais avec des données FCB"
+  #   commande: "Chan <A> Thru <C> Color - Select Active Enter"   # étape 3, ordre 1
+  #   erreur_console: ""        # si type: refus — message verbatim
+  #   attendu: "seul B (intensité 0 + couleur manuelle) sélectionné, A écarté"
+  #   observe: ""               # si type: comportement_inattendu — ce qui s'est
+  #                              # vraiment passé
+  #   diagnostic: >
+  #     Tranche si le préfixe de catégorie fonctionne devant `- Select Active`
+  #     (confiance B -> A ou C selon le résultat) — voir le protocole complet
+  #     dans reference/journal_questions.yaml.
+  #   backlog: []
+  #   tranche: "oui"

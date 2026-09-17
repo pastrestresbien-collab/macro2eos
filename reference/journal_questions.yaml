@@ -902,3 +902,52 @@ questions:
     backlog: null
     traite: "non"
     traite_ou: null
+    protocole_banc: >-
+      PROTOCOLE PRÉPARÉ le 2026-09-17, NON EXÉCUTÉ — cet environnement n'a
+      aucun accès à une console ni à Nomad (ni réseau sortant vers l'un ou
+      l'autre, CLAUDE.md règle n°1). À exécuter par quiconque a la main sur
+      une console, puis à consigner dans grammar/refus_terrain.yaml (jamais
+      ici — ce fichier ne journalise que des questions, pas des constats S).
+
+      Préparation du show, trois channels de test distincts :
+        A — intensité 0, AUCUNE donnée FCB manuelle (témoin négatif)
+        B — intensité 0, une SEULE catégorie FCB en manuel (ex. Color via un
+            encodeur ou une Color Palette rappelée SANS toucher l'intensité)
+        C — intensité > 0 (actif), avec ou sans données FCB, pour vérifier
+            que l'exclusion l'écarte bien
+
+      Étape 1 — confirmer l'exclusion seule (déjà A, sanity-check du
+      générateur avant de composer) :
+        `Chan <A> Thru <C> - Select Active Enter`
+        Attendu si le modèle est juste : A et B sélectionnés, C écarté.
+
+      Étape 2 — confirmer le préfixe de catégorie seul, tel qu'exemplifié
+      par le manuel (déjà A, sanity-check) :
+        `Color Select Manual Enter`
+        Attendu : B sélectionné (a du manuel color), A et C dépendent de
+        s'ils portent aussi une donnée manuelle de couleur.
+
+      Étape 3 — LA question ouverte, dans les DEUX ordres (le manuel n'en
+      exemplifie qu'un devant `Select Manual`, le corpus #008 place la
+      catégorie APRÈS `- Select Active`, jamais devant) :
+        `Chan <A> Thru <C> Color - Select Active Enter`
+        `Chan <A> Thru <C> - Select Active Color Enter`
+        Attendu si l'un des deux marche : seul B (intensité 0 ET couleur
+        manuelle) est sélectionné, A est écarté malgré son intensité 0.
+        Un message d'erreur sur l'un des deux ordres, l'autre acceptant,
+        tranche laquelle des deux syntaxes existe — résultat à lui seul
+        utile même sans channel de test.
+
+      Étape 4 — si l'étape 3 passe, tester le chaînage (OR ou AND ?) avec un
+      quatrième channel D — intensité 0, Focus SEUL en manuel (pas Color) :
+        `Chan <A> Thru <D> - Select Active Focus Color Beam Enter`
+        Si B et D sont TOUS DEUX sélectionnés : chaînage en OR (l'hypothèse
+        du corpus). Si seul un channel ayant les TROIS l'est : AND, et aucun
+        channel de test n'a été construit pour le confirmer — il en faudrait
+        un cinquième avec Focus+Color+Beam manuels simultanés.
+
+      Ne PAS tenter de reproduire la ligne exacte du corpus #008 (`Group
+      9999.99-Select Active Focus Color Beam@[Enter]`) : elle appartient à
+      une macro de boucle sur toute la cue list en Blind, un montage bien
+      plus lourd que ce que ces quatre étapes isolées demandent pour trancher
+      la seule question ouverte.
