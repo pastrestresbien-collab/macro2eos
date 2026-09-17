@@ -230,6 +230,16 @@
     "description": "sélectionner tous les circuits porteurs de données manuelles"
   },
   {
+    "intention": "remettre_defaut",
+    "phrase": "remets le circuit 5 au repos",
+    "description": "ramener une sélection à sa valeur par défaut (Home)"
+  },
+  {
+    "intention": "remettre_defaut",
+    "phrase": "remets tous les submasters au repos",
+    "description": "ramener une sélection à sa valeur par défaut (Home)"
+  },
+  {
     "intention": "selection_derniere",
     "phrase": "sélectionne la dernière sélection",
     "description": "reprendre la sélection précédente (Select Last)"

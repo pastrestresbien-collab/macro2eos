@@ -888,6 +888,49 @@ CAS = [
         "phrase": "arrête l'effet",
         "statut": "incompris",
     },
+    {
+        # Trouvé au banc de rétro-traduction du 2026-09-17 : le pluriel NU
+        # suffit, sans « tous ». Manuel §18 : la forme sans argument arrête
+        # déjà tout ce qui tourne — le pluriel n'a rien d'autre à désigner.
+        "nom": "arrêter les effets — pluriel nu, pas besoin de « tous »",
+        "phrase": "arrête les effets",
+        "statut": "compris",
+        "rendu": "Stop Effect Enter",
+    },
+
+    # ------------------------------------------------ Home (remise au repos)
+    {
+        "nom": "Home sur un circuit précis",
+        "phrase": "remets le circuit 5 au repos",
+        "statut": "compris",
+        "rendu": "Chan 5 Home Enter",
+    },
+    {
+        "nom": "Home sur un submaster précis",
+        "phrase": "remets le sub 3 au repos",
+        "statut": "compris",
+        "rendu": "Sub 3 Home Enter",
+    },
+    {
+        # L'idiome du manuel §6 l. 816 : `Home` joue à la fois la borne de
+        # plage et l'action, en un seul mot. Attesté SEULEMENT pour Sub.
+        "nom": "Home sur tous les submasters — l'idiome Thru Home",
+        "phrase": "remets tous les submasters au repos",
+        "statut": "compris",
+        "rendu": "Sub 1 Thru Home Enter",
+    },
+    {
+        # L'idiome ne se généralise PAS à Chan sans preuve : aucun exemple
+        # équivalent dans le manuel pour « tous les circuits ».
+        "nom": "Home sur tous les circuits — refus, pas d'idiome équivalent",
+        "phrase": "remets tous les circuits au repos",
+        "statut": "incompris",
+    },
+    {
+        "nom": "Home sans numéro ni « tous » — refus assumé",
+        "phrase": "remets le circuit au repos",
+        "statut": "incompris",
+    },
 
     # ------------------------------------------------ bump de submaster
     {

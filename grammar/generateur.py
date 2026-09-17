@@ -179,6 +179,12 @@ class Generateur:
 
         objet = sel["objet"]
         mot = self.modele["objets"][objet]["mot_cle"]
+
+        if sel.get("a") == "Home" and objet != "Sub":
+            avert.append(
+                f"`{objet} <n> Thru Home` n'est attesté que pour Sub (manuel "
+                f"§6 l. 816) — non vérifiable pour `{objet}`")
+
         return self._rendre_avec_mot(mot, sel, avert, objet)
 
     def _rendre_avec_mot(self, mot: str, sel: dict, avert: list[str],
@@ -659,7 +665,7 @@ class Generateur:
 
         if t in ("selection_active", "selection_derniere", "selection_manuelle",
                  "retirer_effet", "hors_scene", "niveau_setup", "incrementer",
-                 "decrementer", "verifier",
+                 "decrementer", "verifier", "home",
                  "selection_suivante", "selection_precedente"):
             return mot
 

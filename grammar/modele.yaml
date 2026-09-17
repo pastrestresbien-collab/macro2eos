@@ -1730,6 +1730,24 @@ objets:
     confiance: A
     source: "manuel §20 Submasters"
     note: "1000 submasters maximum"
+    idiome_thru_home:
+      confiance: A
+      source: "manuel §6 l. 816 « [Sub] [1] [Thru] [Home] [Enter] - homes all submasters »"
+      forme: "`Sub 1 Thru Home Enter`"
+      regle: >
+        `Home` en borne haute d'une plage de Sub JOUE DEUX RÔLES à la fois :
+        il termine la plage (« jusqu'au bout ») ET c'est l'action elle-même
+        — il n'y a pas de second `Home` après. Un seul mot-clé, une seule
+        fois, contrairement à la forme générale `<sélection> Home Enter`
+        (action `home`) qui, elle, sépare bien sélection et action.
+      portee: >
+        ATTESTÉ POUR Sub SEULEMENT. Aucun exemple équivalent pour Chan ou
+        Group (`[1] [Home] [Enter]` du même chapitre ne home que le channel 1,
+        pas « tous les channels ») — ne pas généraliser sans une citation.
+      borne_basse: >
+        L'exemple part de 1. Non vérifié si une autre borne basse (`Sub 5
+        Thru Home`) couvre aussi « tous les subs à partir de 5 » ou produit
+        autre chose — rester sur la forme attestée telle quelle.
   Macro:
     mot_cle: "Macro"
     numerote: true
@@ -3206,6 +3224,23 @@ actions:
       note_localisation: >
         C'est le `Sélec_Actif_moins_Sub` observé sur une console francophone
         (voir reference/journal_questions.yaml, entrée sur la localisation).
+  home:
+    mot_cle: "Home"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: >
+      manuel §6 « Home » — `[1] [Home] [Enter]` (homes tous les NP du channel
+      1) ; `[Sub] [1] [Home] [Enter]` (home le submaster 1)
+    note: >
+      Forme générale, DEUX mots-clés distincts (sélection puis `Home`) — à ne
+      pas confondre avec l'idiome `<n> Thru Home` propre à Sub (voir
+      `objets.Sub.idiome_thru_home`), où un seul `Home` joue les deux rôles.
+      « Homing a channel, category, parameter, or submaster will return it to
+      the default value » — la valeur par défaut, pas nécessairement zéro
+      (une Home Preset peut la redéfinir, manuel §6 « Home Preset »).
+
   selection_manuelle:
     mot_cle: "Select Manual"
     attend: aucun
@@ -4344,6 +4379,18 @@ legalite:
     valide: oui
     confiance: A
     note: "ne dépend d'aucune sélection — elle en POSE une"
+
+  - objet: Chan
+    action: home
+    valide: oui
+    confiance: A
+    note: "`[1] [Home] [Enter]` — homes tous les NP du/des channel(s), manuel §6"
+
+  - objet: Sub
+    action: home
+    valide: oui
+    confiance: A
+    note: "`[Sub] [1] [Home] [Enter]` — manuel §6 l. 815"
 
   # `Copy To` accepte des sources de familles très différentes — c'est sa
   # nature : « between any target types that can have labels » (§15 l. 93).

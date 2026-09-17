@@ -649,6 +649,7 @@ class Traducteur:
             "selection_derniere": self._action_sans_argument,
             "selection_active": self._selection_active,
             "selection_manuelle": self._action_sans_argument,
+            "remettre_defaut": self._remettre_defaut,
         }[intention]
 
         # `_ignores` a besoin de savoir quelle intention a été retenue, pour
@@ -1746,10 +1747,19 @@ class Traducteur:
     def _arreter_effet(self, toks: list[str], reponses: dict) -> Traduction:
         pris: set[int] = set()
 
-        i_effet = self._indice_mot(toks, pris, {"effet", "effets"})
+        # Le mot est marqué APRÈS coup, pas dans `_indice_mot` : il faut
+        # d'abord savoir LEQUEL a été trouvé (singulier ou pluriel) avant de
+        # décider ce qu'un numéro absent veut dire.
+        i_effet = None
+        for i, tok in enumerate(toks):
+            if i not in pris and tok in ("effet", "effets"):
+                i_effet = i
+                break
         if i_effet is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun effet désigné — le mot « effet » est requis."])
+        pluriel = toks[i_effet] == "effets"
+        pris.add(i_effet)
 
         # « tous les effets » dispense d'un numéro : `Stop Effect Enter` sans
         # argument arrête tout ce qui tourne (manuel §18).
@@ -1763,14 +1773,25 @@ class Traducteur:
             if i > i_effet:
                 numero, _ = valeur, pris.add(i)
                 break
-        if numero is None:
-            return Traduction(statut="incompris", notes=[
-                "Aucun numéro d'effet trouvé — préciser lequel, ou dire "
-                "« tous les effets »."])
+        if numero is not None:
+            ir = [{"action": {"type": "arreter_effet", "numero": numero}}]
+            return Traduction(statut="compris", ir=ir,
+                              **self._mots(toks, pris))
 
-        ir = [{"action": {"type": "arreter_effet", "numero": numero}}]
-        return Traduction(statut="compris", ir=ir,
-                          **self._mots(toks, pris))
+        # Sans numéro ni « tous », le PLURIEL suffit à lui seul : « arrête les
+        # effets » n'a rien d'autre à désigner que l'ensemble — contrairement
+        # au singulier, où « arrête l'effet » reste ambigu (lequel ?) et
+        # exige soit un numéro, soit « tous » pour dire explicitement
+        # l'ensemble. Manuel §18 : « [Stop Effect] [Enter] will stop all
+        # running effects » — la forme nue est déjà celle du « tous ».
+        if pluriel:
+            ir = [{"action": {"type": "arreter_effet"}}]
+            return Traduction(statut="compris", ir=ir,
+                              **self._mots(toks, pris))
+
+        return Traduction(statut="incompris", notes=[
+            "Aucun numéro d'effet trouvé — préciser lequel, ou dire "
+            "« tous les effets »."])
 
     # -- intention : bump d'un submaster (haut / bas) ------------------------
     def _bump_sub(self, toks: list[str], reponses: dict) -> Traduction:
@@ -2480,6 +2501,48 @@ class Traducteur:
                 f"Le numéro {restants[0][1]} n'a donc pas de place ici."])
 
         ir = [{"action": {"type": self._intention_courante}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _remettre_defaut(self, toks: list[str], reponses: dict) -> Traduction:
+        """`<sélection> Home Enter`, et l'idiome `Sub 1 Thru Home` pour « tous ».
+
+        Deux formes, une seule attestée pour l'ensemble. Avec un numéro
+        explicite, `Home` marche pour Chan comme pour Sub (manuel §6).
+        Sans numéro, SEUL Sub a un idiome documenté pour « tous » — l'étendre
+        à Chan ne serait pas une généralisation prudente, ce serait inventer
+        une syntaxe que le manuel ne montre nulle part pour cet objet."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris)
+        if objet is None and self._indice_objet_cle(
+                "Sub", toks, pris, index=self._objets_cible) is not None:
+            objet = "Sub"
+
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni submaster désigné."])
+
+        nombres = self._nombres(toks, pris)
+        if nombres:
+            i, numero = nombres[0]
+            pris.add(i)
+            ir = [{"selection": {"objet": objet, "numero": numero},
+                   "action": {"type": "home"}}]
+            return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+        # Pas de numéro : seul le mot « tous »/« toutes » dispense d'en donner
+        # un, et seul Sub a un idiome documenté pour ce cas.
+        if self._indice_mot(toks, pris, {"tous", "toutes", "tout"}) is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro et pas de « tous » — préciser lequel remettre "
+                "au repos, ou dire « tous »."])
+
+        if objet != "Sub":
+            return Traduction(statut="incompris", notes=[
+                "« Tous les circuits au repos » n'a pas de forme attestée "
+                "dans le manuel — seuls les submasters en ont une "
+                "(`Sub 1 Thru Home`). Préciser un numéro de circuit."])
+
+        ir = [{"selection": {"objet": "Sub", "de": 1, "a": "Home"}}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def _selection_active(self, toks: list[str], reponses: dict) -> Traduction:

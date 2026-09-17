@@ -1220,6 +1220,28 @@ intentions:
       (manuel §24 l. 105-109), donc sur une autre sélection que celle de
       l'opérateur — un `Sneak` nu peut n'y rien faire du tout.
 
+  remettre_defaut:
+    description: "ramener une sélection à sa valeur par défaut (Home)"
+    declencheurs:
+      verbe: [remets, remettre, remet, homer, home]
+    declencheurs_optionnels:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, sub, subs, submaster, submasters, sousmaster, sousmasters]
+      cible: [repos, defaut, zero, home]
+      tous: [tous, toutes, tout]
+    exemple_nl: >
+      remets le circuit 5 au repos ; remets tous les submasters au repos
+    origine: >
+      manuel §6 « Home » — `[1] [Home] [Enter]`, `[Sub] [1] [Home] [Enter]`,
+      confiance A (`grammar/modele.yaml`, action `home`).
+    note: >
+      DEUX formes, une seule attestée pour « tous ». Avec un numéro explicite,
+      `<sélection> Home Enter` marche pour Chan comme pour Sub. Sans numéro,
+      seul Sub a un idiome documenté : `Sub 1 Thru Home Enter` — où `Home`
+      joue à la fois le rôle de borne de plage et d'action, en un seul mot
+      (`grammar/modele.yaml`, `objets.Sub.idiome_thru_home`). Pour Chan,
+      « remets tous les circuits au repos » n'a AUCUN exemple équivalent dans
+      le manuel — refuser plutôt qu'étendre l'idiome de Sub sans preuve.
+
   selection_derniere:
     description: "reprendre la sélection précédente (Select Last)"
     declencheurs:
