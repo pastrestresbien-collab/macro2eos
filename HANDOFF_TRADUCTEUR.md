@@ -159,7 +159,7 @@ qu'elle parle d'autre chose.
 
 ```
 grammar/test_generateur.py          125 cas
-traducteur/test_traducteur.py       155 cas de traduction + 9 de correction
+traducteur/test_traducteur.py       198 cas de traduction + 12 de correction
 traducteur/test_interpreter_flou.py   8 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION

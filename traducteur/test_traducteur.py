@@ -1696,6 +1696,36 @@ CAS = [
 # ----------------------------------------------------------------------------
 CAS_CORRECTION = [
     {
+        # RÉGRESSION 2026-09-17, que j'avais créée le jour même : les listes
+        # de sélection (`plus`/`moins`) portent des LISTES de numéros, et
+        # `corriger` ne parcourait que les valeurs entières de premier
+        # niveau. Il répondait « le numéro 5 n'apparaît nulle part dans
+        # cette macro » alors qu'il y est — un refus FAUX, donc une capacité
+        # perdue sans que rien ne le dise.
+        "nom": "corriger un numéro qui vit dans une liste de sélection",
+        "phrase": "circuits 1 et 5 à 50 %",
+        "instruction": "remplace 5 par 9",
+        "statut": "compris",
+        "rendu": "Chan 1 + 9 At 50 Enter",
+    },
+    {
+        "nom": "corriger un numéro retiré de la sélection",
+        "phrase": "circuits 1 à 5 sauf 3 à fond",
+        "instruction": "remplace 3 par 4",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 - 4 Full Enter",
+    },
+    {
+        # « remplace 5 par 9 et 50 par 75 » ne retenait que la première et
+        # jetait la seconde sans un mot : la macro avait l'air corrigée et ne
+        # l'était qu'à moitié. Un second « par » est une preuve non ambiguë
+        # qu'on en demande deux.
+        "nom": "deux corrections dans une instruction — refus, pas moitié",
+        "phrase": "circuits 1 à 5 à 50 %",
+        "instruction": "remplace 5 par 9 et 50 par 75",
+        "statut": "incompris",
+    },
+    {
         "nom": "remplacer l'objet de sélection — groupe par circuit",
         "phrase": "groupe 5 en lee 195",
         "instruction": "remplace groupe par circuit",

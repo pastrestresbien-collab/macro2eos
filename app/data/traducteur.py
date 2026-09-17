@@ -2785,6 +2785,17 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Rien à corriger de part et d'autre de « par »/« en »."])
 
+        # UNE correction à la fois. « remplace 5 par 9 et 50 par 75 » ne
+        # retenait que la première et jetait la seconde sans un mot — la
+        # macro affichée avait l'air corrigée et ne l'était qu'à moitié.
+        # Un second séparateur est une preuve non ambiguë qu'on en demande
+        # deux : on le dit, au lieu d'en faire une.
+        if any(tok in ("par", "en") for tok in toks[i_sep + 1:]):
+            return Traduction(statut="incompris", notes=[
+                "Une seule correction à la fois : cette instruction en "
+                "contient deux (« par »/« en » y figure deux fois). "
+                "Les enchaîner une par une."])
+
         # -- cas 1 : objet de sélection (Chan <-> Group uniquement) ---------
         OBJETS_REMPLACABLES = {"Chan", "Group"}
         cle_gauche, _ = self._resoudre(gauche[0], self._objets)
@@ -2814,6 +2825,17 @@ class Traducteur:
                 for cle, val in conteneur.items():
                     if isinstance(val, int) and not isinstance(val, bool) and val == valeur_gauche:
                         candidats.append((conteneur, cle))
+                    # `plus` et `moins` portent des LISTES de numéros
+                    # (« Chan 1 + 5 - 3 »). Sans ce parcours, corriger le 5
+                    # de « circuits 1 et 5 » répondait « le numéro 5
+                    # n'apparaît nulle part dans cette macro » — un refus
+                    # faux, introduit le 2026-09-17 en ajoutant les listes
+                    # de sélection sans mettre `corriger` à jour avec elles.
+                    elif isinstance(val, list):
+                        for rang, element in enumerate(val):
+                            if (isinstance(element, int) and not isinstance(element, bool)
+                                    and element == valeur_gauche):
+                                candidats.append((val, rang))
             if not candidats:
                 return Traduction(statut="incompris", notes=[
                     f"Le numéro {valeur_gauche} n'apparaît nulle part dans cette macro."])
