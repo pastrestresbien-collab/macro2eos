@@ -163,7 +163,7 @@ traducteur/test_traducteur.py       155 cas de traduction + 9 de correction
 traducteur/test_interpreter_flou.py   8 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
-traducteur/test_silences.py         149 vérifications — INVARIANTS
+traducteur/test_silences.py         193 vérifications — INVARIANTS
 ```
 (chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
 ainsi que `./app/build_data.sh --verifier`.)
@@ -179,8 +179,11 @@ invariants que toute traduction correcte respecte, quelle que soit la phrase.
 Un nombre écrit doit se retrouver dans la commande ou être signalé ; le
 changer doit changer la commande ; la même demande dans plusieurs ordres de
 mots doit donner la même commande. C'est le seul banc capable de trouver ce à
-quoi personne n'a pensé — il a livré trois pannes silencieuses le jour de sa
-création, toutes sur des plages de circuits. **Attention à son angle mort
+quoi personne n'a pensé — il a livré quatre pannes silencieuses le jour de sa
+création : trois sur des plages de circuits, et une SYSTÉMIQUE — 32 des 38
+intentions laissaient tomber une durée sans un mot, parce qu'un mot de durée
+n'est pas rattrapé par `_ignores`. Corrigée par un garde-fou central dans
+`_traduire_simple`, qui vaut d'office pour toute intention future. **Attention à son angle mort
 propre** : une famille dont plus aucune tournure ne se traduit ne prouve plus
 rien, donc il le signale explicitement (« FAMILLE MUETTE ») au lieu de passer
 au vert.

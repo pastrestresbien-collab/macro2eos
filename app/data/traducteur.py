@@ -641,7 +641,54 @@ class Traducteur:
         finally:
             self._intention_courante = precedente
         trad.intention = intention
+
+        # GARDE-FOU CENTRAL — une durée ne tombe jamais en silence.
+        #
+        # Une durée écrite dans la phrase doit TOUJOURS ressortir : produite,
+        # ou refusée. Trois handlers le faisaient chacun de leur côté
+        # (`plein_feu`, `sneak`, `hors_scene` via `_action_sur_selection`,
+        # puis la navigation) ; les 32 autres intentions laissaient tomber la
+        # durée sans un mot — trouvé le 2026-09-17 en sondant le catalogue
+        # entier avec « en 7 secondes » ajouté à chaque phrase.
+        #
+        # Un mot de durée n'est pas rattrapé par `_ignores` (ce n'est pas du
+        # vocabulaire de créneau), donc rien ne le signalait : « parque le
+        # circuit 3 à 45 % en 2 secondes » rendait `Chan 3 At 45 Park Enter`,
+        # statut `compris`, `ignores` vide. La commande a l'air de répondre à
+        # la demande et n'en fait que la moitié.
+        #
+        # Le contrôle est CENTRAL plutôt que recopié 32 fois : il s'applique
+        # d'office à toute intention future, ce qu'une liste de correctifs ne
+        # ferait pas. Un handler qui SAIT gérer une durée la pose dans son IR
+        # (`temps` ou `sneak`) et passe donc à travers.
+        if trad.compris and self._duree(toks, set()) is not None \
+                and not self._ir_porte_une_duree(trad.ir):
+            return Traduction(
+                statut="incompris", intention=intention,
+                **self._mots(toks, set()),
+                notes=["Aucune forme temporisée n'est documentée pour cette "
+                       "commande : la durée serait perdue en silence. La "
+                       "retirer de la phrase, ou passer par une commande qui "
+                       "accepte un temps (« à 50 % en 3 secondes », "
+                       "« sneak ... en 3 secondes »)."])
         return trad
+
+    @staticmethod
+    def _ir_porte_une_duree(ir: list[dict] | None) -> bool:
+        """L'IR produite emploie-t-elle une durée ?
+
+        Les deux seules clés qui en portent une, côté générateur : `temps`
+        (`Sneak Time 3`, `Go To Cue 5 Time 3`) et `sneak` (`Full Sneak 20`).
+        Volontairement une liste FERMÉE et non une heuristique : un handler
+        futur qui inventerait une troisième clé serait rattrapé par le
+        garde-fou ci-dessus plutôt que de passer inaperçu — mieux vaut un
+        refus injustifié, visible et corrigible, qu'un silence.
+        """
+        for etape in ir or []:
+            action = etape.get("action") or {}
+            if "temps" in action or "sneak" in action:
+                return True
+        return False
 
     # -- nuancier : seul Lee est connu, donc « pas de mot dans la phrase »
     # veut presque toujours dire Lee — mais c'est une supposition du

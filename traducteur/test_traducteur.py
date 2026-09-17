@@ -440,6 +440,38 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ durées : jamais en silence
+    {
+        # RÉGRESSION SYSTÉMIQUE 2026-09-17. 32 intentions sur 38 laissaient
+        # tomber une durée sans un mot : `Chan 3 At 45 Park Enter`, statut
+        # `compris`, `ignores` vide. Un mot de durée n'est pas du vocabulaire
+        # de créneau, donc `_ignores` ne le rattrapait pas. Le garde-fou est
+        # CENTRAL (dans `_traduire_simple`, après le handler) plutôt que
+        # recopié 32 fois : il vaut d'office pour toute intention future.
+        "nom": "durée — Park n'a pas de forme temporisée : refus, pas silence",
+        "phrase": "parque le circuit 3 à 45 % en 2 secondes",
+        "statut": "incompris",
+    },
+    {
+        "nom": "durée — sans durée, Park passe normalement",
+        "phrase": "parque le circuit 3 à 45 %",
+        "statut": "compris",
+        "rendu": "Chan 3 At 45 Park Enter",
+    },
+    {
+        "nom": "durée — une commande qui n'en accepte aucune la refuse",
+        "phrase": "efface les filtres en 7 secondes",
+        "statut": "incompris",
+    },
+    {
+        # Les handlers qui SAVENT poser une durée passent à travers le
+        # garde-fou : ils la déposent dans l'IR (`temps` ou `sneak`).
+        "nom": "durée — celles qui sont documentées passent toujours",
+        "phrase": "circuits 1 à 5 à 50 % en 3 secondes",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Sneak 3 Enter",
+    },
+
     # ------------------------------------------ plages de paramètres
     {
         # RÉGRESSION 2026-09-17, trouvée par le banc des silences. Rendait

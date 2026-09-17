@@ -69,14 +69,14 @@ macro, paquets OSC) et **137 cas de non-régression**, dont la majorité sont de
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 38 intentions, 180 cas de traduction + 9 cas de correction,
+générateur rend ensuite — 38 intentions, 184 cas de traduction + 9 cas de correction,
 et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
 README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.17 — 38 intentions, 180 + 9 tests, 149 invariants, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.18 — 38 intentions, 184 + 9 tests, 193 invariants, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -360,7 +360,10 @@ exemple, la confiance est B et doit être écrite comme telle.
 compare à aucune attente écrite : il vérifie des **invariants** (un nombre écrit se
 retrouve dans la commande ou est signalé ; le changer change la commande ; plusieurs
 ordres de mots donnent la même commande). C'est le seul capable de trouver ce à quoi
-personne n'a pensé — il a livré trois pannes silencieuses le jour même.
+personne n'a pensé — il a livré **quatre** pannes silencieuses le jour même, dont une systémique : 32 des 38
+intentions laissaient tomber une durée sans un mot (« parque le circuit 3 à 45 % **en 2
+secondes** » → `Chan 3 At 45 Park Enter`). Corrigé par un garde-fou CENTRAL, pas par 32
+correctifs — il vaut d'office pour toute intention future.
 
 **À lancer avant tout commit**, au même titre que les cinq autres. Et à ÉLARGIR quand
 on touche à une famille de phrases qu'il ne couvre pas : il n'aurait pas trouvé le bug

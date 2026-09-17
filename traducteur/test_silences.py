@@ -23,6 +23,13 @@ traduction correcte doit respecter, quelle que soit la phrase :
      Sinon le traducteur ne s'en servait pas : il a rendu une commande
      plausible en ignorant une donnée de la demande.
 
+  D. DURÉE — ajouter « en 7 secondes » à n'importe quelle phrase donne deux
+     issues acceptables, et deux seulement : la commande emploie la durée, ou
+     la traduction est REFUSÉE. Rendre la même commande qu'avant veut dire
+     que la durée est tombée en silence. Un mot de durée n'est pas rattrapé
+     par `_ignores` (ce n'est pas du vocabulaire de créneau), donc rien
+     d'autre ne le voit.
+
   C. INVARIANCE À L'ORDRE DES MOTS — la même demande, formulée dans plusieurs
      ordres naturels, doit produire la MÊME commande. Une divergence veut dire
      qu'un nombre est lu au mauvais endroit selon la tournure.
@@ -161,6 +168,26 @@ def main() -> int:
                 echecs.append(
                     f"B. NOMBRE SANS EFFET — [{entree['intention']}] « {phrase} »\n"
                     f"     changer {m.group()} ne change pas « {commande} »")
+
+    # -- D, la durée ne tombe jamais en silence ------------------------------
+    for entree in CATALOGUE:
+        phrase = entree["phrase"]
+        commande, trad = rendu(phrase)
+        if commande is None:
+            continue
+        # Une phrase qui porte DÉJÀ une durée est exclue : lui en ajouter une
+        # seconde crée un doublon, et c'est la première qui gagne — un test
+        # qui échouerait sur une phrase absurde plutôt que sur un défaut.
+        # Ces phrases-là sont couvertes par l'invariant B, qui change leur
+        # durée existante au lieu d'en empiler une autre.
+        if trad.ir and Traducteur._ir_porte_une_duree(trad.ir):
+            continue
+        avec, _ = rendu(f"{phrase} en 7 secondes")
+        testees += 1
+        if avec == commande:
+            echecs.append(
+                f"D. DURÉE PERDUE — [{entree['intention']}] « {phrase} »\n"
+                f"     « en 7 secondes » ne change rien : « {commande} »")
 
     # -- C, invariance à l'ordre des mots ------------------------------------
     for nom, phrases in familles_ordre():
