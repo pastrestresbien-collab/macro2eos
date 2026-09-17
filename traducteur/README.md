@@ -203,13 +203,18 @@ question de correction toute prête. Décidé avec l'utilisateur le 2026-08-07 ;
 corpus, par exemple) ne devine jamais une correspondance : ça redevient `incompris` avec
 l'explication.
 
-**Sub n'est délibérément pas un objet de sélection générique.** `grammar/modele.yaml`
-interdit `Sub + intensite` au niveau de confiance le plus haut du projet (S : « le
-pilotage de niveau d'un sub passe par le fader ou les bumps, pas par `At` »). `Sub` vit
-dans un index séparé (`objets_cible`, distinct de `objets`) consulté seulement par
-`enregistrer_sub` et `bump_sub` — jamais par `regler_intensite` ou `colorer_selection`.
-Une phrase comme « sub 3 à 50 % » ne peut donc structurellement pas produire la commande
-qu'on sait déjà fausse ; elle reste `incompris`, vérifié par test.
+**Sub reste un index séparé, mais `Sub + intensite` est valide depuis le 2026-09-13.**
+Ce paragraphe affirmait l'inverse jusque-là, sur la foi d'une confiance S imméritée ; le
+banc réel a tranché (les deux formes `Sub 4 At 50 Enter` et `Sub 4 At 50 Sneak 2 Enter`
+passent, fader observé montant physiquement). « sub 3 à 50 % » rend donc aujourd'hui
+`Sub 3 At 50 Enter`.
+
+Ce qui n'a **pas** changé : `Sub` vit toujours dans `objets_cible`, distinct de `objets`.
+La distinction ne sert plus à interdire l'intensité, mais à empêcher un repli silencieux
+sur la sélection courante — un mot qui nomme une cible interdit le repli, quelle que soit
+sa famille (deuxième verrou, voir `_vise_la_selection_courante`). `_regler_intensite`
+consulte donc `objets_cible` explicitement pour la branche `Sub`, au lieu de l'ignorer.
+Seul un numéro unique est accepté : aucune source ne documente `Sub 1 Thru 4 At 50`.
 
 **Bump de submaster : les noms des touches sont sourcés, pas leur effet.** `SubUp`/
 `SubDown` existent bel et bien (`eosKeys.ts`, confiance A sur l'existence, B sur l'ordre
@@ -417,7 +422,7 @@ plutôt qu'une valeur par défaut inventée.
 
 **Ce qui n'est pas couvert** et devra l'être : cue lists multiples, cues multipart, patch,
 magic sheets, show control, groupes (au-delà d'une sélection simple) — la majeure partie
-des 79 actions du modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
+des 85 actions du modèle. Le lexique se remplit par tranches, comme le modèle l'a été.
 
 **Query : périmètre volontairement restreint, pas une couverture complète.** Seules les
 cibles Color Palette, Preset et Cue sont couvertes — les familles déjà modélisées ailleurs

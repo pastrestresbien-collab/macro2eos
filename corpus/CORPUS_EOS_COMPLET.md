@@ -2434,7 +2434,21 @@ Date de collecte : 29/07/2026
 - **État d'avancement rapporté par l'auteur lui-même** : <cite reformulé>le prototype actuel demande à l'utilisateur de sélectionner un instrument, valide, puis parcourt tous les paramètres du fixture pour les mettre à 0 ; ensuite, pour chaque paramètre de couleur, les met à 100%, met à jour une palette by-type, remet le paramètre à 0%, et recommence. Ça casse actuellement après la première palette — des erreurs de programmation restent à corriger.</cite>
 - **Conseil apporté par un autre contributeur** : privilégier Hue/Saturation (disponible virtuellement dans EOS, à activer) plutôt que RGB, car tous les fixtures n'ont pas les mêmes paramètres de couleur natifs — offre à partager la syntaxe de macro pour affiner l'aide
 - **Confiance** : C, témoignage direct et détaillé d'un projet en cours, non finalisé
-- **Statut** : projet inachevé au moment du post (avril 2024), issue non connue dans cet extrait
+- **Statut, confirmé le 2026-09-12 par lecture intégrale du fil (community.etcconnect.com/.../55721)** :
+  fil ouvert le mercredi 17 avril 2024, marqué **`Not Answered`**, une seule réponse, 187 abonnés,
+  1168 vues. Aucune suite de l'auteur original après le conseil reçu — le fil s'arrête là,
+  définitivement, pas seulement « non connu dans cet extrait ».
+- **Citation intégrale de l'unique réponse (contributeur « mathilda »), plus complète que la
+  paraphrase ci-dessus** : <cite>« I made something in the past for Colors. My way was to use
+  Hue/Sat. Because not every Fixture has the same color parameters like RGB. But we have a virtual
+  Hue/Sat in EOS (that needs to be enabled). If you share the syntax of your Macro, maybe we can
+  help you a bit more. And yes, Autopalettes are great. The current Feature Request if found is
+  this: Auto-Palettes »</cite> — le lien vers la Feature Request ETC n'est pas résolu dans le texte
+  copié (texte de lien sans URL visible) ; **à rechercher séparément**, piste non fermée.
+- **Conséquence pour ce projet** : l'auteur original n'a jamais partagé sa syntaxe de macro comme
+  demandé — aucune ligne de code n'existe dans ce fil, seulement le principe déjà noté ci-dessus.
+  Cette piste est maintenant close comme source de syntaxe ; elle reste valable comme confirmation
+  C du besoin et de la difficulté.
 - **IMPACT MAJEUR POUR TON PROJET** : cette découverte mérite une attention particulière. Un membre de la communauté ETC a entrepris, de façon indépendante et pour un besoin très proche du tien (génération automatique de palettes par un mécanisme de macro auto-itérant), un projet non abouti à ce jour. Ça confirme trois choses :
   1. **Le besoin est réel et partagé** au-delà de ton propre contexte
   2. **La difficulté est réelle aussi** — même un utilisateur avancé bute sur la fiabilité de bout en bout d'une macro auto-itérante complexe

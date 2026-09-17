@@ -35,6 +35,16 @@
     "description": "passer les circuits en revue un par un (Check)"
   },
   {
+    "intention": "regler_parametre",
+    "phrase": "mets le pan du circuit 1 à 10 degrés",
+    "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser"
+  },
+  {
+    "intention": "regler_fondu_couleur",
+    "phrase": "passe le fondu de couleur à 50",
+    "description": "régler le paramètre de fondu de couleur (Color_Crossfade)"
+  },
+  {
     "intention": "regler_intensite",
     "phrase": "circuits 1 à 5 à 50 %",
     "description": "donner un niveau d'intensité à une sélection"
@@ -43,6 +53,16 @@
     "intention": "enregistrer_cue",
     "phrase": "enregistrer les circuits 1 à 5 dans la cue 4",
     "description": "enregistrer une sélection de circuits dans une cue existante"
+  },
+  {
+    "intention": "selection_suivante",
+    "phrase": "passe au circuit suivant",
+    "description": "avancer d'un cran DANS la sélection courante (Next)"
+  },
+  {
+    "intention": "selection_precedente",
+    "phrase": "passe au circuit précédent",
+    "description": "reculer d'un cran DANS la sélection courante (Last)"
   },
   {
     "intention": "aller_a_cue",
@@ -178,6 +198,11 @@
     "intention": "plein_feu",
     "phrase": "plein feu sur le groupe 3",
     "description": "monter une sélection à pleine intensité"
+  },
+  {
+    "intention": "niveau_setup",
+    "phrase": "mets les circuits 1 à 5 au level",
+    "description": "amener la sélection au niveau de la touche Level (réglé en Setup)"
   },
   {
     "intention": "hors_scene",

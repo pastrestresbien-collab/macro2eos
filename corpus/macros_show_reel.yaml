@@ -1,0 +1,227 @@
+# Macros réelles d'un show francophone tiers — captures d'écran, 2026-09-13.
+#
+# CE FICHIER N'EST PAS UNE SOURCE DE SYNTAXE À GÉNÉRER DEPUIS. Confiance B :
+# show réel transmis par un tiers (l'utilisateur du projet donne une
+# confiance de 95 % sur l'authenticité, mais ne l'a pas programmé lui-même et
+# ne l'a pas testé à son banc). Sert de PREUVE pour deux choses :
+#
+#   1. la question de localisation FR de `reference/journal_questions.yaml`
+#      (entrée du 2026-09-09) : le CONTENU de macro lui-même (pas seulement
+#      l'affichage) porte des tokens français — la saisie/le stockage
+#      changent bel et bien avec la langue de la console, pas seulement le
+#      rendu visuel ;
+#   2. un réservoir de vocabulaire FR->EN à faire entrer dans
+#      `traducteur/lexique.yaml`, chaque token étant d'abord vérifié contre
+#      `reference/eosKeys.ts` ou le manuel avant d'être retenu — jamais recopié
+#      à l'aveugle (même discipline que pour tout corpus tiers, voir
+#      HANDOFF_TRADUCTEUR.md §8).
+#
+# `♦` = Enter, tel qu'affiché par la console (confirmé par capture le
+# 2026-09-09, voir journal_questions.yaml).
+
+meta:
+  version: "0.1"
+  source: >-
+    Captures d'écran de l'éditeur de macros (colonnes Macro/Label/Color/
+    Mode/Contenu), show réel d'un tiers, transmises en conversation le
+    2026-09-13.
+  confiance: "B"
+
+# --------------------------------------------------------------------------
+# TOKENS FR -> EN, chacun vérifié contre reference/eosKeys.ts avant d'être
+# retenu ici (colonne `source`). Aucun ajouté au lexique tant que ce fichier
+# n'a pas été relu et arbitré explicitement.
+# --------------------------------------------------------------------------
+vocabulaire_fr_en:
+  Attente_Enter:        { en: "Wait_For_Enter",      osc: wait_for_enter,   source: "eosKeys.ts" }
+  Effacer_Ligne_Cmd:    { en: "Clear_CmdLine",        osc: clear_cmdline,    interne: RESET_COMMAND_LINE, source: "eosKeys.ts" }
+  Par_Type:             { en: "By_Type",              osc: by_type,          interne: BY_TYPE_PALETTE, source: "eosKeys.ts" }
+  Convertir_en_Manuel:  { en: "Make_Manual",          osc: make_manual,      interne: MAKE_MANUAL, source: "eosKeys.ts" }
+  Conv_en_val_absolue:  { en: "Make_Absolute",        osc: make_absolute,    interne: MAKE_ABSOLUTE, source: "eosKeys.ts" }
+  Select_Last:          { en: "Select_Last",          osc: select_last,      interne: SELECT_LAST, source: "eosKeys.ts (déjà identique)" }
+  Palette_Couleur:      { en: "Color_Palette",        source: "cohérent avec modele.yaml, non un nom de touche isolé" }
+  CueOnlyTrack:         { en: "CueOnlyTrack",          osc: cueonlytrack,     interne: CUE_ONLY_TRACK, source: "eosKeys.ts (déjà identique)" }
+  Tous_les_Workspaces:  { en: "All_Workspaces",       osc: all_workspaces,   interne: ALL_WORKSPACES, source: "eosKeys.ts" }
+  Direct_Selects:       { en: "Direct_Selects",       osc: direct_selects,   interne: SNAPSHOT_DIRECT_SELECTS, source: "eosKeys.ts (déjà identique)" }
+  Favoris:              { en: "Favorite",             source: "manuel §23 l.51 (« Favorite »), catégorie de capture Snapshot" }
+  Cue Précédent:        { en: "Cue Last",             source: "cohérent avec objets_cible/cibles de cue déjà connues" }
+  Blind:                { en: "Blind",                osc: blind,            interne: PREVIEW, source: "eosKeys.ts (déjà identique)" }
+  Snapshot:              { en: "Snapshot",             osc: snapshot,         interne: SNAPSHOT, source: "eosKeys.ts (déjà identique)" }
+  Tab_Bas / Tab_Haut:   { en: "[Tab] tenu appuyé pendant la frappe du numéro",
+                          source: "manuel §23 l.99 — « Press [Tab] [1] [9] » = Tab 19, confirmé par TAB19/TAB27/TAB36/TAB39" }
+
+# Non vérifié / non résolu — À NE PAS faire entrer au lexique en l'état :
+non_resolu:
+  - token: "Autre"
+    contexte: "catégorie de capture Snapshot (macro 2002, avec Favoris)"
+    statut: >-
+      CONFIRMÉ AU BANC RÉEL le 2026-09-13 (confiance S, distinct de ce
+      fichier B) — voir journal_questions.yaml. Le manuel §23 ne liste pas
+      cette catégorie explicitement ; le banc a raison contre le manuel ici.
+
+# --------------------------------------------------------------------------
+# MACROS — numéro, label, couleur (direct select), contenu verbatim.
+# --------------------------------------------------------------------------
+macros:
+  - numero: 1
+    label: "CLEAR SNEAK ENTER"
+    couleur: "Blanc"
+    contenu: "Eff_Cmd Sneak ♦"
+
+  - numero: 3
+    label: "GO TO CUE NEXT"
+    couleur: "Blanc"
+    contenu: "GoTo_Cue Suivant Time ♦"
+
+  - numero: 5
+    label: "EFF AUTOBLOCS"
+    couleur: "Blanc"
+    contenu: "Eff_AutoBlocs ♦♦"
+
+  - numero: 106
+    label: "SATURATION -10%"
+    couleur: "Blanc"
+    contenu: "Saturation _ 9 0 ♦"
+    incertitude: "lecture de capture, deuxième chiffre du niveau incertain"
+
+  - numero: 107
+    label: "SATURATION +10%"
+    couleur: "Blanc"
+    contenu: "Saturation _ 1 1 0 ♦"
+    incertitude: "lecture de capture, forme numérique incertaine"
+
+  - numero: 142
+    label: "FCB Recall from cue last"
+    couleur: "Blanc"
+    contenu: "FCB Recall_From Cue Précédent ♦"
+
+  - numero: 151
+    label: "ZOOM -%"
+    couleur: "Blanc"
+    contenu: "Zoom _+%"
+    incertitude: >-
+      Signalé à l'utilisateur comme possible inversion avec la macro 152
+      (labels et contenus semblent croisés) — JAMAIS confirmé ni infirmé en
+      session. Ne pas traiter comme fiable.
+
+  - numero: 152
+    label: "ZOOM +%"
+    couleur: "Blanc"
+    contenu: "Zoom _-%"
+    incertitude: "voir la remarque sous la macro 151 — même doute, non tranché"
+
+  - numero: 159
+    label: "HUE -%"
+    couleur: "Blanc"
+    contenu: "Hue _-%"
+
+  - numero: 160
+    label: "HUE +%"
+    couleur: "Blanc"
+    contenu: "Hue _+%"
+
+  - numero: 161
+    label: "REC PC PAR TYPE"
+    couleur: "Rouge"
+    contenu: "Record Palette_Couleur Attente_Enter Par_Type Nettoyer ♦"
+    note: "motif « autopalette » — voir corpus/CORPUS_EOS_COMPLET.md vague 26"
+
+  - numero: 162
+    label: "UPD PC PAR TYPE"
+    couleur: "Vert"
+    contenu: "Color Convertir_en_Manuel ♦Select_Last Update Palette_Couleur Par_Type"
+
+  - numero: 163
+    label: "REC FB PRESET"
+    couleur: "Rouge"
+    contenu: "Focus Beam Conv_en_val_absolue ♦Select_Last Focus Beam Record Preset"
+
+  - numero: 164
+    label: "UPD FB PRESET"
+    couleur: "Vert"
+    contenu: "Focus Beam Conv_en_val_absolue Select_Last Focus Beam Update Preset"
+
+  - numero: 165
+    label: "SETUP % = 5"
+    couleur: "Blanc"
+    contenu: "Blind Setup ♦_+% Effacer_Ligne_Cmd _+% 5 ♦_-% 5 ♦Macro_Wait 2 Snapshot 0.1 ♦Live ♦"
+
+  - numero: 166
+    label: "SETUP % = 1"
+    couleur: "Blanc"
+    contenu: "Blind Setup ♦_+% 1 ♦_-% 1 ♦Macro_Wait 2 Snapshot 0.1 ♦Live ♦"
+
+  - numero: 202
+    label: "Intensité SNEAK"
+    couleur: "Blanc"
+    contenu: "Intensity Sneak ♦"
+
+  - numero: 518
+    label: "QUERY TIME OU DELAI"
+    couleur: "Blanc"
+    contenu: "Query Time Ou Délai ♦"
+
+  - numero: 821
+    label: "INT REC Q ONLY UPD"
+    couleur: "Rouge"
+    contenu: "Effacer_Ligne_Cmd Intensity Record CueOnlyTrack Attente_Enter ♦Update ♦"
+    correction: "numéroté 101 par erreur dans une lecture antérieure en session — corrigé ici"
+
+  - numero: 2000
+    label: "SNAPSHOTS"
+    couleur: "Blanc"
+    contenu: null
+    note: "en-tête/séparateur, pas une macro exécutable"
+
+  - numero: 2001
+    label: "UPD SNAPSHOT 0.1"
+    couleur: "Blanc"
+    contenu: "Update Snapshot 0 . 1 ♦"
+
+  - numero: 2002
+    label: "REC SNAPSHOT 0.2"
+    couleur: "Blanc"
+    contenu: >-
+      Record Snapshot Effacer_Ligne_Cmd Record Snapshot  Tous_les_Workspaces
+      Direct_Selects Favoris Autre Effacer_Ligne_Cmd Record Snapshot 0.2
+      Tous_les_Workspaces Direct_Selects Favoris Autre Color_ _Vert ♦
+    incertitude: "« Color_ _Vert » : lecture incertaine, probablement un tag de couleur d'interface plutôt qu'une commande"
+
+  - numero: 2004
+    label: "UPD SNAO 0.4"
+    couleur: "Blanc"
+    contenu: "Update Snapshot 0 . 4 ♦"
+
+  - numero: 2079
+    label: "Apercu suivant"
+    couleur: null
+    contenu: "Aperçu Suivant_"
+
+  - numero: 2080
+    label: "Apercu Précédent"
+    couleur: null
+    contenu: "Aperçu Précédent_"
+
+  - numero: 2919
+    label: "TAB19 SNAPSHOT"
+    couleur: "Blanc"
+    contenu: >-
+      Tab_Bas 1 9 Tab_Haut Effacer_Ligne_Cmd Blind Snapshot ♦
+      Effacer_Ligne_Cmd Effacer_Ligne_Cmd Effacer_Ligne_Cmd Blind Snapshot ♦
+      Effacer_Ligne_Cmd Effacer_Ligne_Cmd
+    note: "idiome défensif — clears répétés en nombre variable (1, 3, 2), jamais modélisé"
+
+  - numero: 2927
+    label: "TAB27 COLOR PICKER"
+    couleur: "Blanc"
+    contenu: "Tab_Bas 2 7 Tab_Haut"
+
+  - numero: 2936
+    label: "TAB36 FADER CONFIG"
+    couleur: "Blanc"
+    contenu: "Tab_Bas 3 6 Tab_Haut"
+
+  - numero: 2939
+    label: "EDITEUR CDS"
+    couleur: "Blanc"
+    contenu: "Tab_Bas 3 9 Tab_Haut Effacer_Ligne_Cmd Blind Custom_Direct_Select ♦Effacer_Ligne_Cmd Effacer_Ligne_Cmd"

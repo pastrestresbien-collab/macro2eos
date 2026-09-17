@@ -82,6 +82,16 @@
       ],
       "source": "objets.Chan du modèle ; alias métier français courants"
     },
+    "Address": {
+      "alias": [
+        "adresse",
+        "adresses",
+        "address",
+        "addresses"
+      ],
+      "source": "objets.Address du modèle ; manuel §6 « Address Check » — `[Address/Patch] [1] [At] [Full] {Check} [Enter]`.\n",
+      "note": "PAS d'alias « gradateur » / « dimmer », bien que le manuel §6 nomme la touche « [Dimmer/Address] » sur certaines consoles : un gradateur et une adresse DMX ne sont pas la même chose, et rien dans le dépôt ne dit lequel des deux un régisseur vise quand il dit « gradateur ». Deviner produirait une commande valide sur la mauvaise cible.\nAddress entre dans l'index GÉNÉRIQUE `objets`, donc `_objet()` le sert à toutes les intentions. C'est voulu : le modèle ne déclare Address légal que pour l'intensité, le plein feu, le DMX brut et Next/Last, et le générateur AVERTIT pour tout le reste au lieu de l'accepter en silence. Mieux vaut un avertissement exact qu'un mot d'objet que le traducteur ferait semblant de ne pas connaître.\n"
+    },
     "Group": {
       "alias": [
         "groupe",
@@ -120,6 +130,58 @@
         "presets"
       ],
       "source": "objets.Preset du modèle (grammar/modele.yaml) ; manuel §11 Presets"
+    }
+  },
+  "parametres": {
+    "Pan": {
+      "alias": [
+        "pan"
+      ],
+      "source": "parametres.Pan du modèle (grammar/modele.yaml) ; manuel §6"
+    },
+    "Tilt": {
+      "alias": [
+        "tilt"
+      ],
+      "source": "parametres.Tilt du modèle (grammar/modele.yaml) ; manuel §6, par analogie avec Pan"
+    },
+    "Zoom": {
+      "alias": [
+        "zoom"
+      ],
+      "source": "parametres.Zoom du modèle ; manuel §6 ; confirmé par une macro réelle (« ZOOM -%»/« ZOOM +% », corpus/macros_show_reel.yaml, 2026-09-13).\n"
+    },
+    "Iris": {
+      "alias": [
+        "iris"
+      ],
+      "source": "parametres.Iris du modèle (grammar/modele.yaml) ; manuel §6"
+    },
+    "Edge": {
+      "alias": [
+        "edge"
+      ],
+      "source": "parametres.Edge du modèle (grammar/modele.yaml) ; manuel §6"
+    },
+    "Hue": {
+      "alias": [
+        "hue"
+      ],
+      "source": "parametres.Hue du modèle (grammar/modele.yaml) ; confiance B, recette communautaire seulement — aucune source manuel directe pour ce paramètre.\n"
+    },
+    "Color_Crossfade": {
+      "alias": [
+        "crossfade",
+        "xfade",
+        "xfd"
+      ],
+      "source": "parametres.Color_Crossfade du modèle (grammar/modele.yaml) ; confiance B, feuille communautaire seulement. Son statut même de paramètre (et non de touche) est une INFÉRENCE de confiance C — voir `classement_incertain` dans le modèle.\n"
+    },
+    "Saturation": {
+      "alias": [
+        "saturation"
+      ],
+      "source": "parametres.Saturation du modèle (grammar/modele.yaml) ; confiance B, recette communautaire (absolue) + vidéo tutoriel officielle ETC (echelle).\n"
     }
   },
   "nuanciers": {
@@ -554,12 +616,124 @@
           "channels",
           "projecteur",
           "projecteurs",
-          "proj"
+          "proj",
+          "adresse",
+          "adresses",
+          "address",
+          "addresses"
         ]
       },
       "exemple_nl": "vérifie les circuits 1 à 20 à 75 %",
       "origine": "manuel §6 « Address Check » — `[1] [At] [Full]` puis `{Check} [Enter]`, confiance A (`grammar/modele.yaml`, section `actions`/`verifier`).\n",
       "note": "Le niveau fait partie de la commande : `Chan 1 At 75 Check Enter`. Le modèle porte le reste — `Next`/`Last` font défiler, et toute autre touche sort du mode. Le traducteur ne produit que la mise en route.\n"
+    },
+    "regler_parametre": {
+      "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser",
+      "declencheurs": {
+        "parametre": [
+          "pan",
+          "tilt",
+          "zoom",
+          "iris",
+          "edge",
+          "hue",
+          "saturation"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "verbe": [
+          "mets",
+          "met",
+          "mettre",
+          "regle",
+          "règle",
+          "regler",
+          "pose",
+          "ajoute",
+          "ajouter",
+          "monte",
+          "monter",
+          "retire",
+          "retirer",
+          "enleve",
+          "enlever",
+          "descend",
+          "descends",
+          "descendre",
+          "inverse",
+          "inverser",
+          "inversez"
+        ]
+      },
+      "exemple_nl": "mets le pan du circuit 1 à 10 degrés",
+      "origine": "manuel §6 « Manual Control », sections « Setting Parameters with the Keypad » et « Adjusting Parameters Using [+] and [-] », confiance A — voir `grammar/modele.yaml:parametres` pour le détail par paramètre et par forme (une forme B/C/D est signalée par le générateur, jamais cachée).\n",
+      "note": "Intention GÉNÉRIQUE (2026-09-14), remplace deux actions dédiées Pan/ Tilt d'une session précédente — ajouter un paramètre ne demande plus qu'une entrée dans `parametres` (ce fichier) et `grammar/modele.yaml`, aucun code. La forme « inverse » n'a qu'UNE source (« Mirror Pan », `corpus/handy_macros_etc.yaml`, confiance B) : `_regler_parametre` refuse « inverse le tilt » puisque Tilt ne déclare pas cette forme dans le modèle — jamais une extrapolation depuis Pan.\n"
+    },
+    "regler_fondu_couleur": {
+      "description": "régler le paramètre de fondu de couleur (Color_Crossfade)",
+      "declencheurs": {
+        "fondu": [
+          "fondu",
+          "fondus",
+          "crossfade",
+          "xfade",
+          "xfd"
+        ],
+        "couleur": [
+          "couleur",
+          "couleurs",
+          "color",
+          "colour"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "verbe": [
+          "mets",
+          "met",
+          "mettre",
+          "regle",
+          "règle",
+          "regler",
+          "passe",
+          "passer",
+          "monte",
+          "monter",
+          "amene",
+          "amener"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "parametre_impose": "Color_Crossfade",
+      "exemple_nl": "passe le fondu de couleur à 50",
+      "origine": "Feuille collaborative ETC « Handy Macros », trois macros de l'auteur « Sassy Squatch » — confiance B (`grammar/modele.yaml`, section `parametres`/`Color_Crossfade`). Aucune source manuel.\n",
+      "note": "DEUX groupes EXIGÉS, et c'est le point de toute l'entrée. Le mot « fondu » seul appartient à `mots_temps` et désigne une durée ; le mot « couleur » seul appartient à `creer_palettes_couleur`. Exiger la PAIRE capte « passe le fondu de couleur à 50 » sans voler ni « un fondu de 3 secondes », ni « crée les palettes de couleur ».\nDÉCLARÉE AVANT `regler_intensite` et `plein_feu`, et c'est structurel : « passe le fondu de couleur à fond » rendait `Full Enter` — tout le plateau à pleine intensité pour une demande qui ne parle que de fondu de couleur. Ce bug n'était retenu que par le verrou 3, c'est-à-dire par le hasard que le mot « passe » soit resté inconnu du lexique ; il a resurgi le 2026-09-16 dès que « passe » est entré. Router la phrase AVANT `plein_feu` la protège vraiment, au lieu de compter sur un mot qui manque.\n`parametre_impose` sert parce qu'aucun mot de la phrase française ne nomme le paramètre : `fondu`+`couleur` le désignent ensemble, sans qu'aucun des deux ne puisse porter l'alias seul.\n"
     },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
@@ -626,7 +800,9 @@
           "memoire",
           "memoires",
           "sequence"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -644,6 +820,96 @@
       },
       "exemple_nl": "enregistrer les circuits 1 à 5 dans la cue 4",
       "origine": "patron `record_cue_selectif` (grammar/patrons.yaml), confiance A — exemple chiffré du manuel §12 « Using a Positive Selective Store ». Un enregistrement sélectif sur une cue existante MODIFIE les circuits visés sans écraser le reste : ce n'est pas un remplacement.\n"
+    },
+    "selection_suivante": {
+      "description": "avancer d'un cran DANS la sélection courante (Next)",
+      "declencheurs": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "direction": [
+          "suivant",
+          "suivante",
+          "next"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "verbe": [
+          "va",
+          "vas",
+          "aller",
+          "passe",
+          "passer",
+          "avance",
+          "avancer",
+          "selectionne",
+          "selectionner",
+          "prends",
+          "prendre",
+          "mets",
+          "met"
+        ]
+      },
+      "exemple_nl": "passe au circuit suivant",
+      "origine": "manuel §6 l. 76-98 et §7 l. 175-177, confiance A (`grammar/modele.yaml`, section `actions`/`selection_suivante`).\n",
+      "note": "DÉCLARÉE AVANT `aller_a_cue`, et c'est le seul mécanisme qui protège. `aller_a_cue` accepte « suivant » dans son groupe `cible` : avant le 2026-09-16, « va au circuit suivant » rendait donc `Go To Cue Next Enter` — un saut de cue au lieu d'un déplacement de sélection, statut `compris`, le mot « circuit » relégué dans `ignores`. Exiger ici un mot d'objet de CIRCUIT règle le conflit sans nouveau verrou : une phrase qui nomme un circuit arrive ici, une phrase qui nomme une cue n'y arrive jamais. Ne pas déplacer cette intention après `aller_a_cue`.\nLes mots de GROUPE figurent bien dans le groupe `objet`, alors que le handler les refuse. C'est voulu : les exclure ici rendait « passe au groupe suivant » simplement non reconnu, et l'explication — pourquoi Next ne passe pas au groupe suivant — devenait inatteignable. Router pour refuser en expliquant vaut mieux que ne pas router.\n"
+    },
+    "selection_precedente": {
+      "description": "reculer d'un cran DANS la sélection courante (Last)",
+      "declencheurs": {
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ],
+        "direction": [
+          "precedent",
+          "precedente",
+          "last"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "verbe": [
+          "va",
+          "vas",
+          "aller",
+          "passe",
+          "passer",
+          "recule",
+          "reculer",
+          "reviens",
+          "revenir",
+          "selectionne",
+          "selectionner",
+          "prends",
+          "prendre",
+          "mets",
+          "met"
+        ]
+      },
+      "exemple_nl": "passe au circuit précédent",
+      "origine": "manuel §6 l. 76-98 et §7 l. 177, confiance A (`grammar/modele.yaml`, section `actions`/`selection_precedente`).\n",
+      "note": "Même contrainte d'ordre que `selection_suivante`. À NE PAS confondre avec `selection_derniere` (`Select Last`), qui resélectionne l'ensemble au lieu de se déplacer dedans — deux touches différentes pour deux gestes opposés.\n"
     },
     "aller_a_cue": {
       "description": "aller à une cue (Go To Cue)",
@@ -680,6 +946,12 @@
           "origine"
         ]
       },
+      "declencheurs_optionnels": {
+        "temps": [
+          "fondu",
+          "fondus"
+        ]
+      },
       "exemple_nl": "aller à la cue 5 ; va à la cue suivante en 3 secondes ; va à la cue suivante sans les temps\n",
       "origine": "manuel §16 « Go To Cue » ; touches confirmées A dans eosKeys.ts",
       "note": "La durée est attestée mot pour mot : `[Go to Cue] [Next] [Time] [3] [Enter]` (manuel §16). « Sans les temps » produit `Time 0` et NON un `Time` nu : le manuel §16 précise que `Go To Cue 8 Time Enter` emploie au contraire les temps stockés dans la cue 8. La feuille communautaire « Handy Macros » se trompe exactement là-dessus — sa macro « Quickstep » écrit `[time] [enter]` en annonçant « ignores timing », ce qui produit l'inverse de ce qu'elle promet.\n"
@@ -703,7 +975,9 @@
           "submasters",
           "sousmaster",
           "sousmasters"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -810,7 +1084,9 @@
         "preset": [
           "preset",
           "presets"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -844,7 +1120,9 @@
         "preset": [
           "preset",
           "presets"
-        ],
+        ]
+      },
+      "declencheurs_optionnels": {
         "objet": [
           "circuit",
           "circuits",
@@ -1135,7 +1413,12 @@
           "monter",
           "remonte",
           "remonter",
-          "remontez"
+          "remontez",
+          "mets",
+          "met",
+          "mettre",
+          "passe",
+          "passer"
         ],
         "objet": [
           "circuit",
@@ -1155,6 +1438,44 @@
       "exemple_nl": "circuits 1 à 5 à fond ; plein feu sur le groupe 3",
       "origine": "manuel §6 « [1] [Full] [Full] », confiance A (`grammar/modele.yaml`, section `actions`/`plein_feu`).\n",
       "note": "Seule la forme simple est produite (`Full` + `Enter`). Le DOUBLE appui `Full Full` est une autre commande, qui s'auto-termine — le modèle le documente, le traducteur ne le génère pas : rien dans une phrase française ne distingue de façon fiable « à fond » d'un double appui.\n"
+    },
+    "niveau_setup": {
+      "description": "amener la sélection au niveau de la touche Level (réglé en Setup)",
+      "declencheurs": {
+        "level": [
+          "level"
+        ]
+      },
+      "declencheurs_optionnels": {
+        "verbe": [
+          "mets",
+          "met",
+          "mettre",
+          "monte",
+          "monter",
+          "amene",
+          "amener",
+          "passe",
+          "passer"
+        ],
+        "objet": [
+          "circuit",
+          "circuits",
+          "chan",
+          "chans",
+          "channel",
+          "channels",
+          "projecteur",
+          "projecteurs",
+          "proj",
+          "groupe",
+          "groupes",
+          "group"
+        ]
+      },
+      "exemple_nl": "mets les circuits 1 à 5 au level",
+      "origine": "manuel §6 l. 288-308 (« [1] [Level] ») et §5 Setup l. 523, confiance A (`grammar/modele.yaml`, section `actions`/`niveau_setup`).\n",
+      "note": "Le déclencheur exige le mot `level` et RIEN d'autre, délibérément. Les candidats français évidents sont tous pris ou dangereux : « niveau » et « intensité » sont les marqueurs de `regler_intensite`, et les capter ici détournerait « circuits 1 à 5 au niveau 50 » vers une commande qui ignorerait le 50. `Level` est de toute façon le nom porté par la touche, y compris sur une console localisée.\nLa valeur n'est PAS 80 % : 80 est le défaut d'usine, réglable dans Setup> User> Manual Control (§5 l. 523). Le traducteur ne l'écrit donc jamais en clair — il pose la touche, la console applique sa valeur.\n"
     },
     "hors_scene": {
       "description": "sortir une sélection de scène (Out)",

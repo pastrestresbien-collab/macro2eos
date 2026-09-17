@@ -17,6 +17,42 @@ from traducteur import Traducteur
 
 CAS = [
     {
+        # Une sortie LLM est une donnée EXTERNE : sa forme n'est jamais
+        # garantie, même quand le prompt la décrit. `{"reponses": "haut"}` —
+        # une chaîne au lieu d'un dict — faisait lever un AttributeError,
+        # donc PLANTER l'app dans le navigateur, au lieu d'ignorer une
+        # réponse mal formée. Trouvé le 2026-09-17 en sondant ce chemin avec
+        # des sorties hostiles.
+        #
+        # Tout le reste tenait déjà et c'est le résultat rassurant de ce
+        # sondage : option inventée, clé inconnue, valeur nulle, tentative
+        # d'injection dans une réponse — toutes retombent proprement sur
+        # `a_preciser`. Le LLM ne peut RIEN forcer : il ne fait que répondre
+        # à des questions déjà posées, il ne propose jamais de commande.
+        "nom": "sortie LLM mal formée — ignorée, jamais fatale",
+        "phrase": "bump le sub 5",
+        "sortie_llm": {"reponses": "haut"},
+        "statut": "a_preciser",
+        "questions": ["bump_direction"],
+        "options": ["haut", "bas"],
+    },
+    {
+        "nom": "sortie LLM qui n'est même pas un dict",
+        "phrase": "bump le sub 5",
+        "sortie_llm": "haut",
+        "statut": "a_preciser",
+        "questions": ["bump_direction"],
+        "options": ["haut", "bas"],
+    },
+    {
+        "nom": "option inventée par le LLM — jamais retenue",
+        "phrase": "bump le sub 5",
+        "sortie_llm": {"reponses": {"bump_direction": "lateral"}},
+        "statut": "a_preciser",
+        "questions": ["bump_direction"],
+        "options": ["haut", "bas"],
+    },
+    {
         "nom": "déjà compris — l'avis du LLM n'est jamais consulté",
         "phrase": "groupe 5 en lee 195",
         "sortie_llm": {"reponses": {"nuancier": "autre"}},

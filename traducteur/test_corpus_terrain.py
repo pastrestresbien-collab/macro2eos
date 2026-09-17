@@ -88,23 +88,36 @@ def normaliser(commande: str) -> str:
     return " ".join(commande.replace("_", " ").lower().split())
 
 
-# Deux causes d'échec très différentes se cachent sous « hors_perimetre », et
-# les confondre ferait rater le résultat principal de ce banc. Un mot inconnu
-# est un trou de VOCABULAIRE, qui se comble en ajoutant au lexique. Une
-# sélection manquante est un trou de CONCEPTION : les macros de praticiens
-# sont écrites pour « ce qui est sélectionné en ce moment » (c'est tout
-# l'intérêt d'un bouton de magic sheet), alors que le traducteur exige une
-# cible explicite — règle 5 de REGLES_POUR_UI.md, qui interdit de deviner un
-# état de console. Ce second cas ne se comble pas par du lexique.
-MOTIFS_SELECTION = ("aucun numéro", "aucune sélection", "aucun circuit",
-                    "niveau manquant", "aucun numero")
-
-
-def cause_de(motif: str) -> str:
-    bas = motif.lower()
-    if any(m in bas for m in MOTIFS_SELECTION):
-        return "selection_implicite"
-    return "vocabulaire"
+# Pourquoi une entrée est hors périmètre se LIT dans le corpus, ça ne se
+# devine pas depuis le message de refus.
+#
+# Ce banc a deviné la cause pendant six jours, en cherchant « aucun numéro »
+# dans le texte du refus pour conclure « sélection implicite ». Le 2026-09-14
+# une qualification à la main des 23 entrées a montré que ce classement était
+# FAUX sur les 11 entrées qu'il rangeait ainsi — et faux dans le sens le plus
+# coûteux : il avait fait inscrire au planning, comme priorité numéro un, un
+# arbitrage produit sur la sélection implicite qui ne débloquait en réalité
+# AUCUNE entrée. Deux exemples suffisent à voir le vice :
+#
+#   channel_check  `Chan 1 At 75 Check Enter`   — cible explicite. Il manque `Check`.
+#   color_xfd_50   `Color_Crossfade 50 Enter`   — réglage GLOBAL, sans sélection.
+#
+# Un message de refus dit ce que le traducteur a remarqué en premier, pas ce
+# qui bloque. Les deux coïncident rarement. La cause est donc désormais un
+# champ `cause:` écrit à la main dans `handy_macros_etc.yaml`, en regard de la
+# syntaxe de la feuille — et une entrée hors périmètre SANS cause fait échouer
+# ce banc, pour qu'aucune ne s'ajoute en silence.
+CAUSES_CONNUES = {
+    "action_absente": "le mot-clé Eos n'est pas dans le modèle",
+    "forme_absente": "l'action existe, pas sous cette forme",
+    "navigation_relative": "désigne par position (Next/Last), pas par numéro",
+    "mecanisme_absent": "chaîne entière à construire",
+    "macro_non_terminee": "finit exprès sans valeur, l'opérateur complète",
+    "hors_ligne_de_commande": "pilote l'affichage, pas la conduite",
+    "source_douteuse": "cellule de la feuille inexploitable",
+    "selection_implicite": "vise « ce qui est sélectionné » — règle 5",
+    "sens_non_atteste": "la feuille suggère un sens qu'aucune source ne confirme",
+}
 
 
 # Deux tokens qu'Eos accepte sans les exiger. La liste est COURTE et chaque
@@ -155,6 +168,8 @@ def main() -> int:
     progressions: list[str] = []
     compte: dict[str, int] = {}
     causes: dict[str, int] = {}
+    non_qualifiees: list[str] = []
+    causes_inconnues: list[str] = []
     lignes: list[str] = []
 
     for entree in corpus["entrees"]:
@@ -164,8 +179,13 @@ def main() -> int:
         affiche = reference if reference in FIGES else calcule
         compte[affiche] = compte.get(affiche, 0) + 1
         if affiche == "hors_perimetre":
-            c = cause_de(explication)
-            causes[c] = causes.get(c, 0) + 1
+            c = entree.get("cause")
+            if c is None:
+                non_qualifiees.append(entree["id"])
+            elif c not in CAUSES_CONNUES:
+                causes_inconnues.append(f"{entree['id']} : cause « {c} »")
+            else:
+                causes[c] = causes.get(c, 0) + 1
 
         if reference in ECHELLE and calcule in ECHELLE:
             if ECHELLE.index(calcule) < ECHELLE.index(reference):
@@ -200,11 +220,10 @@ def main() -> int:
           f"({compte.get('divergent', 0)} divergences, "
           f"{compte.get('hors_perimetre', 0)} hors périmètre).")
     if causes:
-        print(f"  dont {causes.get('selection_implicite', 0)} par sélection "
-              f"implicite (la feuille vise « ce qui est sélectionné », le "
-              f"traducteur exige une cible)")
-        print(f"       {causes.get('vocabulaire', 0)} par vocabulaire absent "
-              f"du lexique")
+        print("  causes du hors-périmètre (déclarées dans le corpus, "
+              "pas déduites du refus) :")
+        for nom, n in sorted(causes.items(), key=lambda kv: -kv[1]):
+            print(f"       {n:2}  {nom:22} — {CAUSES_CONNUES[nom]}")
     print(f"Hors comparaison : {compte.get('multi_commande', 0)} macros "
           f"multi-commandes, {compte.get('source_fautive', 0)} entrées fautives, "
           f"{compte.get('illisible', 0)} cellules perdues "
@@ -214,12 +233,27 @@ def main() -> int:
         print("\nRéférences à mettre à jour dans le YAML (progression) :")
         for p in progressions:
             print(f"  {p}")
+    # Une entrée hors périmètre sans cause déclarée fait ÉCHOUER ce banc.
+    # Sans ça, la qualification se périmerait en silence dès la prochaine
+    # entrée ajoutée — et c'est exactement ce silence qui a produit six jours
+    # de fausse priorité (voir le commentaire de CAUSES_CONNUES).
+    if non_qualifiees:
+        print("\nENTRÉES HORS PÉRIMÈTRE SANS `cause:` DÉCLARÉE :")
+        for i in non_qualifiees:
+            print(f"  {i}")
+        print("  -> ajouter `cause:` et `cause_detail:` dans "
+              "corpus/handy_macros_etc.yaml, en regard de la syntaxe de la "
+              "feuille — PAS d'après le message de refus.")
+    if causes_inconnues:
+        print("\nCAUSES HORS TAXONOMIE :")
+        for c in causes_inconnues:
+            print(f"  {c}")
+        print(f"  -> valeurs admises : {', '.join(sorted(CAUSES_CONNUES))}")
     if regressions:
         print("\nRÉGRESSIONS :")
         for r in regressions:
             print(f"  {r}")
-        return 1
-    return 0
+    return 1 if (regressions or non_qualifiees or causes_inconnues) else 0
 
 
 if __name__ == "__main__":

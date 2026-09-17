@@ -305,13 +305,13 @@ CAS = [
         "avertissements": 0,
     },
     {
-        "nom": "`At` sur un Sub — refusé par le modèle (Assert n'a pas de mot-clé)",
+        "nom": "`At` sur un Sub — confirmé au banc réel le 2026-09-13",
         "ir": [
             {"selection": {"objet": "Sub", "numero": 4},
              "action": {"type": "intensite", "valeur": 50}},
         ],
         "attendu": "Sub 4 At 50 Enter",
-        "avertissements": 1,
+        "avertissements": 0,
     },
 
     # --------------------------------------------------------- Query (§15)
@@ -438,6 +438,155 @@ CAS = [
         "avertissements": 0,
     },
     {
+        # Forme CONFIRMÉE AU BANC le 2026-09-13, sur `Groupe 100` : un seul
+        # `Enter` final, aucun `Enter` entre les deux paramètres. Le modèle la
+        # documentait depuis, mais le générateur n'avait AUCUNE branche pour
+        # ces actions — il levait « action non gérée ». Une capacité
+        # documentée, sourcée en confiance A, et injoignable.
+        "nom": "banc 2026-09-13 — `CIE X` et `CIE Y` sur une seule commande",
+        "ir": [{"selection": {"objet": "Group", "numero": 100},
+                "action": {"type": "cie_x", "valeur": 20, "cie_y": 50}}],
+        "attendu": "Group 100 CIE X 20 CIE Y 50 Enter",
+        # la projection silencieuse sur le gamut remonte toujours
+        "avertissements": 1,
+    },
+    {
+        "nom": "banc 2026-09-13 — `CIE X` seul reste valide",
+        "ir": [{"selection": {"objet": "Chan", "numero": 5},
+                "action": {"type": "cie_x", "valeur": 30}}],
+        "attendu": "Chan 5 CIE X 30 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §6 l. 296 — `Chan 1 + 3 At 50`, cibles non consécutives",
+        "ir": [{"selection": {"objet": "Chan", "numero": 1, "plus": [3]},
+                "action": {"type": "intensite", "valeur": 50}}],
+        "attendu": "Chan 1 + 3 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 l. 62 — `Chan 2 Thru 8 - 5`, une plage moins un",
+        "ir": [{"selection": {"objet": "Chan", "de": 2, "a": 8, "moins": [5]},
+                "action": {"type": "intensite", "valeur": 50}}],
+        "attendu": "Chan 2 Thru 8 - 5 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        # §6 l. 68 : « You may use [+] and / or [-] multiple times ».
+        "nom": "manuel §6 l. 68 — `+` et `-` cumulés",
+        "ir": [{"selection": {"objet": "Chan", "numero": 1,
+                              "plus": [5, 9], "moins": [3]},
+                "action": {"type": "plein_feu"}}],
+        "attendu": "Chan 1 + 5 + 9 - 3 Full Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 Address Check — `Address 1 At 75 Check Enter`",
+        "ir": [{"selection": {"objet": "Address", "numero": 1},
+                "action": {"type": "intensite", "valeur": 75, "check": True}}],
+        "attendu": "Address 1 At 75 Check Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 — `Address 5 Full Enter`",
+        "ir": [{"selection": {"objet": "Address", "numero": 5},
+                "action": {"type": "plein_feu"}}],
+        "attendu": "Address 5 Full Enter",
+        "avertissements": 0,
+    },
+    {
+        # Une adresse n'est légale que pour l'intensité, le plein feu, le DMX
+        # brut et Next/Last. Tout le reste doit être SIGNALÉ, pas accepté.
+        "nom": "`Address` + `sneak` n'est pas modélisé — le générateur le dit",
+        "ir": [{"selection": {"objet": "Address", "numero": 3},
+                "action": {"type": "sneak"}}],
+        "attendu": "Address 3 Sneak Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "feuille ETC — `Color_Crossfade 50`, paramètre de confiance B",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Color_Crossfade",
+                           "forme": "absolue", "valeur": 50}}],
+        "attendu": "Color_Crossfade 50 Enter",
+        "avertissements": 1,      # confiance B : le générateur le signale
+    },
+    {
+        # Le zéro NE DOIT PAS être complété en « 00 » : `unite` est
+        # volontairement absent du modèle pour ce paramètre (précédent
+        # Saturation), faute de source sur la règle du zéro implicite.
+        "nom": "feuille ETC — `Color_Crossfade 0` reste 0, jamais « 00 »",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Color_Crossfade",
+                           "forme": "absolue", "valeur": 0}}],
+        "attendu": "Color_Crossfade 0 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "feuille ETC — `Color_Crossfade Full`, forme `plein`",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Color_Crossfade",
+                           "forme": "plein", "valeur": None}}],
+        "attendu": "Color_Crossfade Full Enter",
+        "avertissements": 1,
+    },
+    {
+        # La forme `plein` n'est déclarée QUE pour Color_Crossfade : aucune
+        # source ne l'atteste pour Zoom. Le générateur rend quand même, mais
+        # il le dit — une forme ne s'emprunte pas à un paramètre voisin.
+        "nom": "`Zoom Full` n'est sourcé nulle part — le générateur le signale",
+        "ir": [{"action": {"type": "regler_parametre",
+                           "parametre": "Zoom",
+                           "forme": "plein", "valeur": None}}],
+        "attendu": "Zoom Full Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "manuel §6 l. 76-98 — `Next` se déplace dans la sélection",
+        # [1][0] [Enter] puis [Next] : channel 11 devient le seul sélectionné
+        "ir": [{"action": {"type": "selection_suivante"}}],
+        "attendu": "Next",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 l. 76-98 — `Last` est le symétrique de `Next`",
+        "ir": [{"action": {"type": "selection_precedente"}}],
+        "attendu": "Last",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §7 l. 175 — `Group n Next` entre dans les circuits du groupe",
+        "ir": [
+            {"selection": {"objet": "Group", "numero": 3},
+             "action": {"type": "selection_suivante"}},
+        ],
+        "attendu": "Group 3 Next",
+        "avertissements": 0,
+    },
+    {
+        "nom": "feuille ETC « Out Next Level » — trois touches auto-terminantes",
+        # Aucune n'attend d'Enter : la macro tient en trois lignes.
+        "ir": [
+            {"action": {"type": "hors_scene"}},
+            {"action": {"type": "selection_suivante"}},
+            {"action": {"type": "niveau_setup"}},
+        ],
+        "attendu": "Out\nNext\nLevel",
+        "avertissements": 0,
+    },
+    {
+        "nom": "`Cue` + `Next` n'est pas modélisé — le générateur le dit",
+        # Next a un second sens derrière une cible (§10 « Record Beam Palette
+        # Next »), délibérément NON modélisé : le générateur doit refuser de
+        # cautionner la combinaison plutôt que de la rendre en silence.
+        "ir": [
+            {"selection": {"objet": "Cue", "numero": 3},
+             "action": {"type": "selection_suivante"}},
+        ],
+        "attendu": "Cue 3 Next",
+        "avertissements": 1,
+    },
+    {
         "nom": "manuel §6 — `Level` prend sa valeur du Setup et s'auto-termine",
         # [1] [Level]
         "ir": [
@@ -545,13 +694,18 @@ CAS = [
         "avertissements": 0,
     },
     {
+        # Le TITRE de ce cas disait déjà le risque — « la surface, pas le
+        # plateau » — et l'attente affirmait pourtant qu'aucun avertissement
+        # ne sortait. Mis en accord le 2026-09-17 : un snapshot qui n'
+        # enregistre pas ce que l'opérateur croit est une commande valide qui
+        # fait autre chose, la classe d'erreur que ce dépôt combat.
         "nom": "manuel §23 — enregistrer un snapshot (la surface, pas le plateau)",
         # [Record] [Snapshot] [1]
         "ir": [
             {"action": {"type": "record_snapshot", "cible": 1}},
         ],
         "attendu": "Record Snapshot 1 Enter",
-        "avertissements": 0,
+        "avertissements": 1,   # le risque du modèle remonte (2026-09-17)
     },
     {
         "nom": "manuel §23 — rappeler un snapshot",
@@ -1049,6 +1203,9 @@ CAS = [
         "avertissements": 1,
     },
     {
+        # Même remarque : le titre annonçait la double confirmation, l'attente
+        # disait « aucun avertissement ». Le manuel signale la perte de
+        # données en CAUTION — elle remonte désormais.
         "nom": "manuel §4 — suppression de channels, double confirmation",
         # [6] [Thru] [1][0] [Delete] [Enter] [Enter]
         "ir": [
@@ -1057,7 +1214,7 @@ CAS = [
         ],
         "kwargs": {"contexte": "Patch"},
         "attendu": "Chan 6 Thru 10 Delete Enter",
-        "avertissements": 0,
+        "avertissements": 1,   # le risque du modèle remonte (2026-09-17)
     },
     {
         "nom": "manuel §4 — preheat patché",
@@ -1088,6 +1245,108 @@ CAS = [
         ],
         "attendu": "Effect 1 {BPM} 190 Enter",
         "avertissements": 0,
+    },
+
+    # ------------------------------------------- paramètres génériques (§6)
+    {
+        "nom": "regler_parametre — Pan absolu",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Pan",
+                        "forme": "absolue", "valeur": 10}},
+        ],
+        "attendu": "Chan 1 Pan 10 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "regler_parametre — Pan relatif retrait, piège toujours signalé",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Pan",
+                        "forme": "relatif_retrait", "valeur": 10}},
+        ],
+        "attendu": "Chan 1 Pan + - 10 Enter",
+        "avertissements": 1,      # le piège absolue-vs-retrait, même en confiance A
+    },
+    {
+        "nom": "regler_parametre — Pan échelle (confiance B, Mirror Pan)",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Pan",
+                        "forme": "echelle", "valeur": -100}},
+        ],
+        "attendu": "Chan 1 Pan / -100 Enter",
+        "avertissements": 1,      # confiance B signalée
+    },
+    {
+        "nom": "regler_parametre — Tilt échelle NON déclarée, jamais empruntée à Pan",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Tilt",
+                        "forme": "echelle", "valeur": -100}},
+        ],
+        "attendu": "Chan 1 Tilt / -100 Enter",
+        "avertissements": 1,      # forme non déclarée pour Tilt
+    },
+    {
+        "nom": "regler_parametre — Zoom absolu, deux chiffres, pas de zéro implicite",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Zoom",
+                        "forme": "absolue", "valeur": 65}},
+        ],
+        "attendu": "Chan 1 Zoom 65 Enter",
+        "avertissements": 1,      # piège pourcentage, toujours signalé
+    },
+    {
+        "nom": "regler_parametre — Zoom absolu, zéro implicite comme At (manuel §6)",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Zoom",
+                        "forme": "absolue", "valeur": 5}},
+        ],
+        "attendu": "Chan 1 Zoom 05 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "regler_parametre — Iris absolu, cas d'ancrage du manuel §6",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Iris",
+                        "forme": "absolue", "valeur": 50}},
+        ],
+        "attendu": "Chan 1 Iris 50 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "regler_parametre — Edge absolu, même exemple chiffré que Zoom/Iris",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Edge",
+                        "forme": "absolue", "valeur": 50}},
+        ],
+        "attendu": "Chan 1 Edge 50 Enter",
+        "avertissements": 1,
+    },
+    {
+        "nom": "regler_parametre — Hue absolu, degrés littéraux, aucun zéro implicite",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Hue",
+                        "forme": "absolue", "valeur": 180}},
+        ],
+        "attendu": "Chan 1 Hue 180 Enter",
+        "avertissements": 1,      # confiance B, aucune source manuel directe
+    },
+    {
+        "nom": "regler_parametre — Saturation échelle (vidéo officielle ETC, boucle refermée)",
+        "ir": [
+            {"selection": {"objet": "Chan", "numero": 1},
+             "action": {"type": "regler_parametre", "parametre": "Saturation",
+                        "forme": "echelle", "valeur": -90}},
+        ],
+        "attendu": "Chan 1 Saturation / -90 Enter",
+        "avertissements": 1,
     },
 ]
 
@@ -1280,6 +1539,16 @@ def controler_osc(nom: str, resultat, attendu: list[str], nb_avert: int) -> bool
 
 
 def main() -> int:
+    orphelines = verifier_actions_rendables()
+    if orphelines:
+        print("ACTIONS DÉCLARÉES AU MODÈLE ET NON RENDABLES :")
+        for nom in orphelines:
+            print(f"  {nom}")
+        print("  -> ajouter leur branche dans `_rendre_action`, ou les retirer "
+              "du modèle. Une action documentée et injoignable fait planter "
+              "l'app au lieu de produire ou de refuser.\n")
+        return 1
+
     g = Generateur()
     total = len(CAS) + len(CAS_MACRO) + len(CAS_OSC)
     reussis = 0
@@ -1302,6 +1571,44 @@ def main() -> int:
     print(f"\n{reussis}/{total} cas conformes.")
     return 1 if reussis != total else 0
 
+
+
+def verifier_actions_rendables() -> list[str]:
+    """Toute action DÉCLARÉE au modèle doit être rendable.
+
+    Le modèle et le générateur dérivent l'un de l'autre sans que rien ne le
+    dise : une action peut être documentée, sourcée, dotée d'une confiance A —
+    et rester sans branche de rendu. `_rendre_action` lève alors
+    `ValueError: action non gérée`, donc l'app plante au lieu de produire ou
+    de refuser proprement.
+
+    Trouvé le 2026-09-17 en rendant EXHAUSTIVEMENT chaque couple objet ×
+    action : `cie_x` et `cie_y` étaient dans ce cas, confirmés au banc réel et
+    injoignables. Ce contrôle évite que le cas se reproduise en silence.
+    """
+    generateur = Generateur()
+    modele = generateur.modele
+    # IR volontairement TROP fournie : on teste la présence d'une branche de
+    # rendu, pas la validité des arguments. Un `KeyError` sur un champ manquant
+    # signalerait ma propre sonde, pas un défaut du générateur.
+    garniture = {
+        "valeur": 50, "cible": 1, "texte": "X", "numero": 1, "nuancier": 3,
+        "teinte": 195, "parametre": "Pan", "forme": "absolue", "montee": 1,
+        "dwell": 2, "descente": 3, "liste": 1, "mot": "Out", "famille": "Color Palette",
+        "adresse": 1, "univers": 1, "de": 1, "a": 5, "condition": "Is In",
+    }
+    orphelines = []
+    for nom in modele["actions"]:
+        action = {"type": nom, **garniture}
+        try:
+            generateur.rendre([{"selection": {"objet": "Chan", "numero": 1},
+                                "action": action}])
+        except ValueError as erreur:
+            if "action non gérée" in str(erreur):
+                orphelines.append(nom)
+        except Exception:                                  # noqa: BLE001
+            pass          # argument manquant : ma sonde, pas le générateur
+    return orphelines
 
 if __name__ == "__main__":
     sys.exit(main())

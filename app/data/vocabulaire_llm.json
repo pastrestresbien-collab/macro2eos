@@ -4,6 +4,9 @@
       "cle": "Chan"
     },
     {
+      "cle": "Address"
+    },
+    {
       "cle": "Group"
     },
     {
@@ -117,6 +120,19 @@
         "objet"
       ]
     },
+    "regler_parametre": {
+      "description": "régler un paramètre de focus (Pan, Tilt...) en absolu, en relatif, ou l'inverser",
+      "champs": [
+        "parametre"
+      ]
+    },
+    "regler_fondu_couleur": {
+      "description": "régler le paramètre de fondu de couleur (Color_Crossfade)",
+      "champs": [
+        "fondu",
+        "couleur"
+      ]
+    },
     "regler_intensite": {
       "description": "donner un niveau d'intensité à une sélection",
       "champs": [
@@ -127,8 +143,21 @@
       "description": "enregistrer une sélection de circuits dans une cue existante",
       "champs": [
         "verbe",
-        "cue",
-        "objet"
+        "cue"
+      ]
+    },
+    "selection_suivante": {
+      "description": "avancer d'un cran DANS la sélection courante (Next)",
+      "champs": [
+        "objet",
+        "direction"
+      ]
+    },
+    "selection_precedente": {
+      "description": "reculer d'un cran DANS la sélection courante (Last)",
+      "champs": [
+        "objet",
+        "direction"
       ]
     },
     "aller_a_cue": {
@@ -142,8 +171,7 @@
       "description": "enregistrer une sélection de circuits dans un submaster",
       "champs": [
         "verbe",
-        "sub",
-        "objet"
+        "sub"
       ]
     },
     "appliquer_effet": {
@@ -172,16 +200,14 @@
       "description": "enregistrer une sélection de circuits dans un preset",
       "champs": [
         "verbe",
-        "preset",
-        "objet"
+        "preset"
       ]
     },
     "rappeler_preset": {
       "description": "appliquer un preset existant à une sélection de circuits",
       "champs": [
         "verbe",
-        "preset",
-        "objet"
+        "preset"
       ]
     },
     "appel_macro": {
@@ -268,6 +294,12 @@
       "description": "monter une sélection à pleine intensité",
       "champs": [
         "plein"
+      ]
+    },
+    "niveau_setup": {
+      "description": "amener la sélection au niveau de la touche Level (réglé en Setup)",
+      "champs": [
+        "level"
       ]
     },
     "hors_scene": {

@@ -203,9 +203,17 @@ questions:
       en testant séparément `Sub 4 At 50 Enter` et `Sub 4 At 50 Sneak 2
       Enter`. Si le second passe, la règle de légalité doit se resserrer sur
       la forme nue au lieu de refuser le couple entier.
+
+      TRANCHÉ 2026-09-13 : les DEUX formes passent au banc réel. Ce n'est donc
+      pas la forme nue qui était en cause — c'est le constat S d'origine qui
+      était une sur-interprétation (« je pilote mes subs au fader » n'est pas
+      « At est refusé »). Le manuel (A) avait raison contre le banc (S) parce
+      que le banc n'avait jamais testé la commande, seulement l'habitude.
+      Précédent à retenir : vérifier qu'une confiance S porte bien sur une
+      OBSERVATION et non sur une pratique.
     backlog: null
-    traite: "non"
-    traite_ou: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml legalite Sub+intensite (valide: oui, S)"
 
   - date: "2026-09-08"
     question: "`Go To Cue <n> Time Enter` ignore-t-il les temps de la cue ?"
@@ -240,6 +248,15 @@ questions:
       La répartition des échecs importe plus que le total — 9 macros
       multi-commandes (fonctionnalité absente), 17 trous de vocabulaire, et
       9 échecs par SÉLECTION IMPLICITE.
+
+      CORRIGÉ 2026-09-14 : le dernier chiffre est FAUX, et le suivi l'a porté
+      à 11 avant qu'on le vérifie. Il venait d'un classement automatique du
+      banc, qui cherchait « aucun numéro » dans le message de refus. Une
+      qualification à la main des 23 entrées hors périmètre donne ZÉRO
+      sélection implicite : les entrées ainsi rangées nomment leur cible
+      (`Chan 1 At 75 Check`), ou visent un réglage global sans sélection
+      (`Color_Crossfade 50`), ou demandent la navigation Next/Last. La cause
+      est désormais déclarée entrée par entrée dans le corpus.
     sources:
       - "corpus/handy_macros_etc.yaml — 43 entrées, 37 exploitables"
       - "traducteur/test_corpus_terrain.py — banc de rétro-traduction"
@@ -441,9 +458,20 @@ questions:
       croit. Le générateur avertit désormais au lieu de refuser, et au lieu de
       se taire. À trancher au banc en testant séparément `Sub 4 At 50 Enter`
       et `Sub 4 At 50 Sneak 2 Enter`.
-    backlog: 22
+
+      TRANCHÉ 2026-09-13, confiance S : les deux formes testées au banc réel,
+      acceptées sans erreur, fader du Sub 1 observé montant physiquement à
+      50 % en 2 secondes. `valide: oui` désormais dans `modele.yaml`. Le
+      traducteur route « sub 3 à 50 % » vers `Sub 3 At 50 Enter` depuis le
+      même jour (`traducteur/traducteur.py:_regler_intensite`).
+    # CORRIGÉ 2026-09-14 : ce renvoi portait « backlog: 22 », mais le point 22 de
+    # PLANNING.md est « {Insert Before} / {Insert After} », sans rapport. Renvoi croisé
+    # faux, probablement une frappe. Les numéros de backlog étant des identifiants
+    # stables et jamais renumérotés, cette question n'en reçoit pas rétroactivement :
+    # elle est tranchée, donc elle n'a plus besoin d'entrer au backlog.
+    backlog: null
     traite: "oui"
-    traite_ou: "grammar/modele.yaml legalite Sub+intensite"
+    traite_ou: "grammar/modele.yaml legalite Sub+intensite ; traducteur/traducteur.py _regler_intensite"
 
   - date: "2026-09-09"
     question: >-
@@ -482,9 +510,24 @@ questions:
       tranché, ne rien promettre sur la fidélité visuelle du rendu.
       Ce que ça n'affecte PAS : le partage de show files et l'ASCII, où les
       mots-clés sont normalisés.
+
+      MISE À JOUR 2026-09-13, confiance B (show réel d'un tiers, transmis en
+      conversation, non testé à notre banc) : la question précédente est
+      TRANCHÉE dans le sens le plus dangereux des deux. Une trentaine de
+      macros réelles montrent des tokens français DANS LE CONTENU STOCKÉ de
+      la macro elle-même (`Attente_Enter`, `Effacer_Ligne_Cmd`, `Par_Type`,
+      `Convertir_en_Manuel`, `Conv_en_val_absolue`, `Cue Précédent`...), pas
+      seulement dans un affichage — le contenu de macro EST ce qui a été
+      frappé/enregistré. Chaque token vérifié contre `reference/eosKeys.ts`
+      avant d'être retenu (voir `corpus/macros_show_reel.yaml`). Ce n'est
+      donc plus une question d'affichage : la SAISIE change avec la langue
+      de la console, au moins pour ces tokens-là. Reste ouvert : la liste
+      complète des mots affectés, et si la frappe anglaise reste acceptée en
+      parallèle sur une console francophone (aucune des deux hypothèses
+      testée ici).
     backlog: null
-    traite: "non"
-    traite_ou: null
+    traite: "partiel"
+    traite_ou: "corpus/macros_show_reel.yaml"
 
   - date: "2026-09-09"
     question: >-
@@ -526,6 +569,293 @@ questions:
     traite: "oui"
     traite_ou: "grammar/modele.yaml operateurs/creation_plage ; traducteur intention creer_plage"
 
+  - date: "2026-09-14"
+    question: >-
+      Les 23 entrées hors périmètre du banc terrain sont-elles bien bloquées
+      par ce que le banc dit ?
+    reponse: >-
+      Non. Le banc annonçait 11 échecs par « sélection implicite » ; une
+      qualification à la main des 23 entrées en donne ZÉRO. Le classement
+      était produit par un `if` sur trois chaînes de caractères cherchées
+      dans le MESSAGE DE REFUS (« aucun numéro », « aucune sélection »,
+      « niveau manquant »). Or un refus dit ce que le traducteur a remarqué
+      en premier, pas ce qui bloque.
+    sources:
+      - "corpus/handy_macros_etc.yaml — champ `cause:`, 23 entrées qualifiées à la main"
+      - "traducteur/test_corpus_terrain.py — ancien `cause_de()`, supprimé"
+    confiance: "A"
+    consequence: "outillage"
+    detail: >-
+      Trois contre-exemples suffisent. `channel_check` = `Chan 1 At 75 Check
+      Enter` nomme explicitement sa cible et se plaint d'un niveau manquant :
+      il lui manque `Check`. `address_check` = `Address 1 At 75 Check` idem.
+      `color_xfd_50` = `Color_Crossfade 50 Enter` ne nomme aucune cible.
+      (CORRIGÉ le 2026-09-17 : j'avais écrit ici « réglage GLOBAL de console,
+      qui ne prend aucune sélection ». C'était une supposition, et elle est
+      probablement fausse — tout indique un PARAMÈTRE de projecteur, donc
+      appliqué à la sélection courante comme Pan ou Hue. Voir l'entrée du
+      2026-09-17.) Les quatre `out_*_level` demandent la navigation `Next`/`Last`.
+      `record_preset` et `startup` sont des macros volontairement non
+      terminées, concept DÉJÀ modélisé.
+
+      Le coût réel n'est pas l'erreur de comptage : c'est qu'elle avait fait
+      inscrire au planning du jour, en priorité numéro un, un arbitrage
+      produit sur la sélection implicite — présenté à l'utilisateur comme « le
+      plus gros gisement, 11 entrées sur 23 » — qui ne débloquait AUCUNE
+      entrée. Un indicateur dérivé, non vérifié, a orienté une décision de
+      priorisation pendant six jours.
+
+      Correctif structurel plutôt que ponctuel : la cause est désormais un
+      champ `cause:` + `cause_detail:` écrit à la main dans le corpus, en
+      regard de `syntaxe_feuille` et jamais d'après le refus ; huit valeurs
+      admises ; et une entrée hors périmètre SANS cause fait échouer le banc
+      (vérifié : code 1). La sélection implicite reste une question de
+      conception légitime, mais elle sort du chemin critique — elle sera
+      tranchée quand un usage réel la réclamera, pas pour faire monter un
+      score.
+    backlog: null
+    traite: "oui"
+    traite_ou: "corpus/handy_macros_etc.yaml champ cause ; traducteur/test_corpus_terrain.py CAUSES_CONNUES ; PLANNING.md plan révisé"
+
+  - date: "2026-09-16"
+    question: >-
+      Le verrou 3 (« un seul mot inconnu interdit le repli sur la sélection
+      courante ») protège-t-il durablement ?
+    reponse: >-
+      Non, et ça s'est vu le jour même. Le verrou ne tient que tant que le mot
+      reste INCONNU du lexique — il s'use donc mécaniquement à mesure que le
+      vocabulaire grandit, sans que personne ne touche au verrou lui-même.
+    sources:
+      - "reference/journal_questions.yaml — entrée du 2026-09-09, verrou 3"
+      - "traducteur/test_corpus_terrain.py — entrée color_xfd_100"
+    confiance: "A"
+    consequence: "fragilite_connue"
+    detail: >-
+      Cas concret. En ajoutant les intentions de navigation Next/Last, le mot
+      « passe » est entré dans les déclencheurs optionnels — donc dans le
+      vocabulaire connu. Aussitôt, « passe le fondu de couleur à fond » a
+      cessé d'être refusée et a rendu `Full Enter` : tout le plateau à pleine
+      intensité pour une demande qui ne parlait que de fondu de couleur.
+      C'est EXACTEMENT le bug qui avait motivé la création du verrou 3 le
+      2026-09-09. Le banc de rétro-traduction l'a rattrapé en le signalant
+      comme divergence.
+
+      Parade immédiate, volontairement minimale : « passe » a été retiré des
+      déclencheurs (les exemples disent « va au circuit suivant »). C'est un
+      CONTOURNEMENT, pas une correction — la mine reste posée, et elle sautera
+      à la première intention qui aura légitimement besoin de « passe ».
+
+      La vraie correction est ailleurs et elle est déjà au planning :
+      `plein_feu` ne devrait pas pouvoir revendiquer une phrase qui parle de
+      « fondu de couleur ». Cela suppose de modéliser `Color_Crossfade`, point
+      2 du plan. Tant que ce n'est pas fait, toute session qui élargit le
+      vocabulaire doit relancer le banc terrain et regarder les DIVERGENCES,
+      pas seulement le score.
+    backlog: null
+    traite: "partiel"
+    traite_ou: "traducteur/lexique.yaml — « passe » retiré ; correction de fond en attente de Color_Crossfade"
+
+  - date: "2026-09-17"
+    question: >-
+      Qu'est-ce que le `Color_Crossfade` de la feuille communautaire, absent
+      du manuel comme des 1155 touches OSC ?
+    reponse: >-
+      Très probablement un PARAMÈTRE de projecteur, pas une touche ni un
+      réglage global de console. Trois indices concordants, aucune preuve —
+      l'inférence est donc de confiance C, alors que la SYNTAXE elle-même est
+      de confiance B (la feuille).
+    sources:
+      - "corpus/handy_macros_etc.yaml — color_xfd_0/50/100, auteur « Sassy Squatch »"
+      - "reference/eosKeys.ts — `Color_Crossfade` absent des 1155 touches ; `color_scrub`→COLOR_SCRUB présent"
+      - "manuals/operations-manual/31-show-control.md:4448 — color_scrub, sans syntaxe ni exemple"
+      - "manuals/virtual-media-server-workbook — `{Crossfade} [100] [Enter]`, AUTRE chose"
+      - "communauté ETC (recherche web 2026-09-17) — paramètre de crossfade sur Arri SkyPanel, Astera Titan Tube, Digital Sputnik"
+    confiance: "B"
+    consequence: "modele_complete"
+    detail: >-
+      Les trois indices. (1) Son absence d'eosKeys ne prouve rien contre lui :
+      Hue et Saturation en sont absents pour la même raison, ce sont des
+      PARAMÈTRES (`/eos/param/`) et non des touches (`/eos/key/`) — déjà
+      consigné à l'entrée sur la recette de palettes. (2) La communauté ETC
+      décrit un paramètre de crossfade sur des projecteurs LED de cinéma, qui
+      mélange entre mode RGB et mode calibré. (3) La syntaxe `<mot> <valeur>
+      Enter` est celle d'un paramètre.
+
+      CE QUE J'AVAIS ÉCRIT DE FAUX, et qui est corrigé : le 2026-09-14, en
+      qualifiant les causes du corpus, j'ai écrit que c'était « un réglage
+      GLOBAL de console, qui ne prend aucune sélection ». C'était une
+      supposition présentée comme un constat, tirée du seul fait que la macro
+      ne nomme pas de cible — or une macro de bouton ne nomme jamais sa cible,
+      elle agit sur la sélection courante. La note du corpus est corrigée.
+
+      NE PAS CONFONDRE avec le `{Crossfade}` du serveur média virtuel, qui
+      règle une priorité entre canaux serveur et canaux console. Même mot,
+      autre fonction, et le VMS est hors périmètre du projet.
+
+      À TRANCHER AU BANC, deux questions distinctes : (a) le nom exact
+      qu'affiche la console — `Color_Crossfade` n'est peut-être qu'un libellé
+      de version ou de gabarit de projecteur ; (b) si `Color Scrub` (touche
+      réellement présente dans eosKeys, absente du manuel) est la même chose
+      ou autre chose. Si c'est bien un paramètre de projecteur, une macro qui
+      l'emploie ne fera RIEN sur un plateau dont les projecteurs ne le portent
+      pas, et sans erreur.
+    backlog: null
+    traite: "oui"
+    traite_ou: "grammar/modele.yaml parametres/Color_Crossfade ; traducteur intention regler_fondu_couleur"
+
+  - date: "2026-09-17"
+    question: >-
+      La mine du verrou 3 signalée la veille est-elle désamorcée ?
+    reponse: >-
+      Oui, et structurellement cette fois. « passe le fondu de couleur à fond »
+      ne peut plus atteindre `plein_feu` : l'intention `regler_fondu_couleur`
+      est déclarée AVANT elle et capte la phrase. Le mot « passe » a donc pu
+      être remis dans les déclencheurs de navigation, ce qui était un
+      contournement assumé le 2026-09-16.
+    sources:
+      - "traducteur/lexique.yaml — regler_fondu_couleur, déclarée avant regler_intensite et plein_feu"
+      - "traducteur/test_traducteur.py — cas « à fond » ne part plus sur Full"
+    confiance: "A"
+    consequence: "fragilite_reduite"
+    detail: >-
+      La leçon générale tient toujours et ne doit pas être oubliée : le
+      verrou 3 s'use à mesure que le vocabulaire grandit, puisqu'il ne repose
+      que sur l'ignorance d'un mot. Ce qui vient d'être fait ne le renforce
+      pas — cela retire UNE phrase de sa charge, en la routant ailleurs avant
+      qu'elle ne l'atteigne. C'est la bonne parade, mais elle est à refaire
+      pour chaque famille de phrases exposée.
+
+      Deux groupes de déclencheurs EXIGÉS (fondu ET couleur) plutôt qu'un
+      alias : « fondu » seul appartient à `mots_temps` et marque une durée,
+      « couleur » seul appartient à `creer_palettes_couleur`. Exiger la paire
+      capte la bonne phrase sans voler ni l'une ni l'autre — vérifié par test
+      dans les deux sens.
+    backlog: null
+    traite: "oui"
+    traite_ou: "traducteur/lexique.yaml regler_fondu_couleur ; « passe » réintroduit dans selection_suivante/precedente"
+
+  - date: "2026-09-17"
+    question: >-
+      Peut-on générer une macro qui se termine volontairement sans `Enter` ?
+    reponse: >-
+      Pas encore, et la réserve vient du modèle lui-même. La règle
+      `fin_volontairement_non_terminee` y est en confiance B avec la mention
+      « à vérifier au banc avant de l'utiliser dans une macro générée
+      automatiquement par ce projet ». `rendre_macro()` termine aujourd'hui
+      systématiquement par un `Enter`.
+    sources:
+      - "grammar/modele.yaml — regles_generation/fin_volontairement_non_terminee"
+      - "corpus/handy_macros_etc.yaml — record_preset, startup"
+      - "manuals/operations-manual/02-system-basics.md:1770 et 06-manual-control.md:462 — [Form] est un bouton de page d'encodeurs"
+    confiance: "B"
+    consequence: "banc_requis"
+    detail: >-
+      Les deux entrées du corpus qui en dépendent demandent de toute façon
+      autre chose en plus, donc les débloquer ne tient pas qu'à cette règle :
+      `record_preset` emploie `Focus` et `Form`, qui ne sont pas des commandes
+      mais des BOUTONS DE PAGE D'ENCODEURS (ils choisissent quels paramètres
+      les encodeurs pilotent) — famille entière absente du modèle, et qui
+      relève de la conduite au doigt plutôt que de la ligne de commande.
+      `startup` emploie `Live Live`, une commande de contexte d'affichage,
+      elle aussi absente ; et le numéro du snapshot manque, sans qu'on puisse
+      distinguer une macro volontairement ouverte d'une cellule tronquée à
+      l'export du tableur.
+
+      À TRANCHER AU BANC, question précise : une macro dont la dernière ligne
+      n'a pas d'`Enter` laisse-t-elle vraiment la ligne de commande ouverte à
+      l'opérateur, et le softkey {Delete} sert-il bien à retirer l'`Enter` de
+      clôture à l'édition ? Tant que ce n'est pas vu, ne pas faire produire ça
+      au générateur — une macro qui s'arrête au mauvais endroit laisse une
+      commande à moitié saisie sur une console en exploitation.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+
+  - date: "2026-09-17"
+    question: >-
+      « circuits 1 à 5 en 205 » (un numéro de gel sans le mot « lee »)
+      doit-elle se traduire ?
+    reponse: >-
+      Elle ne se traduit plus, alors qu'un commentaire du code affirme depuis
+      le 2026-08-07 qu'elle le fait. Le repli qui devait la couvrir est
+      devenu INATTEIGNABLE : `colorer_selection` exige un mot du groupe
+      `famille` (couleur / color / lee / gélatine / gel, ou un nom de teinte)
+      pour être routée, donc une phrase qui n'en contient aucun est refusée en
+      amont par `_intention`.
+    sources:
+      - "traducteur/lexique.yaml — intentions/colorer_selection/declencheurs/famille"
+      - "traducteur/traducteur.py — _colorer_selection, branche de repli sans mot de couleur"
+    confiance: "A"
+    consequence: "arbitrage_routage"
+    detail: >-
+      Trouvé le 2026-09-17 en chassant les nombres inemployés. Vérifié dans
+      les deux sens : le comportement est identique avant et après les
+      corrections du jour, ce n'est donc pas une régression récente — c'est
+      une divergence entre le code et son propre commentaire, restée invisible
+      parce que rien ne teste une phrase que le routage refuse.
+
+      NON CORRIGÉ, délibérément, et la raison est un risque précis : rendre
+      `famille` optionnel rendrait le repli atteignable, mais
+      `colorer_selection` est déclarée AVANT `regler_intensite` dans le
+      lexique — elle capterait alors « circuits 1 à 5 à 50 % », qui n'a rien
+      d'une demande de couleur. C'est un arbitrage d'ordre de déclaration, pas
+      une retouche de handler, et il vaut mieux le poser à tête reposée qu'au
+      milieu d'une session d'autonomie.
+
+      DEUX ISSUES POSSIBLES : (a) laisser tel quel et retirer le repli mort,
+      en assumant qu'un numéro de gel demande le mot « lee » ; (b) ajouter un
+      déclencheur qui exprime « objet + préposition + nombre » — ce que les
+      groupes de mots actuels ne savent pas dire, donc cela demanderait un
+      mécanisme de déclencheur nouveau.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+
+  - date: "2026-09-17"
+    question: >-
+      Les avertissements que le modèle déclare atteignent-ils l'utilisateur ?
+    reponse: >-
+      Pas tous, et la mesure honnête est plus nuancée que la première. Sur 24
+      actions qui déclarent un `avertissement`, quatre ne sortaient sur aucun
+      chemin de rendu. Les autres sortaient bien — mais REFORMULÉS par le
+      générateur, pas cités du modèle, ce qu'une première sonde cherchant le
+      texte exact avait pris pour un silence.
+    sources:
+      - "grammar/generateur.py — RISQUES_A_REMONTER"
+      - "grammar/modele.yaml — champ `avertissement` de 24 actions"
+    confiance: "A"
+    consequence: "arbitrage_produit"
+    detail: >-
+      LE RÉFLEXE FACILE ÉTAIT MAUVAIS. Émettre tous les avertissements du
+      modèle paraissait conforme à la doctrine ; mesuré, cela ajoutait un
+      avertissement à 14 des 47 phrases du catalogue, dont « circuits 1 à 5 à
+      50 % » — à qui on aurait annoncé une polysémie ne valant qu'en contexte
+      Patch. Un avertissement qui crie au loup sur une commande banale
+      n'apprend qu'une chose à l'opérateur : ne plus les lire.
+
+      À vérifier aussi : la règle que le générateur s'est fixée en tête de
+      fichier est plus étroite qu'elle n'en a l'air. Elle dit qu'une
+      COMBINAISON marquée `inconnu` doit avertir — pas que tout risque déclaré
+      doit remonter. Faire remonter le reste est donc un choix produit, pas
+      une obligation doctrinale.
+
+      RETENU, périmètre étroit et défendable : `supprimer` (perte de données,
+      CAUTION au manuel), `record_snapshot` (contresens courant — un snapshot
+      enregistre la surface de contrôle, pas l'état du plateau), `update_cue`
+      mais SEULEMENT sans cible explicite (condition écrite dans
+      l'avertissement lui-même), et `cie_x`/`cie_y` (projection silencieuse
+      sur le gamut, constatée au banc). ÉCARTÉ : `record_groupe`, dont le
+      modèle dit que la console demande confirmation, et qui se déclencherait
+      sur tout enregistrement de groupe.
+
+      RESTENT HORS TABLE, délibérément : les risques que le générateur ne peut
+      pas juger — contexte Patch pour `intensite`, Query composée avant
+      `selection_derniere`, références de fan pour `palette_intensite`. Ils
+      appartiennent à l'UI, qui connaît l'état de la console. À reprendre si
+      un jour le générateur reçoit un contexte.
+    backlog: null
+    traite: "partiel"
+    traite_ou: "grammar/generateur.py RISQUES_A_REMONTER ; question de l'UI ouverte"
   - date: "2026-09-17"
     question: >-
       Comment sélectionner les circuits qui n'ont pas de valeur d'intensité

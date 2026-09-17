@@ -87,6 +87,7 @@ class Generateur:
         self._legalite = self.modele["legalite"]
         self._thru = self.modele["operateurs"]["plage"]["symbole"]
         self._plus = self.modele["operateurs"]["ajout"]["symbole"]
+        self._moins = self.modele["operateurs"]["retrait"]["symbole"]
 
     # -- vérification -------------------------------------------------------
     def _regle(self, objet: str | None, action: str) -> dict | None:
@@ -212,6 +213,16 @@ class Generateur:
             ajouts = sel["plus"] if isinstance(sel["plus"], (list, tuple)) else [sel["plus"]]
             for n in ajouts:
                 morceaux += [plus, str(n)]
+
+        # `Chan 1 Thru 5 - 4` — retirer une cible de MÊME type. Manuel §6
+        # l. 62 (« [2] [Thru] [8] [-] [5] [Enter] — selects a range of
+        # channels 2 through 8, except channel 5 ») et l. 298. Symétrique de
+        # `plus`, et le manuel précise qu'on peut employer `+` et `-`
+        # plusieurs fois (§6 l. 68).
+        if "moins" in sel:
+            retraits = sel["moins"] if isinstance(sel["moins"], (list, tuple)) else [sel["moins"]]
+            for n in retraits:
+                morceaux += [self._moins, str(n)]
 
         if "plus_plage" in sel:
             debut, fin = sel["plus_plage"]
@@ -379,6 +390,74 @@ class Generateur:
         return [self._rendre_fan(act["fan"], avert)]
 
     # -- rendu : actions ----------------------------------------------------
+    # Quand l'`avertissement` d'une action du modèle doit REMONTER.
+    #
+    # Le modèle en déclare 24 ; 11 ne sortaient sur aucun chemin de rendu
+    # (mesuré le 2026-09-17). Les émettre TOUS aurait été le réflexe facile,
+    # et il est mauvais : mesuré aussi, 14 des 47 phrases du catalogue
+    # gagneraient un avertissement, dont « circuits 1 à 5 à 50 % » — la
+    # commande la plus banale qui soit, à qui on aurait annoncé une polysémie
+    # ne valant qu'en contexte Patch. Un avertissement qui crie au loup sur
+    # une commande normale ne protège plus de rien : il apprend à l'opérateur
+    # à ne plus les lire.
+    #
+    # D'où cette table. Chaque entrée porte la CONDITION du risque, et le
+    # risque ne remonte que lorsque le générateur peut réellement la juger.
+    # Les risques que le générateur ne peut PAS juger (contexte Patch pour
+    # `intensite`, Query composée avant `selection_derniere`, références de
+    # fan pour `palette_intensite`) restent délibérément hors table : ils
+    # appartiennent à l'UI, qui connaît l'état de la console.
+    # NE PAS y remettre `parquer`, `rappeler_palette` ni `supprimer_partition` :
+    # le générateur émet DÉJÀ le leur, ailleurs dans ce fichier et avec ses
+    # propres mots. Ma première mesure les avait crus muets — elle cherchait le
+    # texte du modèle, or le générateur reformule ; et elle testait la partition
+    # 1, qui n'est pas protégée. Les y ajouter produisait des DOUBLONS, que le
+    # banc a rattrapés. Mesurer une absence demande de chercher un effet, pas
+    # une formulation.
+    RISQUES_A_REMONTER = {
+        # DESTRUCTION : le manuel le signale en CAUTION, les données d'un
+        # channel supprimé sont perdues.
+        "supprimer": lambda act: True,
+        # CONTRESENS : un snapshot enregistre la SURFACE DE CONTRÔLE, pas
+        # l'état du plateau. « garder cet état lumineux » demande autre chose
+        # — une commande parfaitement valide qui ne fait pas ce qu'on croit,
+        # exactement la classe d'erreur que ce dépôt combat.
+        "record_snapshot": lambda act: True,
+        # L'avertissement du modèle porte SA propre condition : « ne jamais
+        # générer un `Update` nu sans expliciter la cible ». Le traducteur en
+        # pose toujours une, donc il ne remonte que si elle manque.
+        "update_cue": lambda act: "cible" not in act,
+        # PROJECTION SILENCIEUSE SUR LE GAMUT, constatée au banc réel : si le
+        # projecteur ne peut pas atteindre le point demandé, Eos le déplace
+        # SANS rien dire — et `CIE Y` peut bouger alors que seul `CIE X` a été
+        # saisi. Une macro qui vise une teinte précise peut donc produire une
+        # autre couleur, en silence. C'est exactement la panne que ce dépôt
+        # traque, sauf qu'elle vient de la console : on ne peut pas l'empêcher,
+        # seulement la dire.
+        "cie_x": lambda act: True,
+        "cie_y": lambda act: True,
+        # PAS `record_groupe` : le remplacement se fait « avec confirmation »
+        # d'après le modèle lui-même, donc la console demande — et il se
+        # déclencherait sur tout enregistrement de groupe, geste courant.
+    }
+
+    def _risque_declare(self, type_action: str, spec: dict,
+                        act: dict, avert: list[str]) -> None:
+        """Remonte l'`avertissement` du modèle quand sa condition est remplie."""
+        condition = self.RISQUES_A_REMONTER.get(type_action)
+        if condition is None:
+            return
+        texte = spec.get("avertissement")
+        if not texte:
+            return
+        try:
+            if condition(act):
+                avert.append(texte.strip())
+        except Exception:                                  # noqa: BLE001
+            # une condition qui échoue ne doit jamais empêcher un rendu :
+            # mieux vaut avertir à tort que ne pas rendre du tout.
+            avert.append(texte.strip())
+
     def _rendre_action(self, act: dict, avert: list[str]) -> str:
         t = act["type"]
         spec = self.modele["actions"][t]
@@ -391,6 +470,11 @@ class Generateur:
                 f"`{mot}` : syntaxe de confiance {spec['confiance']} "
                 f"({spec.get('source', 'source non précisée')})"
             )
+
+        self._risque_declare(t, spec, act, avert)
+
+        if t == "regler_parametre":
+            return self._rendre_parametre(act, avert)
 
         if t == "couleur_gel":
             return f"{mot} {act['nuancier']}/{act['teinte']}"
@@ -575,7 +659,8 @@ class Generateur:
 
         if t in ("selection_active", "selection_derniere", "selection_manuelle",
                  "retirer_effet", "hors_scene", "niveau_setup", "incrementer",
-                 "decrementer", "verifier"):
+                 "decrementer", "verifier",
+                 "selection_suivante", "selection_precedente"):
             return mot
 
         if t in ("plein_feu", "sneak"):
@@ -589,6 +674,24 @@ class Generateur:
                 return " ".join([mot, self.modele["actions"]["sneak"]["mot_cle"],
                                  str(act["sneak"])])
             return mot
+
+        if t in ("cie_x", "cie_y"):
+            # Forme CONFIRMÉE AU BANC le 2026-09-13 :
+            #   `<sélection> CIE X <v> CIE Y <v> Enter`
+            # un seul `Enter` final, aucun `Enter` intermédiaire. Les deux
+            # paramètres tiennent donc sur UNE commande, et `cie_x` porte
+            # éventuellement son `cie_y` — même montage que `plein_feu` qui
+            # porte son `sneak`. Deux étapes d'IR distinctes donneraient deux
+            # lignes et deux `Enter`, ce que le banc a justement démenti.
+            #
+            # NE PAS écrire `CIE XYY` : l'autocomplétion de la console le
+            # propose, mais il produit systématiquement une erreur de syntaxe
+            # (testé au banc le même jour). Voir `forme_combinee_invalide`.
+            morceaux = [mot, str(act["valeur"])]
+            if t == "cie_x" and "cie_y" in act:
+                morceaux += [self.modele["actions"]["cie_y"]["mot_cle"],
+                             str(act["cie_y"])]
+            return " ".join(morceaux)
 
         if t == "valeur_dmx":
             valeur = int(act["valeur"])
@@ -698,6 +801,62 @@ class Generateur:
             return f"{{{mot}}} {act['valeur']}"
 
         raise ValueError(f"action non gérée : {t}")
+
+    def _rendre_parametre(self, act: dict, avert: list[str]) -> str:
+        """Rendu générique de `regler_parametre` — voir `modele.yaml:parametres`.
+
+        Un paramètre ne rend QUE les formes qu'IL déclare pour lui-même ;
+        jamais d'extrapolation silencieuse depuis un paramètre voisin qui la
+        déclarerait (Pan a une `echelle` sourcée, Tilt non — voir le modèle).
+        """
+        nom = act["parametre"]
+        forme = act["forme"]
+        spec_param = self.modele.get("parametres", {}).get(nom)
+
+        if spec_param is None:
+            avert.append(f"paramètre `{nom}` absent du modèle (`parametres`) — non vérifiable")
+            mot_param = nom
+        else:
+            mot_param = spec_param["mot_cle"]
+            forme_spec = spec_param.get("formes", {}).get(forme)
+            if forme_spec is None:
+                avert.append(
+                    f"forme `{forme}` non déclarée pour le paramètre `{mot_param}` — "
+                    "aucune source ne l'atteste pour CE paramètre, rendu quand même"
+                )
+            else:
+                if forme_spec.get("confiance") in ("B", "C", "D"):
+                    avert.append(
+                        f"`{mot_param}` forme `{forme}` : confiance "
+                        f"{forme_spec['confiance']} ({forme_spec.get('exemple', 'source non précisée')})"
+                    )
+                if "piege" in forme_spec:
+                    avert.append(f"`{mot_param}` {forme} : {forme_spec['piege']}")
+
+        valeur = act["valeur"]
+        # Paramètres en pourcentage (Iris, Zoom...) : même convention que
+        # `At` — un chiffre unique reçoit un zéro implicite côté CONSOLE, donc
+        # le générateur doit l'écrire sur deux chiffres pour rester lu comme
+        # le pourcentage voulu (`_formater_niveau`, sourcé manuel §6). Les
+        # paramètres en degrés (Pan, Tilt) n'ont AUCUNE règle de ce genre —
+        # `Pan 5` vaut 5°, jamais 50° — d'où le test explicite sur `unite`.
+        if forme == "absolue":
+            if spec_param is not None and spec_param.get("unite") == "%":
+                valeur = self._formater_niveau(valeur)
+            return f"{mot_param} {valeur}"
+        if forme == "relatif_ajout":
+            return f"{mot_param} + {abs(valeur)}"
+        if forme == "relatif_retrait":
+            return f"{mot_param} + - {abs(valeur)}"
+        if forme == "plein":
+            # `Full` est une DESTINATION, pas un nombre : ni zéro de tête, ni
+            # mise en forme de niveau ne s'y appliquent.
+            return f"{mot_param} {self.modele['actions']['plein_feu']['mot_cle']}"
+        if forme == "echelle":
+            return f"{mot_param} / {valeur}"
+        if forme == "dmx":
+            return f"{mot_param} / / {valeur}"
+        raise ValueError(f"forme de paramètre non gérée : {forme}")
 
     def _verifier_mode_patch(self, act: dict, avert: list[str]) -> None:
         """`5 At 100` patche le channel 5 à l'adresse 100 en mode par channel,

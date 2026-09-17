@@ -427,15 +427,425 @@ CAS = [
         "statut": "incompris",
     },
     {
-        # Le cas qui a motivé `objets_cible` plutôt que d'ajouter Sub à
-        # `objets` : le modèle interdit `Sub + intensite` (confiance S,
-        # « le pilotage de niveau d'un sub passe par le fader ou les bumps,
-        # pas par At »). Si « sub » était un objet générique, cette phrase
-        # aurait pu passer par `regler_intensite` et produire une commande
-        # qu'on sait déjà fausse. Elle ne doit reconnaître AUCUNE intention.
-        "nom": "sub + pourcentage — jamais routé vers l'intensité (Sub+At invalide, confiance S)",
+        # Renversé le 2026-09-13 : `Sub + At` a longtemps été interdit ici
+        # (confiance S empruntée sans observation, voir modele.yaml legalite
+        # Sub+intensite) puis testé au banc réel — `Sub 1 At 50 Sneak 0:02
+        # Enter` accepté, fader observé montant à 50 % en 2 s. `Sub` reste
+        # dans `objets_cible`, pas `objets` (voir le commentaire du
+        # lexique) : `_regler_intensite` le cherche explicitement, un seul
+        # numéro, jamais une plage `Thru` (non sourcée pour Sub+At).
+        "nom": "sub + pourcentage — routé vers l'intensité (Sub+At confirmé au banc, confiance S)",
         "phrase": "sub 3 à 50 %",
+        "statut": "compris",
+        "rendu": "Sub 3 At 50 Enter",
+    },
+
+    # ------------------------------------------ nombre écrit, non employé
+    {
+        # GARDE-FOU CENTRAL 2026-09-17. `_ignores` ne rattrape que le
+        # VOCABULAIRE : un nombre nu n'en est pas, donc rien ne le signalait.
+        # Cette phrase rendait `Chan 14 Out` — le 19 évaporé, statut
+        # `compris`. Trouvé par un fuzzer à graine fixe : 306 nombres perdus
+        # sur 1406 phrases comprises, tous ramenés à un refus.
+        "nom": "nombre inemployé — refus plutôt qu'une demi-commande",
+        "phrase": "éteins circuit 14 et snapshot 19",
         "statut": "incompris",
+    },
+    {
+        # Le contrôle est CENTRAL, donc il vaut pour les 38 intentions et
+        # pour toutes les suivantes. Mesuré avant activation : zéro refus sur
+        # les 69 phrases légitimes du catalogue et des sondes.
+        "nom": "nombre inemployé — une phrase légitime passe toujours",
+        "phrase": "parque le circuit 3 à 45 %",
+        "statut": "compris",
+        "rendu": "Chan 3 At 45 Park Enter",
+    },
+
+    # ------------------------------------------ tolérance aux fautes
+    {
+        # RÉGRESSION 2026-09-17. « rouge » est à distance 2 de « groupe », et
+        # `_objet` l'y résolvait : cette phrase rendait `Group 3 At 50 Enter`
+        # — une commande de GROUPE pour une phrase de COULEUR, statut
+        # `compris`, rien dans `ignores` ni `non_reconnus`. La passation §7
+        # signalait déjà cette paire précise comme piège du ROUTAGE ; elle
+        # mordait aussi dans les CRÉNEAUX, ce que personne n'avait vérifié.
+        #
+        # Règle posée : un mot que le lexique connaît EXACTEMENT ailleurs
+        # n'est jamais approximé ici. L'utilisateur l'a écrit exprès.
+        "nom": "tolérance — « rouge » n'est jamais approximé en « groupe »",
+        "phrase": "rouge 3 à 50 %",
+        "statut": "compris",
+        "rendu": "At 03 Thru 50 Enter",
+        # `rouge` DOIT ressortir en mot ignoré : la phrase nomme une teinte
+        # que la commande n'emploie pas. C'est exactement ce que la règle 4
+        # demande — et c'est mieux que l'ancien `Group 3 At 50 Enter`, qui
+        # ne signalait rien parce qu'il avait « employé » le mot, à tort.
+        "ignores": ["rouge"],
+    },
+    {
+        "nom": "tolérance — une vraie faute de frappe passe toujours",
+        "phrase": "circuts 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        "nom": "tolérance — faute sur « groupe » elle aussi",
+        "phrase": "goupe 3 à 50 %",
+        "statut": "compris",
+        "rendu": "Group 3 At 50 Enter",
+    },
+
+    # ------------------------------------------ listes de sélection + / -
+    {
+        # RÉGRESSION 2026-09-17, la plus grave de la chasse. Cette phrase —
+        # l'une des plus banales au pupitre — rendait
+        # `Chan 1 At 05 Thru 50 Enter` : une commande MALFORMÉE, statut
+        # `compris`, et RIEN dans `ignores` ni `non_reconnus`. Le 5 non
+        # consommé était avalé par `_niveau`, qui y lisait un dégradé de
+        # niveaux. Manuel §6 l. 296 : « [1] [+] [3] [At] [5]<0> [Enter] —
+        # selects channels 1 and 3, and sets an intensity level of 50% ».
+        "nom": "liste — « circuits 1 et 5 » est une sélection, pas un dégradé",
+        "phrase": "circuits 1 et 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 + 5 At 50 Enter",
+    },
+    {
+        # Le tokeniser efface la virgule ET le `+` : « 1, 5 » et « 1 + 5 »
+        # arrivent en deux chiffres COLLÉS. L'adjacence est donc un
+        # séparateur à part entière — mais jamais pour une cue, où elle
+        # désigne la liste (`Cue 3/1`).
+        "nom": "liste — virgule et « et » mélangés",
+        "phrase": "circuits 1, 5 et 9 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 + 5 + 9 At 50 Enter",
+    },
+    {
+        "nom": "liste — après une plage",
+        "phrase": "circuits 1 à 5 et 9 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 + 9 At 50 Enter",
+    },
+    {
+        # Manuel §6 l. 62 mot pour mot : « [2] [Thru] [8] [-] [5] [Enter] —
+        # selects a range of channels 2 through 8, except channel 5 ».
+        # Rendait `Chan 2 Thru 8 At 05 Thru 50` — le retrait disparaissait.
+        "nom": "retrait — « sauf » suit le manuel §6 l. 62",
+        "phrase": "circuits 2 à 8 sauf le 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 2 Thru 8 - 5 At 50 Enter",
+    },
+    {
+        # Le `-` SURVIT à la tokenisation (le `+` non) et il est polysémique :
+        # séparateur de plage OU retrait. `_plage` passant en premier, un `-`
+        # encore libre ne peut plus être qu'un retrait — l'ordre désambiguïse.
+        "nom": "retrait — le `-` littéral, manuel §6 l. 298",
+        "phrase": "circuits 1 à 5 - 4 à fond",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 - 4 Full Enter",
+    },
+    {
+        "nom": "retrait — « 1 - 5 » reste une PLAGE, pas un retrait",
+        "phrase": "circuits 1 - 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        "nom": "liste et retrait dans la même phrase",
+        "phrase": "circuits 1 et 5 sauf 3 à fond",
+        "statut": "compris",
+        "rendu": "Chan 1 + 5 - 3 Full Enter",
+    },
+
+    # ------------------------------------------ cue dans une liste : `3/1`
+    {
+        # RÉGRESSION 2026-09-17, trouvée par le garde-fou des nombres perdus.
+        # Rendait `Go To Cue 3 Enter` : une AUTRE cue que celle demandée,
+        # statut `compris`, rien dans `ignores`. Le `/` disparaît à la
+        # tokenisation, donc la seule trace de la graphie est que les deux
+        # nombres sont COLLÉS — c'est le critère de `_cue_dans_liste`.
+        # Le générateur, lui, savait déjà rendre `Cue 3/1`.
+        "nom": "cue 3/1 — le numéro de liste ne se perd pas",
+        "phrase": "va à la cue 3/1",
+        "statut": "compris",
+        "rendu": "Go To Cue 3/1 Enter",
+    },
+    {
+        "nom": "cue 3/1 — sans liste, rien ne change",
+        "phrase": "va à la cue 5",
+        "statut": "compris",
+        "rendu": "Go To Cue 5 Enter",
+    },
+    {
+        "nom": "cue 4/2 — à l'enregistrement",
+        "phrase": "enregistrer les circuits 1 à 5 dans la cue 4/2",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Record Cue 4/2 Enter",
+    },
+    {
+        "nom": "cue 10/3 — sur une sélection de cue (marquer)",
+        "phrase": "marque la cue 10/3",
+        "statut": "compris",
+        "rendu": "Cue 10/3 Mark Enter",
+    },
+    {
+        "nom": "cue 4/2 — à la mise à jour",
+        "phrase": "mets à jour la cue 4/2",
+        "statut": "compris",
+        "rendu": "Update Cue 4/2 Enter",
+    },
+    {
+        # Le `/` n'a ce sens QUE pour une cue : sur un circuit, prendre un
+        # nombre collé comme « liste » serait une invention.
+        "nom": "cue 3/1 — un circuit ne prend pas de numéro de liste",
+        "phrase": "circuits 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        # Le correctif du 2026-08-28 traitait les couleurs NOMMÉES ; les
+        # numéros de gel explicites gardaient le premier et jetaient le reste.
+        "nom": "teintes — deux gels nommés, on demande au lieu de choisir",
+        "phrase": "circuits 1 à 5 en Lee 195 et Lee 201",
+        "statut": "incompris",
+    },
+
+    # ------------------------------------------ durées : jamais en silence
+    {
+        # RÉGRESSION SYSTÉMIQUE 2026-09-17. 32 intentions sur 38 laissaient
+        # tomber une durée sans un mot : `Chan 3 At 45 Park Enter`, statut
+        # `compris`, `ignores` vide. Un mot de durée n'est pas du vocabulaire
+        # de créneau, donc `_ignores` ne le rattrapait pas. Le garde-fou est
+        # CENTRAL (dans `_traduire_simple`, après le handler) plutôt que
+        # recopié 32 fois : il vaut d'office pour toute intention future.
+        "nom": "durée — Park n'a pas de forme temporisée : refus, pas silence",
+        "phrase": "parque le circuit 3 à 45 % en 2 secondes",
+        "statut": "incompris",
+    },
+    {
+        "nom": "durée — sans durée, Park passe normalement",
+        "phrase": "parque le circuit 3 à 45 %",
+        "statut": "compris",
+        "rendu": "Chan 3 At 45 Park Enter",
+    },
+    {
+        "nom": "durée — une commande qui n'en accepte aucune la refuse",
+        "phrase": "efface les filtres en 7 secondes",
+        "statut": "incompris",
+    },
+    {
+        # Les handlers qui SAVENT poser une durée passent à travers le
+        # garde-fou : ils la déposent dans l'IR (`temps` ou `sneak`).
+        "nom": "durée — celles qui sont documentées passent toujours",
+        "phrase": "circuits 1 à 5 à 50 % en 3 secondes",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Sneak 3 Enter",
+    },
+
+    # ------------------------------------------ plages de paramètres
+    {
+        # RÉGRESSION 2026-09-17, trouvée par le banc des silences. Rendait
+        # `Chan 1 Pan 50` : la plage TRONQUÉE à un seul circuit, sans aucun
+        # signal. Défaut introduit le 2026-09-14 en retirant `_plage` de
+        # `_regler_parametre` pour tuer le bug inverse — une correction qui
+        # avait échangé un silence contre un autre.
+        "nom": "paramètre — une plage de circuits n'est pas tronquée",
+        "phrase": "mets le pan des circuits 1 à 5 à 50 degres",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Pan 50 Enter",
+    },
+    {
+        # Même phrase avec `%` : rendait `Chan 1 Zoom 05` — plage tronquée ET
+        # valeur fausse (5 % au lieu de 50), la borne de plage ayant pris la
+        # place de la valeur. Le marqueur `%` vaut « degrés » pour désigner
+        # une valeur sans ambiguïté.
+        "nom": "paramètre — plage et valeur en pourcentage",
+        "phrase": "mets le zoom des circuits 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Zoom 50 Enter",
+    },
+    {
+        # Sans marqueur d'unité, « circuits 1 à 5 à 180 » est RÉELLEMENT
+        # ambigu : le « à » sépare une plage et introduit une valeur. Rendait
+        # `Chan 1 Hue 5` — la valeur 180 remplacée par une borne. Un nombre
+        # nu n'étant pas du vocabulaire, `ignores` ne le rattrapait pas :
+        # d'où le garde-fou « nombre inemployé ». Une question vaut mieux
+        # qu'une commande plausible et fausse.
+        "nom": "paramètre — ambiguïté sans unité : on demande, on ne devine pas",
+        "phrase": "mets le hue des circuits 1 à 5 à 180",
+        "statut": "incompris",
+    },
+    {
+        "nom": "paramètre — un seul circuit reste un seul circuit",
+        "phrase": "mets le hue du circuit 1 à 180",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+
+    # ------------------------------------------ vérification / adresses
+    {
+        # RÉGRESSION. `_selection_de` prenait 75 pour un NUMÉRO DE CIRCUIT
+        # alors que le `%` le suit, puis refusait en annonçant « niveau
+        # manquant » — la seule chose que la phrase donnait vraiment.
+        # `_plage` appliquait déjà l'exclusion à ses bornes ; le repli
+        # « nombre isolé » ne l'appliquait pas. Un refus qui désigne la
+        # mauvaise cause envoie corriger ce qui n'est pas cassé.
+        "nom": "vérification — le refus nomme la bonne cause",
+        "phrase": "vérifie les circuits à 75 %",
+        "statut": "incompris",
+    },
+    {
+        "nom": "vérification — niveau AVANT la sélection dans la phrase",
+        "phrase": "vérifie à 75 % le circuit 3",
+        "statut": "compris",
+        "rendu": "Chan 3 At 75 Check Enter",
+    },
+    {
+        "nom": "feuille ETC « Channel Check »",
+        "phrase": "vérifie le circuit 1 à 75 %",
+        "statut": "compris",
+        "rendu": "Chan 1 At 75 Check Enter",
+    },
+    {
+        # Manuel §6 a une section « Address Check » distincte. Sans les
+        # adresses dans les déclencheurs de `verifier`, cette phrase partait
+        # sur `regler_intensite` et perdait le `Check` : un niveau posé au
+        # lieu d'une revue, « vérifie » relégué dans `ignores`.
+        "nom": "feuille ETC « Address Check » — le Check ne se perd pas",
+        "phrase": "vérifie l'adresse 1 à 75 %",
+        "statut": "compris",
+        "rendu": "Address 1 At 75 Check Enter",
+    },
+    {
+        "nom": "adresse — plein feu, manuel §6",
+        "phrase": "mets l'adresse 5 à fond",
+        "statut": "compris",
+        "rendu": "Address 5 Full Enter",
+    },
+
+    # ------------------------------------------ fondu de couleur
+    {
+        "nom": "fondu de couleur — valeur chiffrée",
+        "phrase": "passe le fondu de couleur à 50",
+        "statut": "compris",
+        "rendu": "Color_Crossfade 50 Enter",
+    },
+    {
+        "nom": "fondu de couleur — zéro rendu littéralement, jamais « 00 »",
+        "phrase": "passe le fondu de couleur à 0",
+        "statut": "compris",
+        "rendu": "Color_Crossfade 0 Enter",
+    },
+    {
+        # RÉGRESSION HISTORIQUE, deux fois payée. Cette phrase rendait
+        # `Full Enter` — TOUT le plateau à pleine intensité pour une demande
+        # qui ne parle que de fondu de couleur. Elle n'était retenue que par
+        # le verrou 3, c'est-à-dire par le hasard que « passe » soit resté
+        # inconnu du lexique ; elle a resurgi le 2026-09-16 dès que « passe »
+        # est entré avec la navigation Next/Last. Ce qui protège désormais
+        # est structurel : `regler_fondu_couleur` est déclarée AVANT
+        # `plein_feu`. Ne pas déplacer cette intention.
+        "nom": "fondu de couleur — « à fond » ne part plus sur Full",
+        "phrase": "passe le fondu de couleur à fond",
+        "statut": "compris",
+        "rendu": "Color_Crossfade Full Enter",
+    },
+    {
+        "nom": "fondu de couleur — « crossfade » nomme aussi le paramètre",
+        "phrase": "mets le crossfade de couleur à 50",
+        "statut": "compris",
+        "rendu": "Color_Crossfade 50 Enter",
+    },
+    {
+        # « fondu » seul appartient à mots_temps : la paire fondu+couleur est
+        # exigée, donc une durée n'est pas volée par cette intention.
+        "nom": "fondu de couleur — une durée reste une durée",
+        "phrase": "va à la cue 5 avec un fondu de 3 secondes",
+        "statut": "compris",
+        "rendu": "Go To Cue 5 Time 3 Enter",
+    },
+    {
+        "nom": "fondu de couleur — « à fond » sur un circuit reste Full",
+        "phrase": "passe le circuit 3 à fond",
+        "statut": "compris",
+        "rendu": "Chan 3 Full Enter",
+    },
+    {
+        # La forme `plein` n'est déclarée que pour Color_Crossfade.
+        "nom": "« zoom à fond » refusé — forme non sourcée pour Zoom",
+        "phrase": "mets le zoom à fond",
+        "statut": "incompris",
+    },
+
+    # ------------------------------------------ navigation Next / Last
+    {
+        "nom": "navigation — « circuit suivant » rend Next, pas un saut de cue",
+        "phrase": "va au circuit suivant",
+        "statut": "compris",
+        "rendu": "Next",
+    },
+    {
+        # RÉGRESSION 2026-09-16. `aller_a_cue` accepte « suivant » dans son
+        # groupe `cible` : cette phrase rendait `Go To Cue Next Enter`, statut
+        # `compris`, le mot « circuit » relégué dans `ignores`. Un saut de cue
+        # au lieu d'un déplacement de sélection. Ce qui protège est l'ORDRE de
+        # déclaration — selection_suivante AVANT aller_a_cue — donc ce cas et
+        # le suivant doivent rester côte à côte.
+        "nom": "navigation — la cue garde ses phrases à elle",
+        "phrase": "va à la cue suivante",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Enter",
+    },
+    {
+        "nom": "navigation — « circuit précédent » rend Last",
+        "phrase": "va au circuit précédent",
+        "statut": "compris",
+        "rendu": "Last",
+    },
+    {
+        # Sans mot d'objet, la phrase est ambiguë et c'est `aller_a_cue` qui
+        # la garde — comportement ANTÉRIEUR, laissé tel quel volontairement :
+        # pour un régisseur, « va au suivant » tout court désigne la cue
+        # suivante. Le déplacement de sélection exige donc de nommer ce qui
+        # avance. Ce cas fixe cette frontière pour qu'elle ne bouge pas sans
+        # qu'on s'en aperçoive.
+        "nom": "navigation — sans mot d'objet, la cue garde la phrase",
+        "phrase": "va au suivant",
+        "statut": "compris",
+        "rendu": "Go To Cue Next Enter",
+    },
+    {
+        # Manuel §7 l. 175 : après une sélection de groupe, Next accède au
+        # premier circuit DU groupe. « groupe suivant » n'existe pas. On
+        # refuse en l'expliquant plutôt que de rendre un Next trompeur.
+        "nom": "navigation — « groupe suivant » refusé, sens non attesté",
+        "phrase": "va au groupe suivant",
+        "statut": "incompris",
+    },
+    {
+        # Next agit immédiatement : aucune forme temporisée n'est documentée.
+        # Avant le garde-fou, la durée ne ressortait même pas dans `ignores`.
+        "nom": "navigation — une durée est refusée, jamais laissée tomber",
+        "phrase": "va au circuit suivant en 3 secondes",
+        "statut": "incompris",
+    },
+    {
+        "nom": "level — la touche Level, valeur réglée en Setup",
+        "phrase": "mets les circuits 1 à 5 au level",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Level",
+    },
+    {
+        # « niveau » reste à regler_intensite : le 50 ne doit pas disparaître.
+        "nom": "level — « au niveau 50 » n'est pas la touche Level",
+        "phrase": "circuits 1 à 5 au niveau 50",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        "nom": "feuille ETC « Out Next Level » — macro en trois temps",
+        "phrase": "éteins, puis va au circuit suivant, puis mets-le au level",
+        "statut": "compris",
+        "rendu": "Out\nNext\nLevel",
     },
 
     # -------------------------------------------------------------- effets
@@ -1020,20 +1430,34 @@ CAS = [
         # VERROU 2 — une CIBLE (Sub, Preset) bloque aussi le repli, même si
         # elle n'est pas dans `objets`. Régression réelle du 2026-09-09 :
         # « sub 3 à 50 % » rendait `At 50 Enter`, c'est-à-dire un ordre sur
-        # des circuits quelconques, alors que le banc a tranché Sub + At
-        # invalide en confiance S.
+        # des circuits quelconques. Depuis le 2026-09-13, `Sub` + `intensite`
+        # est confirmé au banc (voir plus haut) et sort donc par sa propre
+        # branche AVANT ce verrou — `Preset` reprend le rôle de démonstration
+        # ici, toujours bloqué par `_vise_la_selection_courante`, jamais
+        # ajouté à `objets_cible` d'exception.
         "nom": "verrou — un mot de cible interdit le repli",
-        "phrase": "sub 3 a 50 %",
+        "phrase": "preset 3 a 50 %",
         "statut": "incompris",
     },
     {
         # VERROU 3 — le plus important. Agir sans cible nommée suppose d'avoir
-        # compris TOUTE la phrase. Trouvé au banc de rétro-traduction le jour
-        # même : « passe le fondu de couleur à fond » rendait `Full Enter`,
-        # envoyant tout le plateau à pleine intensité pour une demande qui ne
-        # parlait que de fondu de couleur.
+        # compris TOUTE la phrase.
+        #
+        # Ce cas portait « passe le fondu de couleur a fond », qui rendait
+        # `Full Enter` — tout le plateau à pleine intensité pour une demande
+        # qui ne parlait que de fondu de couleur. Cette phrase a maintenant
+        # une VRAIE traduction (`Color_Crossfade Full Enter`, voir plus haut),
+        # donc elle ne peut plus servir de témoin ici.
+        #
+        # Le témoin est remplacé par un mot franchement inconnu, et c'est plus
+        # honnête : l'ancienne phrase ne testait le verrou que par accident,
+        # parce que « passe » manquait au lexique. Elle a d'ailleurs cessé de
+        # le tester le 2026-09-16, dès que « passe » est entré — sans que rien
+        # ne le signale, puisque le test passait toujours pour une autre
+        # raison. Un test dont la raison de passer change en silence ne
+        # protège plus de rien.
         "nom": "verrou — un mot inconnu interdit le repli",
-        "phrase": "passe le fondu de couleur a fond",
+        "phrase": "envoie le bidule a fond",
         "statut": "incompris",
     },
     {
@@ -1215,6 +1639,142 @@ CAS = [
         "rendu": "Group 3 Effect 2 Enter",
         "ignores": [],
     },
+
+    # ------------------------------------------- regler_parametre (2026-09-14)
+    {
+        # Cas d'ancrage : c'est l'exemple_nl du lexique, donc aussi le
+        # catalogue. Piège trouvé en écrivant ce test : sans le marqueur
+        # d'unité (« degrés »), `_plage` lit « 1 à 10 » comme une plage de
+        # circuits 1-10 et il ne reste plus rien pour la valeur.
+        "nom": "regler_parametre — Pan absolu, cas d'ancrage du catalogue",
+        "phrase": "mets le pan du circuit 1 à 10 degrés",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan 10 Enter",
+    },
+    {
+        "nom": "regler_parametre — Pan absolu, sélection puis valeur (ordre naturel)",
+        "phrase": "circuit 1 pan à 10 degrés",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan 10 Enter",
+    },
+    {
+        # Régression réelle trouvée en session : « ajoute 10 au pan du
+        # circuit 1 » place la VALEUR avant le numéro de sélection dans
+        # l'ordre des mots — l'inverse de `regler_intensite`. Une première
+        # version prenait « le premier nombre libre » pour la sélection et
+        # rendait `Chan 10 Pan + 1`, le mauvais circuit avec la mauvaise
+        # valeur.
+        "nom": "regler_parametre — relatif_ajout, valeur avant sélection dans la phrase",
+        "phrase": "ajoute 10 au pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan + 10 Enter",
+    },
+    {
+        "nom": "regler_parametre — relatif_retrait",
+        "phrase": "retire 10 au tilt du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Tilt + - 10 Enter",
+    },
+    {
+        # « Mirror Pan » du corpus communautaire — seule forme `echelle`
+        # sourcée, et seulement pour Pan.
+        "nom": "regler_parametre — inverse (échelle -100), Pan seulement",
+        "phrase": "inverse le pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan / -100 Enter",
+    },
+    {
+        # Verrou : Tilt ne déclare pas `echelle` dans le modèle — jamais une
+        # extrapolation silencieuse depuis Pan, même mécanisme de paramètre.
+        "nom": "regler_parametre — inverse refusé pour Tilt, forme non sourcée pour lui",
+        "phrase": "inverse le tilt du circuit 1",
+        "statut": "incompris",
+    },
+    {
+        # Zoom/Iris : paramètres en POURCENTAGE (contrairement à Pan/Tilt en
+        # degrés). Ajouté le 2026-09-14 pour valider que le mécanisme
+        # générique s'étend vraiment sans code neuf — seule une entrée de
+        # catalogue de chaque côté (lexique.yaml + modele.yaml).
+        "nom": "regler_parametre — Zoom absolu, cas d'ancrage du manuel §6",
+        "phrase": "mets le zoom du circuit 1 à 65 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Zoom 65 Enter",
+    },
+    {
+        "nom": "regler_parametre — Iris absolu",
+        "phrase": "iris du circuit 1 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Iris 50 Enter",
+    },
+    {
+        # Verrou : `[+%]`/`[-%]` du manuel est une touche générique à pas
+        # fixe, PAS la syntaxe `<mot> + <n>` — Zoom ne déclare donc aucune
+        # forme relative dans le modèle, et la phrase doit rester incomprise
+        # plutôt que de produire un `Zoom + 10` jamais vu dans aucune source.
+        "nom": "regler_parametre — Zoom relatif refusé, seul [+%]/[-%] est sourcé (mécanisme différent)",
+        "phrase": "ajoute 10 au zoom du circuit 1",
+        "statut": "incompris",
+    },
+    {
+        # Non-régression sur le routage : `regler_parametre` est déclaré
+        # AVANT `regler_intensite` dans lexique.yaml — une phrase sans mot de
+        # paramètre (Pan/Tilt/Zoom/Iris) doit continuer à passer par
+        # `regler_intensite` normalement, "%" seul ne doit jamais suffire à
+        # basculer vers `regler_parametre`.
+        "nom": "regler_parametre ne vole pas le routage à regler_intensite",
+        "phrase": "circuits 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+
+    # -------------------------------------- regler_parametre — Edge/Hue/Saturation
+    {
+        "nom": "regler_parametre — Edge absolu",
+        "phrase": "mets le edge du circuit 1 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Edge 50 Enter",
+    },
+    {
+        # RÉGRESSION RÉELLE trouvée en session : sans marqueur d'unité fiable
+        # (Hue n'a pas d'équivalent à « degrés »), `_selection_de` (via
+        # `_plage`) lisait « circuit 1 à 180 » comme une plage de circuits
+        # 1-180, avalant la valeur. `_regler_parametre` ne passe plus du
+        # tout par `_plage` pour sa sélection — voir son code.
+        "nom": "regler_parametre — Hue absolu, sélection puis paramètre puis valeur",
+        "phrase": "mets le hue du circuit 1 à 180",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+    {
+        "nom": "regler_parametre — Hue absolu, paramètre puis sélection puis valeur",
+        "phrase": "circuit 1 hue à 180",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+    {
+        # Pire cas : sans le fix, cette phrase ne retombait pas en incompris
+        # mais produisait un résultat FAUX EN SILENCE — `Chan 180 Hue 1`,
+        # la valeur et le numéro de circuit échangés. La pire classe
+        # d'erreur du projet (règle 4, REGLES_POUR_UI.md).
+        "nom": "regler_parametre — Hue absolu, valeur avant la sélection dans la phrase",
+        "phrase": "hue à 180 sur le circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Hue 180 Enter",
+    },
+    {
+        "nom": "regler_parametre — Saturation absolue",
+        "phrase": "mets la saturation du circuit 1 à 100",
+        "statut": "compris",
+        "rendu": "Chan 1 Saturation 100 Enter",
+    },
+    {
+        # Boucle refermée avec la transcription vidéo officielle ETC captée
+        # plus tôt en session (Saturation /90 Enter).
+        "nom": "regler_parametre — Saturation échelle (vidéo officielle ETC)",
+        "phrase": "inverse la saturation du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Saturation / -100 Enter",
+    },
 ]
 
 
@@ -1225,6 +1785,36 @@ CAS = [
 # puis applique une instruction de correction.
 # ----------------------------------------------------------------------------
 CAS_CORRECTION = [
+    {
+        # RÉGRESSION 2026-09-17, que j'avais créée le jour même : les listes
+        # de sélection (`plus`/`moins`) portent des LISTES de numéros, et
+        # `corriger` ne parcourait que les valeurs entières de premier
+        # niveau. Il répondait « le numéro 5 n'apparaît nulle part dans
+        # cette macro » alors qu'il y est — un refus FAUX, donc une capacité
+        # perdue sans que rien ne le dise.
+        "nom": "corriger un numéro qui vit dans une liste de sélection",
+        "phrase": "circuits 1 et 5 à 50 %",
+        "instruction": "remplace 5 par 9",
+        "statut": "compris",
+        "rendu": "Chan 1 + 9 At 50 Enter",
+    },
+    {
+        "nom": "corriger un numéro retiré de la sélection",
+        "phrase": "circuits 1 à 5 sauf 3 à fond",
+        "instruction": "remplace 3 par 4",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 - 4 Full Enter",
+    },
+    {
+        # « remplace 5 par 9 et 50 par 75 » ne retenait que la première et
+        # jetait la seconde sans un mot : la macro avait l'air corrigée et ne
+        # l'était qu'à moitié. Un second « par » est une preuve non ambiguë
+        # qu'on en demande deux.
+        "nom": "deux corrections dans une instruction — refus, pas moitié",
+        "phrase": "circuits 1 à 5 à 50 %",
+        "instruction": "remplace 5 par 9 et 50 par 75",
+        "statut": "incompris",
+    },
     {
         "nom": "remplacer l'objet de sélection — groupe par circuit",
         "phrase": "groupe 5 en lee 195",

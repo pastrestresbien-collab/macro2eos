@@ -167,6 +167,23 @@ MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
 # l'exclusion.
 MOTS_EXCLUSION_ACTIF = ("sauf", "hormis", "excepte", "exceptee")
 
+# Unité postfixe propre à `_regler_parametre` (Pan/Tilt : degrés). Même rôle
+# que `MARQUEURS_NIVEAU_POSTFIXES` pour `%` — désambiguïser « circuit 1 à 10
+# degrés » (une sélection ET une valeur, pas une plage 1-10) sans toucher au
+# mécanisme partagé `_plage`, qui n'a aucune raison de connaître les degrés.
+MARQUEURS_UNITE_PARAMETRE = ("degres", "degre")
+
+# Sépare une phrase en plusieurs COMMANDES séquentielles, pour bâtir une
+# macro multi-lignes plutôt qu'une seule ligne. Volontairement restreint à
+# « puis » et « ; » — des connecteurs qui ne servent JAMAIS à autre chose en
+# français de métier. « et » est exclu à dessein : il sert déjà à l'intérieur
+# d'une seule commande (« circuits 1 et 3 », listes de couleurs...) et le
+# lire comme séparateur de commandes couperait des phrases simples en plein
+# milieu, sans qu'aucun mot ne le signale. Élargir cette liste est le genre
+# d'assouplissement que la doctrine du projet encourage (2026-09-09) — mais
+# seulement un connecteur sourcé sans double-sens à la fois, jamais par lot.
+SEPARATEUR_COMMANDES = re.compile(r"\bpuis\b|;", re.IGNORECASE)
+
 
 # --------------------------------------------------------------------------
 def charger_lexique(chemin):
@@ -219,9 +236,11 @@ class Traducteur:
         self._generateur = generateur
         self._ponctuation = self.lex["normalisation"]["ponctuation_ignoree"]
         self._outils = set(self.lex["mots_outils"])
+        self._cache_connus: set[str] | None = None
         self._mots_plage = set(self.lex["plage"]["mots"])
         self._objets = self._indexer(self.lex["objets"])
         self._objets_cible = self._indexer(self.lex["objets_cible"])
+        self._parametres = self._indexer(self.lex["parametres"])
         self._nuanciers = self._indexer(self.lex["nuanciers"])
         self._couleurs = self._indexer(self.lex["couleurs"])
         self._cue_cibles = self._indexer(self.lex["cue_cibles"])
@@ -264,6 +283,24 @@ class Traducteur:
         """
         if mot in index:
             return index[mot], []
+
+        # UN MOT CONNU AILLEURS N'EST PAS UNE FAUTE DE FRAPPE.
+        #
+        # La tolérance ne doit s'exercer que sur ce que le lexique ne sait pas
+        # nommer. Si le mot figure EXACTEMENT dans une autre partie du
+        # vocabulaire, l'utilisateur l'a écrit exprès : l'approximer revient à
+        # remplacer son mot par un autre, sans le dire.
+        #
+        # Cas trouvé le 2026-09-17 : « rouge 3 à 50 % » rendait
+        # `Group 3 At 50 Enter` — « rouge » est à distance 2 de « groupe », et
+        # `_objet` l'y résolvait alors que « rouge » est un nom de teinte
+        # parfaitement connu. Statut `compris`, rien dans `ignores` ni
+        # `non_reconnus` : une commande de GROUPE pour une phrase de COULEUR,
+        # en silence complet. La passation §7 signalait déjà cette paire
+        # précise comme piège du routage ; elle mordait aussi dans les
+        # créneaux, ce que personne n'avait vérifié.
+        if mot in self._connus_pour_tolerance():
+            return None, []
 
         tol = self.lex["tolerance"]
         if len(mot) < tol["longueur_minimale"]:
@@ -500,13 +537,70 @@ class Traducteur:
 
     # -- point d'entrée ----------------------------------------------------
     def traduire(self, phrase: str, reponses: dict | None = None) -> Traduction:
-        """Traduit une phrase. `reponses` porte les questions déjà tranchées.
+        """Traduit une phrase, éventuellement composée de plusieurs commandes
+        séquentielles séparées par `SEPARATEUR_COMMANDES` (« puis », « ; »).
 
-        Le même appel, relancé avec la réponse, doit reprendre où il s'était
-        arrêté : c'est ce qui permet à l'app de poser une question puis de
-        continuer sans redemander le reste.
+        `reponses` porte les questions déjà tranchées. Le même appel, relancé
+        avec la réponse, doit reprendre où il s'était arrêté : c'est ce qui
+        permet à l'app de poser une question puis de continuer sans redemander
+        le reste.
         """
         reponses = reponses or {}
+        segments = [s.strip() for s in SEPARATEUR_COMMANDES.split(phrase) if s.strip()]
+        if len(segments) > 1:
+            return self._traduire_composee(segments, reponses)
+        return self._traduire_simple(phrase, reponses)
+
+    def _traduire_composee(self, segments: list[str], reponses: dict) -> Traduction:
+        """Traduit chaque segment indépendamment et assemble une seule IR
+        multi-lignes — le contenu d'une macro, pas encore la macro elle-même
+        (`Learn`/`Enter`/`Learn` restent la responsabilité de l'appelant, via
+        `grammar/generateur.py:rendre_macro`).
+
+        Règle : TOUT doit être `compris` pour composer quoi que ce soit. Une
+        étape ambiguë ou incomprise fait échouer la phrase entière plutôt que
+        de produire une macro à moitié traduite — même principe que « rien ne
+        tombe en silence » appliqué à l'échelle de la phrase composée : mieux
+        vaut nommer l'étape qui bloque que publier une macro tronquée.
+        """
+        ir: list[dict] = []
+        notes: list[str] = []
+        non_reconnus: list[str] = []
+        ignores: list[str] = []
+        hypotheses: list = []
+
+        for i, segment in enumerate(segments, start=1):
+            trad = self._traduire_simple(segment, reponses)
+
+            if trad.statut == "a_preciser":
+                return Traduction(
+                    statut="a_preciser", questions=trad.questions,
+                    notes=notes + [
+                        f"Étape {i} (« {segment} ») demande une précision "
+                        "avant de composer la macro."],
+                )
+            if trad.statut != "compris":
+                raison = "; ".join(trad.notes) if trad.notes else "non comprise."
+                return Traduction(
+                    statut="incompris",
+                    notes=notes + [f"Étape {i} (« {segment} ») : {raison}"],
+                    non_reconnus=non_reconnus + trad.non_reconnus,
+                    ignores=ignores + trad.ignores,
+                )
+
+            ir += trad.ir
+            notes += [f"Étape {i} : {n}" for n in trad.notes]
+            non_reconnus += trad.non_reconnus
+            ignores += trad.ignores
+            hypotheses += trad.hypotheses
+
+        return Traduction(statut="compris", ir=ir, notes=notes,
+                          non_reconnus=non_reconnus, ignores=ignores,
+                          hypotheses=hypotheses, intention="composee")
+
+    def _traduire_simple(self, phrase: str, reponses: dict) -> Traduction:
+        """Corps de `traduire()` pour UNE seule commande — inchangé, juste
+        renommé pour laisser `traduire()` gérer la composition en tête."""
         toks = tokeniser(normaliser(phrase, self._ponctuation))
         intention = self._intention(toks)
 
@@ -519,6 +613,9 @@ class Traducteur:
             "creer_palettes_couleur": self._creer_palettes_couleur,
             "colorer_selection": self._colorer_selection,
             "regler_intensite": self._regler_intensite,
+            "regler_parametre": self._regler_parametre,
+            # même handler : le paramètre est imposé par le lexique
+            "regler_fondu_couleur": self._regler_parametre,
             "enregistrer_cue": self._enregistrer_cue,
             "aller_a_cue": self._aller_a_cue,
             "enregistrer_sub": self._enregistrer_sub,
@@ -542,6 +639,9 @@ class Traducteur:
             "plein_feu": self._action_sur_selection,
             "hors_scene": self._action_sur_selection,
             "sneak": self._action_sur_selection,
+            "niveau_setup": self._action_sur_selection,
+            "selection_suivante": self._naviguer_selection,
+            "selection_precedente": self._naviguer_selection,
             "verifier": self._verifier,
             "copier_libelles": self._copier_libelles,
             "creer_plage": self._creer_plage,
@@ -567,7 +667,108 @@ class Traducteur:
         finally:
             self._intention_courante = precedente
         trad.intention = intention
+
+        # GARDE-FOU CENTRAL — une durée ne tombe jamais en silence.
+        #
+        # Une durée écrite dans la phrase doit TOUJOURS ressortir : produite,
+        # ou refusée. Trois handlers le faisaient chacun de leur côté
+        # (`plein_feu`, `sneak`, `hors_scene` via `_action_sur_selection`,
+        # puis la navigation) ; les 32 autres intentions laissaient tomber la
+        # durée sans un mot — trouvé le 2026-09-17 en sondant le catalogue
+        # entier avec « en 7 secondes » ajouté à chaque phrase.
+        #
+        # Un mot de durée n'est pas rattrapé par `_ignores` (ce n'est pas du
+        # vocabulaire de créneau), donc rien ne le signalait : « parque le
+        # circuit 3 à 45 % en 2 secondes » rendait `Chan 3 At 45 Park Enter`,
+        # statut `compris`, `ignores` vide. La commande a l'air de répondre à
+        # la demande et n'en fait que la moitié.
+        #
+        # Le contrôle est CENTRAL plutôt que recopié 32 fois : il s'applique
+        # d'office à toute intention future, ce qu'une liste de correctifs ne
+        # ferait pas. Un handler qui SAIT gérer une durée la pose dans son IR
+        # (`temps` ou `sneak`) et passe donc à travers.
+        # GARDE-FOU CENTRAL — un nombre écrit ne tombe jamais en silence.
+        #
+        # `_ignores` ne rattrape que le VOCABULAIRE : un nombre nu n'en est
+        # pas, donc rien ne le signalait. Un chiffre présent dans la phrase et
+        # absent de l'IR veut dire que la commande ne répond pas à ce qui a
+        # été demandé — « éteins circuit 14 et snapshot 19 » rendait
+        # `Chan 14 Out`, le 19 évaporé sans un mot.
+        #
+        # Deux handlers portaient déjà ce contrôle chacun pour soi
+        # (`_regler_parametre`, `_colorer_selection`). Le poser ICI le rend
+        # valable pour les 38 intentions et pour toutes les suivantes.
+        # Mesuré avant activation : zéro refus sur les 69 phrases légitimes
+        # du catalogue et des sondes — il ne mord que sur de vraies pertes.
+        if trad.compris:
+            signales = set(trad.ignores) | set(trad.non_reconnus)
+            connus = self._nombres_de_lir(trad.ir)
+            perdus = [tok for i, tok in enumerate(toks)
+                      if tok.isdigit() and tok not in signales
+                      and int(tok) not in connus]
+            if perdus:
+                return Traduction(
+                    statut="incompris", intention=intention,
+                    **self._mots(toks, set()),
+                    notes=[f"Nombre écrit mais inemployé : {', '.join(perdus)}. "
+                           "La commande ne répondrait qu'à une partie de la "
+                           "demande — reformuler, ou faire une commande par "
+                           "cible (« ... puis ... »)."])
+
+        if trad.compris and self._duree(toks, set()) is not None \
+                and not self._ir_porte_une_duree(trad.ir):
+            return Traduction(
+                statut="incompris", intention=intention,
+                **self._mots(toks, set()),
+                notes=["Aucune forme temporisée n'est documentée pour cette "
+                       "commande : la durée serait perdue en silence. La "
+                       "retirer de la phrase, ou passer par une commande qui "
+                       "accepte un temps (« à 50 % en 3 secondes », "
+                       "« sneak ... en 3 secondes »)."])
         return trad
+
+    @classmethod
+    def _nombres_de_lir(cls, ir) -> set[int]:
+        """Tous les entiers que l'IR emploie, à n'importe quelle profondeur.
+
+        Parcours RÉCURSIF et non une liste de clés connues : l'IR gagne des
+        clés au fil du projet (`plus`, `moins`, `liste`, `part`…) et une
+        liste figée se périmerait en silence — exactement le défaut qui a
+        fait refuser à tort une correction sur `Chan 1 + 5` le 2026-09-17.
+        Les booléens sont exclus : `True` vaut 1 en Python, et un drapeau
+        `check: True` ferait croire que le nombre 1 est employé."""
+        trouves: set[int] = set()
+        if isinstance(ir, bool):
+            return trouves
+        if isinstance(ir, int):
+            return {ir}
+        if isinstance(ir, dict):
+            for valeur in ir.values():
+                trouves |= cls._nombres_de_lir(valeur)
+        elif isinstance(ir, (list, tuple)):
+            for valeur in ir:
+                trouves |= cls._nombres_de_lir(valeur)
+        elif isinstance(ir, str):
+            for morceau in re.findall(r"\d+", ir):
+                trouves.add(int(morceau))
+        return trouves
+
+    @staticmethod
+    def _ir_porte_une_duree(ir: list[dict] | None) -> bool:
+        """L'IR produite emploie-t-elle une durée ?
+
+        Les deux seules clés qui en portent une, côté générateur : `temps`
+        (`Sneak Time 3`, `Go To Cue 5 Time 3`) et `sneak` (`Full Sneak 20`).
+        Volontairement une liste FERMÉE et non une heuristique : un handler
+        futur qui inventerait une troisième clé serait rattrapé par le
+        garde-fou ci-dessus plutôt que de passer inaperçu — mieux vaut un
+        refus injustifié, visible et corrigible, qu'un silence.
+        """
+        for etape in ir or []:
+            action = etape.get("action") or {}
+            if "temps" in action or "sneak" in action:
+                return True
+        return False
 
     # -- nuancier : seul Lee est connu, donc « pas de mot dans la phrase »
     # veut presque toujours dire Lee — mais c'est une supposition du
@@ -617,6 +818,16 @@ class Traducteur:
         )
         return self.lex["nuanciers"]["lee"]["numero"], hypothese, None
 
+    def _connus_pour_tolerance(self) -> set[str]:
+        """`_vocabulaire_connu()`, mis en cache.
+
+        Appelé pour CHAQUE mot résolu, donc recalculer les ensembles à chaque
+        fois coûterait cher sans rien apporter : le lexique ne change pas en
+        cours de vie d'un `Traducteur`."""
+        if self._cache_connus is None:
+            self._cache_connus = self._vocabulaire_connu()
+        return self._cache_connus
+
     def _vocabulaire_connu(self) -> set[str]:
         """Tout ce que le lexique sait nommer, créneaux compris.
 
@@ -630,8 +841,9 @@ class Traducteur:
         connus |= self._outils | self._mots_plage | {"%"}
         connus |= set(self._marqueurs_duree) | set(self._marqueurs_duree_post)
         connus |= self._mots_sans | self._mots_temps
+        connus |= set(MARQUEURS_UNITE_PARAMETRE)
         for index in (self._objets, self._objets_cible, self._nuanciers,
-                      self._couleurs, self._cue_cibles):
+                      self._couleurs, self._cue_cibles, self._parametres):
             connus |= set(index)
         return connus
 
@@ -895,14 +1107,23 @@ class Traducteur:
                 notes.append(f"{choisie['nom']} → Lee {teinte:03d} "
                              f"({choisie['nom_lee']})")
             else:
-                # Aucun mot de couleur, aucun « lee » : un numéro resté libre
-                # ICI a déjà survécu à l'extraction de la sélection (qui a
-                # pris ses propres nombres en premier, voir `_selection_de`
-                # ci-dessus) — il ne peut donc plus désigner que le gel.
-                # Sans ce repli, « groupe 1 à 5 en 205 » restait injustement
-                # incompris faute du mot « lee » — trouvé le 2026-08-07 en
-                # testant l'app avec une phrase réelle, pas écrite pour le
-                # traducteur.
+                # BRANCHE ACTUELLEMENT INATTEIGNABLE — vérifié le 2026-09-17.
+                #
+                # Son commentaire d'origine (2026-08-07) disait : « sans ce
+                # repli, "groupe 1 à 5 en 205" restait injustement incompris
+                # faute du mot "lee" ». C'est encore vrai du besoin, mais plus
+                # du code : `colorer_selection` EXIGE désormais un mot du
+                # groupe `famille` (couleur / color / lee / gélatine / gel, ou
+                # un nom de teinte) pour être routée. Une phrase sans aucun de
+                # ces mots n'arrive donc jamais ici — elle est refusée en
+                # amont par `_intention`, avec « aucune intention reconnue ».
+                #
+                # Le repli est CONSERVÉ tel quel, pas supprimé : rendre
+                # `famille` optionnel le rendrait atteignable, mais
+                # `colorer_selection` est déclarée AVANT `regler_intensite` et
+                # capterait alors « circuits 1 à 5 à 50 % ». C'est un
+                # arbitrage de routage, pas une retouche — voir la question du
+                # 2026-09-17 au journal.
                 libres = self._nombres(toks, pris)
                 if not libres:
                     return Traduction(statut="incompris",
@@ -919,6 +1140,23 @@ class Traducteur:
                 return Traduction(statut="incompris", notes=notes + [erreur])
             if hyp:
                 hypotheses.append(hyp)
+
+        # Un NUMÉRO DE GEL resté sur le carreau. Le correctif du 2026-08-28
+        # avait traité l'ambiguïté des couleurs NOMMÉES (« jaune bleu » pose
+        # une question au lieu de garder la première), mais pas celle des
+        # numéros explicites : « en Lee 195 et Lee 201 » gardait 195 et jetait
+        # 201, statut `compris`, `ignores` vide — un nombre nu n'étant pas du
+        # vocabulaire, rien ne le rattrapait. Même ambiguïté, même règle : une
+        # commande ne porte qu'une teinte, et seul l'utilisateur peut dire
+        # laquelle.
+        restants = [toks[i] for i in range(len(toks))
+                    if i not in pris and toks[i].isdigit()]
+        if restants:
+            return Traduction(statut="incompris", notes=notes + [
+                f"Plusieurs teintes désignées ({teinte}, "
+                f"{', '.join(restants)}) : une commande n'en applique qu'une. "
+                f"Préciser laquelle, ou faire une commande par teinte "
+                f"(« ... puis ... »)."], **self._mots(toks, pris))
 
         ir = [{"selection": selection,
                "action": {"type": "couleur_gel", "nuancier": nuancier, "teinte": teinte}}]
@@ -942,11 +1180,32 @@ class Traducteur:
         # confisquait au niveau : la phrase repartait en « niveau introuvable »
         # alors que le 50 était là, sous les yeux.
         selection = None
+        i_sub = None if objet is not None else \
+            self._indice_objet_cle("Sub", toks, pris, index=self._objets_cible)
         if objet is not None:
             selection = self._selection_de(objet, toks, pris)
             if selection is None:
                 return Traduction(statut="incompris", notes=[
                     "Aucun numéro trouvé pour la sélection."])
+        elif i_sub is not None:
+            # `Sub` + `At` : refusé en confiance S jusqu'au 2026-09-09, puis
+            # requalifié `inconnu` faute d'observation (voir modele.yaml,
+            # legalite Sub+intensite) — TRANCHÉ `oui` au banc réel le
+            # 2026-09-13 (`Sub 1 At 50 Enter`, fader du sub observé montant à
+            # 50 %). Un seul numéro, jamais une plage `Thru` : aucune source
+            # du dépôt n'atteste `Sub <a> Thru <b> At <n>`, donc on ne
+            # l'invente pas — seul `self._selection_de` (via `self._objet`)
+            # gère les plages, volontairement contourné ici.
+            cible = None
+            for i, valeur in self._nombres(toks, pris):
+                if i > i_sub:
+                    cible = valeur
+                    pris.add(i)
+                    break
+            if cible is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro de sub trouvé après « sub »."])
+            selection = {"objet": "Sub", "numero": cible}
         elif not self._vise_la_selection_courante(toks, pris):
             return Traduction(statut="incompris",
                               notes=[self._motif_refus_selection(toks, pris)])
@@ -984,6 +1243,233 @@ class Traducteur:
             etape["selection"] = selection
         return Traduction(statut="compris", ir=[etape], notes=notes,
                           **self._mots(toks, pris))
+
+    # -- intention : régler un paramètre générique (Pan, Tilt...) -----------
+    def _regler_parametre(self, toks: list[str], reponses: dict) -> Traduction:
+        """Une seule fonction pour tout paramètre déclaré dans
+        `lexique.yaml:parametres` / `grammar/modele.yaml:parametres` — voir
+        leurs commentaires. Ajouter un paramètre n'ajoute aucun code ici."""
+        pris: set[int] = set()
+        notes: list[str] = []
+
+        # 1. quel paramètre ? Même discipline que `_objet` : correspondance
+        #    exacte sur toute la phrase d'abord, tolérance seulement au
+        #    second passage — la détection reste un routeur, pas un créneau.
+        parametre = None
+        for exact in (True, False):
+            for i, tok in enumerate(toks):
+                if i in pris:
+                    continue
+                if exact:
+                    cle = self._parametres.get(tok)
+                else:
+                    cle, _ = self._resoudre(tok, self._parametres)
+                if cle:
+                    parametre = cle
+                    pris.add(i)
+                    break
+            if parametre is not None:
+                break
+        if parametre is None:
+            # Une intention peut IMPOSER son paramètre quand aucun mot
+            # français ne le nomme à lui seul. `regler_fondu_couleur` est ce
+            # cas : « fondu » ET « couleur » désignent Color_Crossfade
+            # ensemble, et ni l'un ni l'autre ne peut porter l'alias — le
+            # premier marque une durée, le second appartient aux palettes.
+            impose = (self.lex["intentions"]
+                      .get(self._intention_courante or "", {})
+                      .get("parametre_impose"))
+            if impose is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun paramètre reconnu (Pan, Tilt...)."])
+            parametre = impose
+
+        # 2. quelle forme ? Lue dans le modèle pour CE paramètre précis,
+        #    jamais supposée : « inverse le tilt » doit rester incompris tant
+        #    que Tilt ne déclare pas `echelle` (seule Pan la déclare, source
+        #    « Mirror Pan », confiance B — voir grammar/modele.yaml).
+        formes_dispo = self._formes_parametre(parametre)
+        i_inverse = self._indice_mot(toks, pris, {"inverse", "inverser", "inversez"})
+        i_ajout = self._indice_mot(toks, pris, {"ajoute", "ajouter", "monte", "monter"})
+        i_retrait = self._indice_mot(toks, pris, {"retire", "retirer", "enleve", "enlever",
+                                                    "descend", "descends", "descendre"})
+
+        # « à fond » n'est pas une valeur chiffrée : c'est la destination
+        # `Full`. Testé AVANT les autres formes, sinon la phrase finirait au
+        # 4 à chercher un nombre qu'elle n'a pas.
+        i_plein = self._indice_mot(toks, pris, {"fond", "full"})
+
+        i_valeur = None    # index du jeton valeur, pour consommer un `%` adjacent au 4.
+        if i_plein is not None:
+            if "plein" not in formes_dispo:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme « à fond » sourcée pour « {parametre} » — "
+                    "donner une valeur chiffrée."])
+            pris.add(i_plein)
+            forme, valeur = "plein", None
+        elif i_inverse is not None:
+            if "echelle" not in formes_dispo:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme d'inversion sourcée pour « {parametre} »."])
+            forme, valeur = "echelle", -100
+        else:
+            forme = ("relatif_ajout" if i_ajout is not None else
+                     "relatif_retrait" if i_retrait is not None else "absolue")
+            if forme not in formes_dispo:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune forme « {forme} » sourcée pour « {parametre} »."])
+
+            if forme == "absolue":
+                # Par défaut, même convention que `_regler_intensite` : la
+                # SÉLECTION se lit en premier (voir plus bas), la valeur est
+                # le nombre libre restant. Mais si un nombre est immédiatement
+                # suivi d'une unité (« 10 degrés »), il est pris ICI, avant la
+                # sélection — sinon « circuit 1 à 10 degrés » lirait « 1 à 10 »
+                # comme une PLAGE de circuits (`_plage` ne connaît pas les
+                # degrés, seulement `%`/« pourcent ») et n'aurait plus rien
+                # pour la valeur. Même principe que le verrou verbe ci-dessus,
+                # avec un marqueur d'unité au lieu d'un verbe.
+                # Les DEUX familles de marqueurs comptent : « degrés » (Pan,
+                # Tilt) et « % »/« pourcent » (Zoom, Iris, Edge). Un nombre
+                # suivi de l'un ou de l'autre est une VALEUR, jamais un numéro
+                # de sélection — c'est déjà la règle de `_plage` pour ses
+                # bornes. Ne reconnaître que « degrés » ici laissait « le zoom
+                # des circuits 1 à 5 à 50 % » sans valeur pré-extraite, donc
+                # sans moyen de lire « 1 à 5 » comme une plage.
+                marqueurs = tuple(MARQUEURS_UNITE_PARAMETRE) + tuple(MARQUEURS_NIVEAU_POSTFIXES)
+                valeur = None
+                for i, tok in enumerate(toks):
+                    if (i not in pris and tok.isdigit()
+                            and i + 1 < len(toks) and toks[i + 1] in marqueurs
+                            and (i + 1) not in pris):
+                        valeur = int(tok)
+                        pris.update({i, i + 1})
+                        break
+            else:
+                # « ajoute »/« retire » inversent cet ordre habituel : « ajoute
+                # 10 au pan du circuit 1 » place la valeur AVANT le numéro de
+                # sélection. Le nombre le plus proche du verbe est donc pris
+                # ICI, avant la sélection — ce qui reste ira nécessairement à
+                # elle, quel que soit l'ordre d'écriture par ailleurs.
+                candidats = self._nombres(toks, pris)
+                if not candidats:
+                    return Traduction(statut="incompris", notes=[
+                        f"Aucune valeur trouvée pour « {parametre} »."])
+                i_verbe = i_ajout if i_ajout is not None else i_retrait
+                i_valeur, valeur = min(candidats, key=lambda iv: abs(iv[0] - i_verbe))
+                pris.add(i_valeur)
+
+        # 3. la sélection — PAS `_selection_de` (qui essaie `_plage` en
+        #    premier) : rien ne source de plage/fan de circuits pour ces
+        #    paramètres, et « hue du circuit 1 à 180 » se ferait lire comme
+        #    une plage de circuits 1-180 (bug réel trouvé en session), le
+        #    « à » jouant à la fois le rôle de séparateur de plage et de
+        #    préposition vers la valeur — même famille de piège que celui
+        #    déjà documenté pour `_regler_intensite`, mais sans marqueur
+        #    (`%`/« degrés ») pour le lever ici. On ne cherche donc que le
+        #    nombre COLLÉ à l'objet, jamais plus loin.
+        avant = set(pris)
+        objet = self._objet(toks, pris)
+        selection = None
+        if objet is not None:
+            i_objet = next(iter(pris - avant))
+            candidat = None
+            if i_objet + 1 < len(toks) and toks[i_objet + 1].isdigit() \
+                    and (i_objet + 1) not in pris:
+                candidat = (i_objet + 1, int(toks[i_objet + 1]))
+            elif i_objet - 1 >= 0 and toks[i_objet - 1].isdigit() \
+                    and (i_objet - 1) not in pris:
+                candidat = (i_objet - 1, int(toks[i_objet - 1]))
+            if candidat is None:
+                return Traduction(statut="incompris", notes=[
+                    "Aucun numéro trouvé pour la sélection."])
+            i_num, numero = candidat
+            pris.add(i_num)
+            selection = {"objet": objet, "numero": numero}
+
+            # PLAGE — mais seulement si la VALEUR est déjà connue.
+            #
+            # C'est toute la difficulté de ce handler, et elle tient à un seul
+            # mot : « à » sépare une plage (« circuits 1 à 5 ») ET introduit
+            # une valeur (« à 180 »). Le critère qui les départage n'est pas
+            # dans la phrase, il est dans l'état : si la valeur a DÉJÀ été
+            # trouvée — parce qu'un marqueur d'unité la désignait sans
+            # ambiguïté — alors un « N à M » restant ne peut plus être qu'une
+            # plage. Sinon c'est la valeur, et lire une plage produirait
+            # « hue du circuit 1 à 180 » -> circuits 1 à 180.
+            #
+            # Sans cette branche, « le pan des circuits 1 à 5 à 50 degrés »
+            # rendait `Chan 1 Pan 50` : la plage TRONQUÉE à un seul circuit,
+            # en silence. Défaut introduit le 2026-09-14 en retirant `_plage`
+            # d'ici pour tuer le bug inverse — une correction qui avait
+            # échangé un silence contre un autre.
+            if valeur is not None and i_num + 2 < len(toks) \
+                    and toks[i_num + 1] in self._mots_plage \
+                    and toks[i_num + 2].isdigit() \
+                    and (i_num + 1) not in pris and (i_num + 2) not in pris:
+                pris.update({i_num + 1, i_num + 2})
+                selection = {"objet": objet, "de": numero,
+                             "a": int(toks[i_num + 2])}
+        elif not self._vise_la_selection_courante(toks, pris):
+            return Traduction(statut="incompris",
+                              notes=[self._motif_refus_selection(toks, pris)])
+        elif not self._selection_courante_permise("regler_parametre"):
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni groupe désigné dans la phrase."])
+        else:
+            notes.append(self.NOTE_SELECTION_COURANTE)
+
+        # 4. forme absolue : la valeur est ce qu'il reste, une fois la
+        #    sélection retirée du jeu de nombres libres.
+        if valeur is None and forme != "plein":
+            candidats = self._nombres(toks, pris)
+            if not candidats:
+                return Traduction(statut="incompris", notes=[
+                    f"Aucune valeur trouvée pour « {parametre} »."])
+            i_valeur, valeur = candidats[0]
+            pris.add(i_valeur)
+
+        # `%`/« pourcent » juste après la valeur (Zoom, Iris...) : purement
+        # décoratif une fois la valeur trouvée — `_plage` l'excluait déjà
+        # d'une plage (MARQUEURS_NIVEAU_POSTFIXES) — mais un mot CONNU laissé
+        # de côté est un `ignores`, pas un silence acceptable (règle 4).
+        if i_valeur is not None and i_valeur + 1 < len(toks) \
+                and toks[i_valeur + 1] in MARQUEURS_NIVEAU_POSTFIXES \
+                and (i_valeur + 1) not in pris:
+            pris.add(i_valeur + 1)
+
+        # GARDE-FOU — règle 4 appliquée aux NOMBRES. Un chiffre écrit dans la
+        # phrase et non employé veut dire que la commande ne répond pas à la
+        # demande : « le hue des circuits 1 à 5 à 180 » rendait `Chan 1 Hue 5`,
+        # la valeur 180 remplacée par une borne de plage, statut `compris` et
+        # `ignores` vide — un nombre nu n'est pas du vocabulaire, donc rien ne
+        # le rattrapait. Mieux vaut une question qu'une commande plausible et
+        # fausse : ici la phrase est réellement ambiguë (« à » sépare une plage
+        # ET introduit une valeur, sans marqueur d'unité pour trancher).
+        restants = [toks[i] for i in range(len(toks))
+                    if i not in pris and toks[i].isdigit()]
+        if restants:
+            return Traduction(statut="incompris", notes=[
+                f"Nombre inemployé dans la phrase : {', '.join(restants)}. "
+                f"Préciser l'unité de la valeur (« à 50 % », « à 50 degrés ») "
+                f"pour lever l'ambiguïté avec une plage de circuits."])
+
+        etape: dict = {"action": {"type": "regler_parametre", "parametre": parametre,
+                                  "forme": forme, "valeur": valeur}}
+        if selection is not None:
+            etape["selection"] = selection
+        return Traduction(statut="compris", ir=[etape], notes=notes,
+                          **self._mots(toks, pris))
+
+    def _formes_parametre(self, parametre: str) -> set[str]:
+        """Formes sourcées pour CE paramètre précis, lues dans
+        `grammar/modele.yaml:parametres` — jamais empruntées à un paramètre
+        voisin. Même pattern d'accès que `_selection_courante_permise`."""
+        try:
+            catalogue = self._generateur_ou_defaut().modele["parametres"]
+            return set(catalogue.get(parametre, {}).get("formes", {}))
+        except Exception:                                     # noqa: BLE001
+            return set()
 
     def _niveau(self, toks: list[str], pris: set[int]) -> dict | None:
         """`50 %` → {valeur: 50}. `10 a 50 %` → dégradé {de: 10, a: 50}."""
@@ -1094,14 +1580,15 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
 
-        cible = None
+        cible = i_cible = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                cible, _ = valeur, pris.add(i)
+                cible, i_cible, _ = valeur, i, pris.add(i)
                 break
         if cible is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé après « cue »."])
+        liste = self._cue_dans_liste(toks, pris, i_cible)   # `Cue 4/2`
 
         objet = self._objet(toks, pris) or "Chan"
         selection = self._selection_de(objet, toks, pris)
@@ -1109,7 +1596,10 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucun circuit ni groupe désigné dans la phrase."])
 
-        ir = [{"selection": selection, "action": {"type": "record_cue", "cible": cible}}]
+        action_cue: dict = {"type": "record_cue", "cible": cible}
+        if liste is not None:
+            action_cue["liste"], action_cue["cible"] = cible, liste
+        ir = [{"selection": selection, "action": action_cue}]
         return Traduction(statut="compris", ir=ir,
                           **self._mots(toks, pris))
 
@@ -1143,9 +1633,37 @@ class Traducteur:
         i, cible = libres[0]
         pris.add(i)
         action = {"type": "go_to_cue", "cible": cible}
+        dedans = self._cue_dans_liste(toks, pris, i)
+        if dedans is not None:
+            action["liste"], action["cible"] = cible, dedans
         self._temps_de_cue(action, toks, pris)
         return Traduction(statut="compris", ir=[{"action": action}],
                           **self._mots(toks, pris))
+
+    def _cue_dans_liste(self, toks: list[str], pris: set[int], i_num: int) -> int | None:
+        """`Cue 3/1` — la cue 1 de la LISTE 3, pas la cue 3.
+
+        Le `/` disparaît à la tokenisation (« cue 3/1 » -> `cue`, `3`, `1`),
+        donc la seule trace de la graphie d'origine est que les deux nombres
+        sont COLLÉS. C'est le critère retenu ici, et il est plus strict que
+        l'idiome qu'employait `_copier_libelles` (« n'importe quel second
+        nombre libre ») : ailleurs, un second nombre peut être tout autre
+        chose, et le prendre pour un numéro de liste enverrait la macro sur
+        une cue qui n'est pas celle demandée.
+
+        Sans ça, `_aller_a_cue` et `_enregistrer_cue` gardaient le premier
+        nombre et jetaient le second SANS un mot : « va à la cue 3/1 » rendait
+        `Go To Cue 3 Enter` — une autre cue, statut `compris`, rien dans
+        `ignores` (un nombre nu n'est pas du vocabulaire). Trouvé le
+        2026-09-17 par le garde-fou des nombres inemployés. Le générateur, lui,
+        savait déjà rendre `Cue 3/1` : c'est le traducteur qui perdait
+        l'information.
+        """
+        j = i_num + 1
+        if j < len(toks) and j not in pris and toks[j].isdigit():
+            pris.add(j)
+            return int(toks[j])
+        return None
 
     def _temps_de_cue(self, action: dict, toks: list[str], pris: set[int]) -> None:
         """Pose le `Time` d'un `Go To Cue`, s'il y en a un dans la phrase.
@@ -1559,16 +2077,20 @@ class Traducteur:
         if i_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
-        numero_cue = None
+        numero_cue = i_numero_cue = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                numero_cue, _ = valeur, pris.add(i)
+                numero_cue, i_numero_cue, _ = valeur, i, pris.add(i)
                 break
         if numero_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé après « cue »."])
 
-        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+        selection_cue: dict = {"objet": "Cue", "numero": numero_cue}
+        dedans = self._cue_dans_liste(toks, pris, i_numero_cue)   # `Cue 5/2`
+        if dedans is not None:
+            selection_cue = {"objet": "Cue", "liste": numero_cue, "numero": dedans}
+        ir = [{"selection": selection_cue,
                "action": {"type": "appliquer_courbe", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
                           **self._mots(toks, pris))
@@ -1580,15 +2102,19 @@ class Traducteur:
         if i_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
-        numero_cue = None
+        numero_cue = i_numero_cue = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                numero_cue, _ = valeur, pris.add(i)
+                numero_cue, i_numero_cue, _ = valeur, i, pris.add(i)
                 break
         if numero_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé après « cue »."])
-        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+        selection_cue: dict = {"objet": "Cue", "numero": numero_cue}
+        dedans = self._cue_dans_liste(toks, pris, i_numero_cue)   # `Cue 5/2`
+        if dedans is not None:
+            selection_cue = {"objet": "Cue", "liste": numero_cue, "numero": dedans}
+        ir = [{"selection": selection_cue,
                "action": {"type": "retirer_courbe"}}]
         return Traduction(statut="compris", ir=ir,
                           **self._mots(toks, pris))
@@ -1693,6 +2219,85 @@ class Traducteur:
         return Traduction(statut="compris", ir=[etape], notes=notes,
                           **self._mots(toks, pris))
 
+    # mots de groupe reconnus mais REFUSÉS par _naviguer_selection : voir
+    # la note de refus dans cette méthode.
+    MOTS_GROUPE_NAVIGATION = ("groupe", "groupes", "group")
+
+    def _naviguer_selection(self, toks: list[str], reponses: dict) -> Traduction:
+        """`Next` / `Last` — se déplacer DANS la sélection, pas la remplacer.
+
+        Pourquoi un handler à part plutôt que `_action_sur_selection` : la
+        phrase a une autre forme. « passe au circuit suivant » nomme un objet
+        SANS numéro, ce que le verrou 1 refuse à juste titre partout
+        ailleurs — un numéro perdu à la frappe ne doit pas devenir un ordre
+        sur une sélection inconnue. Ici « circuit » ne désigne aucune cible :
+        il fait partie de la locution « le circuit suivant ». Il est donc
+        consommé AVANT tout examen de sélection, et seulement s'il est
+        adjacent au mot de direction — « circuit 5 suivant » n'entre pas dans
+        ce cas et retombe sur le refus normal.
+        """
+        pris: set[int] = set()
+        notes: list[str] = []
+        type_action = self._intention_courante or ""
+
+        mots_direction = ({"suivant", "suivante", "next"}
+                          if type_action == "selection_suivante"
+                          else {"precedent", "precedente", "last"})
+        i_dir = self._indice_mot(toks, pris, mots_direction)
+        if i_dir is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun sens de déplacement reconnu (suivant / précédent)."])
+
+        # le mot d'objet, seulement s'il est collé au mot de direction
+        i_objet = None
+        for i in (i_dir - 1, i_dir + 1):
+            if 0 <= i < len(toks) and i not in pris and self._objets.get(toks[i]):
+                i_objet = i
+                break
+        if i_objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Préciser ce qui avance : « passe au circuit suivant »."])
+
+        # `Next` sur un GROUPE ne veut pas dire « groupe suivant ». Le manuel
+        # §7 l. 175 est explicite : après une sélection de groupe, `Next`
+        # accède au PREMIER CIRCUIT ORDONNÉ du groupe, puis parcourt ses
+        # circuits. Aucune source n'atteste « passer au groupe suivant ».
+        # Rendre `Next` ici produirait une commande valide qui ne fait pas ce
+        # que la phrase demande — le pire des deux mondes.
+        if toks[i_objet] in self.MOTS_GROUPE_NAVIGATION:
+            return Traduction(statut="incompris", notes=[
+                "« groupe suivant / précédent » n'est pas attesté : après une "
+                "sélection de groupe, Next accède au premier circuit DU groupe "
+                "et parcourt ses circuits (manuel §7), il ne passe pas au "
+                "groupe suivant."])
+        pris.update({i_dir, i_objet})
+
+        # Une durée dans la phrase doit TOUJOURS ressortir — produite, ou
+        # refusée. `Next` et `Last` sont des touches de déplacement immédiat :
+        # aucune source ne leur donne de forme temporisée. Rendre `Next` en
+        # laissant tomber « en 3 secondes » donnerait une commande qui a l'air
+        # juste et fait autre chose, sans le moindre signal — et ici la durée
+        # ne ressortait même pas dans `ignores`, donc en silence complet.
+        duree = self._duree(toks, pris)
+        if duree is not None:
+            return Traduction(statut="incompris", notes=[
+                "Aucune forme temporisée n'est documentée pour un déplacement "
+                "de sélection : Next et Last agissent immédiatement. Pour un "
+                "changement progressif, passer par un niveau et un sneak."])
+
+        if not self._vise_la_selection_courante(toks, pris):
+            return Traduction(statut="incompris",
+                              notes=[self._motif_refus_selection(toks, pris)])
+        if not self._selection_courante_permise(type_action):
+            return Traduction(statut="incompris", notes=[
+                "Le modèle n'autorise pas ce déplacement sur la sélection "
+                "en cours."])
+        notes.append(self.NOTE_SELECTION_COURANTE)
+
+        return Traduction(statut="compris",
+                          ir=[{"action": {"type": type_action}}],
+                          notes=notes, **self._mots(toks, pris))
+
     def _verifier(self, toks: list[str], reponses: dict) -> Traduction:
         """`<sélection> At <niveau> Check` — la revue circuit par circuit.
 
@@ -1704,7 +2309,8 @@ class Traducteur:
         selection = self._selection_de(objet, toks, pris)
         if selection is None:
             return Traduction(statut="incompris", notes=[
-                "Aucun circuit désigné — préciser les circuits à vérifier."])
+                "Aucune cible désignée — préciser les circuits ou les "
+                "adresses à vérifier."])
 
         niveau = self._niveau(toks, pris)
         if niveau is None:
@@ -2040,12 +2646,20 @@ class Traducteur:
         Les CIBLES comptent autant que les objets, et l'oublier a coûté une
         régression le 2026-09-09 : « sub 3 à 50 % » ne contient aucun mot de
         `objets` (qui n'a que Chan, Group, Cue), donc la phrase basculait sur
-        la sélection courante et rendait `At 50 Enter`. Or le banc réel a
-        tranché `Sub` + `intensite` INVALIDE en confiance S — le niveau d'un
-        sub passe par le fader ou les bumps. La commande produite aurait donc
-        visé des circuits quelconques au lieu du submaster demandé, sans
-        aucune erreur. Un mot qui nomme une cible, quelle que soit sa famille,
-        interdit le repli."""
+        la sélection courante et rendait `At 50 Enter` — une commande visant
+        des circuits quelconques au lieu du submaster demandé, sans aucune
+        erreur.
+
+        NOTE 2026-09-14 : ce verrou était alors justifié par « le banc a
+        tranché Sub + intensite INVALIDE ». C'est FAUX depuis le 2026-09-13,
+        où le banc a tranché l'inverse (valide, confiance S), et
+        `_regler_intensite` a désormais une branche Sub explicite. Le verrou
+        reste néanmoins nécessaire, pour sa raison propre et suffisante : la
+        phrase DÉSIGNE une cible, donc se replier sur « ce qui est
+        sélectionné » viserait autre chose que ce qui est demandé. Un mot qui
+        nomme une cible, quelle que soit sa famille, interdit le repli — la
+        légalité de l'action sur cette cible est une question séparée, et elle
+        se lit dans le modèle."""
         essai: set[int] = set(pris)
         if self._objet(toks, essai) is not None:
             return False
@@ -2084,17 +2698,21 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » est requis."])
 
-        cible = None
+        cible = i_cible = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                cible, _ = valeur, pris.add(i)
+                cible, i_cible, _ = valeur, i, pris.add(i)
                 break
         if cible is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé — un Update sans cible explicite "
                 "dépend d'un état de console que le traducteur ne peut pas lire."])
 
-        ir = [{"action": {"type": "update_cue", "cible": cible}}]
+        liste = self._cue_dans_liste(toks, pris, i_cible)   # `Cue 4/2`
+        action_cue: dict = {"type": "update_cue", "cible": cible}
+        if liste is not None:
+            action_cue["liste"], action_cue["cible"] = cible, liste
+        ir = [{"action": action_cue}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     # -- petits extracteurs partagés ---------------------------------------
@@ -2170,16 +2788,127 @@ class Traducteur:
                 return self.lex["nuanciers"][cle]["numero"], i
         return None, None
 
+    # Mots qui prolongent une sélection par une cible de MÊME type. La
+    # virgule et le `+` n'y figurent pas : le tokeniser les efface, si bien
+    # que « circuits 1, 5 » et « circuits 1 + 5 » arrivent ici en deux
+    # chiffres COLLÉS — c'est cette adjacence qui les représente.
+    MOTS_LISTE_SELECTION = ("et", "plus")
+
+    # Retirer une cible de la sélection. Le `-` survit à la tokenisation
+    # (contrairement au `+`, effacé), mais il est POLYSÉMIQUE : « circuits
+    # 1 - 5 » est une PLAGE, « circuits 1 à 5 - 4 » un retrait. `_plage`
+    # passant en premier, un `-` encore libre ici ne peut plus être qu'un
+    # retrait — l'ordre fait la désambiguïsation, pas une règle de plus.
+    MOTS_RETRAIT_SELECTION = ("-", "sauf", "moins", "excepte", "hormis")
+
+    # `Chan 1 + 5` n'est attesté que pour les objets de sélection génériques
+    # (manuel §6 l. 58 et 296, §7 pour les groupes). Pour une CUE, deux
+    # chiffres collés veulent dire tout autre chose — la liste de cues
+    # (`Cue 3/1`), voir `_cue_dans_liste`. Ne jamais confondre les deux.
+    OBJETS_LISTE_PERMISE = ("Chan", "Group")
+
     def _selection_de(self, objet: str, toks: list[str], pris: set[int]) -> dict | None:
+        avant = set(pris)
         bornes = self._plage(toks, pris)
         if bornes:
-            return {"objet": objet, "de": bornes[0], "a": bornes[1]}
-        libres = self._nombres(toks, pris)
+            selection = {"objet": objet, "de": bornes[0], "a": bornes[1]}
+            self._prolonger_selection(selection, objet, toks, pris, max(pris - avant))
+            return selection
+        # Un nombre suivi d'un marqueur POSTFIXE de niveau (`%`, « pourcent »)
+        # n'est pas un numéro de sélection : c'est une valeur. `_plage`
+        # applique déjà cette exclusion à ses bornes ; le repli « nombre
+        # isolé » ci-dessous ne l'appliquait pas, et cette asymétrie a produit
+        # un vrai défaut dans `_verifier` : « vérifie les circuits à 75 % »
+        # retenait 75 comme NUMÉRO DE CIRCUIT, puis refusait en annonçant
+        # « niveau manquant » — alors que le niveau était la seule chose que
+        # la phrase donnait vraiment. Un refus qui désigne la mauvaise cause
+        # envoie corriger ce qui n'est pas cassé.
+        libres = [(i, v) for i, v in self._nombres(toks, pris)
+                  if not (i + 1 < len(toks)
+                          and toks[i + 1] in MARQUEURS_NIVEAU_POSTFIXES)]
         if libres:
             i, valeur = libres[0]
             pris.add(i)
-            return {"objet": objet, "numero": valeur}
+            selection = {"objet": objet, "numero": valeur}
+            # `Cue 3/1` — et SEULEMENT pour une cue. Le `/` d'Eos y sépare la
+            # liste de la cue ; sur un circuit ou un groupe il n'a pas ce
+            # sens, donc prendre un nombre collé comme « liste » y serait une
+            # invention. Restreindre à `Cue` garde la correction exacte.
+            if objet == "Cue":
+                dedans = self._cue_dans_liste(toks, pris, i)
+                if dedans is not None:
+                    return {"objet": objet, "liste": valeur, "numero": dedans}
+            self._prolonger_selection(selection, objet, toks, pris, i)
+            return selection
         return None
+
+    def _prolonger_selection(self, selection: dict, objet: str,
+                             toks: list[str], pris: set[int], dernier: int) -> None:
+        """`Chan 1 + 5`, `Group 1 Thru 5 + 9` — une sélection qui continue.
+
+        Manuel §6 l. 58 (« [5] [+] [7] [Enter] — selects non-consecutive
+        channels 5 and 7 ») et l. 296 (« [1] [+] [3] [At] [5]<0> [Enter] —
+        selects channels 1 and 3, and sets an intensity level of 50% »).
+        Confiance A. Le générateur savait déjà rendre la clé `plus` : seul le
+        traducteur ne la produisait jamais.
+
+        Ce que ça répare, trouvé le 2026-09-17 : « circuits 1 et 5 à 50 % »
+        rendait `Chan 1 At 05 Thru 50 Enter`. Le 5 non consommé était avalé
+        par `_niveau`, qui y lisait un DÉGRADÉ de niveaux — une commande
+        malformée, statut `compris`, et rien du tout dans `ignores` ni
+        `non_reconnus`. La phrase est pourtant l'une des plus banales au
+        pupitre.
+
+        Deux graphies mènent ici, parce que le tokeniser efface la ponctuation :
+        « 1 et 5 » garde son « et », tandis que « 1, 5 » et « 1 + 5 » arrivent
+        en deux chiffres COLLÉS. L'adjacence est donc un séparateur à part
+        entière — mais seulement pour Chan et Group : sur une cue, deux
+        chiffres collés désignent la liste (`Cue 3/1`).
+        """
+        if objet not in self.OBJETS_LISTE_PERMISE:
+            return
+        ajouts: list[int] = []
+        retraits: list[int] = []
+        while True:
+            j = dernier + 1
+            cible = ajouts
+            if j < len(toks) and j not in pris and toks[j].isdigit():
+                pass                                   # « 1, 5 » ou « 1 + 5 »
+            elif (j < len(toks) and j not in pris
+                    and (toks[j] in self.MOTS_LISTE_SELECTION
+                         or toks[j] in self.MOTS_RETRAIT_SELECTION)):
+                # « sauf LE 5 » : un article peut s'intercaler entre le
+                # séparateur et le nombre. On saute les mots-outils, mais
+                # DEUX au plus — au-delà, ce n'est plus une énumération, et
+                # bondir plus loin reviendrait à rattacher un nombre qui
+                # appartient à autre chose dans la phrase.
+                k = j + 1
+                saut = 0
+                while (k < len(toks) and k not in pris and saut < 2
+                        and toks[k] in self._outils
+                        and not toks[k].isdigit()):
+                    k += 1
+                    saut += 1
+                if not (k < len(toks) and k not in pris and toks[k].isdigit()):
+                    break
+                if toks[j] in self.MOTS_RETRAIT_SELECTION:
+                    cible = retraits                   # « 1 à 5 sauf 4 »
+                for m in range(j, k):
+                    pris.add(m)
+                j = k
+            else:
+                break
+            # Un nombre suivi d'un marqueur de niveau est une VALEUR, jamais
+            # une cible à ajouter ou retirer — même exclusion qu'au-dessus.
+            if j + 1 < len(toks) and toks[j + 1] in MARQUEURS_NIVEAU_POSTFIXES:
+                break
+            pris.add(j)
+            cible.append(int(toks[j]))
+            dernier = j
+        if ajouts:
+            selection["plus"] = ajouts
+        if retraits:
+            selection["moins"] = retraits
 
     # -- corriger une IR déjà produite, en langage naturel -------------------
     def corriger(self, ir: list[dict], instruction: str) -> Traduction:
@@ -2225,6 +2954,17 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Rien à corriger de part et d'autre de « par »/« en »."])
 
+        # UNE correction à la fois. « remplace 5 par 9 et 50 par 75 » ne
+        # retenait que la première et jetait la seconde sans un mot — la
+        # macro affichée avait l'air corrigée et ne l'était qu'à moitié.
+        # Un second séparateur est une preuve non ambiguë qu'on en demande
+        # deux : on le dit, au lieu d'en faire une.
+        if any(tok in ("par", "en") for tok in toks[i_sep + 1:]):
+            return Traduction(statut="incompris", notes=[
+                "Une seule correction à la fois : cette instruction en "
+                "contient deux (« par »/« en » y figure deux fois). "
+                "Les enchaîner une par une."])
+
         # -- cas 1 : objet de sélection (Chan <-> Group uniquement) ---------
         OBJETS_REMPLACABLES = {"Chan", "Group"}
         cle_gauche, _ = self._resoudre(gauche[0], self._objets)
@@ -2254,6 +2994,17 @@ class Traducteur:
                 for cle, val in conteneur.items():
                     if isinstance(val, int) and not isinstance(val, bool) and val == valeur_gauche:
                         candidats.append((conteneur, cle))
+                    # `plus` et `moins` portent des LISTES de numéros
+                    # (« Chan 1 + 5 - 3 »). Sans ce parcours, corriger le 5
+                    # de « circuits 1 et 5 » répondait « le numéro 5
+                    # n'apparaît nulle part dans cette macro » — un refus
+                    # faux, introduit le 2026-09-17 en ajoutant les listes
+                    # de sélection sans mettre `corriger` à jour avec elles.
+                    elif isinstance(val, list):
+                        for rang, element in enumerate(val):
+                            if (isinstance(element, int) and not isinstance(element, bool)
+                                    and element == valeur_gauche):
+                                candidats.append((val, rang))
             if not candidats:
                 return Traduction(statut="incompris", notes=[
                     f"Le numéro {valeur_gauche} n'apparaît nulle part dans cette macro."])
@@ -2311,7 +3062,18 @@ class Traducteur:
         if base.statut != "a_preciser" or not base.questions:
             return base
 
-        reponses_llm = (sortie_llm or {}).get("reponses") or {}
+        # Une sortie LLM est une donnée EXTERNE : sa forme n'est jamais
+        # garantie, même quand le prompt la décrit. `{"reponses": "haut"}` —
+        # une chaîne au lieu d'un dict — faisait lever un AttributeError, donc
+        # planter l'app dans le navigateur au lieu de simplement ignorer une
+        # réponse mal formée. Trouvé le 2026-09-17 en sondant ce chemin avec
+        # des sorties hostiles. Tout le reste tenait déjà : option inventée,
+        # clé inconnue, valeur nulle, tentative d'injection — toutes
+        # retombaient proprement sur `a_preciser`, le LLM ne pouvant rien
+        # forcer. Seule la FORME du conteneur n'était pas vérifiée.
+        reponses_llm = sortie_llm.get("reponses") if isinstance(sortie_llm, dict) else None
+        if not isinstance(reponses_llm, dict):
+            reponses_llm = {}
         reponses_completees = dict(reponses or {})
         questions_restantes: list[Question] = []
         toutes_resolues = True

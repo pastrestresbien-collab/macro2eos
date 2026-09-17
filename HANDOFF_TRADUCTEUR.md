@@ -155,20 +155,49 @@ qu'elle parle d'autre chose.
 
 ---
 
-## 4. Les quatre bancs, et pourquoi le quatrième compte
+## 4. Les sept bancs, et pourquoi les deux derniers comptent
 
 ```
-grammar/test_generateur.py          115 cas
-traducteur/test_traducteur.py       139 cas de traduction + 9 de correction
-traducteur/test_interpreter_flou.py   8 cas
-traducteur/test_catalogue.py         43 phrases, 33 intentions
+grammar/test_generateur.py          125 cas
+traducteur/test_traducteur.py       203 cas de traduction + 12 de correction
+traducteur/test_interpreter_flou.py  11 cas
+traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
+traducteur/test_silences.py       1415 vérifications — INVARIANTS
+app/test_llm_bridge.js               20 cas — NODE, pas Python
 ```
+Le septième ne se lance pas comme les autres : `node app/test_llm_bridge.js`.
+Il ne figurait dans aucune liste de ce document jusqu'au 2026-09-17, ce qui
+est la meilleure façon de ne jamais le lancer.
+(chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
+ainsi que `./app/build_data.sh --verifier`.)
 
 Les quatre premiers comparent le traducteur à des attentes écrites par
 l'agent. Ils protègent des régressions mais ne peuvent **structurellement
 pas** révéler qu'une attente était fausse dès le départ — même boucle fermée
-que les corpus de macros fabriqués audités dans cette session.
+que les corpus de macros fabriqués audités dans cette session. Les deux
+derniers sortent de cette boucle, chacun à sa façon.
+
+`test_silences.py` (2026-09-17) ne compare à AUCUNE attente : il vérifie des
+invariants que toute traduction correcte respecte, quelle que soit la phrase.
+Un nombre écrit doit se retrouver dans la commande ou être signalé ; le
+changer doit changer la commande ; la même demande dans plusieurs ordres de
+mots doit donner la même commande. C'est le seul banc capable de trouver ce à
+quoi personne n'a pensé — il a livré quatre pannes silencieuses le jour de sa
+création : trois sur des plages de circuits, et une SYSTÉMIQUE — 32 des 38
+intentions laissaient tomber une durée sans un mot, parce qu'un mot de durée
+n'est pas rattrapé par `_ignores`. Corrigée par un garde-fou central dans
+`_traduire_simple`, qui vaut d'office pour toute intention future. **Attention à son angle mort
+propre** : une famille dont plus aucune tournure ne se traduit ne prouve plus
+rien, donc il le signale explicitement (« FAMILLE MUETTE ») au lieu de passer
+au vert.
+
+Il porte aussi un FUZZER à graine fixe (1200 phrases composées au hasard depuis
+le vrai vocabulaire). La graine est fixe exprès : un banc qui change de verdict
+d'une exécution à l'autre ne dit jamais si une correction a marché. Beaucoup de
+ces phrases n'ont aucun sens, et c'est l'intérêt — personne ne les écrirait à la
+main, et le traducteur doit REFUSER proprement plutôt que rendre une commande
+qui n'obéit qu'à la moitié de la phrase.
 
 `test_corpus_terrain.py` confronte le traducteur à `corpus/handy_macros_etc.yaml`,
 la feuille collaborative ETC « Handy Macros » : 43 macros écrites par des
@@ -184,19 +213,31 @@ Un désaccord n'est **pas** un échec du traducteur : c'est une question, et ell
 se tranche dans les deux sens. Le manuel §16 a déjà donné tort à la feuille sur
 sa macro « Quickstep ». Seule la **régression** fait échouer le banc.
 
-Score actuel : **2/26** sur les entrées comparables. Le chiffre est bas et
-c'est son intérêt — la couverture mesurée contre le modèle du dépôt (33
-intentions pour 82 actions) est un tout autre nombre que celle mesurée contre
-ce que les praticiens écrivent.
+Score actuel : **3/26** sur les entrées comparables (2026-09-14). Le chiffre est bas
+et c'est son intérêt — la couverture mesurée contre le modèle du dépôt (34 intentions
+pour 85 actions) est un tout autre nombre que celle mesurée contre ce que les
+praticiens écrivent. **Ne pas chercher à faire monter ce score directement** : il
+monte quand un mécanisme réel arrive, jamais en pliant une entrée du corpus au
+lexique. Les causes du reste sont **déclarées entrée par entrée** dans le corpus (champ
+`cause:`) et affichées par le banc. Elles ne sont plus déduites du message de refus :
+ce classement-là était faux, et il avait produit six jours de fausse priorité (voir
+§7). Répartition au 2026-09-14 : 6 `action_absente`, 5 `mecanisme_absent`,
+4 `navigation_relative`, 3 `forme_absente`, 2 `hors_ligne_de_commande`,
+2 `macro_non_terminee`, 1 `source_douteuse` — et **zéro** `selection_implicite`.
+Une entrée hors périmètre sans cause déclarée fait échouer le banc.
 
 ---
 
 ## 5. Ce qui reste à faire, par taille de bloc
 
+**Mis à jour le 2026-09-14.** Deux lignes de ce tableau ont bougé — lire l'état, pas
+le souvenir.
+
 | famille | n | état |
 |---|---|---|
-| **macros multi-commandes** | 9 | `rendre_macro()` existe déjà dans le générateur — c'est le traducteur qui ne compose pas. Le plus gros bloc. |
-| **actions absentes du modèle** | ~8 | `Color_Crossfade`, `Pan`/`Fan`/`Center`, `Query Live Moves`/`Dark Moves`, `Flexi`, `Form`, `Make Manual`. Chacune demande une recherche dans les manuels. |
+| **macros multi-commandes** | 9 | **Le mécanisme est fait** (`_traduire_composee`, séparateurs « puis » et « ; »). Les 9 entrées du corpus ne passent toujours pas, mais plus pour cette raison : elles demandent des mécanismes entiers encore absents (`AllNPs`, `Macro_Loop`, capture `Wait_For_Input` en cours de macro). À re-qualifier une par une avant d'y retoucher. |
+| **paramètres de projecteur** | 7 faits | **Résolu par la généricité, pas par l'accumulation.** Pan, Tilt, Zoom, Iris, Edge, Hue, Saturation passent tous par un seul chemin (`regler_parametre`), catalogués dans `grammar/modele.yaml` → `parametres:`. Ajouter Frost, Gobo ou autre = une entrée de données + une source, pas du code. |
+| **actions absentes du modèle** | ~6 | Ce qui reste après les paramètres : `Color_Crossfade`, `Fan`/`Center`, `Query Live Moves`/`Dark Moves`, `Flexi`, `Form`, `Make Manual`. Chacune demande une recherche dans les manuels. |
 | **vocabulaire seul** | ~7 | verbes et noms, aucun changement de règle. Le moins cher. |
 
 Motif récurrent, à vérifier **avant** d'écrire du code : **`grammar/` est
@@ -214,11 +255,18 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
 - **La console peut être localisée**, et partiellement : sur une console
   francophone, `Jusqu'à` remplace `Thru` et `Palette_Couleur` remplace
   `Color Palette`, mais `Record`, `Label`, `Sneak`, `Time`, `Sub` restent
-  anglais. OSC est indifférent à la langue. Ouvert : la localisation est-elle
-  purement d'affichage, ou la saisie change-t-elle aussi ? Tant que ce n'est
-  pas su, **ne rien promettre sur la fidélité visuelle du rendu.**
-- **`Sub` + `intensite`** : `inconnu`, backlog #22. À trancher en testant
-  séparément `Sub 4 At 50 Enter` et `Sub 4 At 50 Sneak 2 Enter`.
+  anglais. OSC est indifférent à la langue. **Partiellement tranché le 2026-09-13**
+  (`corpus/macros_show_reel.yaml`, show réel francophone, confiance B) : la saisie
+  change aussi, pas seulement l'affichage — les deux familles de mots coexistent dans
+  la même ligne de macro. Reste ouvert : la liste exacte des mots traduits, qui n'est
+  documentée nulle part. Tant que ce n'est pas su, **ne rien promettre sur la fidélité
+  visuelle du rendu.**
+- ~~**`Sub` + `intensite`**~~ — **TRANCHÉ au banc le 2026-09-13, confiance S.** Les
+  deux formes passent ; le fader du Sub a été observé montant physiquement à 50 % en
+  2 s. `valide: oui` dans le modèle, et « sub 3 à 50 % » se traduit. Laissé ici barré
+  et non supprimé : ce document a affirmé le contraire pendant cinq semaines, avec une
+  confiance S imméritée. **C'est le rappel le plus utile de la section** — une absence
+  d'observation n'est pas une observation d'absence.
 - **Le second `Enter` de confirmation** sur `Copy To` et sur les créations en
   série : dépend d'un réglage de Setup invisible dans le texte de la macro.
   Le générateur avertit et ne choisit pas.
@@ -239,7 +287,13 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
 
 - **Correspondance floue et routage.** Le flou est réservé aux créneaux,
   jamais à la détection d'intention (« groupe » est à distance 2 de
-  « rouge »). Dans un créneau, **exact d'abord, flou ensuite** : sinon
+  « rouge »). **Et le créneau ne suffisait pas non plus** (payé le
+  2026-09-17) : « rouge 3 à 50 % » rendait `Group 3 At 50 Enter`, parce que
+  `_objet` approximait « rouge » en « groupe » DANS son créneau. Règle
+  ajoutée : un mot que le lexique connaît EXACTEMENT ailleurs n'est jamais
+  approximé — l'utilisateur l'a écrit exprès. La paire était documentée ici
+  depuis des semaines, côté routage seulement ; personne n'avait vérifié
+  qu'elle mordait aussi dans les créneaux. Dans un créneau, **exact d'abord, flou ensuite** : sinon
   « palettes » gagne sur « couleur » et « lance » gagne sur « groupe ».
 - **Clé YAML dupliquée.** `yaml.safe_load` garde la dernière en silence et
   perd la première. Le lexique se charge par `charger_lexique()`, qui refuse
@@ -253,6 +307,22 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
   intensité, faux pour une durée : `Sneak 08` n'est pas `Sneak 8`.
 - **`Out` s'auto-termine** : pas d'`Enter`. `Full Full` et `Sneak Sneak` aussi,
   mais pas leur forme simple.
+- **Un indicateur dérivé peut mentir pendant des jours** (payé le 2026-09-14). Ce banc
+  devinait la cause d'un échec en cherchant « aucun numéro » dans le texte du refus, et
+  en concluait « sélection implicite ». Sur 11 entrées ainsi classées, **aucune** ne
+  l'était : `Chan 1 At 75 Check` nomme sa cible et se plaint d'un niveau ;
+  `Color_Crossfade 50` est un réglage global sans sélection. Le chiffre avait fait
+  inscrire au planning, en priorité n°1, un arbitrage produit qui ne débloquait rien.
+  **Un message de refus dit ce que le traducteur a remarqué en premier, pas ce qui
+  bloque.** Quand un chiffre sert à prioriser, lire d'abord comment il est calculé.
+- **`_selection_de` / `_plage` mangent les nombres voisins** (payé le 2026-09-14, le
+  pire bug de la session). Sans marqueur d'unité fiable, « hue à 180 sur le circuit 1 »
+  rendait `Chan 180 Hue 1` — valeur et numéro **échangés**, statut `compris`, aucun
+  avertissement. Un faux résultat silencieux, exactement ce que la règle 4 interdit.
+  `_regler_parametre` n'appelle donc plus ces helpers du tout : il ne prend que le
+  nombre **collé** au mot d'objet. Leçon générale : un helper générique qui lit « N à M »
+  comme une plage est un piège dès qu'un autre nombre de la phrase n'est pas un circuit.
+  **Tester au moins trois ordres de mots** avant de committer une extraction de nombre.
 
 ---
 

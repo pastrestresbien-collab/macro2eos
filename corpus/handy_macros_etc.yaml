@@ -23,6 +23,21 @@
 #   mode            - colonne Mode (Foreground/Background), quand renseignée
 #   auteur          - colonne Creator, quand renseignée
 #   demande_nl      - la phrase française donnée au traducteur
+#   cause           - POUR LES ENTRÉES hors_perimetre SEULEMENT : pourquoi le
+#                     traducteur ne couvre pas, écrit À LA MAIN en regard de
+#                     `syntaxe_feuille`. Ne JAMAIS le déduire du message de
+#                     refus : un refus dit ce que le traducteur a remarqué en
+#                     premier, pas ce qui bloque (`Chan 1 At 75 Check` se
+#                     plaint d'un niveau manquant alors qu'il lui manque
+#                     `Check`). Le banc échoue si une entrée hors périmètre
+#                     n'en a pas. Valeurs admises : action_absente,
+#                     forme_absente, navigation_relative, mecanisme_absent,
+#                     macro_non_terminee, hors_ligne_de_commande,
+#                     source_douteuse, selection_implicite,
+#                     sens_non_atteste (la feuille suggère un sens qu'aucune
+#                     source ne confirme — refuser vaut mieux que rendre une
+#                     commande valide qui fait autre chose).
+#   cause_detail    - la justification, en clair, de la valeur ci-dessus
 #   verdict         - référence enregistrée, recalculée à chaque exécution :
 #                     "identique"      même commande, aux espaces près
 #                     "equivalent"     forme différente, les deux attestées
@@ -66,6 +81,10 @@ entrees:
     pourquoi: >-
       Aucun numéro d'effet trouvé — préciser lequel, ou dire « tous les
       effets ».
+    cause: forme_absente
+    cause_detail: >-
+      `Stop_Effect` nu (= tous les effets) n'est pas modélisé ; le traducteur
+      exige un numéro. La cible n'est pas en cause.
 
   - id: allnps_recall_update
     label: "All Non-intensity Parameter recall from last cue and update"
@@ -84,6 +103,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: source_douteuse
+    cause_detail: >-
+      `Copy_To Copy_To` — cellule vraisemblablement tronquée à l'export. Non
+      interprétable, déjà signalé.
 
   - id: gelbook
     label: "Pick a Gelbook colour"
@@ -93,6 +116,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: hors_ligne_de_commande
+    cause_detail: >-
+      `Shift+Color` est un raccourci clavier, pas une commande de ligne. Rien
+      à traduire.
 
   - id: blackout_blind
     label: "Record a blackout in Blind"
@@ -111,6 +138,11 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: mecanisme_absent
+    cause_detail: >-
+      `Select_Active`, `Cue Next`, `Block`, `Assert` — quatre mécanismes
+      absents. Le message parle d'un numéro de cue, mais ce n'est pas le
+      blocage.
 
   - id: menu_magic_sheet
     label: "(sans intitulé — menus de magic sheet dans un onglet fixe)"
@@ -182,20 +214,15 @@ entrees:
     label: "Channel Check"
     syntaxe_feuille: "Chan 1 At 75 Check Enter"
     mode: null
-    demande_nl: "vérifie les circuits à 75 %"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Niveau manquant : une vérification amène chaque circuit à un niveau
-      donné (« vérifie les circuits 1 à 20 à 75 % »).
+    demande_nl: "vérifie le circuit 1 à 75 %"
+    verdict: identique
 
   - id: address_check
     label: "Address Check"
     syntaxe_feuille: "Address 1 At 75 Check Enter"
     mode: Default
-    demande_nl: "vérifie les adresses à 75 %"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
+    demande_nl: "vérifie l'adresse 1 à 75 %"
+    verdict: identique
 
   - id: cue_check
     label: "Cue Check"
@@ -212,9 +239,11 @@ entrees:
     syntaxe_feuille: "Pan / -100 Enter"
     mode: null
     demande_nl: "inverse le pan"
-    verdict: hors_perimetre
+    verdict: identique
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
+      Pan / -100 Enter — résolu le 2026-09-14 par l'intention générique
+      `regler_parametre`, forme `echelle` (confiance B, cette macro même en
+      est la seule source).
 
   - id: pan_fan_center
     label: "Pan Fan Center Enter"
@@ -224,6 +253,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: action_absente
+    cause_detail: >-
+      `Fan` et `Center` absents du modèle. Agit bien sur la sélection
+      courante, mais c'est le vocabulaire qui bloque en premier.
 
   - id: mark_clear_live_moves
     label: "Mark/Clear Live moves"
@@ -233,6 +266,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucun numéro trouvé pour la cible du marquage.
+    cause: mecanisme_absent
+    cause_detail: >-
+      `Blind`, `Query Live_Moves`, `Earliest_M`, `AllNPs`, `Q_Only` — chaîne
+      entière absente.
 
   - id: clear_dark_moves
     label: "Clear Dark Moves"
@@ -242,6 +279,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: mecanisme_absent
+    cause_detail: >-
+      `Blind`, `Query Dark_Moves`, `Q_Only` — même famille que
+      mark_clear_live_moves.
 
   - id: update_by_type_cp
     label: "update by type CP (specific to fixture type)"
@@ -259,6 +300,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: hors_ligne_de_commande
+    cause_detail: >-
+      `Tab_Down`/`Tab_Up`/`Flexi_Channelmode` pilotent l'affichage, pas la
+      conduite. Hors périmètre par nature, pas par manque.
 
   - id: clean_up_live_moves
     label: "Clean Up live Moves"
@@ -268,6 +313,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: mecanisme_absent
+    cause_detail: >-
+      `AllNPs` et `Recall_From` absents ; `Cue Last` demande en plus la
+      navigation relative.
 
   - id: update_manual_prev_cue
     label: "Update manual params to the previous cue"
@@ -278,6 +327,10 @@ entrees:
     pourquoi: >-
       Aucun numéro de cue trouvé — un Update sans cible explicite dépend
       d'un état de console que le traducteur ne peut pas lire.
+    cause: mecanisme_absent
+    cause_detail: >-
+      `Select_Manual` absent ; `Cue Last` demande la navigation relative. Le
+      message parle d'un numéro de cue, mais aucun numéro n'aurait suffi.
 
   - id: snapshot_workspace
     label: "Load Snapshot on Specific Workspace"
@@ -297,6 +350,11 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: forme_absente
+    cause_detail: >-
+      `[+%]`/`[-%]` est une touche à pas fixe, structurellement différente de
+      `<mot> + <n>`. Lacune ASSUMÉE et déjà documentée dans
+      `grammar/modele.yaml` (voir Zoom/Iris/Edge).
 
   - id: record_preset
     label: "Record Preset"
@@ -306,6 +364,23 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: macro_non_terminee
+    cause_detail: >-
+      Deux obstacles distincts, aucun levé (revu le 2026-09-17).
+
+      (1) La macro finit sur `Record Preset` sans numéro : elle rend la main à
+      l'opérateur, exprès. Le concept EST modélisé
+      (`regles_generation.fin_volontairement_non_terminee`) mais en confiance
+      B, avec une réserve explicite du modèle lui-même : « à vérifier au banc
+      avant de l'utiliser dans une macro générée automatiquement par ce
+      projet ». `rendre_macro()` termine aujourd'hui systématiquement par un
+      `Enter` ; passer outre au clavier reviendrait à ignorer la réserve.
+
+      (2) `Focus` et `Form` ne sont pas des commandes : ce sont des BOUTONS DE
+      PAGE D'ENCODEURS, qui choisissent quels paramètres les encodeurs
+      pilotent (manuel §2 l. 1770, §6 l. 462-530). Famille entière absente du
+      modèle, et qui relève de la conduite au doigt plutôt que de la ligne de
+      commande.
 
   - id: record_preset_plus
     label: "Record Preset +"
@@ -325,6 +400,16 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucun numéro de snapshot trouvé après « snapshot ».
+    cause: macro_non_terminee
+    cause_detail: >-
+      `Snapshot Enter` sans numéro — même réserve que record_preset sur la fin
+      non terminée (règle modélisée en confiance B, explicitement à vérifier
+      au banc avant emploi).
+
+      S'y ajoute `Live Live`, une commande de CONTEXTE D'AFFICHAGE, absente du
+      modèle. Et le numéro du snapshot manque : impossible de distinguer une
+      macro volontairement ouverte d'une cellule tronquée à l'export du
+      tableur.
 
   - id: shutdown
     label: "Shutdown"
@@ -388,19 +473,15 @@ entrees:
     label: "Out Next Level"
     syntaxe_feuille: "Out Next Level"
     mode: Foreground
-    demande_nl: "éteins et passe au circuit suivant"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucun numéro trouvé pour la sélection.
+    demande_nl: "éteins, puis va au circuit suivant, puis mets-le au level"
+    verdict: identique
 
   - id: out_last_level
     label: "Out Last Level"
     syntaxe_feuille: "Out Last Level"
     mode: Foreground
-    demande_nl: "éteins et passe au circuit précédent"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucun numéro trouvé pour la sélection.
+    demande_nl: "éteins, puis va au circuit précédent, puis mets-le au level"
+    verdict: identique
 
   - id: out_group_next_level
     label: "Out Group Next Level"
@@ -410,6 +491,15 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucun numéro trouvé pour la sélection.
+    cause: sens_non_atteste
+    cause_detail: >-
+      La feuille écrit `Out Group Next Level` et le label se lit « passe au
+      groupe suivant ». Or le manuel §7 l. 175 dit l'inverse : après une
+      sélection de groupe, `Next` accède au PREMIER CIRCUIT ORDONNÉ du groupe
+      et parcourt ses circuits — il ne passe pas au groupe suivant. Aucune
+      source n'atteste le sens que le label suggère. Le traducteur refuse donc
+      en l'expliquant plutôt que de rendre un `Next` qui serait syntaxiquement
+      valide et ferait autre chose que la demande.
 
   - id: out_group_last_level
     label: "Out Group Last Level"
@@ -419,6 +509,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucun numéro trouvé pour la sélection.
+    cause: sens_non_atteste
+    cause_detail: >-
+      Symétrique de out_group_next_level — même conflit entre le label de la
+      feuille et le manuel §7.
 
   - id: sub_killer
     label: "Sub Killer"
@@ -429,6 +523,10 @@ entrees:
     verdict: hors_perimetre
     pourquoi: >-
       Aucune intention reconnue dans la phrase.
+    cause: forme_absente
+    cause_detail: >-
+      `Sub Home Thru Home` — `Home` sur une plage de submasters n'est pas
+      modélisé.
 
   - id: color_xfd_0
     label: "Color Xfd 0"
@@ -436,9 +534,7 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "passe le fondu de couleur à 0"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
+    verdict: identique
 
   - id: color_xfd_100
     label: "Color Xfd 100%"
@@ -446,9 +542,7 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "passe le fondu de couleur à fond"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
+    verdict: identique
 
   - id: color_xfd_50
     label: "Color Xfd 50%"
@@ -456,9 +550,7 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "passe le fondu de couleur à 50"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
+    verdict: identique
 
   - id: color_temp_intens
     label: "Color Temp & Intens"
