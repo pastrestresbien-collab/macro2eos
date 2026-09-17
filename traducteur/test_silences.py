@@ -23,6 +23,13 @@ traduction correcte doit respecter, quelle que soit la phrase :
      Sinon le traducteur ne s'en servait pas : il a rendu une commande
      plausible en ignorant une donnée de la demande.
 
+  E. NOMBRE PERDU, sur des phrases SONDES construites ici — pas seulement
+     celles du catalogue. L'invariant A ne voit que le chemin heureux ; les
+     sondes visent les tournures qu'un régisseur écrit vraiment et que
+     personne n'a pensé à tester. C'est ce test qui a livré les cues « 3/1 »
+     (« va à la cue 3/1 » rendait `Go To Cue 3 Enter` — une AUTRE cue) et le
+     second numéro de gel (« en Lee 195 et Lee 201 » gardait 195).
+
   D. DURÉE — ajouter « en 7 secondes » à n'importe quelle phrase donne deux
      issues acceptables, et deux seulement : la commande emploie la durée, ou
      la traduction est REFUSÉE. Rendre la même commande qu'avant veut dire
@@ -168,6 +175,39 @@ def main() -> int:
                 echecs.append(
                     f"B. NOMBRE SANS EFFET — [{entree['intention']}] « {phrase} »\n"
                     f"     changer {m.group()} ne change pas « {commande} »")
+
+    # -- E, nombres perdus sur des phrases sondes ----------------------------
+    # Chaque sonde est une tournure PLAUSIBLE au pupitre. Le contrat est le
+    # même que l'invariant A : un nombre écrit se retrouve dans la commande,
+    # ou est signalé, ou la phrase est refusée. Aucune attente de commande
+    # n'est écrite ici — seulement ce contrat.
+    SONDES = [
+        "va à la cue 3/1",
+        "enregistrer les circuits 1 à 5 dans la cue 4/2",
+        "mets à jour la cue 4/2",
+        "marque la cue 10/3",
+        "assert la cue 5/1",
+        "applique la courbe 4 à la cue 5/2",
+        "retire la courbe de la cue 5/2",
+        "circuits 1 à 5 en Lee 195 et Lee 201",
+        "mets le pan des circuits 1 à 5 à 50 degres",
+        "mets le zoom des circuits 1 à 5 à 50 %",
+        "mets le hue des circuits 1 à 5 à 180",
+        "vérifie l'adresse 1 à 75 %",
+        "circuits 1 à 5 à 50 % puis circuit 9 à fond",
+    ]
+    for phrase in SONDES:
+        commande, trad = rendu(phrase)
+        testees += 1
+        if commande is None:
+            continue                 # refuser est une issue acceptable
+        signales = set(trad.ignores) | set(trad.non_reconnus)
+        perdus = [m.group() for m in chiffres(phrase)
+                  if not present(m.group(), commande) and m.group() not in signales]
+        if perdus:
+            echecs.append(
+                f"E. NOMBRE PERDU — sonde « {phrase} »\n"
+                f"     {', '.join(perdus)} absent(s) de « {commande} » et non signalé(s)")
 
     # -- D, la durée ne tombe jamais en silence ------------------------------
     for entree in CATALOGUE:

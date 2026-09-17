@@ -770,3 +770,43 @@ questions:
     backlog: null
     traite: "non"
     traite_ou: null
+
+  - date: "2026-09-17"
+    question: >-
+      « circuits 1 à 5 en 205 » (un numéro de gel sans le mot « lee »)
+      doit-elle se traduire ?
+    reponse: >-
+      Elle ne se traduit plus, alors qu'un commentaire du code affirme depuis
+      le 2026-08-07 qu'elle le fait. Le repli qui devait la couvrir est
+      devenu INATTEIGNABLE : `colorer_selection` exige un mot du groupe
+      `famille` (couleur / color / lee / gélatine / gel, ou un nom de teinte)
+      pour être routée, donc une phrase qui n'en contient aucun est refusée en
+      amont par `_intention`.
+    sources:
+      - "traducteur/lexique.yaml — intentions/colorer_selection/declencheurs/famille"
+      - "traducteur/traducteur.py — _colorer_selection, branche de repli sans mot de couleur"
+    confiance: "A"
+    consequence: "arbitrage_routage"
+    detail: >-
+      Trouvé le 2026-09-17 en chassant les nombres inemployés. Vérifié dans
+      les deux sens : le comportement est identique avant et après les
+      corrections du jour, ce n'est donc pas une régression récente — c'est
+      une divergence entre le code et son propre commentaire, restée invisible
+      parce que rien ne teste une phrase que le routage refuse.
+
+      NON CORRIGÉ, délibérément, et la raison est un risque précis : rendre
+      `famille` optionnel rendrait le repli atteignable, mais
+      `colorer_selection` est déclarée AVANT `regler_intensite` dans le
+      lexique — elle capterait alors « circuits 1 à 5 à 50 % », qui n'a rien
+      d'une demande de couleur. C'est un arbitrage d'ordre de déclaration, pas
+      une retouche de handler, et il vaut mieux le poser à tête reposée qu'au
+      milieu d'une session d'autonomie.
+
+      DEUX ISSUES POSSIBLES : (a) laisser tel quel et retirer le repli mort,
+      en assumant qu'un numéro de gel demande le mot « lee » ; (b) ajouter un
+      déclencheur qui exprime « objet + préposition + nombre » — ce que les
+      groupes de mots actuels ne savent pas dire, donc cela demanderait un
+      mécanisme de déclencheur nouveau.
+    backlog: null
+    traite: "non"
+    traite_ou: null

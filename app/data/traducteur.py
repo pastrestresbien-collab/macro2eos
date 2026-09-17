@@ -1017,14 +1017,23 @@ class Traducteur:
                 notes.append(f"{choisie['nom']} → Lee {teinte:03d} "
                              f"({choisie['nom_lee']})")
             else:
-                # Aucun mot de couleur, aucun « lee » : un numéro resté libre
-                # ICI a déjà survécu à l'extraction de la sélection (qui a
-                # pris ses propres nombres en premier, voir `_selection_de`
-                # ci-dessus) — il ne peut donc plus désigner que le gel.
-                # Sans ce repli, « groupe 1 à 5 en 205 » restait injustement
-                # incompris faute du mot « lee » — trouvé le 2026-08-07 en
-                # testant l'app avec une phrase réelle, pas écrite pour le
-                # traducteur.
+                # BRANCHE ACTUELLEMENT INATTEIGNABLE — vérifié le 2026-09-17.
+                #
+                # Son commentaire d'origine (2026-08-07) disait : « sans ce
+                # repli, "groupe 1 à 5 en 205" restait injustement incompris
+                # faute du mot "lee" ». C'est encore vrai du besoin, mais plus
+                # du code : `colorer_selection` EXIGE désormais un mot du
+                # groupe `famille` (couleur / color / lee / gélatine / gel, ou
+                # un nom de teinte) pour être routée. Une phrase sans aucun de
+                # ces mots n'arrive donc jamais ici — elle est refusée en
+                # amont par `_intention`, avec « aucune intention reconnue ».
+                #
+                # Le repli est CONSERVÉ tel quel, pas supprimé : rendre
+                # `famille` optionnel le rendrait atteignable, mais
+                # `colorer_selection` est déclarée AVANT `regler_intensite` et
+                # capterait alors « circuits 1 à 5 à 50 % ». C'est un
+                # arbitrage de routage, pas une retouche — voir la question du
+                # 2026-09-17 au journal.
                 libres = self._nombres(toks, pris)
                 if not libres:
                     return Traduction(statut="incompris",
@@ -1041,6 +1050,23 @@ class Traducteur:
                 return Traduction(statut="incompris", notes=notes + [erreur])
             if hyp:
                 hypotheses.append(hyp)
+
+        # Un NUMÉRO DE GEL resté sur le carreau. Le correctif du 2026-08-28
+        # avait traité l'ambiguïté des couleurs NOMMÉES (« jaune bleu » pose
+        # une question au lieu de garder la première), mais pas celle des
+        # numéros explicites : « en Lee 195 et Lee 201 » gardait 195 et jetait
+        # 201, statut `compris`, `ignores` vide — un nombre nu n'étant pas du
+        # vocabulaire, rien ne le rattrapait. Même ambiguïté, même règle : une
+        # commande ne porte qu'une teinte, et seul l'utilisateur peut dire
+        # laquelle.
+        restants = [toks[i] for i in range(len(toks))
+                    if i not in pris and toks[i].isdigit()]
+        if restants:
+            return Traduction(statut="incompris", notes=notes + [
+                f"Plusieurs teintes désignées ({teinte}, "
+                f"{', '.join(restants)}) : une commande n'en applique qu'une. "
+                f"Préciser laquelle, ou faire une commande par teinte "
+                f"(« ... puis ... »)."], **self._mots(toks, pris))
 
         ir = [{"selection": selection,
                "action": {"type": "couleur_gel", "nuancier": nuancier, "teinte": teinte}}]
@@ -1464,14 +1490,15 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
 
-        cible = None
+        cible = i_cible = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                cible, _ = valeur, pris.add(i)
+                cible, i_cible, _ = valeur, i, pris.add(i)
                 break
         if cible is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé après « cue »."])
+        liste = self._cue_dans_liste(toks, pris, i_cible)   # `Cue 4/2`
 
         objet = self._objet(toks, pris) or "Chan"
         selection = self._selection_de(objet, toks, pris)
@@ -1479,7 +1506,10 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucun circuit ni groupe désigné dans la phrase."])
 
-        ir = [{"selection": selection, "action": {"type": "record_cue", "cible": cible}}]
+        action_cue: dict = {"type": "record_cue", "cible": cible}
+        if liste is not None:
+            action_cue["liste"], action_cue["cible"] = cible, liste
+        ir = [{"selection": selection, "action": action_cue}]
         return Traduction(statut="compris", ir=ir,
                           **self._mots(toks, pris))
 
@@ -1513,9 +1543,37 @@ class Traducteur:
         i, cible = libres[0]
         pris.add(i)
         action = {"type": "go_to_cue", "cible": cible}
+        dedans = self._cue_dans_liste(toks, pris, i)
+        if dedans is not None:
+            action["liste"], action["cible"] = cible, dedans
         self._temps_de_cue(action, toks, pris)
         return Traduction(statut="compris", ir=[{"action": action}],
                           **self._mots(toks, pris))
+
+    def _cue_dans_liste(self, toks: list[str], pris: set[int], i_num: int) -> int | None:
+        """`Cue 3/1` — la cue 1 de la LISTE 3, pas la cue 3.
+
+        Le `/` disparaît à la tokenisation (« cue 3/1 » -> `cue`, `3`, `1`),
+        donc la seule trace de la graphie d'origine est que les deux nombres
+        sont COLLÉS. C'est le critère retenu ici, et il est plus strict que
+        l'idiome qu'employait `_copier_libelles` (« n'importe quel second
+        nombre libre ») : ailleurs, un second nombre peut être tout autre
+        chose, et le prendre pour un numéro de liste enverrait la macro sur
+        une cue qui n'est pas celle demandée.
+
+        Sans ça, `_aller_a_cue` et `_enregistrer_cue` gardaient le premier
+        nombre et jetaient le second SANS un mot : « va à la cue 3/1 » rendait
+        `Go To Cue 3 Enter` — une autre cue, statut `compris`, rien dans
+        `ignores` (un nombre nu n'est pas du vocabulaire). Trouvé le
+        2026-09-17 par le garde-fou des nombres inemployés. Le générateur, lui,
+        savait déjà rendre `Cue 3/1` : c'est le traducteur qui perdait
+        l'information.
+        """
+        j = i_num + 1
+        if j < len(toks) and j not in pris and toks[j].isdigit():
+            pris.add(j)
+            return int(toks[j])
+        return None
 
     def _temps_de_cue(self, action: dict, toks: list[str], pris: set[int]) -> None:
         """Pose le `Time` d'un `Go To Cue`, s'il y en a un dans la phrase.
@@ -1929,16 +1987,20 @@ class Traducteur:
         if i_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
-        numero_cue = None
+        numero_cue = i_numero_cue = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                numero_cue, _ = valeur, pris.add(i)
+                numero_cue, i_numero_cue, _ = valeur, i, pris.add(i)
                 break
         if numero_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé après « cue »."])
 
-        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+        selection_cue: dict = {"objet": "Cue", "numero": numero_cue}
+        dedans = self._cue_dans_liste(toks, pris, i_numero_cue)   # `Cue 5/2`
+        if dedans is not None:
+            selection_cue = {"objet": "Cue", "liste": numero_cue, "numero": dedans}
+        ir = [{"selection": selection_cue,
                "action": {"type": "appliquer_courbe", "cible": cible}}]
         return Traduction(statut="compris", ir=ir,
                           **self._mots(toks, pris))
@@ -1950,15 +2012,19 @@ class Traducteur:
         if i_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » (ou « mémoire ») est requis."])
-        numero_cue = None
+        numero_cue = i_numero_cue = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                numero_cue, _ = valeur, pris.add(i)
+                numero_cue, i_numero_cue, _ = valeur, i, pris.add(i)
                 break
         if numero_cue is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé après « cue »."])
-        ir = [{"selection": {"objet": "Cue", "numero": numero_cue},
+        selection_cue: dict = {"objet": "Cue", "numero": numero_cue}
+        dedans = self._cue_dans_liste(toks, pris, i_numero_cue)   # `Cue 5/2`
+        if dedans is not None:
+            selection_cue = {"objet": "Cue", "liste": numero_cue, "numero": dedans}
+        ir = [{"selection": selection_cue,
                "action": {"type": "retirer_courbe"}}]
         return Traduction(statut="compris", ir=ir,
                           **self._mots(toks, pris))
@@ -2463,17 +2529,21 @@ class Traducteur:
             return Traduction(statut="incompris", notes=[
                 "Aucune cue désignée — le mot « cue » est requis."])
 
-        cible = None
+        cible = i_cible = None
         for i, valeur in self._nombres(toks, pris):
             if i > i_cue:
-                cible, _ = valeur, pris.add(i)
+                cible, i_cible, _ = valeur, i, pris.add(i)
                 break
         if cible is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun numéro de cue trouvé — un Update sans cible explicite "
                 "dépend d'un état de console que le traducteur ne peut pas lire."])
 
-        ir = [{"action": {"type": "update_cue", "cible": cible}}]
+        liste = self._cue_dans_liste(toks, pris, i_cible)   # `Cue 4/2`
+        action_cue: dict = {"type": "update_cue", "cible": cible}
+        if liste is not None:
+            action_cue["liste"], action_cue["cible"] = cible, liste
+        ir = [{"action": action_cue}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     # -- petits extracteurs partagés ---------------------------------------
@@ -2568,7 +2638,16 @@ class Traducteur:
         if libres:
             i, valeur = libres[0]
             pris.add(i)
-            return {"objet": objet, "numero": valeur}
+            selection = {"objet": objet, "numero": valeur}
+            # `Cue 3/1` — et SEULEMENT pour une cue. Le `/` d'Eos y sépare la
+            # liste de la cue ; sur un circuit ou un groupe il n'a pas ce
+            # sens, donc prendre un nombre collé comme « liste » y serait une
+            # invention. Restreindre à `Cue` garde la correction exacte.
+            if objet == "Cue":
+                dedans = self._cue_dans_liste(toks, pris, i)
+                if dedans is not None:
+                    selection = {"objet": objet, "liste": valeur, "numero": dedans}
+            return selection
         return None
 
     # -- corriger une IR déjà produite, en langage naturel -------------------

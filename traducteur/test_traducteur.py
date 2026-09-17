@@ -440,6 +440,59 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ cue dans une liste : `3/1`
+    {
+        # RÉGRESSION 2026-09-17, trouvée par le garde-fou des nombres perdus.
+        # Rendait `Go To Cue 3 Enter` : une AUTRE cue que celle demandée,
+        # statut `compris`, rien dans `ignores`. Le `/` disparaît à la
+        # tokenisation, donc la seule trace de la graphie est que les deux
+        # nombres sont COLLÉS — c'est le critère de `_cue_dans_liste`.
+        # Le générateur, lui, savait déjà rendre `Cue 3/1`.
+        "nom": "cue 3/1 — le numéro de liste ne se perd pas",
+        "phrase": "va à la cue 3/1",
+        "statut": "compris",
+        "rendu": "Go To Cue 3/1 Enter",
+    },
+    {
+        "nom": "cue 3/1 — sans liste, rien ne change",
+        "phrase": "va à la cue 5",
+        "statut": "compris",
+        "rendu": "Go To Cue 5 Enter",
+    },
+    {
+        "nom": "cue 4/2 — à l'enregistrement",
+        "phrase": "enregistrer les circuits 1 à 5 dans la cue 4/2",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Record Cue 4/2 Enter",
+    },
+    {
+        "nom": "cue 10/3 — sur une sélection de cue (marquer)",
+        "phrase": "marque la cue 10/3",
+        "statut": "compris",
+        "rendu": "Cue 10/3 Mark Enter",
+    },
+    {
+        "nom": "cue 4/2 — à la mise à jour",
+        "phrase": "mets à jour la cue 4/2",
+        "statut": "compris",
+        "rendu": "Update Cue 4/2 Enter",
+    },
+    {
+        # Le `/` n'a ce sens QUE pour une cue : sur un circuit, prendre un
+        # nombre collé comme « liste » serait une invention.
+        "nom": "cue 3/1 — un circuit ne prend pas de numéro de liste",
+        "phrase": "circuits 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        # Le correctif du 2026-08-28 traitait les couleurs NOMMÉES ; les
+        # numéros de gel explicites gardaient le premier et jetaient le reste.
+        "nom": "teintes — deux gels nommés, on demande au lieu de choisir",
+        "phrase": "circuits 1 à 5 en Lee 195 et Lee 201",
+        "statut": "incompris",
+    },
+
     # ------------------------------------------ durées : jamais en silence
     {
         # RÉGRESSION SYSTÉMIQUE 2026-09-17. 32 intentions sur 38 laissaient

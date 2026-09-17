@@ -163,7 +163,7 @@ traducteur/test_traducteur.py       155 cas de traduction + 9 de correction
 traducteur/test_interpreter_flou.py   8 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
-traducteur/test_silences.py         193 vérifications — INVARIANTS
+traducteur/test_silences.py         206 vérifications — INVARIANTS
 ```
 (chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
 ainsi que `./app/build_data.sh --verifier`.)
