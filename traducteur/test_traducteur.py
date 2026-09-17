@@ -440,6 +440,47 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ vérification / adresses
+    {
+        # RÉGRESSION. `_selection_de` prenait 75 pour un NUMÉRO DE CIRCUIT
+        # alors que le `%` le suit, puis refusait en annonçant « niveau
+        # manquant » — la seule chose que la phrase donnait vraiment.
+        # `_plage` appliquait déjà l'exclusion à ses bornes ; le repli
+        # « nombre isolé » ne l'appliquait pas. Un refus qui désigne la
+        # mauvaise cause envoie corriger ce qui n'est pas cassé.
+        "nom": "vérification — le refus nomme la bonne cause",
+        "phrase": "vérifie les circuits à 75 %",
+        "statut": "incompris",
+    },
+    {
+        "nom": "vérification — niveau AVANT la sélection dans la phrase",
+        "phrase": "vérifie à 75 % le circuit 3",
+        "statut": "compris",
+        "rendu": "Chan 3 At 75 Check Enter",
+    },
+    {
+        "nom": "feuille ETC « Channel Check »",
+        "phrase": "vérifie le circuit 1 à 75 %",
+        "statut": "compris",
+        "rendu": "Chan 1 At 75 Check Enter",
+    },
+    {
+        # Manuel §6 a une section « Address Check » distincte. Sans les
+        # adresses dans les déclencheurs de `verifier`, cette phrase partait
+        # sur `regler_intensite` et perdait le `Check` : un niveau posé au
+        # lieu d'une revue, « vérifie » relégué dans `ignores`.
+        "nom": "feuille ETC « Address Check » — le Check ne se perd pas",
+        "phrase": "vérifie l'adresse 1 à 75 %",
+        "statut": "compris",
+        "rendu": "Address 1 At 75 Check Enter",
+    },
+    {
+        "nom": "adresse — plein feu, manuel §6",
+        "phrase": "mets l'adresse 5 à fond",
+        "statut": "compris",
+        "rendu": "Address 5 Full Enter",
+    },
+
     # ------------------------------------------ fondu de couleur
     {
         "nom": "fondu de couleur — valeur chiffrée",

@@ -733,3 +733,40 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "traducteur/lexique.yaml regler_fondu_couleur ; « passe » réintroduit dans selection_suivante/precedente"
+
+  - date: "2026-09-17"
+    question: >-
+      Peut-on générer une macro qui se termine volontairement sans `Enter` ?
+    reponse: >-
+      Pas encore, et la réserve vient du modèle lui-même. La règle
+      `fin_volontairement_non_terminee` y est en confiance B avec la mention
+      « à vérifier au banc avant de l'utiliser dans une macro générée
+      automatiquement par ce projet ». `rendre_macro()` termine aujourd'hui
+      systématiquement par un `Enter`.
+    sources:
+      - "grammar/modele.yaml — regles_generation/fin_volontairement_non_terminee"
+      - "corpus/handy_macros_etc.yaml — record_preset, startup"
+      - "manuals/operations-manual/02-system-basics.md:1770 et 06-manual-control.md:462 — [Form] est un bouton de page d'encodeurs"
+    confiance: "B"
+    consequence: "banc_requis"
+    detail: >-
+      Les deux entrées du corpus qui en dépendent demandent de toute façon
+      autre chose en plus, donc les débloquer ne tient pas qu'à cette règle :
+      `record_preset` emploie `Focus` et `Form`, qui ne sont pas des commandes
+      mais des BOUTONS DE PAGE D'ENCODEURS (ils choisissent quels paramètres
+      les encodeurs pilotent) — famille entière absente du modèle, et qui
+      relève de la conduite au doigt plutôt que de la ligne de commande.
+      `startup` emploie `Live Live`, une commande de contexte d'affichage,
+      elle aussi absente ; et le numéro du snapshot manque, sans qu'on puisse
+      distinguer une macro volontairement ouverte d'une cellule tronquée à
+      l'export du tableur.
+
+      À TRANCHER AU BANC, question précise : une macro dont la dernière ligne
+      n'a pas d'`Enter` laisse-t-elle vraiment la ligne de commande ouverte à
+      l'opérateur, et le softkey {Delete} sert-il bien à retirer l'`Enter` de
+      clôture à l'édition ? Tant que ce n'est pas vu, ne pas faire produire ça
+      au générateur — une macro qui s'arrête au mauvais endroit laisse une
+      commande à moitié saisie sur une console en exploitation.
+    backlog: null
+    traite: "non"
+    traite_ou: null

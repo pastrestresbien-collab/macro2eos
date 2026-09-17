@@ -2058,7 +2058,8 @@ class Traducteur:
         selection = self._selection_de(objet, toks, pris)
         if selection is None:
             return Traduction(statut="incompris", notes=[
-                "Aucun circuit désigné — préciser les circuits à vérifier."])
+                "Aucune cible désignée — préciser les circuits ou les "
+                "adresses à vérifier."])
 
         niveau = self._niveau(toks, pris)
         if niveau is None:
@@ -2457,7 +2458,18 @@ class Traducteur:
         bornes = self._plage(toks, pris)
         if bornes:
             return {"objet": objet, "de": bornes[0], "a": bornes[1]}
-        libres = self._nombres(toks, pris)
+        # Un nombre suivi d'un marqueur POSTFIXE de niveau (`%`, « pourcent »)
+        # n'est pas un numéro de sélection : c'est une valeur. `_plage`
+        # applique déjà cette exclusion à ses bornes ; le repli « nombre
+        # isolé » ci-dessous ne l'appliquait pas, et cette asymétrie a produit
+        # un vrai défaut dans `_verifier` : « vérifie les circuits à 75 % »
+        # retenait 75 comme NUMÉRO DE CIRCUIT, puis refusait en annonçant
+        # « niveau manquant » — alors que le niveau était la seule chose que
+        # la phrase donnait vraiment. Un refus qui désigne la mauvaise cause
+        # envoie corriger ce qui n'est pas cassé.
+        libres = [(i, v) for i, v in self._nombres(toks, pris)
+                  if not (i + 1 < len(toks)
+                          and toks[i + 1] in MARQUEURS_NIVEAU_POSTFIXES)]
         if libres:
             i, valeur = libres[0]
             pris.add(i)

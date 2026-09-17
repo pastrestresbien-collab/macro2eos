@@ -61,22 +61,22 @@ utile est dans le dépôt.
 
 **Phase 2 — exploitation : axe A terminé, axes B et C ouverts.**
 
-[`grammar/`](grammar/README.md) porte un modèle typé de **87 actions et 183 règles de
+[`grammar/`](grammar/README.md) porte un modèle typé de **87 actions et 188 règles de
 légalité**, plus un catalogue de **7 paramètres de projecteur** (Pan, Tilt, Zoom, Iris,
 Edge, Hue, Saturation) rendus par un mécanisme générique unique. Le tout compilé en JSON,
 avec un générateur qui produit trois sorties distinctes (ligne de commande, contenu de
-macro, paquets OSC) et **134 cas de non-régression**, dont la majorité sont des exemples
+macro, paquets OSC) et **137 cas de non-régression**, dont la majorité sont des exemples
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 38 intentions, 171 cas de traduction + 9 cas de correction,
+générateur rend ensuite — 38 intentions, 176 cas de traduction + 9 cas de correction,
 et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
 README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.15 — 38 intentions, 171 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.16 — 38 intentions, 176 + 9 tests, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média
@@ -309,16 +309,35 @@ avec la question de savoir si `Color Scrub` est la même chose.
 le verrou 3 s'use à mesure que le vocabulaire grandit, et cette parade est à refaire
 pour chaque famille de phrases exposée.
 
-### 3. `Check` — 2 entrées, et un vrai outil de conduite
+### 3. ~~`Check`~~ — **fait le 2026-09-17**
 
-`Chan 1 At 75 Check` est le circuit-par-circuit classique. `address_check` demande en
-plus `Address` comme objet de sélection.
+Les deux entrées se traduisent (banc terrain 8/26 → **10/26**). `Check` était déjà
+entièrement implémenté ; ce qui manquait était `Address` comme objet de sélection
+(ajouté, manuel §6 « Address Check », confiance A) et les adresses dans les
+déclencheurs de `verifier`.
 
-### 4. Câbler la macro volontairement non terminée — 2 entrées, concept déjà écrit
+Un vrai défaut corrigé au passage, de la famille déjà connue : `_selection_de` prenait
+un nombre suivi de `%` pour un numéro de circuit. `_plage` appliquait déjà l'exclusion
+à ses bornes, le repli « nombre isolé » non — l'asymétrie faisait refuser « vérifie les
+circuits à 75 % » en annonçant « niveau manquant », soit **la mauvaise cause**.
 
-`record_preset` et `startup` finissent exprès sans valeur. La règle est **déjà** dans
-`grammar/modele.yaml` (confiance B, transcription vidéo ETC) ; il reste à ce que le
-traducteur sache produire une macro qui s'arrête là, au lieu de refuser faute de numéro.
+### 4. Macro volontairement non terminée — **bloqué au banc, pas au clavier**
+
+Examiné le 2026-09-17, puis **laissé en l'état délibérément**. La règle est bien dans
+`grammar/modele.yaml`, mais en confiance B et avec la réserve du modèle lui-même : « à
+vérifier au banc avant de l'utiliser dans une macro générée automatiquement par ce
+projet ». Passer outre au clavier reviendrait à ignorer cette réserve — et une macro
+qui s'arrête au mauvais endroit laisse une commande à moitié saisie sur une console en
+exploitation.
+
+Les deux entrées demandent de toute façon autre chose en plus : `record_preset` emploie
+`Focus` et `Form`, qui ne sont pas des commandes mais des **boutons de page
+d'encodeurs** (famille absente du modèle, et qui relève de la conduite au doigt) ;
+`startup` emploie `Live Live`, une commande de contexte d'affichage, et son numéro de
+snapshot manque sans qu'on puisse distinguer une macro ouverte d'une cellule tronquée.
+
+**Question précise à poser au banc** : une macro dont la dernière ligne n'a pas d'`Enter`
+laisse-t-elle vraiment la ligne de commande ouverte à l'opérateur ?
 
 ### Ordre imposé, quelle que soit la tâche choisie
 

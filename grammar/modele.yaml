@@ -1671,6 +1671,32 @@ objets:
     plage: true
     confiance: A
     source: "manuel §6 Manual Control"
+  Address:
+    mot_cle: "Address"
+    numerote: true
+    plage: true
+    confiance: A
+    source: >
+      manuel §6 « Address Check » : `[Address/Patch] [1] [At] [Full] {Check}
+      [Enter]` et `[Address/Patch] [5] [Full] [Enter]`. Touche OSC `address`
+      → ADDRESS (`reference/eosKeys.ts`).
+    note: >
+      UNE ADRESSE N'EST PAS UN CIRCUIT. C'est une sortie DMX physique : la
+      viser court-circuite le patch, et une adresse revient à son niveau
+      précédent dès que la ligne de commande est effacée ou qu'un `Next` /
+      `Last` passe à la suivante (§6). Rien à voir avec un niveau posé sur un
+      circuit, qui lui tient.
+    piege: >
+      Le NOM de la touche varie selon la console — le manuel §6 écrit
+      « [Address/Patch], {Address}, ou [Dimmer/Address] » selon le modèle. Le
+      modèle retient `Address`, la forme qu'emploie la feuille communautaire
+      et celle du nom OSC ; sur une console qui affiche `Dimmer/Address`, le
+      rendu ne correspondra pas au libellé de la touche.
+
+      La forme UNIVERS/ADRESSE (`Address 2 / 1`, manuel §6) n'est PAS
+      modélisée : le `/` y est un séparateur d'univers, un quatrième sens de
+      ce caractère après la mise à l'échelle, le DMX brut et la partie de cue.
+      Une adresse nue vise l'univers courant.
   Group:
     mot_cle: "Group"
     numerote: true
@@ -4143,6 +4169,37 @@ legalite:
 
   - objet: selection_courante
     action: niveau_setup
+    valide: oui
+    confiance: A
+
+  - objet: Address
+    action: intensite
+    valide: oui
+    confiance: A
+    note: "`[Address/Patch] [1] [At] [Full] {Check} [Enter]` — manuel §6, Address Check"
+
+  - objet: Address
+    action: plein_feu
+    valide: oui
+    confiance: A
+    note: "`[Address/Patch] [5] [Full] [Enter]` — manuel §6"
+
+  - objet: Address
+    action: valeur_dmx
+    valide: oui
+    confiance: A
+    note: "`[Address/Patch] [2] [/] [1] [At] [/] [2][3][0] [Enter]` — manuel §6 (univers non modélisé)"
+
+  - objet: Address
+    action: selection_suivante
+    valide: oui
+    confiance: A
+    note: >
+      « After using the [Address/Patch] command, [Next] and [Last] may be used
+      to increment the address number and set it to the same level » — §6.
+
+  - objet: Address
+    action: selection_precedente
     valide: oui
     confiance: A
     note: >

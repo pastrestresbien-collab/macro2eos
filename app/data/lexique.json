@@ -82,6 +82,16 @@
       ],
       "source": "objets.Chan du modèle ; alias métier français courants"
     },
+    "Address": {
+      "alias": [
+        "adresse",
+        "adresses",
+        "address",
+        "addresses"
+      ],
+      "source": "objets.Address du modèle ; manuel §6 « Address Check » — `[Address/Patch] [1] [At] [Full] {Check} [Enter]`.\n",
+      "note": "PAS d'alias « gradateur » / « dimmer », bien que le manuel §6 nomme la touche « [Dimmer/Address] » sur certaines consoles : un gradateur et une adresse DMX ne sont pas la même chose, et rien dans le dépôt ne dit lequel des deux un régisseur vise quand il dit « gradateur ». Deviner produirait une commande valide sur la mauvaise cible.\nAddress entre dans l'index GÉNÉRIQUE `objets`, donc `_objet()` le sert à toutes les intentions. C'est voulu : le modèle ne déclare Address légal que pour l'intensité, le plein feu, le DMX brut et Next/Last, et le générateur AVERTIT pour tout le reste au lieu de l'accepter en silence. Mieux vaut un avertissement exact qu'un mot d'objet que le traducteur ferait semblant de ne pas connaître.\n"
+    },
     "Group": {
       "alias": [
         "groupe",
@@ -606,7 +616,11 @@
           "channels",
           "projecteur",
           "projecteurs",
-          "proj"
+          "proj",
+          "adresse",
+          "adresses",
+          "address",
+          "addresses"
         ]
       },
       "exemple_nl": "vérifie les circuits 1 à 20 à 75 %",

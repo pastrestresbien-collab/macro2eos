@@ -438,6 +438,29 @@ CAS = [
         "avertissements": 0,
     },
     {
+        "nom": "manuel §6 Address Check — `Address 1 At 75 Check Enter`",
+        "ir": [{"selection": {"objet": "Address", "numero": 1},
+                "action": {"type": "intensite", "valeur": 75, "check": True}}],
+        "attendu": "Address 1 At 75 Check Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 — `Address 5 Full Enter`",
+        "ir": [{"selection": {"objet": "Address", "numero": 5},
+                "action": {"type": "plein_feu"}}],
+        "attendu": "Address 5 Full Enter",
+        "avertissements": 0,
+    },
+    {
+        # Une adresse n'est légale que pour l'intensité, le plein feu, le DMX
+        # brut et Next/Last. Tout le reste doit être SIGNALÉ, pas accepté.
+        "nom": "`Address` + `sneak` n'est pas modélisé — le générateur le dit",
+        "ir": [{"selection": {"objet": "Address", "numero": 3},
+                "action": {"type": "sneak"}}],
+        "attendu": "Address 3 Sneak Enter",
+        "avertissements": 1,
+    },
+    {
         "nom": "feuille ETC — `Color_Crossfade 50`, paramètre de confiance B",
         "ir": [{"action": {"type": "regler_parametre",
                            "parametre": "Color_Crossfade",

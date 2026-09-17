@@ -214,28 +214,15 @@ entrees:
     label: "Channel Check"
     syntaxe_feuille: "Chan 1 At 75 Check Enter"
     mode: null
-    demande_nl: "vérifie les circuits à 75 %"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Niveau manquant : une vérification amène chaque circuit à un niveau
-      donné (« vérifie les circuits 1 à 20 à 75 % »).
-    cause: action_absente
-    cause_detail: >-
-      `Check` absent du modèle. La cible EST explicite dans la feuille (`Chan
-      1`) — ce n'est pas une sélection implicite.
+    demande_nl: "vérifie le circuit 1 à 75 %"
+    verdict: identique
 
   - id: address_check
     label: "Address Check"
     syntaxe_feuille: "Address 1 At 75 Check Enter"
     mode: Default
-    demande_nl: "vérifie les adresses à 75 %"
-    verdict: hors_perimetre
-    pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: action_absente
-    cause_detail: >-
-      `Address` et `Check` absents. La cible EST explicite (`Address 1`) — ce
-      n'est pas une sélection implicite.
+    demande_nl: "vérifie l'adresse 1 à 75 %"
+    verdict: identique
 
   - id: cue_check
     label: "Cue Check"
@@ -379,10 +366,21 @@ entrees:
       Aucune intention reconnue dans la phrase.
     cause: macro_non_terminee
     cause_detail: >-
-      La feuille finit sur `Record Preset` sans numéro : la macro rend la main
-      à l'opérateur, exprès. Concept déjà modélisé
-      (`regles_generation.fin_volontairement_non_terminee`). `Form` est absent
-      par ailleurs.
+      Deux obstacles distincts, aucun levé (revu le 2026-09-17).
+
+      (1) La macro finit sur `Record Preset` sans numéro : elle rend la main à
+      l'opérateur, exprès. Le concept EST modélisé
+      (`regles_generation.fin_volontairement_non_terminee`) mais en confiance
+      B, avec une réserve explicite du modèle lui-même : « à vérifier au banc
+      avant de l'utiliser dans une macro générée automatiquement par ce
+      projet ». `rendre_macro()` termine aujourd'hui systématiquement par un
+      `Enter` ; passer outre au clavier reviendrait à ignorer la réserve.
+
+      (2) `Focus` et `Form` ne sont pas des commandes : ce sont des BOUTONS DE
+      PAGE D'ENCODEURS, qui choisissent quels paramètres les encodeurs
+      pilotent (manuel §2 l. 1770, §6 l. 462-530). Famille entière absente du
+      modèle, et qui relève de la conduite au doigt plutôt que de la ligne de
+      commande.
 
   - id: record_preset_plus
     label: "Record Preset +"
@@ -404,8 +402,14 @@ entrees:
       Aucun numéro de snapshot trouvé après « snapshot ».
     cause: macro_non_terminee
     cause_detail: >-
-      `Snapshot Enter` sans numéro — même motif que record_preset :
-      l'opérateur complète.
+      `Snapshot Enter` sans numéro — même réserve que record_preset sur la fin
+      non terminée (règle modélisée en confiance B, explicitement à vérifier
+      au banc avant emploi).
+
+      S'y ajoute `Live Live`, une commande de CONTEXTE D'AFFICHAGE, absente du
+      modèle. Et le numéro du snapshot manque : impossible de distinguer une
+      macro volontairement ouverte d'une cellule tronquée à l'export du
+      tableur.
 
   - id: shutdown
     label: "Shutdown"

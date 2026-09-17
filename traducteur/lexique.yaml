@@ -126,6 +126,24 @@ objets:
   Chan:
     alias: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, lampe, lampes]
     source: "objets.Chan du modèle ; alias métier français courants"
+  Address:
+    alias: [adresse, adresses, address, addresses]
+    source: >
+      objets.Address du modèle ; manuel §6 « Address Check » —
+      `[Address/Patch] [1] [At] [Full] {Check} [Enter]`.
+    note: >
+      PAS d'alias « gradateur » / « dimmer », bien que le manuel §6 nomme la
+      touche « [Dimmer/Address] » sur certaines consoles : un gradateur et une
+      adresse DMX ne sont pas la même chose, et rien dans le dépôt ne dit
+      lequel des deux un régisseur vise quand il dit « gradateur ». Deviner
+      produirait une commande valide sur la mauvaise cible.
+
+      Address entre dans l'index GÉNÉRIQUE `objets`, donc `_objet()` le sert à
+      toutes les intentions. C'est voulu : le modèle ne déclare Address légal
+      que pour l'intensité, le plein feu, le DMX brut et Next/Last, et le
+      générateur AVERTIT pour tout le reste au lieu de l'accepter en silence.
+      Mieux vaut un avertissement exact qu'un mot d'objet que le traducteur
+      ferait semblant de ne pas connaître.
   Group:
     alias: [groupe, groupes, group, groups]
     source: "objets.Group du modèle"
@@ -542,7 +560,16 @@ intentions:
     declencheurs:
       verbe: [verifie, verifier, verification, check, checke, checker, controle,
               controler, teste, tester]
-      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj]
+      # Les ADRESSES entrent ici : le manuel §6 a une section « Address
+      # Check » distincte, avec sa propre syntaxe (`[Address/Patch] [1] [At]
+      # [Full] {Check} [Enter]`). Sans elles, « vérifie les adresses 1 à 20 à
+      # 75 % » retombait sur `regler_intensite` et rendait
+      # `Address 1 Thru 20 At 75 Enter` — SANS le `Check`, donc une commande
+      # qui pose un niveau au lieu de lancer une revue. Le mot « vérifie »
+      # ressortait en `ignores`, ce qui respecte la règle 4 mais laisse à
+      # l'utilisateur le soin de remarquer que sa demande a changé de nature.
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj,
+              adresse, adresses, address, addresses]
     exemple_nl: "vérifie les circuits 1 à 20 à 75 %"
     origine: >
       manuel §6 « Address Check » — `[1] [At] [Full]` puis `{Check} [Enter]`,
