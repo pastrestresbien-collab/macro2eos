@@ -2784,6 +2784,41 @@ actions:
     confiance: A
     source: "eosKeys.ts `select_active`→SELECT_ACTIVE ; manuel §24 (exemple de macro)"
     note: "sélectionne tous les channels actifs — intensité > 0 ou en mouvement"
+    filtre_sur_plage:
+      confiance: A
+      source: "manuel §6 l. 1192 — `[1] [Thru] [100] [Select Active] [Enter]`"
+      regle: >
+        Posé après une plage, `Select Active` la FILTRE au lieu de l'ignorer :
+        « selects channels between 1 and 100 with intensity levels above
+        zero ». Une plage devant l'action change son sens, elle ne
+        s'additionne pas à elle.
+    exclusion:
+      confiance: A
+      source: "manuel §6 l. 1220-1228 « [-] Select Manual or Select Active »"
+      regle: >
+        `<plage> - Select Active Enter` sélectionne tout le contenu de la
+        plage SAUF les channels actifs : « Using [-] [Select Active] will
+        select all of the channels in the LIST except those that are
+        active. » Exemple chiffré : `[1] [Thru] [20] [-] [Select Active]
+        [Enter]`.
+      piege: >
+        Ce n'est PAS une inversion globale : « all of the channels in the
+        list » exige une plage de départ. `- Select Active` seul n'a rien à
+        soustraire — il n'existe aucune commande « Select Inactive » qui
+        prendrait tout le plateau d'office.
+    double_appui:
+      confiance: A
+      source: "manuel §6 l. 1182 ; reference/eosKeys.ts `select_nonsub_active`→SELECT_NONSUB_ACTIVE"
+      mot_cle: "Select NonSub Active"
+      osc: select_nonsub_active
+      regle: >
+        `Select Active Select Active` capture les niveaux actifs manuels ET
+        de playback, MAIS PAS les submasters, et poste `Select NonSub
+        Active` sur la ligne de commande. Le premier appui seul capture
+        « all active levels » (submasters compris).
+      note_localisation: >
+        C'est le `Sélec_Actif_moins_Sub` observé sur une console francophone
+        (voir reference/journal_questions.yaml, entrée sur la localisation).
   selection_manuelle:
     mot_cle: "Select Manual"
     attend: aucun
@@ -3684,6 +3719,18 @@ legalite:
     action: selection_active
     valide: oui
     confiance: A
+
+  - objet: Chan
+    action: selection_active
+    valide: oui
+    confiance: A
+    note: "`[1] [Thru] [100] [Select Active] [Enter]` filtre la plage sur l'actif — manuel §6 l. 1192"
+
+  - objet: Group
+    action: selection_active
+    valide: oui
+    confiance: A
+    note: "même mécanisme que Chan — une plage devant `Select Active` la filtre, ne s'y additionne pas"
 
   - objet: selection_courante
     action: selection_derniere

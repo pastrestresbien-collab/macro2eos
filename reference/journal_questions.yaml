@@ -525,3 +525,50 @@ questions:
     backlog: null
     traite: "oui"
     traite_ou: "grammar/modele.yaml operateurs/creation_plage ; traducteur intention creer_plage"
+
+  - date: "2026-09-17"
+    question: >-
+      Comment sélectionner les circuits qui n'ont pas de valeur d'intensité
+      mais portent des valeurs FCB (Focus/Color/Beam) ?
+    reponse: >-
+      Deux mécanismes distincts se combinent, et seule leur COMBINAISON n'est
+      pas attestée au niveau A. FCB = Focus/Color/Beam, les trois catégories
+      de paramètres non-intensité (manuel §2 l. 766, 886 ; clés OSC `focus`,
+      `color`, `beam` → *_CAT). « Sans intensité » se lit `- Select Active`
+      (l'exclusion ajoutée aujourd'hui) ; « avec des valeurs FCB » se lit en
+      préfixant d'une catégorie de paramètre, documenté pour `Select Manual` :
+      `[Color] [Select Manual]` — « selects only channels with manual COLOR
+      values » (§6 l. 1211).
+    sources:
+      - "manuals/operations-manual/06-manual-control.md:1202-1228 — Select Manual, préfixe de catégorie, exclusion"
+      - "manuals/operations-manual/02-system-basics.md:766, 886 — définition FCB"
+      - "reference/eosKeys.ts — focus/color/beam -> FOCUS_CAT/COLOR_CAT/BEAM_CAT"
+      - "corpus/CORPUS_EOS_COMPLET.md #008 — confiance C, non testé"
+    confiance: "B"
+    consequence: "lexique_manquant"
+    detail: >-
+      Ce qui est A, chacun séparément : `<param> Select Manual` restreint aux
+      channels ayant des données MANUELLES dans cette catégorie (§6 l. 1211,
+      exemple donné pour Color uniquement — Focus et Beam ne sont pas
+      individuellement exemplifiés, mais la phrase générale « combined with
+      the parameter control keys » les couvre par construction, ce sont les
+      mêmes touches de catégorie que celles de la timing FCB, §12 l. 253) ;
+      `<selection> - Select Active` exclut les actifs de la sélection (ajouté
+      au modèle aujourd'hui).
+      Ce qui n'est QUE C : leur composition. Le corpus (#008, « Track
+      Autoclean FCB », auteur Mutja Engel, forum, non testé) montre exactement
+      la ligne cherchée :
+        `Group 9999.99 - Select Active Focus Color Beam Enter`
+      c'est-à-dire : exclure les actifs du groupe (reste = intensité nulle),
+      puis restreindre aux trois catégories FCB chaînées. Aucune ligne du
+      manuel officiel ne confirme que le préfixe de catégorie fonctionne
+      aussi devant `- Select Active` (l'exemple A ne le montre que devant
+      `Select Manual`) ni que les trois catégories peuvent se chaîner en OR
+      plutôt qu'en AND.
+      NE PAS générer cette commande composée comme un résultat `compris` du
+      traducteur avant vérification au banc — ce serait franchir la ligne
+      entre confiance B et invention. Elle peut en revanche être proposée à
+      l'utilisateur comme piste sourcée, ce qui est fait ici.
+    backlog: null
+    traite: "non"
+    traite_ou: null

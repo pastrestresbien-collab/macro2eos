@@ -979,12 +979,36 @@ intentions:
     declencheurs:
       verbe: [selectionne, selectionner, prends, prendre]
       actif: [actif, actifs, allume, allumes, allumees, actives]
-    exemple_nl: "sélectionne les circuits actifs"
+    declencheurs_optionnels:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      # Marqueurs des deux formes ajoutées le 2026-09-17 (manuel §6
+      # l. 1182, 1220-1228). Optionnels : la forme simple (« sélectionne les
+      # circuits actifs ») n'en a besoin d'aucun.
+      exclusion: [sauf, hormis, excepte, exceptee]
+      sub: [sub, subs, submaster, submasters, sousmaster, sousmasters]
+    exemple_nl: >
+      sélectionne les circuits actifs ; sélectionne les circuits 1 à 100
+      actifs ; sélectionne les circuits 1 à 20 sauf les actifs ; sélectionne
+      les actifs sauf les subs
     origine: >
       `reference/eosKeys.ts` (`select_active`→SELECT_ACTIVE) et manuel §24
       (exemple de macro), confiance A (`grammar/modele.yaml`, section
       `actions`/`selection_active`) : sélectionne tout channel dont
       l'intensité est supérieure à zéro ou qui est en mouvement.
+    note: >
+      Trois formes de plus depuis le 2026-09-17, chacune sourcée au manuel
+      §6 et distincte du simple `Select Active`. FILTRE : une plage posée
+      devant filtre l'actif dedans (`Chan 1 Thru 100 Select Active`, l. 1192)
+      — la plage s'AJOUTE, elle ne remplace rien. EXCLUSION : « sauf »/
+      « hormis » après une plage exclut les actifs de cette plage
+      (`- Select Active`, l. 1220-1228) — le manuel dit « all of the channels
+      IN THE LIST », donc sans plage devant, rien à exclure : refus assumé
+      plutôt qu'une lecture comme « tout le plateau sauf les actifs », qui
+      n'existe pas. DOUBLE APPUI : « sauf »/« hormis »/« sans » suivi d'un mot
+      de sub bascule sur `Select NonSub Active` (l. 1182) — capture manuel et
+      playback, submasters exclus. Les deux « sauf » ne se confondent pas :
+      celui qui précède un mot de sub vise le double appui, celui qui suit
+      une plage vise l'exclusion.
 
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible

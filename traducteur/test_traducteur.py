@@ -1116,12 +1116,47 @@ CAS = [
         "non_reconnus": [], "ignores": [],
     },
     {
-        # Mais un NUMÉRO fait refuser : le laisser filer serait une perte
-        # silencieuse, invisible de surcroît (les chiffres ne sont rapportés
-        # ni par `non_reconnus` ni par `ignores`).
-        "nom": "Select Active avec un numéro — refus, jamais un numéro avalé",
+        # PRÉMISSE CORRIGÉE le 2026-09-17. Ce cas exigeait `incompris` sous
+        # prétexte qu'un numéro perdrait toujours de l'information sur
+        # `Select Active`. C'était vrai avant l'ajout des trois formes du
+        # manuel §6 : une plage devant `Select Active` la FILTRE sur l'actif
+        # (l. 1192, `[1] [Thru] [100] [Select Active] [Enter]`) — le numéro
+        # n'était pas une perte, c'était une commande légitime que le
+        # traducteur ne savait pas encore produire.
+        "nom": "Select Active filtré par une plage — une commande, pas une perte",
         "phrase": "selectionne les circuits 1 a 5 actifs",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Select Active Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Le refus tient toujours, mais ailleurs : un numéro SANS plage
+        # reconnue (pas de « à ») n'a rien à filtrer.
+        "nom": "Select Active — un numéro isolé reste un refus",
+        "phrase": "selectionne les circuits actifs 5",
         "statut": "incompris",
+    },
+    {
+        "nom": "Select Active — exclusion, le manuel §6 « [-] Select Active »",
+        "phrase": "selectionne les circuits 1 a 20 sauf les actifs",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 20 - Select Active Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Sans plage devant, rien à exclure — le manuel dit « all of the
+        # channels IN THE LIST » : il n'existe pas de « Select Inactive »
+        # qui prendrait tout le plateau d'office.
+        "nom": "Select Active — exclusion sans plage, refus assumé",
+        "phrase": "selectionne les actifs sauf les circuits",
+        "statut": "incompris",
+    },
+    {
+        "nom": "Select Active — double appui, Select NonSub Active",
+        "phrase": "selectionne les actifs sauf les subs",
+        "statut": "compris",
+        "rendu": "Select NonSub Active Enter",
+        "non_reconnus": [], "ignores": [],
     },
     {
         # Les six nouvelles intentions sont déclarées en dernier : elles ne

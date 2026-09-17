@@ -213,5 +213,20 @@
     "intention": "selection_active",
     "phrase": "sélectionne les circuits actifs",
     "description": "sélectionner tous les circuits actifs (Select Active)"
+  },
+  {
+    "intention": "selection_active",
+    "phrase": "sélectionne les circuits 1 à 100 actifs",
+    "description": "sélectionner tous les circuits actifs (Select Active)"
+  },
+  {
+    "intention": "selection_active",
+    "phrase": "sélectionne les circuits 1 à 20 sauf les actifs",
+    "description": "sélectionner tous les circuits actifs (Select Active)"
+  },
+  {
+    "intention": "selection_active",
+    "phrase": "sélectionne les actifs sauf les subs",
+    "description": "sélectionner tous les circuits actifs (Select Active)"
   }
 ]

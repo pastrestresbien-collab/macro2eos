@@ -160,6 +160,13 @@ MARQUEURS_NIVEAU = ("%", "pourcent", "intensite", "niveau")
 # traiter comme `%`/`pourcent` casserait cette forme déjà correcte.
 MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
 
+# Marqueurs des formes « exclusion » et « double appui » de `Select Active`
+# (`_selection_active`, manuel §6 l. 1182, 1220-1228). Un seul et même mot
+# français (« sauf ») sert aux deux formes ; c'est ce qui suit qui les
+# distingue — un mot de sub pour le double appui, une plage déjà lue pour
+# l'exclusion.
+MOTS_EXCLUSION_ACTIF = ("sauf", "hormis", "excepte", "exceptee")
+
 
 # --------------------------------------------------------------------------
 def charger_lexique(chemin):
@@ -540,7 +547,7 @@ class Traducteur:
             "creer_plage": self._creer_plage,
             "update_cue": self._update_cue,
             "selection_derniere": self._action_sans_argument,
-            "selection_active": self._action_sans_argument,
+            "selection_active": self._selection_active,
             "selection_manuelle": self._action_sans_argument,
         }[intention]
 
@@ -1836,11 +1843,16 @@ class Traducteur:
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def _action_sans_argument(self, toks: list[str], reponses: dict) -> Traduction:
-        """Mot-clé seul, sans sélection — Select Last, Select Active.
+        """Mot-clé seul, sans sélection — Select Last, Select Manual.
 
-        Ces deux-là agissent sur un état de la console (la sélection
-        précédente, les channels actifs), pas sur une cible nommée dans la
+        Toutes deux agissent sur un état de la console (la sélection
+        précédente, le manuel en cours), pas sur une cible nommée dans la
         phrase : exiger une sélection les rendrait inutilisables.
+
+        `Select Active` avait sa place ici jusqu'au 2026-09-17 : trois formes
+        supplémentaires du manuel §6 (filtre par plage, exclusion, double
+        appui) lui ont valu un handler dédié, `_selection_active`, qui SAIT
+        lire des numéros au lieu de les refuser.
 
         Un mot d'objet est donc consommé s'il est là : dans « sélectionne les
         circuits actifs », « circuits » est du remplissage grammatical, pas une
@@ -1858,10 +1870,84 @@ class Traducteur:
             mot = self.modele_mot_cle()
             return Traduction(statut="incompris", notes=[
                 f"« {mot} » ne prend pas de sélection : il agit sur un état de "
-                f"la console (la sélection précédente, ou les circuits actifs). "
+                f"la console (la sélection précédente, ou le manuel en cours). "
                 f"Le numéro {restants[0][1]} n'a donc pas de place ici."])
 
         ir = [{"action": {"type": self._intention_courante}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _selection_active(self, toks: list[str], reponses: dict) -> Traduction:
+        """`Select Active`, et ses trois formes du manuel §6 (2026-09-17).
+
+        FILTRE (l. 1192) — une plage posée devant filtre l'actif dedans :
+        `Chan 1 Thru 100 Select Active`. La plage s'AJOUTE, elle ne remplace
+        rien : c'est pourquoi cette intention accepte des numéros là où
+        `_action_sans_argument` les refuse.
+
+        EXCLUSION (l. 1220-1228) — « sauf »/« hormis » après une plage exclut
+        les actifs de cette plage : `Chan 1 Thru 20 - Select Active`. Le
+        manuel dit « all of the channels IN THE LIST » : sans plage devant,
+        rien à exclure — refus assumé plutôt que de lire ça comme « tout le
+        plateau sauf les actifs », qui n'existe pas.
+
+        DOUBLE APPUI (l. 1182) — « sauf »/« hormis » suivi d'un mot de sub
+        bascule sur `Select NonSub Active`, sans sélection.
+
+        Les deux usages de « sauf » ne se confondent pas : celui qui précède
+        un mot de sub vise le double appui ; celui qui suit une plage vise
+        l'exclusion. Un « sauf » qui ne fait ni l'un ni l'autre — pas de sub à
+        sa suite, pas de plage avant lui — est une ambiguïté, pas une
+        supposition : la phrase est refusée plutôt que devinée."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris)
+        plage = self._plage(toks, pris) if objet else None
+
+        i_exclusion = self._indice_mot(toks, pris, set(MOTS_EXCLUSION_ACTIF))
+
+        if i_exclusion is not None:
+            # Le sub doit suivre de près : « sauf les subs », pas un sub logé
+            # ailleurs dans une phrase par ailleurs sans rapport.
+            i_sub = None
+            for j in range(i_exclusion, min(i_exclusion + 4, len(toks))):
+                if j in pris:
+                    continue
+                if self._resoudre(toks[j], self._objets_cible)[0] == "Sub":
+                    i_sub = j
+                    break
+            if i_sub is not None:
+                pris.add(i_sub)
+                if plage is not None:
+                    return Traduction(statut="incompris", notes=[
+                        "« sauf les subs » (double appui) et une plage "
+                        "explicite ne sont pas documentés ensemble — choisir "
+                        "l'un des deux."])
+                ir = [{"action": {"type": "selection_active", "double": True}}]
+                return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+            if plage is None:
+                return Traduction(statut="incompris", notes=[
+                    "« sauf »/« hormis » sans plage devant : le manuel dit "
+                    "« all of the channels in the LIST » — il faut nommer "
+                    "cette liste (« circuits 1 à 20 sauf les actifs »)."])
+            ir = [{"selection": {"objet": objet, "de": plage[0], "a": plage[1]},
+                   "action": {"type": "selection_active", "exclure": True}}]
+            return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+        if plage is not None:
+            ir = [{"selection": {"objet": objet, "de": plage[0], "a": plage[1]},
+                   "action": {"type": "selection_active"}}]
+            return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+        # Forme simple : un numéro qui traîne sans plage reconnue est une
+        # perte, pas un remplissage — même discipline que `_action_sans_argument`.
+        restants = self._nombres(toks, pris)
+        if restants:
+            return Traduction(statut="incompris", notes=[
+                f"Le numéro {restants[0][1]} n'a pas de place ici : sans "
+                f"« sauf »/« hormis », un numéro seul (sans « à ») ne forme "
+                f"pas une plage à filtrer."])
+
+        ir = [{"action": {"type": "selection_active"}}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def modele_mot_cle(self) -> str:
