@@ -229,6 +229,7 @@ class Traducteur:
         self._generateur = generateur
         self._ponctuation = self.lex["normalisation"]["ponctuation_ignoree"]
         self._outils = set(self.lex["mots_outils"])
+        self._cache_connus: set[str] | None = None
         self._mots_plage = set(self.lex["plage"]["mots"])
         self._objets = self._indexer(self.lex["objets"])
         self._objets_cible = self._indexer(self.lex["objets_cible"])
@@ -275,6 +276,24 @@ class Traducteur:
         """
         if mot in index:
             return index[mot], []
+
+        # UN MOT CONNU AILLEURS N'EST PAS UNE FAUTE DE FRAPPE.
+        #
+        # La tolérance ne doit s'exercer que sur ce que le lexique ne sait pas
+        # nommer. Si le mot figure EXACTEMENT dans une autre partie du
+        # vocabulaire, l'utilisateur l'a écrit exprès : l'approximer revient à
+        # remplacer son mot par un autre, sans le dire.
+        #
+        # Cas trouvé le 2026-09-17 : « rouge 3 à 50 % » rendait
+        # `Group 3 At 50 Enter` — « rouge » est à distance 2 de « groupe », et
+        # `_objet` l'y résolvait alors que « rouge » est un nom de teinte
+        # parfaitement connu. Statut `compris`, rien dans `ignores` ni
+        # `non_reconnus` : une commande de GROUPE pour une phrase de COULEUR,
+        # en silence complet. La passation §7 signalait déjà cette paire
+        # précise comme piège du routage ; elle mordait aussi dans les
+        # créneaux, ce que personne n'avait vérifié.
+        if mot in self._connus_pour_tolerance():
+            return None, []
 
         tol = self.lex["tolerance"]
         if len(mot) < tol["longueur_minimale"]:
@@ -737,6 +756,16 @@ class Traducteur:
             ),
         )
         return self.lex["nuanciers"]["lee"]["numero"], hypothese, None
+
+    def _connus_pour_tolerance(self) -> set[str]:
+        """`_vocabulaire_connu()`, mis en cache.
+
+        Appelé pour CHAQUE mot résolu, donc recalculer les ensembles à chaque
+        fois coûterait cher sans rien apporter : le lexique ne change pas en
+        cours de vie d'un `Traducteur`."""
+        if self._cache_connus is None:
+            self._cache_connus = self._vocabulaire_connu()
+        return self._cache_connus
 
     def _vocabulaire_connu(self) -> set[str]:
         """Tout ce que le lexique sait nommer, créneaux compris.

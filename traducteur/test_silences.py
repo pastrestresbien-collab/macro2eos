@@ -202,6 +202,8 @@ def main() -> int:
         "circuits 1 à 5 - 4 à fond",
         "circuits 1 et 5 sauf 3 à fond",
         "groupes 1 et 3 à fond",
+        "rouge 3 à 50 %",
+        "circuts 1 à 5 à 50 %",
     ]
     for phrase in SONDES:
         commande, trad = rendu(phrase)

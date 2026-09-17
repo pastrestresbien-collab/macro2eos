@@ -159,11 +159,11 @@ qu'elle parle d'autre chose.
 
 ```
 grammar/test_generateur.py          125 cas
-traducteur/test_traducteur.py       198 cas de traduction + 12 de correction
+traducteur/test_traducteur.py       201 cas de traduction + 12 de correction
 traducteur/test_interpreter_flou.py   8 cas
 traducteur/test_catalogue.py         44 phrases, 34 intentions
 traducteur/test_corpus_terrain.py    43 entrées — RÉTRO-TRADUCTION
-traducteur/test_silences.py         213 vérifications — INVARIANTS
+traducteur/test_silences.py         215 vérifications — INVARIANTS
 ```
 (chiffres au 2026-09-14 ; les quatre premiers doivent être verts avant tout commit,
 ainsi que `./app/build_data.sh --verifier`.)
@@ -276,7 +276,13 @@ Toutes sont dans `reference/journal_questions.yaml` avec leurs sources.
 
 - **Correspondance floue et routage.** Le flou est réservé aux créneaux,
   jamais à la détection d'intention (« groupe » est à distance 2 de
-  « rouge »). Dans un créneau, **exact d'abord, flou ensuite** : sinon
+  « rouge »). **Et le créneau ne suffisait pas non plus** (payé le
+  2026-09-17) : « rouge 3 à 50 % » rendait `Group 3 At 50 Enter`, parce que
+  `_objet` approximait « rouge » en « groupe » DANS son créneau. Règle
+  ajoutée : un mot que le lexique connaît EXACTEMENT ailleurs n'est jamais
+  approximé — l'utilisateur l'a écrit exprès. La paire était documentée ici
+  depuis des semaines, côté routage seulement ; personne n'avait vérifié
+  qu'elle mordait aussi dans les créneaux. Dans un créneau, **exact d'abord, flou ensuite** : sinon
   « palettes » gagne sur « couleur » et « lance » gagne sur « groupe ».
 - **Clé YAML dupliquée.** `yaml.safe_load` garde la dernière en silence et
   perd la première. Le lexique se charge par `charger_lexique()`, qui refuse

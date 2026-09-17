@@ -440,6 +440,40 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ tolérance aux fautes
+    {
+        # RÉGRESSION 2026-09-17. « rouge » est à distance 2 de « groupe », et
+        # `_objet` l'y résolvait : cette phrase rendait `Group 3 At 50 Enter`
+        # — une commande de GROUPE pour une phrase de COULEUR, statut
+        # `compris`, rien dans `ignores` ni `non_reconnus`. La passation §7
+        # signalait déjà cette paire précise comme piège du ROUTAGE ; elle
+        # mordait aussi dans les CRÉNEAUX, ce que personne n'avait vérifié.
+        #
+        # Règle posée : un mot que le lexique connaît EXACTEMENT ailleurs
+        # n'est jamais approximé ici. L'utilisateur l'a écrit exprès.
+        "nom": "tolérance — « rouge » n'est jamais approximé en « groupe »",
+        "phrase": "rouge 3 à 50 %",
+        "statut": "compris",
+        "rendu": "At 03 Thru 50 Enter",
+        # `rouge` DOIT ressortir en mot ignoré : la phrase nomme une teinte
+        # que la commande n'emploie pas. C'est exactement ce que la règle 4
+        # demande — et c'est mieux que l'ancien `Group 3 At 50 Enter`, qui
+        # ne signalait rien parce qu'il avait « employé » le mot, à tort.
+        "ignores": ["rouge"],
+    },
+    {
+        "nom": "tolérance — une vraie faute de frappe passe toujours",
+        "phrase": "circuts 1 à 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        "nom": "tolérance — faute sur « groupe » elle aussi",
+        "phrase": "goupe 3 à 50 %",
+        "statut": "compris",
+        "rendu": "Group 3 At 50 Enter",
+    },
+
     # ------------------------------------------ listes de sélection + / -
     {
         # RÉGRESSION 2026-09-17, la plus grave de la chasse. Cette phrase —
