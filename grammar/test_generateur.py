@@ -438,6 +438,29 @@ CAS = [
         "avertissements": 0,
     },
     {
+        "nom": "manuel §6 l. 296 — `Chan 1 + 3 At 50`, cibles non consécutives",
+        "ir": [{"selection": {"objet": "Chan", "numero": 1, "plus": [3]},
+                "action": {"type": "intensite", "valeur": 50}}],
+        "attendu": "Chan 1 + 3 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        "nom": "manuel §6 l. 62 — `Chan 2 Thru 8 - 5`, une plage moins un",
+        "ir": [{"selection": {"objet": "Chan", "de": 2, "a": 8, "moins": [5]},
+                "action": {"type": "intensite", "valeur": 50}}],
+        "attendu": "Chan 2 Thru 8 - 5 At 50 Enter",
+        "avertissements": 0,
+    },
+    {
+        # §6 l. 68 : « You may use [+] and / or [-] multiple times ».
+        "nom": "manuel §6 l. 68 — `+` et `-` cumulés",
+        "ir": [{"selection": {"objet": "Chan", "numero": 1,
+                              "plus": [5, 9], "moins": [3]},
+                "action": {"type": "plein_feu"}}],
+        "attendu": "Chan 1 + 5 + 9 - 3 Full Enter",
+        "avertissements": 0,
+    },
+    {
         "nom": "manuel §6 Address Check — `Address 1 At 75 Check Enter`",
         "ir": [{"selection": {"objet": "Address", "numero": 1},
                 "action": {"type": "intensite", "valeur": 75, "check": True}}],

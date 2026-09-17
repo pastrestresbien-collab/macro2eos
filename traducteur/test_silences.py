@@ -195,6 +195,13 @@ def main() -> int:
         "mets le hue des circuits 1 à 5 à 180",
         "vérifie l'adresse 1 à 75 %",
         "circuits 1 à 5 à 50 % puis circuit 9 à fond",
+        "circuits 1 et 5 à 50 %",
+        "circuits 1, 5 et 9 à 50 %",
+        "circuits 1 à 5 et 9 à 50 %",
+        "circuits 2 à 8 sauf le 5 à 50 %",
+        "circuits 1 à 5 - 4 à fond",
+        "circuits 1 et 5 sauf 3 à fond",
+        "groupes 1 et 3 à fond",
     ]
     for phrase in SONDES:
         commande, trad = rendu(phrase)

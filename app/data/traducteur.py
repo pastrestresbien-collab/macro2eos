@@ -2619,10 +2619,32 @@ class Traducteur:
                 return self.lex["nuanciers"][cle]["numero"], i
         return None, None
 
+    # Mots qui prolongent une sélection par une cible de MÊME type. La
+    # virgule et le `+` n'y figurent pas : le tokeniser les efface, si bien
+    # que « circuits 1, 5 » et « circuits 1 + 5 » arrivent ici en deux
+    # chiffres COLLÉS — c'est cette adjacence qui les représente.
+    MOTS_LISTE_SELECTION = ("et", "plus")
+
+    # Retirer une cible de la sélection. Le `-` survit à la tokenisation
+    # (contrairement au `+`, effacé), mais il est POLYSÉMIQUE : « circuits
+    # 1 - 5 » est une PLAGE, « circuits 1 à 5 - 4 » un retrait. `_plage`
+    # passant en premier, un `-` encore libre ici ne peut plus être qu'un
+    # retrait — l'ordre fait la désambiguïsation, pas une règle de plus.
+    MOTS_RETRAIT_SELECTION = ("-", "sauf", "moins", "excepte", "hormis")
+
+    # `Chan 1 + 5` n'est attesté que pour les objets de sélection génériques
+    # (manuel §6 l. 58 et 296, §7 pour les groupes). Pour une CUE, deux
+    # chiffres collés veulent dire tout autre chose — la liste de cues
+    # (`Cue 3/1`), voir `_cue_dans_liste`. Ne jamais confondre les deux.
+    OBJETS_LISTE_PERMISE = ("Chan", "Group")
+
     def _selection_de(self, objet: str, toks: list[str], pris: set[int]) -> dict | None:
+        avant = set(pris)
         bornes = self._plage(toks, pris)
         if bornes:
-            return {"objet": objet, "de": bornes[0], "a": bornes[1]}
+            selection = {"objet": objet, "de": bornes[0], "a": bornes[1]}
+            self._prolonger_selection(selection, objet, toks, pris, max(pris - avant))
+            return selection
         # Un nombre suivi d'un marqueur POSTFIXE de niveau (`%`, « pourcent »)
         # n'est pas un numéro de sélection : c'est une valeur. `_plage`
         # applique déjà cette exclusion à ses bornes ; le repli « nombre
@@ -2646,9 +2668,78 @@ class Traducteur:
             if objet == "Cue":
                 dedans = self._cue_dans_liste(toks, pris, i)
                 if dedans is not None:
-                    selection = {"objet": objet, "liste": valeur, "numero": dedans}
+                    return {"objet": objet, "liste": valeur, "numero": dedans}
+            self._prolonger_selection(selection, objet, toks, pris, i)
             return selection
         return None
+
+    def _prolonger_selection(self, selection: dict, objet: str,
+                             toks: list[str], pris: set[int], dernier: int) -> None:
+        """`Chan 1 + 5`, `Group 1 Thru 5 + 9` — une sélection qui continue.
+
+        Manuel §6 l. 58 (« [5] [+] [7] [Enter] — selects non-consecutive
+        channels 5 and 7 ») et l. 296 (« [1] [+] [3] [At] [5]<0> [Enter] —
+        selects channels 1 and 3, and sets an intensity level of 50% »).
+        Confiance A. Le générateur savait déjà rendre la clé `plus` : seul le
+        traducteur ne la produisait jamais.
+
+        Ce que ça répare, trouvé le 2026-09-17 : « circuits 1 et 5 à 50 % »
+        rendait `Chan 1 At 05 Thru 50 Enter`. Le 5 non consommé était avalé
+        par `_niveau`, qui y lisait un DÉGRADÉ de niveaux — une commande
+        malformée, statut `compris`, et rien du tout dans `ignores` ni
+        `non_reconnus`. La phrase est pourtant l'une des plus banales au
+        pupitre.
+
+        Deux graphies mènent ici, parce que le tokeniser efface la ponctuation :
+        « 1 et 5 » garde son « et », tandis que « 1, 5 » et « 1 + 5 » arrivent
+        en deux chiffres COLLÉS. L'adjacence est donc un séparateur à part
+        entière — mais seulement pour Chan et Group : sur une cue, deux
+        chiffres collés désignent la liste (`Cue 3/1`).
+        """
+        if objet not in self.OBJETS_LISTE_PERMISE:
+            return
+        ajouts: list[int] = []
+        retraits: list[int] = []
+        while True:
+            j = dernier + 1
+            cible = ajouts
+            if j < len(toks) and j not in pris and toks[j].isdigit():
+                pass                                   # « 1, 5 » ou « 1 + 5 »
+            elif (j < len(toks) and j not in pris
+                    and (toks[j] in self.MOTS_LISTE_SELECTION
+                         or toks[j] in self.MOTS_RETRAIT_SELECTION)):
+                # « sauf LE 5 » : un article peut s'intercaler entre le
+                # séparateur et le nombre. On saute les mots-outils, mais
+                # DEUX au plus — au-delà, ce n'est plus une énumération, et
+                # bondir plus loin reviendrait à rattacher un nombre qui
+                # appartient à autre chose dans la phrase.
+                k = j + 1
+                saut = 0
+                while (k < len(toks) and k not in pris and saut < 2
+                        and toks[k] in self._outils
+                        and not toks[k].isdigit()):
+                    k += 1
+                    saut += 1
+                if not (k < len(toks) and k not in pris and toks[k].isdigit()):
+                    break
+                if toks[j] in self.MOTS_RETRAIT_SELECTION:
+                    cible = retraits                   # « 1 à 5 sauf 4 »
+                for m in range(j, k):
+                    pris.add(m)
+                j = k
+            else:
+                break
+            # Un nombre suivi d'un marqueur de niveau est une VALEUR, jamais
+            # une cible à ajouter ou retirer — même exclusion qu'au-dessus.
+            if j + 1 < len(toks) and toks[j + 1] in MARQUEURS_NIVEAU_POSTFIXES:
+                break
+            pris.add(j)
+            cible.append(int(toks[j]))
+            dernier = j
+        if ajouts:
+            selection["plus"] = ajouts
+        if retraits:
+            selection["moins"] = retraits
 
     # -- corriger une IR déjà produite, en langage naturel -------------------
     def corriger(self, ir: list[dict], instruction: str) -> Traduction:

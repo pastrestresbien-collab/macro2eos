@@ -65,18 +65,18 @@ utile est dans le dépôt.
 légalité**, plus un catalogue de **7 paramètres de projecteur** (Pan, Tilt, Zoom, Iris,
 Edge, Hue, Saturation) rendus par un mécanisme générique unique. Le tout compilé en JSON,
 avec un générateur qui produit trois sorties distinctes (ligne de commande, contenu de
-macro, paquets OSC) et **137 cas de non-régression**, dont la majorité sont des exemples
+macro, paquets OSC) et **140 cas de non-régression**, dont la majorité sont des exemples
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le
-générateur rend ensuite — 38 intentions, 191 cas de traduction + 9 cas de correction,
+générateur rend ensuite — 38 intentions, 198 cas de traduction + 9 cas de correction,
 et la composition multi-commandes (« puis », « ; »). Portée détaillée dans son propre
 README.
 
 | Axe | État |
 |---|---|
 | **A — structurer la grammaire** | ✅ terminé pour le périmètre visé (v0.16) |
-| **B — écrire le traducteur NL** | 🚧 v0.19 — 38 intentions, 191 + 9 tests, 206 invariants, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
+| **B — écrire le traducteur NL** | 🚧 v0.20 — 38 intentions, 198 + 9 tests, 213 invariants, multi-commandes et paramètres génériques. Déterministe, sans IA à l'exécution (voir ci-dessous) |
 | **C — valider au banc réel** | ⬜ non commencé — 38 points recensés au backlog (#29, #34, #35, #36, #37, #38 résolus) |
 
 Ce qui reste hors périmètre du modèle : Augment3d, le pixel mapping, le serveur média

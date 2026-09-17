@@ -87,6 +87,7 @@ class Generateur:
         self._legalite = self.modele["legalite"]
         self._thru = self.modele["operateurs"]["plage"]["symbole"]
         self._plus = self.modele["operateurs"]["ajout"]["symbole"]
+        self._moins = self.modele["operateurs"]["retrait"]["symbole"]
 
     # -- vérification -------------------------------------------------------
     def _regle(self, objet: str | None, action: str) -> dict | None:
@@ -212,6 +213,16 @@ class Generateur:
             ajouts = sel["plus"] if isinstance(sel["plus"], (list, tuple)) else [sel["plus"]]
             for n in ajouts:
                 morceaux += [plus, str(n)]
+
+        # `Chan 1 Thru 5 - 4` — retirer une cible de MÊME type. Manuel §6
+        # l. 62 (« [2] [Thru] [8] [-] [5] [Enter] — selects a range of
+        # channels 2 through 8, except channel 5 ») et l. 298. Symétrique de
+        # `plus`, et le manuel précise qu'on peut employer `+` et `-`
+        # plusieurs fois (§6 l. 68).
+        if "moins" in sel:
+            retraits = sel["moins"] if isinstance(sel["moins"], (list, tuple)) else [sel["moins"]]
+            for n in retraits:
+                morceaux += [self._moins, str(n)]
 
         if "plus_plage" in sel:
             debut, fin = sel["plus_plage"]

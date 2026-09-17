@@ -440,6 +440,67 @@ CAS = [
         "rendu": "Sub 3 At 50 Enter",
     },
 
+    # ------------------------------------------ listes de sélection + / -
+    {
+        # RÉGRESSION 2026-09-17, la plus grave de la chasse. Cette phrase —
+        # l'une des plus banales au pupitre — rendait
+        # `Chan 1 At 05 Thru 50 Enter` : une commande MALFORMÉE, statut
+        # `compris`, et RIEN dans `ignores` ni `non_reconnus`. Le 5 non
+        # consommé était avalé par `_niveau`, qui y lisait un dégradé de
+        # niveaux. Manuel §6 l. 296 : « [1] [+] [3] [At] [5]<0> [Enter] —
+        # selects channels 1 and 3, and sets an intensity level of 50% ».
+        "nom": "liste — « circuits 1 et 5 » est une sélection, pas un dégradé",
+        "phrase": "circuits 1 et 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 + 5 At 50 Enter",
+    },
+    {
+        # Le tokeniser efface la virgule ET le `+` : « 1, 5 » et « 1 + 5 »
+        # arrivent en deux chiffres COLLÉS. L'adjacence est donc un
+        # séparateur à part entière — mais jamais pour une cue, où elle
+        # désigne la liste (`Cue 3/1`).
+        "nom": "liste — virgule et « et » mélangés",
+        "phrase": "circuits 1, 5 et 9 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 + 5 + 9 At 50 Enter",
+    },
+    {
+        "nom": "liste — après une plage",
+        "phrase": "circuits 1 à 5 et 9 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 + 9 At 50 Enter",
+    },
+    {
+        # Manuel §6 l. 62 mot pour mot : « [2] [Thru] [8] [-] [5] [Enter] —
+        # selects a range of channels 2 through 8, except channel 5 ».
+        # Rendait `Chan 2 Thru 8 At 05 Thru 50` — le retrait disparaissait.
+        "nom": "retrait — « sauf » suit le manuel §6 l. 62",
+        "phrase": "circuits 2 à 8 sauf le 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 2 Thru 8 - 5 At 50 Enter",
+    },
+    {
+        # Le `-` SURVIT à la tokenisation (le `+` non) et il est polysémique :
+        # séparateur de plage OU retrait. `_plage` passant en premier, un `-`
+        # encore libre ne peut plus être qu'un retrait — l'ordre désambiguïse.
+        "nom": "retrait — le `-` littéral, manuel §6 l. 298",
+        "phrase": "circuits 1 à 5 - 4 à fond",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 - 4 Full Enter",
+    },
+    {
+        "nom": "retrait — « 1 - 5 » reste une PLAGE, pas un retrait",
+        "phrase": "circuits 1 - 5 à 50 %",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 At 50 Enter",
+    },
+    {
+        "nom": "liste et retrait dans la même phrase",
+        "phrase": "circuits 1 et 5 sauf 3 à fond",
+        "statut": "compris",
+        "rendu": "Chan 1 + 5 - 3 Full Enter",
+    },
+
     # ------------------------------------------ cue dans une liste : `3/1`
     {
         # RÉGRESSION 2026-09-17, trouvée par le garde-fou des nombres perdus.
