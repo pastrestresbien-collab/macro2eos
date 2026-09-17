@@ -390,6 +390,74 @@ class Generateur:
         return [self._rendre_fan(act["fan"], avert)]
 
     # -- rendu : actions ----------------------------------------------------
+    # Quand l'`avertissement` d'une action du modèle doit REMONTER.
+    #
+    # Le modèle en déclare 24 ; 11 ne sortaient sur aucun chemin de rendu
+    # (mesuré le 2026-09-17). Les émettre TOUS aurait été le réflexe facile,
+    # et il est mauvais : mesuré aussi, 14 des 47 phrases du catalogue
+    # gagneraient un avertissement, dont « circuits 1 à 5 à 50 % » — la
+    # commande la plus banale qui soit, à qui on aurait annoncé une polysémie
+    # ne valant qu'en contexte Patch. Un avertissement qui crie au loup sur
+    # une commande normale ne protège plus de rien : il apprend à l'opérateur
+    # à ne plus les lire.
+    #
+    # D'où cette table. Chaque entrée porte la CONDITION du risque, et le
+    # risque ne remonte que lorsque le générateur peut réellement la juger.
+    # Les risques que le générateur ne peut PAS juger (contexte Patch pour
+    # `intensite`, Query composée avant `selection_derniere`, références de
+    # fan pour `palette_intensite`) restent délibérément hors table : ils
+    # appartiennent à l'UI, qui connaît l'état de la console.
+    # NE PAS y remettre `parquer`, `rappeler_palette` ni `supprimer_partition` :
+    # le générateur émet DÉJÀ le leur, ailleurs dans ce fichier et avec ses
+    # propres mots. Ma première mesure les avait crus muets — elle cherchait le
+    # texte du modèle, or le générateur reformule ; et elle testait la partition
+    # 1, qui n'est pas protégée. Les y ajouter produisait des DOUBLONS, que le
+    # banc a rattrapés. Mesurer une absence demande de chercher un effet, pas
+    # une formulation.
+    RISQUES_A_REMONTER = {
+        # DESTRUCTION : le manuel le signale en CAUTION, les données d'un
+        # channel supprimé sont perdues.
+        "supprimer": lambda act: True,
+        # CONTRESENS : un snapshot enregistre la SURFACE DE CONTRÔLE, pas
+        # l'état du plateau. « garder cet état lumineux » demande autre chose
+        # — une commande parfaitement valide qui ne fait pas ce qu'on croit,
+        # exactement la classe d'erreur que ce dépôt combat.
+        "record_snapshot": lambda act: True,
+        # L'avertissement du modèle porte SA propre condition : « ne jamais
+        # générer un `Update` nu sans expliciter la cible ». Le traducteur en
+        # pose toujours une, donc il ne remonte que si elle manque.
+        "update_cue": lambda act: "cible" not in act,
+        # PROJECTION SILENCIEUSE SUR LE GAMUT, constatée au banc réel : si le
+        # projecteur ne peut pas atteindre le point demandé, Eos le déplace
+        # SANS rien dire — et `CIE Y` peut bouger alors que seul `CIE X` a été
+        # saisi. Une macro qui vise une teinte précise peut donc produire une
+        # autre couleur, en silence. C'est exactement la panne que ce dépôt
+        # traque, sauf qu'elle vient de la console : on ne peut pas l'empêcher,
+        # seulement la dire.
+        "cie_x": lambda act: True,
+        "cie_y": lambda act: True,
+        # PAS `record_groupe` : le remplacement se fait « avec confirmation »
+        # d'après le modèle lui-même, donc la console demande — et il se
+        # déclencherait sur tout enregistrement de groupe, geste courant.
+    }
+
+    def _risque_declare(self, type_action: str, spec: dict,
+                        act: dict, avert: list[str]) -> None:
+        """Remonte l'`avertissement` du modèle quand sa condition est remplie."""
+        condition = self.RISQUES_A_REMONTER.get(type_action)
+        if condition is None:
+            return
+        texte = spec.get("avertissement")
+        if not texte:
+            return
+        try:
+            if condition(act):
+                avert.append(texte.strip())
+        except Exception:                                  # noqa: BLE001
+            # une condition qui échoue ne doit jamais empêcher un rendu :
+            # mieux vaut avertir à tort que ne pas rendre du tout.
+            avert.append(texte.strip())
+
     def _rendre_action(self, act: dict, avert: list[str]) -> str:
         t = act["type"]
         spec = self.modele["actions"][t]
@@ -402,6 +470,8 @@ class Generateur:
                 f"`{mot}` : syntaxe de confiance {spec['confiance']} "
                 f"({spec.get('source', 'source non précisée')})"
             )
+
+        self._risque_declare(t, spec, act, avert)
 
         if t == "regler_parametre":
             return self._rendre_parametre(act, avert)
@@ -597,6 +667,24 @@ class Generateur:
                 return " ".join([mot, self.modele["actions"]["sneak"]["mot_cle"],
                                  str(act["sneak"])])
             return mot
+
+        if t in ("cie_x", "cie_y"):
+            # Forme CONFIRMÉE AU BANC le 2026-09-13 :
+            #   `<sélection> CIE X <v> CIE Y <v> Enter`
+            # un seul `Enter` final, aucun `Enter` intermédiaire. Les deux
+            # paramètres tiennent donc sur UNE commande, et `cie_x` porte
+            # éventuellement son `cie_y` — même montage que `plein_feu` qui
+            # porte son `sneak`. Deux étapes d'IR distinctes donneraient deux
+            # lignes et deux `Enter`, ce que le banc a justement démenti.
+            #
+            # NE PAS écrire `CIE XYY` : l'autocomplétion de la console le
+            # propose, mais il produit systématiquement une erreur de syntaxe
+            # (testé au banc le même jour). Voir `forme_combinee_invalide`.
+            morceaux = [mot, str(act["valeur"])]
+            if t == "cie_x" and "cie_y" in act:
+                morceaux += [self.modele["actions"]["cie_y"]["mot_cle"],
+                             str(act["cie_y"])]
+            return " ".join(morceaux)
 
         if t == "valeur_dmx":
             valeur = int(act["valeur"])

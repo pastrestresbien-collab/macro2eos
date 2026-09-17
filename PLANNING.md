@@ -61,11 +61,11 @@ utile est dans le dépôt.
 
 **Phase 2 — exploitation : axe A terminé, axes B et C ouverts.**
 
-[`grammar/`](grammar/README.md) porte un modèle typé de **87 actions et 188 règles de
+[`grammar/`](grammar/README.md) porte un modèle typé de **87 actions et 194 règles de
 légalité**, plus un catalogue de **7 paramètres de projecteur** (Pan, Tilt, Zoom, Iris,
 Edge, Hue, Saturation) rendus par un mécanisme générique unique. Le tout compilé en JSON,
 avec un générateur qui produit trois sorties distinctes (ligne de commande, contenu de
-macro, paquets OSC) et **140 cas de non-régression**, dont la majorité sont des exemples
+macro, paquets OSC) et **142 cas de non-régression**, dont la majorité sont des exemples
 chiffrés du manuel officiel recopiés verbatim.
 
 [`traducteur/`](traducteur/README.md) traduit une phrase française en IR, que le

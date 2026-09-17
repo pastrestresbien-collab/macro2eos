@@ -810,3 +810,49 @@ questions:
     backlog: null
     traite: "non"
     traite_ou: null
+
+  - date: "2026-09-17"
+    question: >-
+      Les avertissements que le modèle déclare atteignent-ils l'utilisateur ?
+    reponse: >-
+      Pas tous, et la mesure honnête est plus nuancée que la première. Sur 24
+      actions qui déclarent un `avertissement`, quatre ne sortaient sur aucun
+      chemin de rendu. Les autres sortaient bien — mais REFORMULÉS par le
+      générateur, pas cités du modèle, ce qu'une première sonde cherchant le
+      texte exact avait pris pour un silence.
+    sources:
+      - "grammar/generateur.py — RISQUES_A_REMONTER"
+      - "grammar/modele.yaml — champ `avertissement` de 24 actions"
+    confiance: "A"
+    consequence: "arbitrage_produit"
+    detail: >-
+      LE RÉFLEXE FACILE ÉTAIT MAUVAIS. Émettre tous les avertissements du
+      modèle paraissait conforme à la doctrine ; mesuré, cela ajoutait un
+      avertissement à 14 des 47 phrases du catalogue, dont « circuits 1 à 5 à
+      50 % » — à qui on aurait annoncé une polysémie ne valant qu'en contexte
+      Patch. Un avertissement qui crie au loup sur une commande banale
+      n'apprend qu'une chose à l'opérateur : ne plus les lire.
+
+      À vérifier aussi : la règle que le générateur s'est fixée en tête de
+      fichier est plus étroite qu'elle n'en a l'air. Elle dit qu'une
+      COMBINAISON marquée `inconnu` doit avertir — pas que tout risque déclaré
+      doit remonter. Faire remonter le reste est donc un choix produit, pas
+      une obligation doctrinale.
+
+      RETENU, périmètre étroit et défendable : `supprimer` (perte de données,
+      CAUTION au manuel), `record_snapshot` (contresens courant — un snapshot
+      enregistre la surface de contrôle, pas l'état du plateau), `update_cue`
+      mais SEULEMENT sans cible explicite (condition écrite dans
+      l'avertissement lui-même), et `cie_x`/`cie_y` (projection silencieuse
+      sur le gamut, constatée au banc). ÉCARTÉ : `record_groupe`, dont le
+      modèle dit que la console demande confirmation, et qui se déclencherait
+      sur tout enregistrement de groupe.
+
+      RESTENT HORS TABLE, délibérément : les risques que le générateur ne peut
+      pas juger — contexte Patch pour `intensite`, Query composée avant
+      `selection_derniere`, références de fan pour `palette_intensite`. Ils
+      appartiennent à l'UI, qui connaît l'état de la console. À reprendre si
+      un jour le générateur reçoit un contexte.
+    backlog: null
+    traite: "partiel"
+    traite_ou: "grammar/generateur.py RISQUES_A_REMONTER ; question de l'UI ouverte"

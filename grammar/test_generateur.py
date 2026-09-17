@@ -438,6 +438,26 @@ CAS = [
         "avertissements": 0,
     },
     {
+        # Forme CONFIRMÉE AU BANC le 2026-09-13, sur `Groupe 100` : un seul
+        # `Enter` final, aucun `Enter` entre les deux paramètres. Le modèle la
+        # documentait depuis, mais le générateur n'avait AUCUNE branche pour
+        # ces actions — il levait « action non gérée ». Une capacité
+        # documentée, sourcée en confiance A, et injoignable.
+        "nom": "banc 2026-09-13 — `CIE X` et `CIE Y` sur une seule commande",
+        "ir": [{"selection": {"objet": "Group", "numero": 100},
+                "action": {"type": "cie_x", "valeur": 20, "cie_y": 50}}],
+        "attendu": "Group 100 CIE X 20 CIE Y 50 Enter",
+        # la projection silencieuse sur le gamut remonte toujours
+        "avertissements": 1,
+    },
+    {
+        "nom": "banc 2026-09-13 — `CIE X` seul reste valide",
+        "ir": [{"selection": {"objet": "Chan", "numero": 5},
+                "action": {"type": "cie_x", "valeur": 30}}],
+        "attendu": "Chan 5 CIE X 30 Enter",
+        "avertissements": 1,
+    },
+    {
         "nom": "manuel §6 l. 296 — `Chan 1 + 3 At 50`, cibles non consécutives",
         "ir": [{"selection": {"objet": "Chan", "numero": 1, "plus": [3]},
                 "action": {"type": "intensite", "valeur": 50}}],
@@ -674,13 +694,18 @@ CAS = [
         "avertissements": 0,
     },
     {
+        # Le TITRE de ce cas disait déjà le risque — « la surface, pas le
+        # plateau » — et l'attente affirmait pourtant qu'aucun avertissement
+        # ne sortait. Mis en accord le 2026-09-17 : un snapshot qui n'
+        # enregistre pas ce que l'opérateur croit est une commande valide qui
+        # fait autre chose, la classe d'erreur que ce dépôt combat.
         "nom": "manuel §23 — enregistrer un snapshot (la surface, pas le plateau)",
         # [Record] [Snapshot] [1]
         "ir": [
             {"action": {"type": "record_snapshot", "cible": 1}},
         ],
         "attendu": "Record Snapshot 1 Enter",
-        "avertissements": 0,
+        "avertissements": 1,   # le risque du modèle remonte (2026-09-17)
     },
     {
         "nom": "manuel §23 — rappeler un snapshot",
@@ -1178,6 +1203,9 @@ CAS = [
         "avertissements": 1,
     },
     {
+        # Même remarque : le titre annonçait la double confirmation, l'attente
+        # disait « aucun avertissement ». Le manuel signale la perte de
+        # données en CAUTION — elle remonte désormais.
         "nom": "manuel §4 — suppression de channels, double confirmation",
         # [6] [Thru] [1][0] [Delete] [Enter] [Enter]
         "ir": [
@@ -1186,7 +1214,7 @@ CAS = [
         ],
         "kwargs": {"contexte": "Patch"},
         "attendu": "Chan 6 Thru 10 Delete Enter",
-        "avertissements": 0,
+        "avertissements": 1,   # le risque du modèle remonte (2026-09-17)
     },
     {
         "nom": "manuel §4 — preheat patché",
@@ -1511,6 +1539,16 @@ def controler_osc(nom: str, resultat, attendu: list[str], nb_avert: int) -> bool
 
 
 def main() -> int:
+    orphelines = verifier_actions_rendables()
+    if orphelines:
+        print("ACTIONS DÉCLARÉES AU MODÈLE ET NON RENDABLES :")
+        for nom in orphelines:
+            print(f"  {nom}")
+        print("  -> ajouter leur branche dans `_rendre_action`, ou les retirer "
+              "du modèle. Une action documentée et injoignable fait planter "
+              "l'app au lieu de produire ou de refuser.\n")
+        return 1
+
     g = Generateur()
     total = len(CAS) + len(CAS_MACRO) + len(CAS_OSC)
     reussis = 0
@@ -1533,6 +1571,44 @@ def main() -> int:
     print(f"\n{reussis}/{total} cas conformes.")
     return 1 if reussis != total else 0
 
+
+
+def verifier_actions_rendables() -> list[str]:
+    """Toute action DÉCLARÉE au modèle doit être rendable.
+
+    Le modèle et le générateur dérivent l'un de l'autre sans que rien ne le
+    dise : une action peut être documentée, sourcée, dotée d'une confiance A —
+    et rester sans branche de rendu. `_rendre_action` lève alors
+    `ValueError: action non gérée`, donc l'app plante au lieu de produire ou
+    de refuser proprement.
+
+    Trouvé le 2026-09-17 en rendant EXHAUSTIVEMENT chaque couple objet ×
+    action : `cie_x` et `cie_y` étaient dans ce cas, confirmés au banc réel et
+    injoignables. Ce contrôle évite que le cas se reproduise en silence.
+    """
+    generateur = Generateur()
+    modele = generateur.modele
+    # IR volontairement TROP fournie : on teste la présence d'une branche de
+    # rendu, pas la validité des arguments. Un `KeyError` sur un champ manquant
+    # signalerait ma propre sonde, pas un défaut du générateur.
+    garniture = {
+        "valeur": 50, "cible": 1, "texte": "X", "numero": 1, "nuancier": 3,
+        "teinte": 195, "parametre": "Pan", "forme": "absolue", "montee": 1,
+        "dwell": 2, "descente": 3, "liste": 1, "mot": "Out", "famille": "Color Palette",
+        "adresse": 1, "univers": 1, "de": 1, "a": 5, "condition": "Is In",
+    }
+    orphelines = []
+    for nom in modele["actions"]:
+        action = {"type": nom, **garniture}
+        try:
+            generateur.rendre([{"selection": {"objet": "Chan", "numero": 1},
+                                "action": action}])
+        except ValueError as erreur:
+            if "action non gérée" in str(erreur):
+                orphelines.append(nom)
+        except Exception:                                  # noqa: BLE001
+            pass          # argument manquant : ma sonde, pas le générateur
+    return orphelines
 
 if __name__ == "__main__":
     sys.exit(main())

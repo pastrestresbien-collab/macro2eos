@@ -3898,6 +3898,44 @@
       "confiance": "A"
     },
     {
+      "objet": "Group",
+      "action": "cie_x",
+      "valide": "oui",
+      "confiance": "S",
+      "note": "Observé au banc réel le 2026-09-13 sur `Groupe 100` : `Groupe 100 CIE X .20 CIE Y .50` suivi d'un seul Enter, résultat exact. La confiance S porte sur CETTE combinaison, pas sur le paramètre en général.\n"
+    },
+    {
+      "objet": "Group",
+      "action": "cie_y",
+      "valide": "oui",
+      "confiance": "S"
+    },
+    {
+      "objet": "Chan",
+      "action": "cie_x",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "Manuel §6 « Manual Control », section CIE xy Control — le contrôle s'applique aux channels sélectionnés. Confiance A et non S : le banc a testé un GROUPE, pas un channel nommé. Ne pas emprunter la confiance de la ligne voisine.\n"
+    },
+    {
+      "objet": "Chan",
+      "action": "cie_y",
+      "valide": "oui",
+      "confiance": "A"
+    },
+    {
+      "objet": "selection_courante",
+      "action": "cie_x",
+      "valide": "oui",
+      "confiance": "A"
+    },
+    {
+      "objet": "selection_courante",
+      "action": "cie_y",
+      "valide": "oui",
+      "confiance": "A"
+    },
+    {
       "objet": "Address",
       "action": "intensite",
       "valide": "oui",

@@ -36,7 +36,7 @@ l'interface** : les neuf règles de la grammaire qui contraignent l'UI, et pourq
 
 | Document | Emplacement | Statut |
 |---|---|---|
-| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande, injection OSC | [`grammar/`](grammar/README.md) | ✅ v0.21 — 87 actions, 188 règles, 8 paramètres génériques, 140 tests |
+| Modèle Eos typé (objets/actions/matrice de légalité), patrons, générateur IR → commande, injection OSC | [`grammar/`](grammar/README.md) | ✅ v0.22 — 87 actions, 194 règles, 8 paramètres génériques, 142 tests |
 | Traducteur français → IR (lexique, intentions, questions) — entre en amont du générateur | [`traducteur/`](traducteur/README.md) | 🚧 v0.20 — 38 intentions, 9 couleurs, 203 + 12 tests, 1415 invariants. Déterministe, sans IA à l'exécution |
 
 Le modèle couvre : sélection, Fan, cues (simples, multipart, listes multiples), macros,
