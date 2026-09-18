@@ -56,3 +56,6 @@ patrons:
       d'un groupe numéroté) mais un mécanisme différent lié à la cue —
       déduction, non tranchée. À vérifier/rapprocher du manuel avant
       d'étendre `modele.yaml`.
+      Confirmé au banc le 2026-09-18 (voir grammar/refus_terrain.yaml) : le
+      préfixe `Group` est OBLIGATOIRE — `Cue {n} - Select Active` seul,
+      sans `Group`, est rejeté par la console dès `Cue {n} -`.
