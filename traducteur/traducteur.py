@@ -1257,6 +1257,7 @@ class Traducteur:
         #    exacte sur toute la phrase d'abord, tolérance seulement au
         #    second passage — la détection reste un routeur, pas un créneau.
         parametre = None
+        i_parametre = None    # None si `parametre_impose` a fourni le paramètre
         for exact in (True, False):
             for i, tok in enumerate(toks):
                 if i in pris:
@@ -1267,6 +1268,7 @@ class Traducteur:
                     cle, _ = self._resoudre(tok, self._parametres)
                 if cle:
                     parametre = cle
+                    i_parametre = i
                     pris.add(i)
                     break
             if parametre is not None:
@@ -1291,9 +1293,11 @@ class Traducteur:
         #    « Mirror Pan », confiance B — voir grammar/modele.yaml).
         formes_dispo = self._formes_parametre(parametre)
         i_inverse = self._indice_mot(toks, pris, {"inverse", "inverser", "inversez"})
-        i_ajout = self._indice_mot(toks, pris, {"ajoute", "ajouter", "monte", "monter"})
+        i_ajout = self._indice_mot(toks, pris, {"ajoute", "ajouter", "monte", "monter",
+                                                  "augmente", "augmenter"})
         i_retrait = self._indice_mot(toks, pris, {"retire", "retirer", "enleve", "enlever",
-                                                    "descend", "descends", "descendre"})
+                                                    "descend", "descends", "descendre",
+                                                    "diminue", "diminuer", "baisse", "baisser"})
 
         # « à fond » n'est pas une valeur chiffrée : c'est la destination
         # `Full`. Testé AVANT les autres formes, sinon la phrase finirait au
@@ -1316,7 +1320,44 @@ class Traducteur:
         else:
             forme = ("relatif_ajout" if i_ajout is not None else
                      "relatif_retrait" if i_retrait is not None else "absolue")
-            if forme not in formes_dispo:
+
+            # PAS FIXE — `+%`/`-%` (manuel §6 « Non-Intensity Parameters »).
+            # Un paramètre qui ne déclare PAS `relatif_ajout`/`relatif_retrait`
+            # (Zoom, Iris, Edge n'ont que `absolue`) peut quand même répondre
+            # à « augmente »/« monte » : ce n'est pas la même commande que
+            # `Pan + 10` (qui exige une valeur chiffrée), c'est le pas fixe du
+            # Setup, sans aucun nombre dans la phrase. D'où le test « aucun
+            # nombre nulle part » : si un chiffre traîne (« monte le zoom de
+            # 10 »), ce n'est PAS ce cas — direction inconnue, laissé à
+            # `relatif_ajout`/`retrait`, qui refusera faute d'être sourcé pour
+            # ce paramètre plutôt que de deviner ce que le chiffre voulait dire.
+            #
+            # `valeur` reste None jusqu'au bout : ce n'est pas une valeur
+            # chiffrée qui manque encore, il n'y en a JAMAIS pour cette forme
+            # (le pas est réglé dans le Setup de la console, pas dans la
+            # phrase). La construction de l'IR, en fin de fonction, lit
+            # `forme == "pas_fixe"` pour produire `incrementer`/`decrementer`
+            # plutôt que `regler_parametre`.
+            # « pas_fixe » PASSE AVANT le test de disponibilité de la forme
+            # relative : Pan et Tilt déclarent À LA FOIS `relatif_ajout` (avec
+            # un nombre, `Pan + 10`) et `pas_fixe` (sans, `Pan +%`) — les deux
+            # sont légitimes, et c'est la présence d'un nombre qui départage.
+            #
+            # PAS « n'importe où dans la phrase » : « ajoute 10 degrés au pan
+            # DU CIRCUIT 1 » a un nombre, mais c'est celui de la SÉLECTION, pas
+            # une valeur pour le paramètre. L'ordre du français de métier tient
+            # ici : la valeur se dit AVANT le nom du paramètre (« ajoute 10 au
+            # pan »), le numéro de sélection APRÈS (« du circuit 1 »). Ne
+            # compter que les nombres avant `i_parametre` évite qu'un numéro de
+            # circuit fasse croire à une valeur absente de pas_fixe.
+            valeur_avant_parametre = i_parametre is None or any(
+                i not in pris and tok.isdigit() and i < i_parametre
+                for i, tok in enumerate(toks))
+            if (forme in ("relatif_ajout", "relatif_retrait")
+                    and "pas_fixe" in formes_dispo
+                    and not valeur_avant_parametre):
+                forme, valeur = "pas_fixe", None
+            elif forme not in formes_dispo:
                 return Traduction(statut="incompris", notes=[
                     f"Aucune forme « {forme} » sourcée pour « {parametre} »."])
 
@@ -1346,6 +1387,8 @@ class Traducteur:
                         valeur = int(tok)
                         pris.update({i, i + 1})
                         break
+            elif forme == "pas_fixe":
+                pass    # rien à lire : le pas est réglé dans le Setup, pas la phrase
             else:
                 # « ajoute »/« retire » inversent cet ordre habituel : « ajoute
                 # 10 au pan du circuit 1 » place la valeur AVANT le numéro de
@@ -1421,8 +1464,9 @@ class Traducteur:
             notes.append(self.NOTE_SELECTION_COURANTE)
 
         # 4. forme absolue : la valeur est ce qu'il reste, une fois la
-        #    sélection retirée du jeu de nombres libres.
-        if valeur is None and forme != "plein":
+        #    sélection retirée du jeu de nombres libres. `pas_fixe` n'a
+        #    jamais de valeur chiffrée — le pas est réglé dans le Setup.
+        if valeur is None and forme not in ("plein", "pas_fixe"):
             candidats = self._nombres(toks, pris)
             if not candidats:
                 return Traduction(statut="incompris", notes=[
@@ -1455,8 +1499,20 @@ class Traducteur:
                 f"Préciser l'unité de la valeur (« à 50 % », « à 50 degrés ») "
                 f"pour lever l'ambiguïté avec une plage de circuits."])
 
-        etape: dict = {"action": {"type": "regler_parametre", "parametre": parametre,
-                                  "forme": forme, "valeur": valeur}}
+        if forme == "pas_fixe":
+            # Direction retrouvée à partir du même verbe qui l'avait établie
+            # plus haut — jamais redevinée : « ajoute »/« monte » -> +%,
+            # « retire »/« descend » -> -%.
+            spec_param = self._generateur_ou_defaut().modele["parametres"].get(parametre, {})
+            action: dict = {
+                "type": "incrementer" if i_ajout is not None else "decrementer",
+                "categorie": spec_param.get("mot_cle", parametre),
+            }
+        else:
+            action = {"type": "regler_parametre", "parametre": parametre,
+                     "forme": forme, "valeur": valeur}
+
+        etape: dict = {"action": action}
         if selection is not None:
             etape["selection"] = selection
         return Traduction(statut="compris", ir=[etape], notes=notes,

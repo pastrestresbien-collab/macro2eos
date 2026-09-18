@@ -347,15 +347,30 @@ entrees:
     syntaxe_feuille: "At + +"
     mode: Background
     auteur: "S. Harris"
-    demande_nl: "augmente le paramètre"
-    verdict: hors_perimetre
+    demande_nl: "augmente le zoom du circuit 1"
+    verdict: divergent
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: forme_absente
-    cause_detail: >-
-      `[+%]`/`[-%]` est une touche à pas fixe, structurellement différente de
-      `<mot> + <n>`. Lacune ASSUMÉE et déjà documentée dans
-      `grammar/modele.yaml` (voir Zoom/Iris/Edge).
+      MIS À JOUR le 2026-09-18. La demande d'origine (« augmente le
+      paramètre ») était un gabarit vide — la feuille elle-même décrit une
+      MACRO PAR PARAMÈTRE (« there is a separate Macro A and Macro B ... for
+      each parameter »), pas une phrase à traduire telle quelle. Reformulée
+      avec un paramètre concret pour rester testable, sans changer l'intention
+      d'origine.
+      Le traducteur rend `Chan 1 Zoom +%`. Classé `divergent` et non
+      `equivalent` : la comparaison au mot près avec `At + +` échoue
+      réellement (paramètre différent dans l'exemple choisi, un seul appui
+      contre deux, pas de `At`). Le MÉCANISME est le même et sourcé au mot
+      près (manuel §6, `[1] {Iris} [+%] [+%]`) ; `At` de la transcription de
+      la feuille n'y a jamais eu sa place — le vrai mécanisme est `[1]
+      {Iris} [+%]`, jamais `[1] [At] {Iris} [+%]`. Vraisemblablement une
+      confusion du contributeur avec la forme intensité (`[At] [+%]`, elle
+      bien réelle, manuel §6 l. 288). `equivalent` resterait une
+      auto-certification que le banc de comparaison ne peut pas vérifier ;
+      `divergent` est le verdict honnête tant qu'aucune paire de phrases
+      strictement comparables (même paramètre, même nombre d'appuis) n'a été
+      testée.
+    cause: null
+    cause_detail: null
 
   - id: record_preset
     label: "Record Preset"

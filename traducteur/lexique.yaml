@@ -593,8 +593,9 @@ intentions:
       # trompeur, et à nourrir le verrou 3 (un mot inconnu interdit le repli
       # sur la sélection courante).
       verbe: [mets, met, mettre, regle, règle, regler, pose,
-              ajoute, ajouter, monte, monter,
+              ajoute, ajouter, monte, monter, augmente, augmenter,
               retire, retirer, enleve, enlever, descend, descends, descendre,
+              diminue, diminuer, baisse, baisser,
               inverse, inverser, inversez]
     exemple_nl: "mets le pan du circuit 1 à 10 degrés"
     origine: >

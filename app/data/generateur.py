@@ -663,9 +663,16 @@ class Generateur:
             # confirmé par la clé OSC select_nonsub_active).
             return self.modele["actions"]["selection_active"]["double_appui"]["mot_cle"]
 
+        if t in ("incrementer", "decrementer"):
+            # Sans catégorie, la forme nue agit sur l'INTENSITÉ (manuel §6
+            # l. 288). Avec une catégorie (Iris, Zoom, Pan...), elle se pose
+            # devant : `{Iris} [+%] [+%]` — l. « Non-Intensity Parameters ».
+            categorie = act.get("categorie")
+            prefixe = [categorie] if categorie else []
+            return " ".join(prefixe + [mot])
+
         if t in ("selection_active", "selection_derniere", "selection_manuelle",
-                 "retirer_effet", "hors_scene", "niveau_setup", "incrementer",
-                 "decrementer", "verifier", "home",
+                 "retirer_effet", "hors_scene", "niveau_setup", "verifier", "home",
                  "selection_suivante", "selection_precedente"):
             return mot
 

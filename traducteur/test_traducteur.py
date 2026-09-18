@@ -1759,6 +1759,41 @@ CAS = [
         "statut": "incompris",
     },
     {
+        # LE mécanisme réel, ajouté le 2026-09-18 : sans AUCUN nombre dans la
+        # phrase, « augmente »/« monte » bascule sur le pas fixe du Setup
+        # (`+%`/`-%`, manuel §6 « Non-Intensity Parameters »). C'est ce que
+        # le cas ci-dessus refuse à raison — `ajoute 10 au zoom` n'est PAS
+        # cette forme, faute de source pour un delta chiffré sur Zoom.
+        "nom": "regler_parametre — pas fixe (+%), Zoom sans aucun nombre",
+        "phrase": "augmente le zoom du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Zoom +%",
+    },
+    {
+        "nom": "regler_parametre — pas fixe, direction retrait (-%)",
+        "phrase": "diminue l'iris",
+        "statut": "compris",
+        "rendu": "Iris -%",
+    },
+    {
+        # Pan/Tilt déclarent À LA FOIS `relatif_ajout` (chiffré) ET
+        # `pas_fixe` (sans nombre) — les deux sont légitimes, c'est
+        # l'ABSENCE de nombre qui choisit le second, jamais l'inverse.
+        "nom": "regler_parametre — pas fixe sur un paramètre qui a AUSSI un relatif chiffré",
+        "phrase": "monte le pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan +%",
+    },
+    {
+        # Le numéro du CIRCUIT ne doit pas être pris pour une valeur de
+        # pas_fixe absente — c'est le bug que la position par rapport à
+        # `i_parametre` (avant/après le mot du paramètre) départage.
+        "nom": "regler_parametre — un numéro de sélection n'est pas une valeur cachée",
+        "phrase": "ajoute 10 degres au pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan + 10 Enter",
+    },
+    {
         # Non-régression sur le routage : `regler_parametre` est déclaré
         # AVANT `regler_intensite` dans lexique.yaml — une phrase sans mot de
         # paramètre (Pan/Tilt/Zoom/Iris) doit continuer à passer par

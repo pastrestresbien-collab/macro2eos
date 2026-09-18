@@ -472,6 +472,11 @@
         "dmx": {
           "confiance": "A",
           "exemple": "`Pan / / 25` — valeur DMX brute (manuel §6 l.370)"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Pan +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -497,6 +502,11 @@
         "dmx": {
           "confiance": "A",
           "exemple": "`Tilt / / 25` — par analogie avec Pan"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Tilt +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -510,6 +520,11 @@
           "confiance": "A",
           "exemple": "`Zoom 65` — pose 65 % ; `Zoom 5` pose 5 %, PAS 50 % (voir piège)",
           "piege": "Paramètre en POURCENTAGE, pas en degrés (contrairement à Pan/Tilt) : un chiffre unique reçoit un zéro implicite côté console, comme `At`. `Zoom 5` seul seraît lu 50 % — écrire `Zoom 05` pour 5 % (manuel §6, notation `<0>`). Le générateur applique cette règle automatiquement (`unite: \"%\"` ci-dessus) ; ne jamais la contourner en composant la chaîne à la main.\n"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Zoom +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -523,6 +538,11 @@
           "confiance": "A",
           "exemple": "`Iris 50` — pose 50 %, confirmé par l'exemple chiffré du manuel",
           "piege": "même piège que Zoom — paramètre en pourcentage, voir sa note"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Iris +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -536,6 +556,11 @@
           "confiance": "A",
           "exemple": "`Edge 50` — pose 50 %, même exemple chiffré que Zoom/Iris",
           "piege": "même piège que Zoom/Iris — paramètre en pourcentage, voir sa note"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Edge +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -548,6 +573,11 @@
         "absolue": {
           "confiance": "B",
           "exemple": "`Hue 0` — déduit de `Hue 0 Thru 360` (recette communautaire), jamais démontré isolément"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Hue +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -564,6 +594,11 @@
         "echelle": {
           "confiance": "B",
           "exemple": "`Saturation /90 Enter` — vidéo tutoriel officielle ETC (2026-09-13), réduit la saturation courante de 10 %"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Saturation +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -2211,7 +2246,13 @@
       "confiance": "A",
       "source": "manuel §00 et §6",
       "osc": "+%",
-      "note": "Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.\n"
+      "note": "Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.\n",
+      "prefixe_categorie": {
+        "confiance": "A",
+        "source": "manuel §6 « Non-Intensity Parameters » — « The [+%] and [-%] keys may be used to incrementally adjust non-intensity parameters as well », avec deux exemples chiffrés : `[1] {Iris} [+%] [+%]` et `{Zoom} [-%] [-%]`.\n",
+        "regle": "Un mot de CATÉGORIE (Iris, Zoom, Pan, Tilt, Edge, Hue, Saturation…) posé avant `+%`/`-%` restreint le pas à ce paramètre au lieu de l'intensité. Sans lui, la forme nue agit sur l'intensité (§6 l. 288, « Use the [Level], [+%], and [-%] keys to affect the INTENSITY value of selected channels »).\n",
+        "portee": "La clause « as well » est GÉNÉRALE, pas restreinte à Iris/Zoom — ce sont deux illustrations d'un mécanisme commun à toute catégorie de paramètre, au même titre que le préfixe déjà documenté pour `Select Manual` (voir `actions.selection_manuelle`). Seuls Iris et Zoom ont un exemple chiffré ; les autres catégories restent couvertes par la clause générale, jamais par extrapolation d'un exemple à un autre.\n"
+      }
     },
     "decrementer": {
       "mot_cle": "-%",
@@ -2223,7 +2264,11 @@
       ],
       "confiance": "A",
       "source": "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »",
-      "osc": "-%"
+      "osc": "-%",
+      "prefixe_categorie": {
+        "confiance": "A",
+        "source": "identique à `incrementer.prefixe_categorie` — même mécanisme, même source"
+      }
     },
     "selection_suivante": {
       "mot_cle": "Next",
@@ -4059,6 +4104,20 @@
       "action": "decrementer",
       "valide": "oui",
       "confiance": "A"
+    },
+    {
+      "objet": "Chan",
+      "action": "incrementer",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`[1] {Iris} [+%] [+%]` — manuel §6, section Non-Intensity Parameters"
+    },
+    {
+      "objet": "Chan",
+      "action": "decrementer",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`{Zoom} [-%] [-%]` sur une sélection nommée — même section"
     },
     {
       "objet": "Chan",

@@ -539,6 +539,12 @@ parametres:
         confiance: A
         exemple: "`Pan / / 25` — valeur DMX brute (manuel §6 l.370)"
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Pan +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Tilt:
     mot_cle: "Tilt"
     unite: "degrés"
@@ -567,6 +573,12 @@ parametres:
       # communautaire) ne parle que de Pan. L'absence ici est un choix, pas
       # un oubli — voir la règle en tête de cette section.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Tilt +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Zoom:
     mot_cle: "Zoom"
     unite: "%"
@@ -597,6 +609,12 @@ parametres:
     # syntaxe JAMAIS vue dans aucune source. Mécanisme non modélisé, pas
     # oublié.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Zoom +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Iris:
     mot_cle: "Iris"
     unite: "%"
@@ -614,6 +632,12 @@ parametres:
     # `[+%]`/`[-%]` (touche générique à pas fixe) est sourcé, mécanisme
     # différent non modélisé ici.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Iris +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Edge:
     mot_cle: "Edge"
     unite: "%"
@@ -631,6 +655,12 @@ parametres:
     # Même réserve que Zoom/Iris : pas de forme relative, seul [+%]/[-%]
     # (mécanisme générique différent) est sourcé.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Edge +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Hue:
     mot_cle: "Hue"
     unite: "degrés"    # angle 0-360, PAS un pourcentage — aucune source ne
@@ -654,6 +684,12 @@ parametres:
     # PAS d'echelle ni de forme relative — aucune source, communautaire ou
     # manuel, ne les documente pour Hue.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Hue +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Saturation:
     mot_cle: "Saturation"
     # PAS d'`unite` ici, volontairement — voir le piège ci-dessous. Une
@@ -685,6 +721,12 @@ parametres:
         confiance: B
         exemple: "`Saturation /90 Enter` — vidéo tutoriel officielle ETC (2026-09-13), réduit la saturation courante de 10 %"
     # PAS de relatif_ajout/relatif_retrait — non sourcé.
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Saturation +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Color_Crossfade:
     mot_cle: "Color_Crossfade"
     # PAS d'`unite`, même raison que Saturation : le label de la feuille dit
@@ -2576,6 +2618,26 @@ actions:
     note: >
       Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut
       de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.
+    prefixe_categorie:
+      confiance: A
+      source: >
+        manuel §6 « Non-Intensity Parameters » — « The [+%] and [-%] keys
+        may be used to incrementally adjust non-intensity parameters as
+        well », avec deux exemples chiffrés : `[1] {Iris} [+%] [+%]` et
+        `{Zoom} [-%] [-%]`.
+      regle: >
+        Un mot de CATÉGORIE (Iris, Zoom, Pan, Tilt, Edge, Hue, Saturation…)
+        posé avant `+%`/`-%` restreint le pas à ce paramètre au lieu de
+        l'intensité. Sans lui, la forme nue agit sur l'intensité (§6 l. 288,
+        « Use the [Level], [+%], and [-%] keys to affect the INTENSITY value
+        of selected channels »).
+      portee: >
+        La clause « as well » est GÉNÉRALE, pas restreinte à Iris/Zoom — ce
+        sont deux illustrations d'un mécanisme commun à toute catégorie de
+        paramètre, au même titre que le préfixe déjà documenté pour `Select
+        Manual` (voir `actions.selection_manuelle`). Seuls Iris et Zoom ont
+        un exemple chiffré ; les autres catégories restent couvertes par la
+        clause générale, jamais par extrapolation d'un exemple à un autre.
   decrementer:
     mot_cle: "-%"
     attend: aucun
@@ -2584,6 +2646,9 @@ actions:
     confiance: A
     source: "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »"
     osc: "-%"
+    prefixe_categorie:
+      confiance: A
+      source: "identique à `incrementer.prefixe_categorie` — même mécanisme, même source"
   selection_suivante:
     mot_cle: "Next"
     attend: aucun
@@ -4363,6 +4428,18 @@ legalite:
     action: decrementer
     valide: oui
     confiance: A
+
+  - objet: Chan
+    action: incrementer
+    valide: oui
+    confiance: A
+    note: "`[1] {Iris} [+%] [+%]` — manuel §6, section Non-Intensity Parameters"
+
+  - objet: Chan
+    action: decrementer
+    valide: oui
+    confiance: A
+    note: "`{Zoom} [-%] [-%]` sur une sélection nommée — même section"
 
   - objet: Chan
     action: valeur_dmx
