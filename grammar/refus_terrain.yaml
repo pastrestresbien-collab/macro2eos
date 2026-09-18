@@ -22,12 +22,24 @@ meta:
   version: "0.1"
   maj: "2026-08-02"
 
-refus: []
-  # Entrée retirée le 2026-09-18 : un test "Cue 7 - Select Active" avait été
-  # journalisé ici comme preuve que le préfixe `Group` est obligatoire. L'
-  # utilisateur a annulé son propre retour : le rejet venait du fait que la
-  # Cue 7 n'existait pas sur ce show, pas d'un problème de syntaxe. Ne rien
-  # déduire de ce test — à refaire avec une cue existante pour trancher.
+refus:
+  - date: 2026-09-18
+    demande_nl: "vérifier si Cue 0.5 - Select Active fonctionne sans le préfixe Group"
+    commande: "Cue 0.5 - [Ctrl+A] (touche Select Active, cf. manuals/hotkeys/EosFamily_v3.0.0_Hotkeys.md:159)"
+    erreur_console: "Erreur : Numéro impossible"
+    diagnostic: >
+      Cue 0.5 existe bien sur ce show (contrairement au test précédent
+      annulé avec Cue 7 inexistante), donc ce refus est exploitable. Après
+      `Cue 0.5 -`, la console attend un nombre (probablement pour une
+      soustraction de plage de cues) et rejette la touche Select Active à
+      cet endroit avec "Numéro impossible". Confirme que `Cue {n} - Select
+      Active` SANS le préfixe `Group` est invalide — le patron
+      `selection_channels_fcb_dans_cue` (grammar/patrons.yaml) nécessite
+      bien `Group` avant `Cue`. Ne tranche toujours pas CE QUE `Group`
+      apporte exactement (objet Group de modele.yaml vs mécanisme propre à
+      la sélection de cue).
+    backlog: []
+    tranche: "oui"
   # Exemple de forme attendue (à dupliquer, jamais laissé actif) :
   # - date: 2026-08-15
   #   demande_nl: "groupe 5 et circuits 1 à 6 en Lee 195"

@@ -56,8 +56,10 @@ patrons:
       d'un groupe numéroté) mais un mécanisme différent lié à la cue —
       déduction, non tranchée. À vérifier/rapprocher du manuel avant
       d'étendre `modele.yaml`.
-      Tentative de vérification le 2026-09-18 : un test "Cue 7 - Select
-      Active" (sans `Group`) avait semblé rejeté, mais l'utilisateur a
-      annulé ce retour — le rejet venait d'une Cue 7 inexistante sur le
-      show, pas de la syntaxe. Le caractère obligatoire ou non de `Group`
-      reste donc non tranché. À retester avec une cue existante.
+      Préfixe `Group` confirmé OBLIGATOIRE au banc le 2026-09-18 (voir
+      grammar/refus_terrain.yaml) : `Cue 0.5 -` suivi de la touche
+      [Select Active] (Ctrl+A, cf. manuals/hotkeys/EosFamily_v3.0.0_Hotkeys.md:159),
+      SANS `Group`, sur une Cue 0.5 qui existe bien sur le show, est rejeté
+      par la console avec "Erreur : Numéro impossible". Ce que `Group`
+      apporte exactement à ce point de la syntaxe reste non tranché (objet
+      Group de modele.yaml, ou mécanisme propre à la sélection de cue).
