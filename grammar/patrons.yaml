@@ -36,3 +36,23 @@ patrons:
     confiance: null
     avertissements: [4, 5]      # renvois PLANNING.md — sélection mixte + label multi-mots
     origine: "généré session 2026-07-31 ; transport validé test-client3.ts, syntaxe NON validée"
+
+  - id: selection_channels_fcb_dans_cue
+    intention: "sélectionner uniquement les channels ayant des valeurs Focus/Color/Beam enregistrées dans une cue donnée"
+    exemple_nl: "les channels avec des valeurs FCB dans la cue 0.5"
+    rend: "Group Cue {n} - Select Active Enter"
+    confiance: S
+    origine: "testé au banc par l'utilisateur, 2026-09-18"
+    note: >
+      {n} est un numéro de cue réel (ex. 0.5), pas une part de cue — confirmé
+      par l'utilisateur. Le tiret est le signe moins (retrait), pas un
+      séparateur d'écriture. Effet observé au banc : sélectionne uniquement
+      les channels enregistrés avec des valeurs Focus/Color/Beam dans la Cue
+      {n}. Mécanisme interne NON documenté ailleurs dans ce dépôt : ni la
+      combinaison Group+Cue sur la ligne de commande, ni Select Active comme
+      filtre FCB n'apparaissent dans le manuel d'exploitation consulté à ce
+      jour (voir §12 cues-the-cue-list, §07 groups). Le mot-clé `Group` ici
+      pourrait ne pas désigner l'objet Group de `modele.yaml` (sélection
+      d'un groupe numéroté) mais un mécanisme différent lié à la cue —
+      déduction, non tranchée. À vérifier/rapprocher du manuel avant
+      d'étendre `modele.yaml`.
