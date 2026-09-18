@@ -22,21 +22,12 @@ meta:
   version: "0.1"
   maj: "2026-08-02"
 
-refus:
-  - date: 2026-09-18
-    demande_nl: "vérifier si Cue 7 - Select Active fonctionne sans le préfixe Group"
-    commande: "Cue 7 - Select Active"
-    erreur_console: "rejeté dès 'Cue 7 -' (détail exact du message non fourni par l'utilisateur)"
-    diagnostic: >
-      Confirme que le préfixe `Group` est requis dans le patron
-      `selection_channels_fcb_dans_cue` (grammar/patrons.yaml) : `Cue {n} -`
-      seul est rejeté avant même d'atteindre `Select Active`, alors que
-      `Group Cue 0.5 - Select Active` fonctionne (testé au banc le
-      2026-09-18, même session). Ne tranche pas encore ce que `Group`
-      apporte exactement à ce point de la syntaxe (objet Group de
-      modele.yaml, ou mécanisme propre à la sélection de cue — toujours
-      noté comme déduction non tranchée dans patrons.yaml).
-    tranche: "partiel"
+refus: []
+  # Entrée retirée le 2026-09-18 : un test "Cue 7 - Select Active" avait été
+  # journalisé ici comme preuve que le préfixe `Group` est obligatoire. L'
+  # utilisateur a annulé son propre retour : le rejet venait du fait que la
+  # Cue 7 n'existait pas sur ce show, pas d'un problème de syntaxe. Ne rien
+  # déduire de ce test — à refaire avec une cue existante pour trancher.
   # Exemple de forme attendue (à dupliquer, jamais laissé actif) :
   # - date: 2026-08-15
   #   demande_nl: "groupe 5 et circuits 1 à 6 en Lee 195"
