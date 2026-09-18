@@ -48,18 +48,21 @@ patrons:
       par l'utilisateur. Le tiret est le signe moins (retrait), pas un
       séparateur d'écriture. Effet observé au banc : sélectionne uniquement
       les channels enregistrés avec des valeurs Focus/Color/Beam dans la Cue
-      {n}. Mécanisme interne NON documenté ailleurs dans ce dépôt : ni la
-      combinaison Group+Cue sur la ligne de commande, ni Select Active comme
-      filtre FCB n'apparaissent dans le manuel d'exploitation consulté à ce
-      jour (voir §12 cues-the-cue-list, §07 groups). Le mot-clé `Group` ici
-      pourrait ne pas désigner l'objet Group de `modele.yaml` (sélection
-      d'un groupe numéroté) mais un mécanisme différent lié à la cue —
-      déduction, non tranchée. À vérifier/rapprocher du manuel avant
-      d'étendre `modele.yaml`.
+      {n}.
+      `Group` ici N'EST PAS l'objet Group numéroté de `modele.yaml` : c'est
+      le mécanisme officiel documenté "Using Groups as a Channel Collector"
+      (manuels/operations-manual/07-groups.md:245-255, confiance A) — `[Group]
+      [Cue] [n]` sélectionne tous les channels de la cue n, de la même façon
+      que `[Group] [Sub] [n]` ou `[Group] [Int Palette] [n]`. `[Group]` sert
+      ici de "collecteur" générique devant Cue/Sub/Palette, pas de raccourci
+      vers un Group numéroté.
       Préfixe `Group` confirmé OBLIGATOIRE au banc le 2026-09-18 (voir
       grammar/refus_terrain.yaml) : `Cue 0.5 -` suivi de la touche
       [Select Active] (Ctrl+A, cf. manuals/hotkeys/EosFamily_v3.0.0_Hotkeys.md:159),
       SANS `Group`, sur une Cue 0.5 qui existe bien sur le show, est rejeté
-      par la console avec "Erreur : Numéro impossible". Ce que `Group`
-      apporte exactement à ce point de la syntaxe reste non tranché (objet
-      Group de modele.yaml, ou mécanisme propre à la sélection de cue).
+      par la console avec "Erreur : Numéro impossible" — cohérent avec le
+      fait que `[Group]` est le mot-clé qui déclenche la collecte.
+      Reste NON documenté dans le manuel : le filtre FCB (Focus/Color/Beam)
+      obtenu en ajoutant `- Select Active` après `Group Cue {n}` — ce point
+      précis n'est confirmé que par le test au banc de l'utilisateur, pas
+      par le manuel.

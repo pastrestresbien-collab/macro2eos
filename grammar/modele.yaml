@@ -49,6 +49,24 @@ operateurs:
     confiance: A
 
 # --------------------------------------------------------------------------
+# COLLECTEUR — [Group] utilisé comme mot-clé de collecte, PAS comme l'objet
+# Group numéroté ci-dessus. Rassemble les channels d'un sub, d'une cue,
+# d'une palette, etc.
+# --------------------------------------------------------------------------
+collecteur_group:
+  mot_cle: "Group"
+  note: >
+    Distinct de l'objet Group numéroté (`objets.Group`). Ici `[Group]` est
+    suivi d'un mot-clé de cible (Cue, Sub, Int Palette, ...) puis d'un
+    numéro, et sélectionne les channels associés à cette cible.
+  confiance: A
+  source: "manuel §7 Groups — Using Groups as a Channel Collector"
+  cibles_confirmees_manuel:
+    - { mot_cle: "Cue",         exemple: "[Group] [Cue] [1]",         effet: "sélectionne tous les channels de la cue 1" }
+    - { mot_cle: "Sub",         exemple: "[Group] [Sub] [3]",         effet: "sélectionne tous les channels du submaster 3" }
+    - { mot_cle: "Int Palette", exemple: "[Group] [Int Palette] [5]", effet: "sélectionne tous les channels de la palette d'intensité 5" }
+
+# --------------------------------------------------------------------------
 # ACTIONS — ce qu'on applique
 # --------------------------------------------------------------------------
 actions:
