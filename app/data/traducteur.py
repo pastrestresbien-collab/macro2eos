@@ -160,6 +160,13 @@ MARQUEURS_NIVEAU = ("%", "pourcent", "intensite", "niveau")
 # traiter comme `%`/`pourcent` casserait cette forme déjà correcte.
 MARQUEURS_NIVEAU_POSTFIXES = ("%", "pourcent")
 
+# Marqueurs des formes « exclusion » et « double appui » de `Select Active`
+# (`_selection_active`, manuel §6 l. 1182, 1220-1228). Un seul et même mot
+# français (« sauf ») sert aux deux formes ; c'est ce qui suit qui les
+# distingue — un mot de sub pour le double appui, une plage déjà lue pour
+# l'exclusion.
+MOTS_EXCLUSION_ACTIF = ("sauf", "hormis", "excepte", "exceptee")
+
 # Unité postfixe propre à `_regler_parametre` (Pan/Tilt : degrés). Même rôle
 # que `MARQUEURS_NIVEAU_POSTFIXES` pour `%` — désambiguïser « circuit 1 à 10
 # degrés » (une sélection ET une valeur, pas une plage 1-10) sans toucher au
@@ -640,8 +647,9 @@ class Traducteur:
             "creer_plage": self._creer_plage,
             "update_cue": self._update_cue,
             "selection_derniere": self._action_sans_argument,
-            "selection_active": self._action_sans_argument,
+            "selection_active": self._selection_active,
             "selection_manuelle": self._action_sans_argument,
+            "remettre_defaut": self._remettre_defaut,
         }[intention]
 
         # `_ignores` a besoin de savoir quelle intention a été retenue, pour
@@ -1249,6 +1257,7 @@ class Traducteur:
         #    exacte sur toute la phrase d'abord, tolérance seulement au
         #    second passage — la détection reste un routeur, pas un créneau.
         parametre = None
+        i_parametre = None    # None si `parametre_impose` a fourni le paramètre
         for exact in (True, False):
             for i, tok in enumerate(toks):
                 if i in pris:
@@ -1259,6 +1268,7 @@ class Traducteur:
                     cle, _ = self._resoudre(tok, self._parametres)
                 if cle:
                     parametre = cle
+                    i_parametre = i
                     pris.add(i)
                     break
             if parametre is not None:
@@ -1283,9 +1293,11 @@ class Traducteur:
         #    « Mirror Pan », confiance B — voir grammar/modele.yaml).
         formes_dispo = self._formes_parametre(parametre)
         i_inverse = self._indice_mot(toks, pris, {"inverse", "inverser", "inversez"})
-        i_ajout = self._indice_mot(toks, pris, {"ajoute", "ajouter", "monte", "monter"})
+        i_ajout = self._indice_mot(toks, pris, {"ajoute", "ajouter", "monte", "monter",
+                                                  "augmente", "augmenter"})
         i_retrait = self._indice_mot(toks, pris, {"retire", "retirer", "enleve", "enlever",
-                                                    "descend", "descends", "descendre"})
+                                                    "descend", "descends", "descendre",
+                                                    "diminue", "diminuer", "baisse", "baisser"})
 
         # « à fond » n'est pas une valeur chiffrée : c'est la destination
         # `Full`. Testé AVANT les autres formes, sinon la phrase finirait au
@@ -1308,7 +1320,44 @@ class Traducteur:
         else:
             forme = ("relatif_ajout" if i_ajout is not None else
                      "relatif_retrait" if i_retrait is not None else "absolue")
-            if forme not in formes_dispo:
+
+            # PAS FIXE — `+%`/`-%` (manuel §6 « Non-Intensity Parameters »).
+            # Un paramètre qui ne déclare PAS `relatif_ajout`/`relatif_retrait`
+            # (Zoom, Iris, Edge n'ont que `absolue`) peut quand même répondre
+            # à « augmente »/« monte » : ce n'est pas la même commande que
+            # `Pan + 10` (qui exige une valeur chiffrée), c'est le pas fixe du
+            # Setup, sans aucun nombre dans la phrase. D'où le test « aucun
+            # nombre nulle part » : si un chiffre traîne (« monte le zoom de
+            # 10 »), ce n'est PAS ce cas — direction inconnue, laissé à
+            # `relatif_ajout`/`retrait`, qui refusera faute d'être sourcé pour
+            # ce paramètre plutôt que de deviner ce que le chiffre voulait dire.
+            #
+            # `valeur` reste None jusqu'au bout : ce n'est pas une valeur
+            # chiffrée qui manque encore, il n'y en a JAMAIS pour cette forme
+            # (le pas est réglé dans le Setup de la console, pas dans la
+            # phrase). La construction de l'IR, en fin de fonction, lit
+            # `forme == "pas_fixe"` pour produire `incrementer`/`decrementer`
+            # plutôt que `regler_parametre`.
+            # « pas_fixe » PASSE AVANT le test de disponibilité de la forme
+            # relative : Pan et Tilt déclarent À LA FOIS `relatif_ajout` (avec
+            # un nombre, `Pan + 10`) et `pas_fixe` (sans, `Pan +%`) — les deux
+            # sont légitimes, et c'est la présence d'un nombre qui départage.
+            #
+            # PAS « n'importe où dans la phrase » : « ajoute 10 degrés au pan
+            # DU CIRCUIT 1 » a un nombre, mais c'est celui de la SÉLECTION, pas
+            # une valeur pour le paramètre. L'ordre du français de métier tient
+            # ici : la valeur se dit AVANT le nom du paramètre (« ajoute 10 au
+            # pan »), le numéro de sélection APRÈS (« du circuit 1 »). Ne
+            # compter que les nombres avant `i_parametre` évite qu'un numéro de
+            # circuit fasse croire à une valeur absente de pas_fixe.
+            valeur_avant_parametre = i_parametre is None or any(
+                i not in pris and tok.isdigit() and i < i_parametre
+                for i, tok in enumerate(toks))
+            if (forme in ("relatif_ajout", "relatif_retrait")
+                    and "pas_fixe" in formes_dispo
+                    and not valeur_avant_parametre):
+                forme, valeur = "pas_fixe", None
+            elif forme not in formes_dispo:
                 return Traduction(statut="incompris", notes=[
                     f"Aucune forme « {forme} » sourcée pour « {parametre} »."])
 
@@ -1338,6 +1387,8 @@ class Traducteur:
                         valeur = int(tok)
                         pris.update({i, i + 1})
                         break
+            elif forme == "pas_fixe":
+                pass    # rien à lire : le pas est réglé dans le Setup, pas la phrase
             else:
                 # « ajoute »/« retire » inversent cet ordre habituel : « ajoute
                 # 10 au pan du circuit 1 » place la valeur AVANT le numéro de
@@ -1413,8 +1464,9 @@ class Traducteur:
             notes.append(self.NOTE_SELECTION_COURANTE)
 
         # 4. forme absolue : la valeur est ce qu'il reste, une fois la
-        #    sélection retirée du jeu de nombres libres.
-        if valeur is None and forme != "plein":
+        #    sélection retirée du jeu de nombres libres. `pas_fixe` n'a
+        #    jamais de valeur chiffrée — le pas est réglé dans le Setup.
+        if valeur is None and forme not in ("plein", "pas_fixe"):
             candidats = self._nombres(toks, pris)
             if not candidats:
                 return Traduction(statut="incompris", notes=[
@@ -1447,8 +1499,20 @@ class Traducteur:
                 f"Préciser l'unité de la valeur (« à 50 % », « à 50 degrés ») "
                 f"pour lever l'ambiguïté avec une plage de circuits."])
 
-        etape: dict = {"action": {"type": "regler_parametre", "parametre": parametre,
-                                  "forme": forme, "valeur": valeur}}
+        if forme == "pas_fixe":
+            # Direction retrouvée à partir du même verbe qui l'avait établie
+            # plus haut — jamais redevinée : « ajoute »/« monte » -> +%,
+            # « retire »/« descend » -> -%.
+            spec_param = self._generateur_ou_defaut().modele["parametres"].get(parametre, {})
+            action: dict = {
+                "type": "incrementer" if i_ajout is not None else "decrementer",
+                "categorie": spec_param.get("mot_cle", parametre),
+            }
+        else:
+            action = {"type": "regler_parametre", "parametre": parametre,
+                     "forme": forme, "valeur": valeur}
+
+        etape: dict = {"action": action}
         if selection is not None:
             etape["selection"] = selection
         return Traduction(statut="compris", ir=[etape], notes=notes,
@@ -1739,10 +1803,19 @@ class Traducteur:
     def _arreter_effet(self, toks: list[str], reponses: dict) -> Traduction:
         pris: set[int] = set()
 
-        i_effet = self._indice_mot(toks, pris, {"effet", "effets"})
+        # Le mot est marqué APRÈS coup, pas dans `_indice_mot` : il faut
+        # d'abord savoir LEQUEL a été trouvé (singulier ou pluriel) avant de
+        # décider ce qu'un numéro absent veut dire.
+        i_effet = None
+        for i, tok in enumerate(toks):
+            if i not in pris and tok in ("effet", "effets"):
+                i_effet = i
+                break
         if i_effet is None:
             return Traduction(statut="incompris", notes=[
                 "Aucun effet désigné — le mot « effet » est requis."])
+        pluriel = toks[i_effet] == "effets"
+        pris.add(i_effet)
 
         # « tous les effets » dispense d'un numéro : `Stop Effect Enter` sans
         # argument arrête tout ce qui tourne (manuel §18).
@@ -1756,14 +1829,25 @@ class Traducteur:
             if i > i_effet:
                 numero, _ = valeur, pris.add(i)
                 break
-        if numero is None:
-            return Traduction(statut="incompris", notes=[
-                "Aucun numéro d'effet trouvé — préciser lequel, ou dire "
-                "« tous les effets »."])
+        if numero is not None:
+            ir = [{"action": {"type": "arreter_effet", "numero": numero}}]
+            return Traduction(statut="compris", ir=ir,
+                              **self._mots(toks, pris))
 
-        ir = [{"action": {"type": "arreter_effet", "numero": numero}}]
-        return Traduction(statut="compris", ir=ir,
-                          **self._mots(toks, pris))
+        # Sans numéro ni « tous », le PLURIEL suffit à lui seul : « arrête les
+        # effets » n'a rien d'autre à désigner que l'ensemble — contrairement
+        # au singulier, où « arrête l'effet » reste ambigu (lequel ?) et
+        # exige soit un numéro, soit « tous » pour dire explicitement
+        # l'ensemble. Manuel §18 : « [Stop Effect] [Enter] will stop all
+        # running effects » — la forme nue est déjà celle du « tous ».
+        if pluriel:
+            ir = [{"action": {"type": "arreter_effet"}}]
+            return Traduction(statut="compris", ir=ir,
+                              **self._mots(toks, pris))
+
+        return Traduction(statut="incompris", notes=[
+            "Aucun numéro d'effet trouvé — préciser lequel, ou dire "
+            "« tous les effets »."])
 
     # -- intention : bump d'un submaster (haut / bas) ------------------------
     def _bump_sub(self, toks: list[str], reponses: dict) -> Traduction:
@@ -2442,11 +2526,16 @@ class Traducteur:
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def _action_sans_argument(self, toks: list[str], reponses: dict) -> Traduction:
-        """Mot-clé seul, sans sélection — Select Last, Select Active.
+        """Mot-clé seul, sans sélection — Select Last, Select Manual.
 
-        Ces deux-là agissent sur un état de la console (la sélection
-        précédente, les channels actifs), pas sur une cible nommée dans la
+        Toutes deux agissent sur un état de la console (la sélection
+        précédente, le manuel en cours), pas sur une cible nommée dans la
         phrase : exiger une sélection les rendrait inutilisables.
+
+        `Select Active` avait sa place ici jusqu'au 2026-09-17 : trois formes
+        supplémentaires du manuel §6 (filtre par plage, exclusion, double
+        appui) lui ont valu un handler dédié, `_selection_active`, qui SAIT
+        lire des numéros au lieu de les refuser.
 
         Un mot d'objet est donc consommé s'il est là : dans « sélectionne les
         circuits actifs », « circuits » est du remplissage grammatical, pas une
@@ -2464,10 +2553,126 @@ class Traducteur:
             mot = self.modele_mot_cle()
             return Traduction(statut="incompris", notes=[
                 f"« {mot} » ne prend pas de sélection : il agit sur un état de "
-                f"la console (la sélection précédente, ou les circuits actifs). "
+                f"la console (la sélection précédente, ou le manuel en cours). "
                 f"Le numéro {restants[0][1]} n'a donc pas de place ici."])
 
         ir = [{"action": {"type": self._intention_courante}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _remettre_defaut(self, toks: list[str], reponses: dict) -> Traduction:
+        """`<sélection> Home Enter`, et l'idiome `Sub 1 Thru Home` pour « tous ».
+
+        Deux formes, une seule attestée pour l'ensemble. Avec un numéro
+        explicite, `Home` marche pour Chan comme pour Sub (manuel §6).
+        Sans numéro, SEUL Sub a un idiome documenté pour « tous » — l'étendre
+        à Chan ne serait pas une généralisation prudente, ce serait inventer
+        une syntaxe que le manuel ne montre nulle part pour cet objet."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris)
+        if objet is None and self._indice_objet_cle(
+                "Sub", toks, pris, index=self._objets_cible) is not None:
+            objet = "Sub"
+
+        if objet is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun circuit ni submaster désigné."])
+
+        nombres = self._nombres(toks, pris)
+        if nombres:
+            i, numero = nombres[0]
+            pris.add(i)
+            ir = [{"selection": {"objet": objet, "numero": numero},
+                   "action": {"type": "home"}}]
+            return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+        # Pas de numéro : seul le mot « tous »/« toutes » dispense d'en donner
+        # un, et seul Sub a un idiome documenté pour ce cas.
+        if self._indice_mot(toks, pris, {"tous", "toutes", "tout"}) is None:
+            return Traduction(statut="incompris", notes=[
+                "Aucun numéro et pas de « tous » — préciser lequel remettre "
+                "au repos, ou dire « tous »."])
+
+        if objet != "Sub":
+            return Traduction(statut="incompris", notes=[
+                "« Tous les circuits au repos » n'a pas de forme attestée "
+                "dans le manuel — seuls les submasters en ont une "
+                "(`Sub 1 Thru Home`). Préciser un numéro de circuit."])
+
+        ir = [{"selection": {"objet": "Sub", "de": 1, "a": "Home"}}]
+        return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+    def _selection_active(self, toks: list[str], reponses: dict) -> Traduction:
+        """`Select Active`, et ses trois formes du manuel §6 (2026-09-17).
+
+        FILTRE (l. 1192) — une plage posée devant filtre l'actif dedans :
+        `Chan 1 Thru 100 Select Active`. La plage s'AJOUTE, elle ne remplace
+        rien : c'est pourquoi cette intention accepte des numéros là où
+        `_action_sans_argument` les refuse.
+
+        EXCLUSION (l. 1220-1228) — « sauf »/« hormis » après une plage exclut
+        les actifs de cette plage : `Chan 1 Thru 20 - Select Active`. Le
+        manuel dit « all of the channels IN THE LIST » : sans plage devant,
+        rien à exclure — refus assumé plutôt que de lire ça comme « tout le
+        plateau sauf les actifs », qui n'existe pas.
+
+        DOUBLE APPUI (l. 1182) — « sauf »/« hormis » suivi d'un mot de sub
+        bascule sur `Select NonSub Active`, sans sélection.
+
+        Les deux usages de « sauf » ne se confondent pas : celui qui précède
+        un mot de sub vise le double appui ; celui qui suit une plage vise
+        l'exclusion. Un « sauf » qui ne fait ni l'un ni l'autre — pas de sub à
+        sa suite, pas de plage avant lui — est une ambiguïté, pas une
+        supposition : la phrase est refusée plutôt que devinée."""
+        pris: set[int] = set()
+        objet = self._objet(toks, pris)
+        plage = self._plage(toks, pris) if objet else None
+
+        i_exclusion = self._indice_mot(toks, pris, set(MOTS_EXCLUSION_ACTIF))
+
+        if i_exclusion is not None:
+            # Le sub doit suivre de près : « sauf les subs », pas un sub logé
+            # ailleurs dans une phrase par ailleurs sans rapport.
+            i_sub = None
+            for j in range(i_exclusion, min(i_exclusion + 4, len(toks))):
+                if j in pris:
+                    continue
+                if self._resoudre(toks[j], self._objets_cible)[0] == "Sub":
+                    i_sub = j
+                    break
+            if i_sub is not None:
+                pris.add(i_sub)
+                if plage is not None:
+                    return Traduction(statut="incompris", notes=[
+                        "« sauf les subs » (double appui) et une plage "
+                        "explicite ne sont pas documentés ensemble — choisir "
+                        "l'un des deux."])
+                ir = [{"action": {"type": "selection_active", "double": True}}]
+                return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+            if plage is None:
+                return Traduction(statut="incompris", notes=[
+                    "« sauf »/« hormis » sans plage devant : le manuel dit "
+                    "« all of the channels in the LIST » — il faut nommer "
+                    "cette liste (« circuits 1 à 20 sauf les actifs »)."])
+            ir = [{"selection": {"objet": objet, "de": plage[0], "a": plage[1]},
+                   "action": {"type": "selection_active", "exclure": True}}]
+            return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+        if plage is not None:
+            ir = [{"selection": {"objet": objet, "de": plage[0], "a": plage[1]},
+                   "action": {"type": "selection_active"}}]
+            return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
+
+        # Forme simple : un numéro qui traîne sans plage reconnue est une
+        # perte, pas un remplissage — même discipline que `_action_sans_argument`.
+        restants = self._nombres(toks, pris)
+        if restants:
+            return Traduction(statut="incompris", notes=[
+                f"Le numéro {restants[0][1]} n'a pas de place ici : sans "
+                f"« sauf »/« hormis », un numéro seul (sans « à ») ne forme "
+                f"pas une plage à filtrer."])
+
+        ir = [{"action": {"type": "selection_active"}}]
         return Traduction(statut="compris", ir=ir, **self._mots(toks, pris))
 
     def modele_mot_cle(self) -> str:

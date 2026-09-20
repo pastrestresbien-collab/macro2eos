@@ -328,6 +328,12 @@
         "manuel"
       ]
     },
+    "remettre_defaut": {
+      "description": "ramener une sélection à sa valeur par défaut (Home)",
+      "champs": [
+        "verbe"
+      ]
+    },
     "selection_derniere": {
       "description": "reprendre la sélection précédente (Select Last)",
       "champs": [

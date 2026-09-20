@@ -472,6 +472,11 @@
         "dmx": {
           "confiance": "A",
           "exemple": "`Pan / / 25` — valeur DMX brute (manuel §6 l.370)"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Pan +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -497,6 +502,11 @@
         "dmx": {
           "confiance": "A",
           "exemple": "`Tilt / / 25` — par analogie avec Pan"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Tilt +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -510,6 +520,11 @@
           "confiance": "A",
           "exemple": "`Zoom 65` — pose 65 % ; `Zoom 5` pose 5 %, PAS 50 % (voir piège)",
           "piege": "Paramètre en POURCENTAGE, pas en degrés (contrairement à Pan/Tilt) : un chiffre unique reçoit un zéro implicite côté console, comme `At`. `Zoom 5` seul seraît lu 50 % — écrire `Zoom 05` pour 5 % (manuel §6, notation `<0>`). Le générateur applique cette règle automatiquement (`unite: \"%\"` ci-dessus) ; ne jamais la contourner en composant la chaîne à la main.\n"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Zoom +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -523,6 +538,11 @@
           "confiance": "A",
           "exemple": "`Iris 50` — pose 50 %, confirmé par l'exemple chiffré du manuel",
           "piege": "même piège que Zoom — paramètre en pourcentage, voir sa note"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Iris +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -536,6 +556,11 @@
           "confiance": "A",
           "exemple": "`Edge 50` — pose 50 %, même exemple chiffré que Zoom/Iris",
           "piege": "même piège que Zoom/Iris — paramètre en pourcentage, voir sa note"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Edge +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -548,6 +573,11 @@
         "absolue": {
           "confiance": "B",
           "exemple": "`Hue 0` — déduit de `Hue 0 Thru 360` (recette communautaire), jamais démontré isolément"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Hue +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -564,6 +594,11 @@
         "echelle": {
           "confiance": "B",
           "exemple": "`Saturation /90 Enter` — vidéo tutoriel officielle ETC (2026-09-13), réduit la saturation courante de 10 %"
+        },
+        "pas_fixe": {
+          "confiance": "A",
+          "source": "manuel §6 « Non-Intensity Parameters » — préfixe de catégorie devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).\n",
+          "exemple": "`Saturation +%` — un pas, réglé dans le Setup, pas dans la phrase"
         }
       }
     },
@@ -1354,7 +1389,15 @@
       "plage": true,
       "confiance": "A",
       "source": "manuel §20 Submasters",
-      "note": "1000 submasters maximum"
+      "note": "1000 submasters maximum",
+      "idiome_thru_home": {
+        "confiance": "A",
+        "source": "manuel §6 l. 816 « [Sub] [1] [Thru] [Home] [Enter] - homes all submasters »",
+        "forme": "`Sub 1 Thru Home Enter`",
+        "regle": "`Home` en borne haute d'une plage de Sub JOUE DEUX RÔLES à la fois : il termine la plage (« jusqu'au bout ») ET c'est l'action elle-même — il n'y a pas de second `Home` après. Un seul mot-clé, une seule fois, contrairement à la forme générale `<sélection> Home Enter` (action `home`) qui, elle, sépare bien sélection et action.\n",
+        "portee": "ATTESTÉ POUR Sub SEULEMENT. Aucun exemple équivalent pour Chan ou Group (`[1] [Home] [Enter]` du même chapitre ne home que le channel 1, pas « tous les channels ») — ne pas généraliser sans une citation.\n",
+        "borne_basse": "L'exemple part de 1. Non vérifié si une autre borne basse (`Sub 5 Thru Home`) couvre aussi « tous les subs à partir de 5 » ou produit autre chose — rester sur la forme attestée telle quelle.\n"
+      }
     },
     "Macro": {
       "mot_cle": "Macro",
@@ -2203,7 +2246,13 @@
       "confiance": "A",
       "source": "manuel §00 et §6",
       "osc": "+%",
-      "note": "Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.\n"
+      "note": "Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.\n",
+      "prefixe_categorie": {
+        "confiance": "A",
+        "source": "manuel §6 « Non-Intensity Parameters » — « The [+%] and [-%] keys may be used to incrementally adjust non-intensity parameters as well », avec deux exemples chiffrés : `[1] {Iris} [+%] [+%]` et `{Zoom} [-%] [-%]`.\n",
+        "regle": "Un mot de CATÉGORIE (Iris, Zoom, Pan, Tilt, Edge, Hue, Saturation…) posé avant `+%`/`-%` restreint le pas à ce paramètre au lieu de l'intensité. Sans lui, la forme nue agit sur l'intensité (§6 l. 288, « Use the [Level], [+%], and [-%] keys to affect the INTENSITY value of selected channels »).\n",
+        "portee": "La clause « as well » est GÉNÉRALE, pas restreinte à Iris/Zoom — ce sont deux illustrations d'un mécanisme commun à toute catégorie de paramètre, au même titre que le préfixe déjà documenté pour `Select Manual` (voir `actions.selection_manuelle`). Seuls Iris et Zoom ont un exemple chiffré ; les autres catégories restent couvertes par la clause générale, jamais par extrapolation d'un exemple à un autre.\n"
+      }
     },
     "decrementer": {
       "mot_cle": "-%",
@@ -2215,7 +2264,11 @@
       ],
       "confiance": "A",
       "source": "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »",
-      "osc": "-%"
+      "osc": "-%",
+      "prefixe_categorie": {
+        "confiance": "A",
+        "source": "identique à `incrementer.prefixe_categorie` — même mécanisme, même source"
+      }
     },
     "selection_suivante": {
       "mot_cle": "Next",
@@ -2871,7 +2924,38 @@
       ],
       "confiance": "A",
       "source": "eosKeys.ts `select_active`→SELECT_ACTIVE ; manuel §24 (exemple de macro)",
-      "note": "sélectionne tous les channels actifs — intensité > 0 ou en mouvement"
+      "note": "sélectionne tous les channels actifs — intensité > 0 ou en mouvement",
+      "filtre_sur_plage": {
+        "confiance": "A",
+        "source": "manuel §6 l. 1192 — `[1] [Thru] [100] [Select Active] [Enter]`",
+        "regle": "Posé après une plage, `Select Active` la FILTRE au lieu de l'ignorer : « selects channels between 1 and 100 with intensity levels above zero ». Une plage devant l'action change son sens, elle ne s'additionne pas à elle.\n"
+      },
+      "exclusion": {
+        "confiance": "A",
+        "source": "manuel §6 l. 1220-1228 « [-] Select Manual or Select Active »",
+        "regle": "`<plage> - Select Active Enter` sélectionne tout le contenu de la plage SAUF les channels actifs : « Using [-] [Select Active] will select all of the channels in the LIST except those that are active. » Exemple chiffré : `[1] [Thru] [20] [-] [Select Active] [Enter]`.\n",
+        "piege": "Ce n'est PAS une inversion globale : « all of the channels in the list » exige une plage de départ. `- Select Active` seul n'a rien à soustraire — il n'existe aucune commande « Select Inactive » qui prendrait tout le plateau d'office.\n"
+      },
+      "double_appui": {
+        "confiance": "A",
+        "source": "manuel §6 l. 1182 ; reference/eosKeys.ts `select_nonsub_active`→SELECT_NONSUB_ACTIVE",
+        "mot_cle": "Select NonSub Active",
+        "osc": "select_nonsub_active",
+        "regle": "`Select Active Select Active` capture les niveaux actifs manuels ET de playback, MAIS PAS les submasters, et poste `Select NonSub Active` sur la ligne de commande. Le premier appui seul capture « all active levels » (submasters compris).\n",
+        "note_localisation": "C'est le `Sélec_Actif_moins_Sub` observé sur une console francophone (voir reference/journal_questions.yaml, entrée sur la localisation).\n"
+      }
+    },
+    "home": {
+      "mot_cle": "Home",
+      "attend": "aucun",
+      "auto_termine": false,
+      "contextes": [
+        "Live",
+        "Blind"
+      ],
+      "confiance": "A",
+      "source": "manuel §6 « Home » — `[1] [Home] [Enter]` (homes tous les NP du channel 1) ; `[Sub] [1] [Home] [Enter]` (home le submaster 1)\n",
+      "note": "Forme générale, DEUX mots-clés distincts (sélection puis `Home`) — à ne pas confondre avec l'idiome `<n> Thru Home` propre à Sub (voir `objets.Sub.idiome_thru_home`), où un seul `Home` joue les deux rôles. « Homing a channel, category, parameter, or submaster will return it to the default value » — la valeur par défaut, pas nécessairement zéro (une Home Preset peut la redéfinir, manuel §6 « Home Preset »).\n"
     },
     "selection_manuelle": {
       "mot_cle": "Select Manual",
@@ -3849,6 +3933,20 @@
       "confiance": "A"
     },
     {
+      "objet": "Chan",
+      "action": "selection_active",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`[1] [Thru] [100] [Select Active] [Enter]` filtre la plage sur l'actif — manuel §6 l. 1192"
+    },
+    {
+      "objet": "Group",
+      "action": "selection_active",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "même mécanisme que Chan — une plage devant `Select Active` la filtre, ne s'y additionne pas"
+    },
+    {
       "objet": "selection_courante",
       "action": "selection_derniere",
       "valide": "oui",
@@ -4009,6 +4107,20 @@
     },
     {
       "objet": "Chan",
+      "action": "incrementer",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`[1] {Iris} [+%] [+%]` — manuel §6, section Non-Intensity Parameters"
+    },
+    {
+      "objet": "Chan",
+      "action": "decrementer",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`{Zoom} [-%] [-%]` sur une sélection nommée — même section"
+    },
+    {
+      "objet": "Chan",
       "action": "valeur_dmx",
       "valide": "oui",
       "confiance": "A"
@@ -4025,6 +4137,20 @@
       "valide": "oui",
       "confiance": "A",
       "note": "ne dépend d'aucune sélection — elle en POSE une"
+    },
+    {
+      "objet": "Chan",
+      "action": "home",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`[1] [Home] [Enter]` — homes tous les NP du/des channel(s), manuel §6"
+    },
+    {
+      "objet": "Sub",
+      "action": "home",
+      "valide": "oui",
+      "confiance": "A",
+      "note": "`[Sub] [1] [Home] [Enter]` — manuel §6 l. 815"
     },
     {
       "objet": "Chan",

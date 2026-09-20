@@ -179,6 +179,12 @@ class Generateur:
 
         objet = sel["objet"]
         mot = self.modele["objets"][objet]["mot_cle"]
+
+        if sel.get("a") == "Home" and objet != "Sub":
+            avert.append(
+                f"`{objet} <n> Thru Home` n'est attesté que pour Sub (manuel "
+                f"§6 l. 816) — non vérifiable pour `{objet}`")
+
         return self._rendre_avec_mot(mot, sel, avert, objet)
 
     def _rendre_avec_mot(self, mot: str, sel: dict, avert: list[str],
@@ -650,9 +656,23 @@ class Generateur:
         if t == "appel_macro":
             return f"{mot} {act['numero']}"
 
+        if t == "selection_active" and act.get("double"):
+            # `Select Active Select Active` n'est pas une insistance : ça
+            # change de commande, comme `Full Full` et `Sneak Sneak`. Le
+            # deuxième appui pose `Select NonSub Active` (manuel §6 l. 1182,
+            # confirmé par la clé OSC select_nonsub_active).
+            return self.modele["actions"]["selection_active"]["double_appui"]["mot_cle"]
+
+        if t in ("incrementer", "decrementer"):
+            # Sans catégorie, la forme nue agit sur l'INTENSITÉ (manuel §6
+            # l. 288). Avec une catégorie (Iris, Zoom, Pan...), elle se pose
+            # devant : `{Iris} [+%] [+%]` — l. « Non-Intensity Parameters ».
+            categorie = act.get("categorie")
+            prefixe = [categorie] if categorie else []
+            return " ".join(prefixe + [mot])
+
         if t in ("selection_active", "selection_derniere", "selection_manuelle",
-                 "retirer_effet", "hors_scene", "niveau_setup", "incrementer",
-                 "decrementer", "verifier",
+                 "retirer_effet", "hors_scene", "niveau_setup", "verifier", "home",
                  "selection_suivante", "selection_precedente"):
             return mot
 
@@ -1060,6 +1080,21 @@ class Generateur:
                 cible = objet or spec.get("objet_implicite") or "selection_courante"
                 self._verifier(cible, action["type"], avert)
                 self._verifier_contexte(action, contexte, avert)
+
+                if action.get("exclure"):
+                    # `<liste> - Select Active` — manuel §6 l. 1220-1228. Le
+                    # manuel dit « all of the channels IN THE LIST » : sans
+                    # sélection posée devant, il n'y a rien à exclure DE quoi
+                    # que ce soit — il n'existe pas de « Select Inactive »
+                    # qui prendrait tout le plateau d'office.
+                    if "selection" not in etape:
+                        avert.append(
+                            f"`- {spec['mot_cle']}` exige une sélection posée "
+                            f"devant (« channels IN THE LIST », manuel §6) — "
+                            f"sans elle, rien à exclure")
+                    else:
+                        morceaux.append(self.modele["operateurs"]["retrait"]["symbole"])
+
                 morceaux.append(self._rendre_action(action, avert))
 
                 auto_termine = spec.get("auto_termine", False)

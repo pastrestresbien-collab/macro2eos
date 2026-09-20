@@ -539,6 +539,12 @@ parametres:
         confiance: A
         exemple: "`Pan / / 25` — valeur DMX brute (manuel §6 l.370)"
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Pan +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Tilt:
     mot_cle: "Tilt"
     unite: "degrés"
@@ -567,6 +573,12 @@ parametres:
       # communautaire) ne parle que de Pan. L'absence ici est un choix, pas
       # un oubli — voir la règle en tête de cette section.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Tilt +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Zoom:
     mot_cle: "Zoom"
     unite: "%"
@@ -597,6 +609,12 @@ parametres:
     # syntaxe JAMAIS vue dans aucune source. Mécanisme non modélisé, pas
     # oublié.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Zoom +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Iris:
     mot_cle: "Iris"
     unite: "%"
@@ -614,6 +632,12 @@ parametres:
     # `[+%]`/`[-%]` (touche générique à pas fixe) est sourcé, mécanisme
     # différent non modélisé ici.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Iris +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Edge:
     mot_cle: "Edge"
     unite: "%"
@@ -631,6 +655,12 @@ parametres:
     # Même réserve que Zoom/Iris : pas de forme relative, seul [+%]/[-%]
     # (mécanisme générique différent) est sourcé.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Edge +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Hue:
     mot_cle: "Hue"
     unite: "degrés"    # angle 0-360, PAS un pourcentage — aucune source ne
@@ -654,6 +684,12 @@ parametres:
     # PAS d'echelle ni de forme relative — aucune source, communautaire ou
     # manuel, ne les documente pour Hue.
 
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Hue +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Saturation:
     mot_cle: "Saturation"
     # PAS d'`unite` ici, volontairement — voir le piège ci-dessous. Une
@@ -685,6 +721,12 @@ parametres:
         confiance: B
         exemple: "`Saturation /90 Enter` — vidéo tutoriel officielle ETC (2026-09-13), réduit la saturation courante de 10 %"
     # PAS de relatif_ajout/relatif_retrait — non sourcé.
+      pas_fixe:
+        confiance: A
+        source: >
+          manuel §6 « Non-Intensity Parameters » — préfixe de catégorie
+          devant `+%`/`-%` (voir `actions.incrementer.prefixe_categorie`).
+        exemple: "`Saturation +%` — un pas, réglé dans le Setup, pas dans la phrase"
   Color_Crossfade:
     mot_cle: "Color_Crossfade"
     # PAS d'`unite`, même raison que Saturation : le label de la feuille dit
@@ -1730,6 +1772,24 @@ objets:
     confiance: A
     source: "manuel §20 Submasters"
     note: "1000 submasters maximum"
+    idiome_thru_home:
+      confiance: A
+      source: "manuel §6 l. 816 « [Sub] [1] [Thru] [Home] [Enter] - homes all submasters »"
+      forme: "`Sub 1 Thru Home Enter`"
+      regle: >
+        `Home` en borne haute d'une plage de Sub JOUE DEUX RÔLES à la fois :
+        il termine la plage (« jusqu'au bout ») ET c'est l'action elle-même
+        — il n'y a pas de second `Home` après. Un seul mot-clé, une seule
+        fois, contrairement à la forme générale `<sélection> Home Enter`
+        (action `home`) qui, elle, sépare bien sélection et action.
+      portee: >
+        ATTESTÉ POUR Sub SEULEMENT. Aucun exemple équivalent pour Chan ou
+        Group (`[1] [Home] [Enter]` du même chapitre ne home que le channel 1,
+        pas « tous les channels ») — ne pas généraliser sans une citation.
+      borne_basse: >
+        L'exemple part de 1. Non vérifié si une autre borne basse (`Sub 5
+        Thru Home`) couvre aussi « tous les subs à partir de 5 » ou produit
+        autre chose — rester sur la forme attestée telle quelle.
   Macro:
     mot_cle: "Macro"
     numerote: true
@@ -2558,6 +2618,26 @@ actions:
     note: >
       Le pas est réglé dans le Setup. Le nom interne `PLUS10` reflète le défaut
       de 10 %, pas une valeur figée — deux appuis font 20 % au défaut.
+    prefixe_categorie:
+      confiance: A
+      source: >
+        manuel §6 « Non-Intensity Parameters » — « The [+%] and [-%] keys
+        may be used to incrementally adjust non-intensity parameters as
+        well », avec deux exemples chiffrés : `[1] {Iris} [+%] [+%]` et
+        `{Zoom} [-%] [-%]`.
+      regle: >
+        Un mot de CATÉGORIE (Iris, Zoom, Pan, Tilt, Edge, Hue, Saturation…)
+        posé avant `+%`/`-%` restreint le pas à ce paramètre au lieu de
+        l'intensité. Sans lui, la forme nue agit sur l'intensité (§6 l. 288,
+        « Use the [Level], [+%], and [-%] keys to affect the INTENSITY value
+        of selected channels »).
+      portee: >
+        La clause « as well » est GÉNÉRALE, pas restreinte à Iris/Zoom — ce
+        sont deux illustrations d'un mécanisme commun à toute catégorie de
+        paramètre, au même titre que le préfixe déjà documenté pour `Select
+        Manual` (voir `actions.selection_manuelle`). Seuls Iris et Zoom ont
+        un exemple chiffré ; les autres catégories restent couvertes par la
+        clause générale, jamais par extrapolation d'un exemple à un autre.
   decrementer:
     mot_cle: "-%"
     attend: aucun
@@ -2566,6 +2646,9 @@ actions:
     confiance: A
     source: "manuel §00 et §6 : « [-%] [-%] … This command is self-terminating »"
     osc: "-%"
+    prefixe_categorie:
+      confiance: A
+      source: "identique à `incrementer.prefixe_categorie` — même mécanisme, même source"
   selection_suivante:
     mot_cle: "Next"
     attend: aucun
@@ -3171,6 +3254,58 @@ actions:
     confiance: A
     source: "eosKeys.ts `select_active`→SELECT_ACTIVE ; manuel §24 (exemple de macro)"
     note: "sélectionne tous les channels actifs — intensité > 0 ou en mouvement"
+    filtre_sur_plage:
+      confiance: A
+      source: "manuel §6 l. 1192 — `[1] [Thru] [100] [Select Active] [Enter]`"
+      regle: >
+        Posé après une plage, `Select Active` la FILTRE au lieu de l'ignorer :
+        « selects channels between 1 and 100 with intensity levels above
+        zero ». Une plage devant l'action change son sens, elle ne
+        s'additionne pas à elle.
+    exclusion:
+      confiance: A
+      source: "manuel §6 l. 1220-1228 « [-] Select Manual or Select Active »"
+      regle: >
+        `<plage> - Select Active Enter` sélectionne tout le contenu de la
+        plage SAUF les channels actifs : « Using [-] [Select Active] will
+        select all of the channels in the LIST except those that are
+        active. » Exemple chiffré : `[1] [Thru] [20] [-] [Select Active]
+        [Enter]`.
+      piege: >
+        Ce n'est PAS une inversion globale : « all of the channels in the
+        list » exige une plage de départ. `- Select Active` seul n'a rien à
+        soustraire — il n'existe aucune commande « Select Inactive » qui
+        prendrait tout le plateau d'office.
+    double_appui:
+      confiance: A
+      source: "manuel §6 l. 1182 ; reference/eosKeys.ts `select_nonsub_active`→SELECT_NONSUB_ACTIVE"
+      mot_cle: "Select NonSub Active"
+      osc: select_nonsub_active
+      regle: >
+        `Select Active Select Active` capture les niveaux actifs manuels ET
+        de playback, MAIS PAS les submasters, et poste `Select NonSub
+        Active` sur la ligne de commande. Le premier appui seul capture
+        « all active levels » (submasters compris).
+      note_localisation: >
+        C'est le `Sélec_Actif_moins_Sub` observé sur une console francophone
+        (voir reference/journal_questions.yaml, entrée sur la localisation).
+  home:
+    mot_cle: "Home"
+    attend: aucun
+    auto_termine: false
+    contextes: [Live, Blind]
+    confiance: A
+    source: >
+      manuel §6 « Home » — `[1] [Home] [Enter]` (homes tous les NP du channel
+      1) ; `[Sub] [1] [Home] [Enter]` (home le submaster 1)
+    note: >
+      Forme générale, DEUX mots-clés distincts (sélection puis `Home`) — à ne
+      pas confondre avec l'idiome `<n> Thru Home` propre à Sub (voir
+      `objets.Sub.idiome_thru_home`), où un seul `Home` joue les deux rôles.
+      « Homing a channel, category, parameter, or submaster will return it to
+      the default value » — la valeur par défaut, pas nécessairement zéro
+      (une Home Preset peut la redéfinir, manuel §6 « Home Preset »).
+
   selection_manuelle:
     mot_cle: "Select Manual"
     attend: aucun
@@ -4137,6 +4272,18 @@ legalite:
     valide: oui
     confiance: A
 
+  - objet: Chan
+    action: selection_active
+    valide: oui
+    confiance: A
+    note: "`[1] [Thru] [100] [Select Active] [Enter]` filtre la plage sur l'actif — manuel §6 l. 1192"
+
+  - objet: Group
+    action: selection_active
+    valide: oui
+    confiance: A
+    note: "même mécanisme que Chan — une plage devant `Select Active` la filtre, ne s'y additionne pas"
+
   - objet: selection_courante
     action: selection_derniere
     valide: oui
@@ -4290,6 +4437,18 @@ legalite:
     confiance: A
 
   - objet: Chan
+    action: incrementer
+    valide: oui
+    confiance: A
+    note: "`[1] {Iris} [+%] [+%]` — manuel §6, section Non-Intensity Parameters"
+
+  - objet: Chan
+    action: decrementer
+    valide: oui
+    confiance: A
+    note: "`{Zoom} [-%] [-%]` sur une sélection nommée — même section"
+
+  - objet: Chan
     action: valeur_dmx
     valide: oui
     confiance: A
@@ -4304,6 +4463,18 @@ legalite:
     valide: oui
     confiance: A
     note: "ne dépend d'aucune sélection — elle en POSE une"
+
+  - objet: Chan
+    action: home
+    valide: oui
+    confiance: A
+    note: "`[1] [Home] [Enter]` — homes tous les NP du/des channel(s), manuel §6"
+
+  - objet: Sub
+    action: home
+    valide: oui
+    confiance: A
+    note: "`[Sub] [1] [Home] [Enter]` — manuel §6 l. 815"
 
   # `Copy To` accepte des sources de familles très différentes — c'est sa
   # nature : « between any target types that can have labels » (§15 l. 93).

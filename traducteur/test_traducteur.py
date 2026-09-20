@@ -888,6 +888,49 @@ CAS = [
         "phrase": "arrête l'effet",
         "statut": "incompris",
     },
+    {
+        # Trouvé au banc de rétro-traduction du 2026-09-17 : le pluriel NU
+        # suffit, sans « tous ». Manuel §18 : la forme sans argument arrête
+        # déjà tout ce qui tourne — le pluriel n'a rien d'autre à désigner.
+        "nom": "arrêter les effets — pluriel nu, pas besoin de « tous »",
+        "phrase": "arrête les effets",
+        "statut": "compris",
+        "rendu": "Stop Effect Enter",
+    },
+
+    # ------------------------------------------------ Home (remise au repos)
+    {
+        "nom": "Home sur un circuit précis",
+        "phrase": "remets le circuit 5 au repos",
+        "statut": "compris",
+        "rendu": "Chan 5 Home Enter",
+    },
+    {
+        "nom": "Home sur un submaster précis",
+        "phrase": "remets le sub 3 au repos",
+        "statut": "compris",
+        "rendu": "Sub 3 Home Enter",
+    },
+    {
+        # L'idiome du manuel §6 l. 816 : `Home` joue à la fois la borne de
+        # plage et l'action, en un seul mot. Attesté SEULEMENT pour Sub.
+        "nom": "Home sur tous les submasters — l'idiome Thru Home",
+        "phrase": "remets tous les submasters au repos",
+        "statut": "compris",
+        "rendu": "Sub 1 Thru Home Enter",
+    },
+    {
+        # L'idiome ne se généralise PAS à Chan sans preuve : aucun exemple
+        # équivalent dans le manuel pour « tous les circuits ».
+        "nom": "Home sur tous les circuits — refus, pas d'idiome équivalent",
+        "phrase": "remets tous les circuits au repos",
+        "statut": "incompris",
+    },
+    {
+        "nom": "Home sans numéro ni « tous » — refus assumé",
+        "phrase": "remets le circuit au repos",
+        "statut": "incompris",
+    },
 
     # ------------------------------------------------ bump de submaster
     {
@@ -1540,12 +1583,47 @@ CAS = [
         "non_reconnus": [], "ignores": [],
     },
     {
-        # Mais un NUMÉRO fait refuser : le laisser filer serait une perte
-        # silencieuse, invisible de surcroît (les chiffres ne sont rapportés
-        # ni par `non_reconnus` ni par `ignores`).
-        "nom": "Select Active avec un numéro — refus, jamais un numéro avalé",
+        # PRÉMISSE CORRIGÉE le 2026-09-17. Ce cas exigeait `incompris` sous
+        # prétexte qu'un numéro perdrait toujours de l'information sur
+        # `Select Active`. C'était vrai avant l'ajout des trois formes du
+        # manuel §6 : une plage devant `Select Active` la FILTRE sur l'actif
+        # (l. 1192, `[1] [Thru] [100] [Select Active] [Enter]`) — le numéro
+        # n'était pas une perte, c'était une commande légitime que le
+        # traducteur ne savait pas encore produire.
+        "nom": "Select Active filtré par une plage — une commande, pas une perte",
         "phrase": "selectionne les circuits 1 a 5 actifs",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 5 Select Active Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Le refus tient toujours, mais ailleurs : un numéro SANS plage
+        # reconnue (pas de « à ») n'a rien à filtrer.
+        "nom": "Select Active — un numéro isolé reste un refus",
+        "phrase": "selectionne les circuits actifs 5",
         "statut": "incompris",
+    },
+    {
+        "nom": "Select Active — exclusion, le manuel §6 « [-] Select Active »",
+        "phrase": "selectionne les circuits 1 a 20 sauf les actifs",
+        "statut": "compris",
+        "rendu": "Chan 1 Thru 20 - Select Active Enter",
+        "non_reconnus": [], "ignores": [],
+    },
+    {
+        # Sans plage devant, rien à exclure — le manuel dit « all of the
+        # channels IN THE LIST » : il n'existe pas de « Select Inactive »
+        # qui prendrait tout le plateau d'office.
+        "nom": "Select Active — exclusion sans plage, refus assumé",
+        "phrase": "selectionne les actifs sauf les circuits",
+        "statut": "incompris",
+    },
+    {
+        "nom": "Select Active — double appui, Select NonSub Active",
+        "phrase": "selectionne les actifs sauf les subs",
+        "statut": "compris",
+        "rendu": "Select NonSub Active Enter",
+        "non_reconnus": [], "ignores": [],
     },
     {
         # Les six nouvelles intentions sont déclarées en dernier : elles ne
@@ -1679,6 +1757,41 @@ CAS = [
         "nom": "regler_parametre — Zoom relatif refusé, seul [+%]/[-%] est sourcé (mécanisme différent)",
         "phrase": "ajoute 10 au zoom du circuit 1",
         "statut": "incompris",
+    },
+    {
+        # LE mécanisme réel, ajouté le 2026-09-18 : sans AUCUN nombre dans la
+        # phrase, « augmente »/« monte » bascule sur le pas fixe du Setup
+        # (`+%`/`-%`, manuel §6 « Non-Intensity Parameters »). C'est ce que
+        # le cas ci-dessus refuse à raison — `ajoute 10 au zoom` n'est PAS
+        # cette forme, faute de source pour un delta chiffré sur Zoom.
+        "nom": "regler_parametre — pas fixe (+%), Zoom sans aucun nombre",
+        "phrase": "augmente le zoom du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Zoom +%",
+    },
+    {
+        "nom": "regler_parametre — pas fixe, direction retrait (-%)",
+        "phrase": "diminue l'iris",
+        "statut": "compris",
+        "rendu": "Iris -%",
+    },
+    {
+        # Pan/Tilt déclarent À LA FOIS `relatif_ajout` (chiffré) ET
+        # `pas_fixe` (sans nombre) — les deux sont légitimes, c'est
+        # l'ABSENCE de nombre qui choisit le second, jamais l'inverse.
+        "nom": "regler_parametre — pas fixe sur un paramètre qui a AUSSI un relatif chiffré",
+        "phrase": "monte le pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan +%",
+    },
+    {
+        # Le numéro du CIRCUIT ne doit pas être pris pour une valeur de
+        # pas_fixe absente — c'est le bug que la position par rapport à
+        # `i_parametre` (avant/après le mot du paramètre) départage.
+        "nom": "regler_parametre — un numéro de sélection n'est pas une valeur cachée",
+        "phrase": "ajoute 10 degres au pan du circuit 1",
+        "statut": "compris",
+        "rendu": "Chan 1 Pan + 10 Enter",
     },
     {
         # Non-régression sur le routage : `regler_parametre` est déclaré

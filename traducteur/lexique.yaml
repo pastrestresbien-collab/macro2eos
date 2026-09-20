@@ -593,8 +593,9 @@ intentions:
       # trompeur, et à nourrir le verrou 3 (un mot inconnu interdit le repli
       # sur la sélection courante).
       verbe: [mets, met, mettre, regle, règle, regler, pose,
-              ajoute, ajouter, monte, monter,
+              ajoute, ajouter, monte, monter, augmente, augmenter,
               retire, retirer, enleve, enlever, descend, descends, descendre,
+              diminue, diminuer, baisse, baisser,
               inverse, inverser, inversez]
     exemple_nl: "mets le pan du circuit 1 à 10 degrés"
     origine: >
@@ -1220,6 +1221,28 @@ intentions:
       (manuel §24 l. 105-109), donc sur une autre sélection que celle de
       l'opérateur — un `Sneak` nu peut n'y rien faire du tout.
 
+  remettre_defaut:
+    description: "ramener une sélection à sa valeur par défaut (Home)"
+    declencheurs:
+      verbe: [remets, remettre, remet, homer, home]
+    declencheurs_optionnels:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, sub, subs, submaster, submasters, sousmaster, sousmasters]
+      cible: [repos, defaut, zero, home]
+      tous: [tous, toutes, tout]
+    exemple_nl: >
+      remets le circuit 5 au repos ; remets tous les submasters au repos
+    origine: >
+      manuel §6 « Home » — `[1] [Home] [Enter]`, `[Sub] [1] [Home] [Enter]`,
+      confiance A (`grammar/modele.yaml`, action `home`).
+    note: >
+      DEUX formes, une seule attestée pour « tous ». Avec un numéro explicite,
+      `<sélection> Home Enter` marche pour Chan comme pour Sub. Sans numéro,
+      seul Sub a un idiome documenté : `Sub 1 Thru Home Enter` — où `Home`
+      joue à la fois le rôle de borne de plage et d'action, en un seul mot
+      (`grammar/modele.yaml`, `objets.Sub.idiome_thru_home`). Pour Chan,
+      « remets tous les circuits au repos » n'a AUCUN exemple équivalent dans
+      le manuel — refuser plutôt qu'étendre l'idiome de Sub sans preuve.
+
   selection_derniere:
     description: "reprendre la sélection précédente (Select Last)"
     declencheurs:
@@ -1240,12 +1263,36 @@ intentions:
     declencheurs:
       verbe: [selectionne, selectionner, prends, prendre]
       actif: [actif, actifs, allume, allumes, allumees, actives]
-    exemple_nl: "sélectionne les circuits actifs"
+    declencheurs_optionnels:
+      objet: [circuit, circuits, chan, chans, channel, channels, projecteur, projecteurs, proj, groupe, groupes, group]
+      # Marqueurs des deux formes ajoutées le 2026-09-17 (manuel §6
+      # l. 1182, 1220-1228). Optionnels : la forme simple (« sélectionne les
+      # circuits actifs ») n'en a besoin d'aucun.
+      exclusion: [sauf, hormis, excepte, exceptee]
+      sub: [sub, subs, submaster, submasters, sousmaster, sousmasters]
+    exemple_nl: >
+      sélectionne les circuits actifs ; sélectionne les circuits 1 à 100
+      actifs ; sélectionne les circuits 1 à 20 sauf les actifs ; sélectionne
+      les actifs sauf les subs
     origine: >
       `reference/eosKeys.ts` (`select_active`→SELECT_ACTIVE) et manuel §24
       (exemple de macro), confiance A (`grammar/modele.yaml`, section
       `actions`/`selection_active`) : sélectionne tout channel dont
       l'intensité est supérieure à zéro ou qui est en mouvement.
+    note: >
+      Trois formes de plus depuis le 2026-09-17, chacune sourcée au manuel
+      §6 et distincte du simple `Select Active`. FILTRE : une plage posée
+      devant filtre l'actif dedans (`Chan 1 Thru 100 Select Active`, l. 1192)
+      — la plage s'AJOUTE, elle ne remplace rien. EXCLUSION : « sauf »/
+      « hormis » après une plage exclut les actifs de cette plage
+      (`- Select Active`, l. 1220-1228) — le manuel dit « all of the channels
+      IN THE LIST », donc sans plage devant, rien à exclure : refus assumé
+      plutôt qu'une lecture comme « tout le plateau sauf les actifs », qui
+      n'existe pas. DOUBLE APPUI : « sauf »/« hormis »/« sans » suivi d'un mot
+      de sub bascule sur `Select NonSub Active` (l. 1182) — capture manuel et
+      playback, submasters exclus. Les deux « sauf » ne se confondent pas :
+      celui qui précède un mot de sub vise le double appui, celui qui suit
+      une plage vise l'exclusion.
 
 # --------------------------------------------------------------------------
 # QUESTIONS — le troisième résultat possible

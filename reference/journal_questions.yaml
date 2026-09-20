@@ -882,3 +882,98 @@ questions:
     backlog: null
     traite: "partiel"
     traite_ou: "grammar/generateur.py RISQUES_A_REMONTER ; question de l'UI ouverte"
+  - date: "2026-09-17"
+    question: >-
+      Comment sélectionner les circuits qui n'ont pas de valeur d'intensité
+      mais portent des valeurs FCB (Focus/Color/Beam) ?
+    reponse: >-
+      Deux mécanismes distincts se combinent, et seule leur COMBINAISON n'est
+      pas attestée au niveau A. FCB = Focus/Color/Beam, les trois catégories
+      de paramètres non-intensité (manuel §2 l. 766, 886 ; clés OSC `focus`,
+      `color`, `beam` → *_CAT). « Sans intensité » se lit `- Select Active`
+      (l'exclusion ajoutée aujourd'hui) ; « avec des valeurs FCB » se lit en
+      préfixant d'une catégorie de paramètre, documenté pour `Select Manual` :
+      `[Color] [Select Manual]` — « selects only channels with manual COLOR
+      values » (§6 l. 1211).
+    sources:
+      - "manuals/operations-manual/06-manual-control.md:1202-1228 — Select Manual, préfixe de catégorie, exclusion"
+      - "manuals/operations-manual/02-system-basics.md:766, 886 — définition FCB"
+      - "reference/eosKeys.ts — focus/color/beam -> FOCUS_CAT/COLOR_CAT/BEAM_CAT"
+      - "corpus/CORPUS_EOS_COMPLET.md #008 — confiance C, non testé"
+    confiance: "B"
+    consequence: "lexique_manquant"
+    detail: >-
+      Ce qui est A, chacun séparément : `<param> Select Manual` restreint aux
+      channels ayant des données MANUELLES dans cette catégorie (§6 l. 1211,
+      exemple donné pour Color uniquement — Focus et Beam ne sont pas
+      individuellement exemplifiés, mais la phrase générale « combined with
+      the parameter control keys » les couvre par construction, ce sont les
+      mêmes touches de catégorie que celles de la timing FCB, §12 l. 253) ;
+      `<selection> - Select Active` exclut les actifs de la sélection (ajouté
+      au modèle aujourd'hui).
+      Ce qui n'est QUE C : leur composition. Le corpus (#008, « Track
+      Autoclean FCB », auteur Mutja Engel, forum, non testé) montre exactement
+      la ligne cherchée :
+        `Group 9999.99 - Select Active Focus Color Beam Enter`
+      c'est-à-dire : exclure les actifs du groupe (reste = intensité nulle),
+      puis restreindre aux trois catégories FCB chaînées. Aucune ligne du
+      manuel officiel ne confirme que le préfixe de catégorie fonctionne
+      aussi devant `- Select Active` (l'exemple A ne le montre que devant
+      `Select Manual`) ni que les trois catégories peuvent se chaîner en OR
+      plutôt qu'en AND.
+      NE PAS générer cette commande composée comme un résultat `compris` du
+      traducteur avant vérification au banc — ce serait franchir la ligne
+      entre confiance B et invention. Elle peut en revanche être proposée à
+      l'utilisateur comme piste sourcée, ce qui est fait ici.
+    backlog: null
+    traite: "non"
+    traite_ou: null
+    protocole_banc: >-
+      PROTOCOLE PRÉPARÉ le 2026-09-17, NON EXÉCUTÉ — cet environnement n'a
+      aucun accès à une console ni à Nomad (ni réseau sortant vers l'un ou
+      l'autre, CLAUDE.md règle n°1). À exécuter par quiconque a la main sur
+      une console, puis à consigner dans grammar/refus_terrain.yaml (jamais
+      ici — ce fichier ne journalise que des questions, pas des constats S).
+
+      Préparation du show, trois channels de test distincts :
+        A — intensité 0, AUCUNE donnée FCB manuelle (témoin négatif)
+        B — intensité 0, une SEULE catégorie FCB en manuel (ex. Color via un
+            encodeur ou une Color Palette rappelée SANS toucher l'intensité)
+        C — intensité > 0 (actif), avec ou sans données FCB, pour vérifier
+            que l'exclusion l'écarte bien
+
+      Étape 1 — confirmer l'exclusion seule (déjà A, sanity-check du
+      générateur avant de composer) :
+        `Chan <A> Thru <C> - Select Active Enter`
+        Attendu si le modèle est juste : A et B sélectionnés, C écarté.
+
+      Étape 2 — confirmer le préfixe de catégorie seul, tel qu'exemplifié
+      par le manuel (déjà A, sanity-check) :
+        `Color Select Manual Enter`
+        Attendu : B sélectionné (a du manuel color), A et C dépendent de
+        s'ils portent aussi une donnée manuelle de couleur.
+
+      Étape 3 — LA question ouverte, dans les DEUX ordres (le manuel n'en
+      exemplifie qu'un devant `Select Manual`, le corpus #008 place la
+      catégorie APRÈS `- Select Active`, jamais devant) :
+        `Chan <A> Thru <C> Color - Select Active Enter`
+        `Chan <A> Thru <C> - Select Active Color Enter`
+        Attendu si l'un des deux marche : seul B (intensité 0 ET couleur
+        manuelle) est sélectionné, A est écarté malgré son intensité 0.
+        Un message d'erreur sur l'un des deux ordres, l'autre acceptant,
+        tranche laquelle des deux syntaxes existe — résultat à lui seul
+        utile même sans channel de test.
+
+      Étape 4 — si l'étape 3 passe, tester le chaînage (OR ou AND ?) avec un
+      quatrième channel D — intensité 0, Focus SEUL en manuel (pas Color) :
+        `Chan <A> Thru <D> - Select Active Focus Color Beam Enter`
+        Si B et D sont TOUS DEUX sélectionnés : chaînage en OR (l'hypothèse
+        du corpus). Si seul un channel ayant les TROIS l'est : AND, et aucun
+        channel de test n'a été construit pour le confirmer — il en faudrait
+        un cinquième avec Focus+Color+Beam manuels simultanés.
+
+      Ne PAS tenter de reproduire la ligne exacte du corpus #008 (`Group
+      9999.99-Select Active Focus Color Beam@[Enter]`) : elle appartient à
+      une macro de boucle sur toute la cue list en Blind, un montage bien
+      plus lourd que ce que ces quatre étapes isolées demandent pour trancher
+      la seule question ouverte.

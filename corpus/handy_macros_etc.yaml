@@ -77,14 +77,15 @@ entrees:
     syntaxe_feuille: "Stop_Effect Enter"
     mode: Background
     demande_nl: "arrête les effets"
-    verdict: hors_perimetre
+    verdict: identique
     pourquoi: >-
-      Aucun numéro d'effet trouvé — préciser lequel, ou dire « tous les
-      effets ».
-    cause: forme_absente
-    cause_detail: >-
-      `Stop_Effect` nu (= tous les effets) n'est pas modélisé ; le traducteur
-      exige un numéro. La cible n'est pas en cause.
+      CORRIGÉ le 2026-09-17 (assouplissement du 2026-09-09 poursuivi) : un
+      pluriel nu (« les effets », sans « tous ») suffit désormais à désigner
+      l'ensemble — le singulier nu (« l'effet ») reste ambigu et continue de
+      refuser. Manuel §18 : `[Stop Effect] [Enter]` arrête déjà tout ce qui
+      tourne, la forme nue EST celle du « tous ».
+    cause: null
+    cause_detail: null
 
   - id: allnps_recall_update
     label: "All Non-intensity Parameter recall from last cue and update"
@@ -346,15 +347,30 @@ entrees:
     syntaxe_feuille: "At + +"
     mode: Background
     auteur: "S. Harris"
-    demande_nl: "augmente le paramètre"
-    verdict: hors_perimetre
+    demande_nl: "augmente le zoom du circuit 1"
+    verdict: divergent
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: forme_absente
-    cause_detail: >-
-      `[+%]`/`[-%]` est une touche à pas fixe, structurellement différente de
-      `<mot> + <n>`. Lacune ASSUMÉE et déjà documentée dans
-      `grammar/modele.yaml` (voir Zoom/Iris/Edge).
+      MIS À JOUR le 2026-09-18. La demande d'origine (« augmente le
+      paramètre ») était un gabarit vide — la feuille elle-même décrit une
+      MACRO PAR PARAMÈTRE (« there is a separate Macro A and Macro B ... for
+      each parameter »), pas une phrase à traduire telle quelle. Reformulée
+      avec un paramètre concret pour rester testable, sans changer l'intention
+      d'origine.
+      Le traducteur rend `Chan 1 Zoom +%`. Classé `divergent` et non
+      `equivalent` : la comparaison au mot près avec `At + +` échoue
+      réellement (paramètre différent dans l'exemple choisi, un seul appui
+      contre deux, pas de `At`). Le MÉCANISME est le même et sourcé au mot
+      près (manuel §6, `[1] {Iris} [+%] [+%]`) ; `At` de la transcription de
+      la feuille n'y a jamais eu sa place — le vrai mécanisme est `[1]
+      {Iris} [+%]`, jamais `[1] [At] {Iris} [+%]`. Vraisemblablement une
+      confusion du contributeur avec la forme intensité (`[At] [+%]`, elle
+      bien réelle, manuel §6 l. 288). `equivalent` resterait une
+      auto-certification que le banc de comparaison ne peut pas vérifier ;
+      `divergent` est le verdict honnête tant qu'aucune paire de phrases
+      strictement comparables (même paramètre, même nombre d'appuis) n'a été
+      testée.
+    cause: null
+    cause_detail: null
 
   - id: record_preset
     label: "Record Preset"
@@ -520,13 +536,22 @@ entrees:
     mode: null
     auteur: "Sassy Squatch"
     demande_nl: "remets tous les submasters au repos"
-    verdict: hors_perimetre
+    verdict: divergent
     pourquoi: >-
-      Aucune intention reconnue dans la phrase.
-    cause: forme_absente
-    cause_detail: >-
-      `Sub Home Thru Home` — `Home` sur une plage de submasters n'est pas
-      modélisé.
+      MIS À JOUR le 2026-09-17 : l'idiome existe et est modélisé, mais sous
+      une forme différente de celle de la feuille. Le traducteur rend
+      `Sub 1 Thru Home Enter` — la forme EXACTE du manuel §6 l. 816. La
+      feuille écrit `Sub Home Thru Home`, avec `Home` en BORNE BASSE, ce
+      qu'aucune source ne montre (les subs se numérotent à partir de 1,
+      `Home` n'est documenté nulle part comme alias du premier numéro).
+      Vraisemblablement une coquille de mémoire du contributeur (« Home »
+      tapé deux fois au lieu de « 1 … Home ») plutôt qu'une syntaxe
+      concurrente — mais faute d'un contre-exemple verbatim aussi net que
+      pour `Quickstep`, classée `divergent` et non `source_fautive` : je ne
+      peux pas prouver au même niveau que la feuille a tort, seulement que
+      ma forme, elle, est attestée mot pour mot.
+    cause: null
+    cause_detail: null
 
   - id: color_xfd_0
     label: "Color Xfd 0"
