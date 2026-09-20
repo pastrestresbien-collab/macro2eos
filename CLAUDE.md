@@ -54,3 +54,27 @@ injection OSC ou ASCII vers la console.
   pour re-vérification future.
 - Toute conversion est vérifiée par échantillonnage contre le texte source avant d'être
   considérée complète (méthode documentée dans `VERIFICATION.md`).
+
+## Règle n°3 — Tout ce qui passe au banc doit être consigné
+
+Chaque test réel sur console (réussite ou échec, syntaxe de sélection, effet, macro,
+peu importe le sujet) doit être journalisé **immédiatement**, sans attendre que
+l'utilisateur le demande. C'est la preuve de plus haute confiance du projet (niveau S,
+banc réel > A manuel > B forum > C communauté > D signal négatif).
+
+**Stratégie retenue : un journal par thème, pas un journal unique.** Un fichier
+centralisé obligerait à filtrer par sujet à chaque lecture ; des fichiers scoppés par
+thème restent alignés avec la structure déjà en place (recherches restreintes par
+dossier, consommation directe par certains fichiers structurés) :
+
+- `grammar/refus_terrain.yaml` — rejets console liés à la grammaire de sélection
+  (`Group`, `Chan`, etc.), lu directement par `grammar/modele.yaml`.
+- `manuals/<workbook>/JOURNAL_observations_banc.md` — observations testées au banc pour
+  un workbook donné (ex. `manuals/effects-workbook/JOURNAL_observations_banc.md`). Ne
+  jamais insérer ces observations dans le `.md` converti du document source lui-même —
+  ça casserait la fidélité de la conversion (Règle de fidélité ci-dessus).
+- `reference/JOURNAL_observations_nomad.md` — observations terrain sur le pont
+  OSC/nomad (le logiciel du projet), distinct de la console.
+
+Si un nouveau sujet testé au banc n'a pas encore son fichier, en créer un sur ce même
+modèle plutôt que d'entasser dans un fichier existant sans rapport.
