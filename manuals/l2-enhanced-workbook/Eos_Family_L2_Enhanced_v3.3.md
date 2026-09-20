@@ -2340,6 +2340,18 @@ The magic sheet might look like this:
 
 ## Appendix 2 – Magic Sheet
 
+(figure omise : capture plein cadre d'un magic sheet. Fond dégradé bleu
+foncé/noir. En haut, 10 boutons cyan en 2 rangées de 5, libellés illisibles
+à cette résolution — vraisemblablement des softkeys/direct selects. En
+dessous, 7 pastilles de couleur nommées empilées : Red, Orange, Yellow,
+Green, [cyan/nom illisible], DX Blue, Magenta. À côté, 5 boutons ronds
+numérotés 101 à 105 (submasters ou groupes). À droite, plusieurs polygones
+sombres avec labels illisibles (channels/fixtures sur le plan). En bas, 3
+boutons rectangulaires : "Inter", "Rem Dim", "Full" ou similaire — texte
+trop petit pour être lu avec certitude sur le rendu disponible.
+Voir source PDF `manuals/l2-enhanced-workbook/source/Eos_Family_L2_Enhanced_v3.3.pdf`,
+page 48, pour le détail exact.)
+
 ## Appendix 3 – PSD Flags
 
 Flags can be applied to cues to change specific behaviors. Flags
