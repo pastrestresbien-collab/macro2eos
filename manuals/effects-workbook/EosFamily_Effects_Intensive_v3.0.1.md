@@ -2170,6 +2170,9 @@ how often we will use it. We should be able to recall this easily
 
 ### EFFECT 452 – CANDLE FLICKER
 
+(figure omise : forme d'onde Linéaire irrégulière, axes Intensité/Temps,
+plusieurs pics et creux façon flicker)
+
 ### ATTRIBUTES:
 
              -       Random Rate 50> 200
@@ -2184,6 +2187,9 @@ how often we will use it. We should be able to recall this easily
                                                   Appendix 1 Unit 9 Solutions   55
 
 ### EFFECT 452.1 – COLOR CANDLE FLICKER
+
+(figure omise : même forme d'onde irrégulière que l'effet 452, axe « Red »
+à la place d'Intensité, mêmes irrégularités de flicker)
 
 ### ATTRIBUTES:
 
@@ -2201,6 +2207,10 @@ how often we will use it. We should be able to recall this easily
 
 ### EFFECT 453 – RELATIVE SHIMMER
 
+(figure omise : forme d'onde triangulaire pointue, axes Intensité/Temps —
+montée rapide puis descente rapide sous la ligne de base, type dent de scie
+asymétrique)
+
 ### ATTRIBUTES:
 
      -   Cycle Time 3
@@ -2212,6 +2222,12 @@ how often we will use it. We should be able to recall this easily
      -   Scale 25
 
 ### EFFECT 453.1 – ABSOLUTE SHIMMER
+
+```text
+                 Action          Param          Step Time         Time    Dwell   Level
+                 1                              (2)               1       1       15.0
+                 2                              (2)               1       1       50.0
+```
 
 ### ATTRIBUTES:
 
@@ -2268,6 +2284,14 @@ how often we will use it. We should be able to recall this easily
 
 ### EFFECT 454.4 – FIREWORKS
 
+```text
+                 Action          Param          Step Time         Time    Dwell   Level
+                 1                              (1)               1       0       Pr 454.1
+                 2                              0.85              1       0       Pr 454.2
+                 3                              (0.3)             0.3     0       Pr 454.3
+                 4                              0.5               0.5     1       0.0
+```
+
 ### ATTRIBUTES:
 
              -   Cycle Time 2.65 (came from changing action times to make the
@@ -2293,6 +2317,14 @@ color or linear applied to color parameters.
 
 ### EFFECT 455 – WATER
 
+```text
+                 Action          Param          Step Time         Time    Dwell   Level
+                 1                              (3.75)            2.5     1.25    Blue
+                 2                              (3.75)            2.5     1.25    LT Blue
+                 3                              (3.75)            2.5     1.25    Cyan
+                 4                              (3.75)            2.5     1.25    Azure
+```
+
 ### ATTRIBUTES:
 
        -   Cycle Time 15
@@ -2309,6 +2341,8 @@ color or linear applied to color parameters.
            315) and put the cells at 50. I felt that this made it feel like waves
 
 ### EFFECT 455.1 – WAVES
+
+(figure omise : forme d'onde sinusoïdale régulière, axes Intensité/Temps)
 
 ### ATTRIBUTES:
 
@@ -2339,6 +2373,17 @@ color or linear applied to color parameters.
 
 ### EFFECT 456 – CMY CHECK
 
+```text
+                 Action          Param             Step Time         Time    Dwell   Level
+                 1                Intens                              0       3       100.0
+                 2                Cyan                                0       1       100.0
+                 3                Magenta Yellow    (1)                0       1       0.0
+                 4                Magenta                             0       1       100.0
+                 5                Cyan Yellow       (1)                0       1       0.0
+                 6                Yellow                              0       1       100.0
+                 7                Cyan Magenta      (1)                0       1       0.0
+```
+
 ### ATTRIBUTES:
 
         - Cycle Time 3
@@ -2355,6 +2400,10 @@ color or linear applied to color parameters.
      of the fixtures
 
 ### EFFECT 457 – HEARTBEAT
+
+(figure omise : forme d'onde Intensité/Temps — plat, puis pic net vers le
+haut suivi d'un creux net vers le bas, puis retour au plat, façon tracé
+ECG/battement de cœur)
 
 ### ATTRIBUTES:
 
