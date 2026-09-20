@@ -2378,6 +2378,12 @@ lights will be when they next turn on.
 
 ### EFFECT 458 – COP INTENSITY STEP
 
+```text
+                 Action          Param          Step Time         Time    Dwell   Level
+                 1                              (1)               0       1       100.0
+                 2                              (1)               0       1       0.0
+```
+
 ### ATTRIBUTES:
 
        -   Cycle Time 2
@@ -2390,6 +2396,12 @@ lights will be when they next turn on.
        absolute effect between red and blue.
 
 ### EFFECT 458.1 – RED/BLUE COP
+
+```text
+                 Action          Param          Step Time         Time    Dwell   Level
+                 1                              (2.5)             0       2.5     Red
+                 2                              (2.5)             0       2.5     Blue
+```
 
 ### ATTRIBUTES:
 
@@ -2405,6 +2417,14 @@ lights will be when they next turn on.
        the stage.
 
 ### EFFECT 452.1 – SEARCHLIGHT CIRCLE
+
+> Note de conversion : le document source numérote cet effet « 452.1 », ce qui
+> semble être une coquille d'ETC — il apparaît dans la solution du problème 458
+> (police searchlight), pas 452 (candle flicker). Non corrigé silencieusement,
+> signalé tel quel.
+
+(figure omise : diagramme Pan/Tilt du form Circle, ellipse cyan sur grille
+sombre, voir source PDF `manuals/effects-workbook/source/EosFamily_ET_Effects_INT_Wrkbk.pdf`)
 
 ### ATTRIBUTES:
 
