@@ -768,6 +768,32 @@ questions:
       au générateur — une macro qui s'arrête au mauvais endroit laisse une
       commande à moitié saisie sur une console en exploitation.
     backlog: null
+    traite: "partiel"
+    traite_ou: "voir entrée 2026-09-20 — première moitié confirmée au banc"
+
+  - date: "2026-09-20"
+    question: >-
+      Suite au 2026-09-17 : une macro dont la dernière ligne n'a pas d'`Enter`
+      laisse-t-elle vraiment la ligne de commande ouverte à l'opérateur ?
+    reponse: >-
+      Oui, confirmé directement au banc par l'utilisateur. La ligne de
+      commande reste ouverte après exécution de la macro. Il n'y a PAS
+      d'`Enter` caché : le softkey {Delete} n'a rien à retirer sur la
+      dernière ligne, contrairement à l'hypothèse posée le 2026-09-17.
+    sources:
+      - "Banc réel — observation directe de l'utilisateur, 2026-09-20"
+    confiance: "S"
+    consequence: "aucune_action_immediate"
+    detail: >-
+      Seule la première moitié de la question posée le 2026-09-17 est
+      tranchée. `rendre_macro()` continue de terminer systématiquement par un
+      `Enter` — aucun changement de code ici, puisque les deux entrées de
+      corpus qui en dépendraient (`record_preset`, `startup`) restent
+      bloquées par ailleurs (boutons de page d'encodeurs `Focus`/`Form`,
+      commande `Live Live`, absents du modèle). La règle
+      `fin_volontairement_non_terminee` peut passer de confiance B à S dans
+      `grammar/modele.yaml` pour la partie qu'elle couvre.
+    backlog: null
     traite: "non"
     traite_ou: null
 
