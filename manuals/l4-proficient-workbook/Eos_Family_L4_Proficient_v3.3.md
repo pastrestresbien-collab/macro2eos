@@ -280,6 +280,8 @@ when recalled.
       On non-motorized faders, the flashing arrow in the display will show how to
        reset the fader.
 
+      Contenu du macro affiché à l'écran : `Fader 1 Thru Home ♦`
+
 ### MACRO MODES
 
   Macros can be called to run on or off the command line.
@@ -316,6 +318,8 @@ when recalled.
         [Escape] to go back to the macro editor
       [Enter] {Delete} to remove 
       [Learn] or {Done}                                                             Macro should look like the below
+
+      Contenu du macro affiché à l'écran : `Select_Last Record Focus_Palette Wait_For_Input Label`
 
             [Live]     Recall Snapshot 4
             «OS Movers-Wash» (G7) [Full] [Full], «X Stage Look» (FP12)
