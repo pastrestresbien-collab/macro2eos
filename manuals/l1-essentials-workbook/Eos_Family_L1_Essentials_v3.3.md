@@ -1129,6 +1129,17 @@ the specific cue will change. The console may add move instructions into the
 next cue to preserve the intended look.
   Go to [Blind], and press [Format]                                                   to go into Spreadsheet view
 
+(figure omise : vue Blind en Spreadsheet du show "Mind The Gap - Level 1",
+mode Tracking. Colonnes = channels 1 à 12 (paramètre Intens), 12 est
+sélectionné/surligné en jaune. Lignes = cues 1 à 11, avec labels pour
+certaines (9 "speech", 10 "blackout", 11 "entrance"). Cellules colorées
+selon le code couleur documenté plus haut dans ce document (§Channel
+Display Color Conventions, p.25) : rouge = donnée manuelle, bleu = niveau
+monte, vert = niveau descend, magenta = tracké. Valeurs exactes non
+transcrites ici — illisibles avec certitude à la résolution disponible ;
+voir source PDF `manuals/l1-essentials-workbook/source/Eos_Family_L1_Essentials_v3.3.pdf`,
+page 27, pour le détail exact des niveaux.)
+
 ### TRACK
 
                                                                                       adds channel to cue 1 and tracks it
