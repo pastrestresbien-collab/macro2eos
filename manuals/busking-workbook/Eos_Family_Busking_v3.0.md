@@ -225,6 +225,21 @@ Why build a base cue?
 
  [Cue] [Cue]                                                                      Should be looking at Cue List 100
 
+(figure omise : panneau de propriétés Cue List Index pour "MTG Medium Bertha
+Rev C". Colonne gauche : Load, puis 3 mini-vignettes de cue list (Master,
+Down Fade, Master), Stop Back, Go. Grille de propriétés à droite, valeurs
+lues sur la capture : Master = Prop, HTP = HTP, Assert = Off, Priority = P4,
+Phantom = Off, Back from 1st = X, Go from Last = X (en surbrillance bleue),
+Stomp = Off, Exclude = Record, Chan Filter = X (case rouge), Param Filter =
+X (case rouge) ; ligne 2 : Int = LTP, Bkgrd = Enabled (surbrillance bleue),
+Man = (vide), Bkgrd P4 = (vide) ; colonne Go from Last/Back from 1st : Cue
+Out = Cue Out, Unload = Unload, Stomp = Solo, Exclude = Inhib ; ligne du bas
+= Wrap, Wrap, Nothing (surbrillance jaune), Restore, Restore, Release, GM.
+Voir source PDF `manuals/busking-workbook/source/Eos_Family_Busking_v3.0_Wkbk.pdf`,
+page 9, pour le détail exact — certaines valeurs peuvent être mal alignées
+dans cette transcription, la disposition en grille n'est pas garantie
+fidèle.)
+
 ### GO FROM LAST/ BACK FROM FIRST - WRAP? MAYBE? YES!
 
   While busking you don’t want to have to worry about which direction you
@@ -776,6 +791,30 @@ needed that enables changes to information very quickly.
 
 Snapshot 103.1 Enter                                                            MS 8004 Effects and MS 8002 “Busking”
 
+(figure omise, capture de référence réutilisée tout au long de ce chapitre
+avec une zone différente surlignée en rouge à chaque section : Magic Sheet
+Busking plein écran, fond sombre. De gauche à droite/haut en bas :
+- Colonne gauche : blocs de sélection de channels/groupes par système (FOH,
+  OH, back light — libellés trop petits pour être lus avec certitude) sur
+  plusieurs colonnes, avec à droite de chaque bloc des macros "Offset >>" /
+  "Fan >>".
+- Bande centrale : rangées d'icônes rondes (gobos, roues de couleur, cercles
+  blancs) — sélecteurs NP visuels.
+- Sous cette bande : une rangée de boutons NP (Focus/Color/Beam) colorés par
+  catégorie (vert, rouge/orange, bleu).
+- Colonne de droite : 2 boutons "Cue 100/1" / "Cue 100/2" avec sous eux des
+  paires de boutons "Rec Next Available" / "Man Rec Next Avail" (rouges),
+  puis un bloc "Manual Time" (colonnes INT/Focus/Color/Beam, valeurs 0-4) et
+  un bouton "All Off" en bas.
+- Bande du bas : rangée de boutons d'intensité (All, puis pourcentages,
+  Open).
+- Colonne d'extrême gauche (visible sur certaines captures) : boutons Sneak
+  par catégorie.
+- Barre de softkeys standard en bas (Set/Intensity, Focus, Color, Form,
+  Image, Shutter).
+Voir source PDF `manuals/busking-workbook/source/Eos_Family_Busking_v3.0_Wkbk.pdf`,
+pages 21-25 et 27, pour le détail exact et la zone surlignée à chaque étape.)
+
 Most of this magic sheet should look familiar to you. Parts of other
 magic sheets in the file have been taken and copied into this magic
 sheet to keep all the necessary tools on one page so that while you are
@@ -812,11 +851,27 @@ sets already built.
 
 ### CHANNEL AND GROUP SELECTIONS WITH OFFSET AND FAN MACROS
 
+(figure omise : même Magic Sheet busking — zone surlignée en rouge = colonne
+gauche entière, blocs de sélection channels/groupes + macros Offset/Fan. Voir
+p.22 du PDF source.)
+
 ### INTENSITY CONTROL
+
+(figure omise : même Magic Sheet busking — zone surlignée en rouge = rangée
+de boutons d'intensité en haut (All, pourcentages, Open). Voir p.23 du PDF
+source.)
 
 ### NP MODIFIERS: FOCUS, COLOR, BEAM
 
+(figure omise : même Magic Sheet busking — zone surlignée en rouge = bloc
+central des icônes NP (gobos/roues/cercles) + rangée de boutons NP
+Focus/Color/Beam. Voir p.23 du PDF source.)
+
 ### SYSTEM CONTROL OPTIONS
+
+(figure omise : même Magic Sheet busking — zone surlignée en rouge = colonne
+de boutons Sneak par catégorie, celle décrite juste en dessous dans
+« Sneak Options ». Voir p.24 du PDF source.)
 
 ### SNEAK OPTIONS
 
@@ -847,6 +902,10 @@ sets already built.
          FOH Spots (SolaThtr) (G102) [At] [0] [Sneak] [Enter]                                     Sneaks out at new default time (3 sec)
 
 ### MANUAL TIME SECTION
+
+(figure omise : même Magic Sheet busking — zone surlignée en rouge = bloc
+"Manual Time" (colonnes INT/Focus/Color/Beam) à droite. Voir p.25 du PDF
+source.)
 
  In Manual Time area, under the INT Column, tap 2                             Fader Icon under that column moved to 2
 
@@ -952,6 +1011,10 @@ Let’s take a look at Magic Sheet 8002 “Busking”.
 [Clear] [Sneak] [Enter]    [Go to Cue] [Out] {Enter]                               Start with a blank canvas
 
 ### RECORD CONTROLS
+
+(figure omise : même Magic Sheet busking — zone surlignée en rouge = boutons
+"Cue 100/1" / "Cue 100/2" et paires "Rec Next Available" / "Man Rec Next
+Avail" à droite. Voir p.27 du PDF source.)
 
     Tap Cue 100/1 Base Purple World
 
