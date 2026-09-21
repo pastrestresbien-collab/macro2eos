@@ -1734,6 +1734,24 @@ CAS = [
         "statut": "incompris",
     },
     {
+        # Trouvé le 2026-09-21 en chassant les silences : Zoom et Pan sont
+        # tous deux des déclencheurs de LA MÊME intention `regler_parametre`,
+        # donc `_ignores` les exclut par construction — sans ce garde-fou
+        # dédié, le second mot disparaissait sans un mot (même piège que
+        # `couleur_unique`, une commande n'en règle qu'un).
+        "nom": "regler_parametre — deux mots de paramètre dans la phrase, jamais le premier en silence",
+        "phrase": "diminue le zoom et le pan du circuit 1",
+        "statut": "a_preciser",
+        "questions": ["parametre_unique"],
+    },
+    {
+        "nom": "regler_parametre — deux mots de paramètre, réponse consommée",
+        "phrase": "diminue le zoom et le pan du circuit 1",
+        "reponses": {"parametre_unique": "Pan"},
+        "statut": "compris",
+        "rendu": "Chan 1 Pan -%",
+    },
+    {
         # Zoom/Iris : paramètres en POURCENTAGE (contrairement à Pan/Tilt en
         # degrés). Ajouté le 2026-09-14 pour valider que le mécanisme
         # générique s'étend vraiment sans code neuf — seule une entrée de

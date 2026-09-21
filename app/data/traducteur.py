@@ -462,6 +462,23 @@ class Traducteur:
         )
 
     @staticmethod
+    def _question_parametre_unique(parametres: list[str]) -> Question:
+        """Plusieurs mots de paramètre dans la même phrase (« le zoom et le
+        pan du circuit 1 »). Symétrique de `_question_couleur_unique` : une
+        commande `regler_parametre` n'en règle qu'un, et les deux mots sont
+        des déclencheurs de la MÊME intention — `_ignores` les exclut donc
+        tous les deux par construction, sans ce garde-fou dédié le second
+        disparaîtrait sans un mot."""
+        return Question(
+            id="parametre_unique",
+            texte="Plusieurs paramètres dans la phrase — lequel régler ?",
+            pourquoi="Une commande de paramètre n'en règle qu'un. En retenir "
+                     "un d'office laisserait l'autre de côté sans le dire, "
+                     "et la macro aurait l'air complète.",
+            options=[Option(cle=p, libelle=p) for p in parametres],
+        )
+
+    @staticmethod
     def _question_couleur(mot: str, exaequo: list[str]) -> Question:
         return Question(
             id=f"couleur:{mot}",
@@ -1286,6 +1303,34 @@ class Traducteur:
                 return Traduction(statut="incompris", notes=[
                     "Aucun paramètre reconnu (Pan, Tilt...)."])
             parametre = impose
+
+        # 1bis. AMBIGUÏTÉ : plusieurs mots de paramètre dans la même phrase
+        #    (« diminue le zoom et le pan du circuit 1 ») ne doivent jamais se
+        #    résoudre au premier trouvé en silence — même piège que
+        #    `couleur_unique`, une commande de paramètre n'en règle qu'un.
+        #    `_ignores` ne le voit pas : Zoom et Pan sont tous deux des
+        #    déclencheurs de LA MÊME intention retenue (`regler_parametre`),
+        #    donc explicitement exclus de son calcul (voir sa docstring) —
+        #    d'où ce garde-fou dédié plutôt qu'un rattrapage général. Ne
+        #    s'applique pas à `parametre_impose` (i_parametre reste None) :
+        #    ce mécanisme n'a jamais qu'un seul paramètre possible.
+        #    Trouvé le 2026-09-21 en chassant les silences côté a_preciser.
+        if i_parametre is not None:
+            candidats_param = [(i_parametre, parametre)]
+            for i, tok in enumerate(toks):
+                if i in pris or i == i_parametre:
+                    continue
+                cle = self._parametres.get(tok)
+                if cle and cle not in {c for _, c in candidats_param}:
+                    candidats_param.append((i, cle))
+            if len(candidats_param) > 1:
+                reponse = reponses.get("parametre_unique")
+                choisi = next((c for c in candidats_param if c[1] == reponse), None)
+                if choisi is None:
+                    return Traduction(statut="a_preciser", questions=[
+                        self._question_parametre_unique([c for _, c in candidats_param])])
+                i_parametre, parametre = choisi
+                pris.add(i_parametre)
 
         # 2. quelle forme ? Lue dans le modèle pour CE paramètre précis,
         #    jamais supposée : « inverse le tilt » doit rester incompris tant
