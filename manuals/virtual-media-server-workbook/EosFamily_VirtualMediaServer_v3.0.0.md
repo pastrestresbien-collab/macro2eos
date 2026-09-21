@@ -197,6 +197,23 @@ the Pixel Map.
        If it helps, think of the Pixel Map utility as a Media Server box inside of the
        console – hence the name Virtual Media Server.
 
+(figure omise : deux schémas de flux comparés.
+« External Media Server Control » : Eos/Ion → Media Control Channels
+→ [DMX] → External Media Server (boîte contenant Content Selection →
+Content Mapping to Outputs → Output to Devices, avec Media Library
+alimentant Content Selection et Output Device Configuration alimentant
+Output to Devices) → [Video] → TV/Projector/Monitor.
+« Virtual Media Server Control » : Eos/Ion → Media Control Channels →
+Virtual Media Server Software (même enchaînement interne : Content
+Selection → Content Mapping to Outputs → Output to Devices, avec Media
+Library et Pixel Map alimentant respectivement Content Selection et
+Output to Devices, cette dernière étape produisant directement un DMX
+Chip) → [DMX] → LED/Dimmer/Moving Light.
+Le point clé illustré : le VMS remplace la sortie vidéo externe par une
+sortie DMX directe depuis la console.
+Voir source PDF `manuals/virtual-media-server-workbook/source/EosFamily_ET_VMS_v3.0.0revA.pdf`,
+page 8, pour le schéma exact.)
+
 ### ASSIGNING SERVER & LAYER CHANNELS
 
        Just like in an external Media Server, we must tell the Virtual Media Server
