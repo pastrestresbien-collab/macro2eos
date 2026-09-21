@@ -3332,8 +3332,8 @@
         "id": "fin_volontairement_non_terminee",
         "regle": "Une macro peut se terminer SANS `Enter` final, exprès, pour laisser la ligne de commande ouverte à l'opérateur.\n",
         "motif": "Démontré dans une vidéo tutoriel officielle ETC (2026-09-13) : `Record Focus Palette {Wait for Input}` (pause, saisie du numéro, reprise sur [Macro]) puis `Label` SANS `Enter` — le softkey {Delete} sert à retirer l'Enter de clôture à l'édition. La macro rend la main avec `... Label ` en attente ; l'opérateur tape le texte et valide lui-même. Distinct de `{Wait for Input}` : ici il n'y a plus de reprise automatique du tout, la macro s'arrête pour de bon.\n",
-        "confiance": "B",
-        "note": "Non trouvé dans le texte du manuel malgré recherche ciblée — à vérifier au banc avant de l'utiliser dans une macro générée automatiquement par ce projet, puisque rendre_macro() termine aujourd'hui systématiquement par un `Enter`.\n"
+        "confiance": "S",
+        "note": "Confirmé au banc le 2026-09-20 : une dernière ligne sans `Enter` laisse bien la ligne de commande ouverte à l'opérateur. Nuance non recoupée : le test au banc n'a pas retapé une ligne déjà terminée pour utiliser {Delete} dessus (il n'y avait simplement jamais eu d'`Enter` saisi) — le mécanisme {Delete} décrit dans la vidéo reste à confiance B seul. rendre_macro() continue de terminer systématiquement par un `Enter` : les deux entrées de corpus qui dépendraient de cette règle (record_preset, startup) restent bloquées par ailleurs (boutons de page d'encodeurs Focus/Form, commande Live Live, absents du modèle) — voir reference/journal_questions.yaml, entrées 2026-09-17 et 2026-09-20.\n"
       }
     ]
   },
