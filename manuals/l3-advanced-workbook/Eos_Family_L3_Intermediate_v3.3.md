@@ -571,6 +571,17 @@ NOTE: In addition to calling a macro on the command line, macros can be called b
 
           The Macro list should look something like this:
 
+```text
+     Macro   Label          Macro Contents
+     1       Stop FX        StopEffect ♦
+     2       Desaturate     Select_Last  Saturation  @ / 9 0 ♦
+     3       Rec Next FP    Select_Last Record_Focus_Palette Next ♦
+     4       App Enable     RFR Enable ♦
+     5       App Disable    RFR Disable ♦
+```
+
+`♦` marque la fin de commande dans l'affichage de l'éditeur de macro (terminateur), pas un caractère à taper.
+
 ## Custom Direct Selects
 
 Custom Direct Selects (CDS) support thousands of custom target lists, which
@@ -1317,6 +1328,22 @@ and to convert data between.
  [Go To Cue] [Enter]                                                              updated), 102 moves back to where it was since
                                                                                   we never updated it
 
+(figure omise : 4 schémas côte à côte illustrant la chaîne Cue → Preset →
+Palette → Absolute Data pour chaque mode d'Update, avec des flèches rouges
+marquant les liens rompus/redirigés :
+- "All" : chaîne complète encerclée en rouge, rien de rompu — tout est mis
+  à jour (cue, preset, palette, jusqu'à la donnée absolue).
+- "Make Absolute" : lien Cue→Preset barré d'une croix rouge, une flèche
+  rouge part de Cue directement vers Absolute Data — la référence est
+  cassée, la donnée devient absolue au niveau de la cue.
+- "Ref Only" : lien Cue→Preset barré, une flèche rouge va de Preset vers
+  Palette — seule la référence (preset/palette) est mise à jour, pas la
+  cue.
+- "All - Break nested" : lien Preset→Palette barré d'une croix rouge —
+  la chaîne s'arrête au preset, la palette n'est pas mise à jour.
+Voir source PDF `manuals/l3-advanced-workbook/source/Eos_Family_L3_v3.3.pdf`,
+page 29, pour le schéma exact.)
+
 ### UPDATE INTENSITY CUE ONLY
 
 When Intensity Cue Only is enabled, regardless of the Track/Cue Only setting of
@@ -1938,6 +1965,21 @@ setup mark time is to use discrete timing.
        [Displays] {Magic Sheet} [1] [Enter]                                  opens Magic Sheet 1
 
      After Level 2, the Magic Sheet should look something like this:
+
+(figure omise : capture plein cadre du magic sheet construit en Level 2.
+Fond dégradé bleu foncé. À gauche, 10 boutons cyan rectangulaires en 2
+colonnes de 5, libellés type "Group [nom]" (illisibles en détail à cette
+résolution). En haut au centre, 2 losanges sombres avec libellés
+"[FP] Low Highlight" / "[FP] High Highlight" (focus palettes). En dessous,
+3 autres losanges sombres avec libellés type "[FP] Guitar", "[FP] Singer",
+"[FP] Drums". 5 boutons roses en forme de projecteur stylisé, tous
+labellisés "FL" (probablement des softkeys Focus Palette/fixture). À
+droite, 3 boutons sombres rectangulaires : "Full", "Non Dim", "Enter". En
+bas, une icône ronde flèche (navigation entre vues) et une icône de
+réglages/config, suivies d'une rangée de 7 pastilles de couleur nommées :
+Red, Orange, Yellow, Green, Lt Blue, Dk Blue, Magenta.
+Voir source PDF `manuals/l3-advanced-workbook/source/Eos_Family_L3_v3.3.pdf`,
+page 42, pour le détail exact.)
 
 ### ADDITIONAL OBJECTS
 
