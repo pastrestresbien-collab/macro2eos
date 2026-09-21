@@ -132,6 +132,15 @@ tools are nearly endless.
 
       Open the Editor
 
+(figure omise : capture annotée de l'éditeur Magic Sheet avec flèches
+pointant vers 6 zones — "Workspace" (grand espace noir central), "Object
+Library" et "Layout Toolbar" (en haut à droite), "Open & Close Editor"
+(flèche vers le milieu droit), "Object Properties" (en bas), "Quick Save"
+(icône en bas à gauche du workspace), et l'ensemble encadré "Editor" à
+droite. Voir source PDF
+`manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 4, pour le détail exact.)
+
        - Editor is divided into three sections: Layout Toolbar, Object Library,
             Object Properties
        - Bottom left of the workspace is the Quick Save. You only have one
@@ -267,6 +276,14 @@ tools are nearly endless.
           Close the Editor
 
     Your Magic Sheet might look something like the image below.
+
+(figure omise : à gauche, bouton "FOH Spots (SolaThtr)" Group 102 sur fond
+gris foncé. À droite, un array 2×5 de boutons Color Palette carrés — rangée
+1 : Red (CP 9021), Orange (9022), Amber (9023), Gold (9024), Yellow (9025) ;
+rangée 2 : Azure (9031), LT Blue (9032), Blue (9033), Violet (9034), Lavendar
+(9035).
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 6, pour le détail exact.)
 
 ### INSERTING ADDITIONAL OBJECTS
 
@@ -410,6 +427,17 @@ icon where it is…we are going to add another object under Color Palette
 9031!
 Your Magic Sheet might look something like this:
 
+(figure omise : horloge numérique en haut à gauche, champ Live "Group 102 +
+Chan 101 + 9201" en haut. Deux rangées de 5 boutons Color Palette carrés
+colorés — rangée 1 : Red (CP 9021), Orange (9022), Amber (9023), Gold (9024),
+Yellow (9025) ; rangée 2 : Azure (9031), LT Blue (9032), Blue (9033), Violet
+(9034), Lavender (9035). À gauche, un objet fixture (mover stylisé, channel
+101, groupe 102). En bas, un fader vertical à droite, une icône ronde X bleue,
+une icône triangle/losange, 4 cases numériques (valeurs sACN), une case noire,
+un bouton "Relay 1/1", "Sneak All", "Select_Last Sneak Enter", "Select Last".
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 9, pour le détail exact.)
+
 ### CREATING AN INDICATOR OBJECT USING AN INDICATOR CHANNEL
 
 Let’s make a front light sub
@@ -522,6 +550,14 @@ object based on the console data.
                                                                             line – remember user 0 in the command!
 
   Your Magic Sheet might look something like this now:
+
+(figure omise : même Magic Sheet qu'à l'étape précédente, mais en mode Live
+avec un fond dégradé doré/noir (au lieu du fond neutre) pour montrer la
+différence visuelle Live/Blind décrite dans le texte ci-dessus. Horloge
+"1:44:17 PM", label "Fronts / Sub 301" à gauche sur le fixture, valeurs sACN
+affichées "51 51 29 255".
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 11, pour le détail exact.)
 
 ### A REVIEW OF MAGIC SHEET DISPLAYS & NAVIGATION
 
@@ -666,6 +702,19 @@ of the Magic Sheet Editor. There are three options:
                          intensity.
                      Bottom right are homing buttons – home all, then home
                          individual categories
+
+(figure omise : capture de la Magic Sheet 301 "Movers" complète. Colonne de
+gauche = menu de tabs (Movers, LED Fixtures, Cyc, Effects, File Plots, Rig,
+Money Lx, House Sub, Record, Clear CmdLine). Grande zone grise = staging area
+avec, en haut, boutons de groupes par système (FOH Spots, OH Spot, OH Wash,
+Side Spots) en dégradés de couleur par sous-catégorie, une grille de palettes
+couleur mélangées à gauche (carrés) et roues de couleur (cercles) pour les
+movers, une grille de Focus Palettes en dégradé vert au centre, et à droite
+des Beam Palettes (zoom, strobe, gobos par type de fixture) en bleu. En haut
+à droite, colonne "Intensity Palettes" (Full/75%/50%/25%/Out). En bas à
+droite, boutons de home par catégorie.
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 14, pour le détail exact.)
 
 ### MOVERS - MAGIC SHEET 301
 
@@ -896,6 +945,14 @@ The channels’ fill property is linked to Target Intensity & Color.
  Test the navigation of your menu structure.
 
 Your Magic Sheet might look something like this:
+
+(figure omise : menu vertical de 8 boutons violets empilés — Home, Moving
+Lights, System, Effects, Target, Programming, Plot, Control — occupant la
+colonne de gauche, chacun associé à un macro du même numéro (501-508). Le
+reste de la Magic Sheet (zone grise à droite) est encore vide à ce stade de
+l'exercice.
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 19, pour le détail exact.)
 
 ### MAGIC SHEET NAVIGATION – IN ANOTHER TAB/FRAME
 
@@ -1167,6 +1224,20 @@ examples are:
 
 Your Magic Sheet might look something like this:
 
+(figure omise : menu vertical à gauche (Home, Moving Lights en surbrillance,
+System, Effects, Target, Programming, Plot, Control). Zone principale grise :
+en haut, groupes de fixtures par système — FOH Spots (SolaFrame), OH Spot
+(Sola 750), OH Wash (Sola 2K), Side Spots (Sola 750) — représentés par des
+icônes de projecteurs stylisés numérotés. Au centre, une grille de Focus
+Palettes en vert (USR, USC, USL / CSR, CS, CSL / DSR, DSC, DSL). À droite,
+colonne "Intensity Palettes" (Full/75%/50%/25%/Out). En haut à droite, une
+grille de Color Palettes (Red, Orange, Amber, Gold, Yellow, Lime, Green,
+Turquoise, Mint, Cyan, Azure, Lt Blue, Blue, Violet, Lavender, Purple, Mag,
+Open). En bas à droite, boutons "Sneak All", "Sneak Selected", "Home
+Selected".
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 25, pour le détail exact.)
+
 ### SYSTEM MAGIC SHEET – INDIVIDUAL EXERCISE
 
 Students can choose to continue working on this Magic Sheet (maybe
@@ -1302,6 +1373,19 @@ could be made as a class before moving on to the exercise.
 
        Your Magic Sheet might look something like this:
 
+(figure omise : menu vertical à gauche (Home, Moving Lights, System, Effects
+en surbrillance, Target, Programming, Plot, Control). Zone principale grise,
+3 colonnes d'effets par type de paramètre : "Intensity" (marron, array
+Step/Wave × Absolute/Linear avec labels type Int Step, Step, 0/16, Wave,
+25/84, Pulse, etc.), "Focus" (vert foncé, array Circle/Square/Figure 8/
+Spiral/Reverse Circle/Ballyhoo), "Beam" (bleu foncé, Zoom Step/Zoom Wave/Iris
+Step/Iris Wave). En dessous, une rangée de 4 boutons rouges "STOP Intensity",
+"STOP Focus", "STOP Beam", "STOP Color" et un bouton "STOP ALL" plus grand.
+À droite, colonne "Color" avec 2 sous-colonnes (Step / Wave) de pastilles
+colorées correspondant aux Color Palettes 9001-9038.
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 28, pour le détail exact.)
+
 ### TARGET MAGIC SHEET – INDIVIDUAL EXERCISE
 
        Students can choose to keep working on this effects page… maybe add
@@ -1416,6 +1500,17 @@ Magic Sheets
 
 Your Magic Sheet might look something like this:
 
+(figure omise : plan de feu importé en fond (image scannée, cartouche
+"LEVEL 4 CONTROL PATCH — Logic Plot" en haut à droite), avec des trusses
+horizontales (traits bleus en pointillé) portant des fixtures rondes
+numérotées superposées sur les positions du plan. Colonne de gauche : boutons
+violets "(Label)" empilés (menu de navigation, dont un en magenta pour
+indiquer la page active). Encadré "By System" en bas à gauche avec une
+mini-légende de fixtures. Encadré "By Position" en bas à droite listant des
+positions (1 Room Left, etc.) avec boutons bleus associés.
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 31, pour le détail exact.)
+
 ### PLOT MAGIC SHEET – INDIVIDUAL EXERCISE
 
 Continue to lay out the plot as you would like.
@@ -1498,6 +1593,16 @@ Frame_Angle_A
 Frame_Assembly
 
 An Example of a Shutter Tool from completed class file:
+
+(figure omise : widget "Shutters" sur fond gris, titre en haut. Disposition
+en croix : 4 boutons trapézoïdaux aux coins labellisés D (haut-gauche), A
+(haut-droite), C (bas-gauche), B (bas-droite) — les 4 shutters/thrusts. Au
+centre, une croix de boutons ovales labellisés A (haut), D (gauche), B
+(droite), C (bas), avec un bouton carré "All" au centre. En dessous, un
+bouton "All Angle", puis 3 boutons en forme de maison : "Thrust", "Assembly"
+(actif/surligné), "Angle".
+Voir source PDF `manuals/magic-sheets-workbook/source/EosFamily_MSInt_Workbook_v3.0.1A.pdf`,
+page 33, pour le détail exact.)
 
 If this tool is not applicable to a student, they may choose to make
 something else that they can justify being on a programmer Magic Sheet.
