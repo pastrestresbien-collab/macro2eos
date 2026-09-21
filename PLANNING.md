@@ -5,7 +5,7 @@ qui coexistaient et divergeaient (corpus « PRIORITÉS BANC », corpus « ZONES 
 OUVERTES », grammaire consolidée §15) — celles-ci restent en place comme trace d'audit
 mais ne sont plus à mettre à jour.
 
-Dernière mise à jour : 2026-08-01.
+Dernière mise à jour : 2026-09-21.
 
 ---
 
@@ -16,8 +16,8 @@ Dernière mise à jour : 2026-08-01.
 | Acquis | État |
 |---|---|
 | Corpus communautaire 174 entrées | ✅ complet (sauf titre de l'entrée #154) |
-| Manuel officiel v3.2.0, 32 chapitres | ✅ converti intégralement, vérifié |
-| 12 workbooks / documents officiels annexes | ✅ convertis intégralement, vérifiés |
+| Manuel officiel v3.2.0, 32 chapitres | ✅ converti intégralement, vérifié (550/550 figures comptées, voir audit ci-dessous) |
+| 12 workbooks / documents officiels annexes | ✅ convertis intégralement, **audités et corrigés le 2026-09-21** (voir section dédiée) |
 | Table canonique des touches OSC (1155) | ✅ `reference/eosKeys.ts`, croisée avec le manuel |
 | Journal terrain nomad réel (confiance S) | ✅ intégré verbatim |
 | Grammaire consolidée de référence | ✅ `reference/GRAMMAIRE_ETC_EOS_CONSOLIDEE.md` |
@@ -127,6 +127,63 @@ Le simulateur `reference/tools/fakeeos.ts` ne valide que le transport, jamais la
   probable — à ne pas prendre pour argent comptant.
 
 ---
+
+## Audit de fidélité PDF→MD (2026-09-21)
+
+**Déclencheur** : en travaillant sur `effects-workbook`, un tableau d'actions montré à
+l'écran par l'utilisateur (effet 458) s'est révélé absent de la conversion `.md` —
+aucune trace, aucun marqueur `(figure omise)`. Vérification étendue à tout le corpus.
+
+**Cause identifiée** : la conversion DOCX→MD (`operations-manual`) marque
+systématiquement chaque figure omise — vérifié par comptage exact : **550 références
+d'image (`<a:blip>`) dans le `.docx` source = 550 marqueurs `(figure omise)`** dans les
+`.md` du manuel. Aucune perte. En revanche, les conversions **PDF→MD** (tous les
+workbooks) n'avaient **aucun mécanisme de signalement** : une capture d'écran pleine
+page ou un tableau rendu comme image dans le PDF source pouvait disparaître
+silencieusement à la conversion, sans laisser de trace. Les tableaux texte natifs et
+les captures purement illustratives (redondantes avec un texte déjà complet) n'étaient
+pas affectés.
+
+**Méthode de vérification** : `poppler-utils` (absent de l'environnement de base) a été
+installé pour rendre les PDF source page par page et les comparer visuellement aux
+`.md`. Pour `operations-manual` (`.docx`), LibreOffice s'est révélé cassé dans cet
+environnement (échoue même sur un `.txt` trivial) — vérification faite à la place par
+comptage XML (`word/document.xml`) des références d'image, comparé aux marqueurs
+`(figure omise)`.
+
+**Résultat, par document** (tous corrigés directement dans les `.md`, commits sur
+`claude/eos-console-learning-m6zn91`) :
+
+| Document | Trous trouvés | Nature |
+|---|---|---|
+| `effects-workbook` | 7 | Tableaux d'actions d'effets (458, 458.1, 453.1, 454.4, 455, 456) + figures de formes d'onde |
+| `magic-sheets-workbook` | 9 | Le plus touché — sujet visuel par nature. Captures pleine page d'éditeur, de magic sheets finies, d'exemples système/target/plot |
+| `busking-workbook` | 7 | Diagramme Cue List Index (grille de propriétés) + 6 captures de la Busking Magic Sheet réutilisée par section |
+| `l3-advanced-workbook` | 3 | 2 schémas (Update Ref Only/Make Absolute, magic sheet MS 301) + table Macro Editor (transcrite, lisible) |
+| `l1-essentials-workbook` | 1 | Table de tracking Blind/Spreadsheet (valeurs exactes illisibles à la résolution dispo — documentée comme figure omise plutôt qu'inventée) |
+| `l2-enhanced-workbook` | 1 | Magic sheet Appendix 2 entièrement absente |
+| `virtual-media-server-workbook` | 1 | Schéma comparatif External/Virtual Media Server Control |
+| `l4-proficient-workbook` | 2 | Petites captures de contenu de macro affiché à l'écran |
+| `augment3d-workbook` | 0 | Propre — captures uniquement illustratives, jamais seules porteuses de données |
+| `control-philosophy-whitepaper` | 0 | Propre — icônes/photos décoratives, légendes déjà en texte |
+| `osc-integration` | 0 | Propre — aucune image dans le PDF source, contenu 100% texte vérifié |
+| `hotkeys` | 0 | Propre — table à raccourcis secondaires (cellule gauche vide) correctement fusionnée |
+| `reference/Supported_OSC_Commands` | 0 | Propre — table dense entièrement vérifiée |
+| `operations-manual` (.docx) | 0 | Propre — 550/550 figures comptées, conversion DOCX fiable dès le départ |
+
+**Où sont les fixes** : chaque trou corrigé directement inline dans le `.md` concerné,
+soit par transcription complète (quand lisible avec confiance : tables de commandes,
+valeurs numériques nettes), soit par un bloc `(figure omise : description...)` avec
+renvoi à la page exacte du PDF source (quand illisible ou trop complexe pour être
+transcrit sans risque d'inventer une valeur).
+
+**Ce qui reste ouvert** : les valeurs exactes de la table de tracking `l1-essentials`
+(p.27 du PDF) n'ont pas été transcrites, faute de lisibilité certaine à la résolution
+disponible — à relire directement dans le PDF source si le détail devient nécessaire.
+
+**Leçon méthodologique retenue** : toute future conversion PDF→MD doit désormais
+marquer systématiquement chaque figure omise (même principe que la conversion DOCX),
+pour ne pas rouvrir ce risque sur un futur document.
 
 ## Dettes documentaires mineures
 
