@@ -1135,10 +1135,26 @@ sélectionné/surligné en jaune. Lignes = cues 1 à 11, avec labels pour
 certaines (9 "speech", 10 "blackout", 11 "entrance"). Cellules colorées
 selon le code couleur documenté plus haut dans ce document (§Channel
 Display Color Conventions, p.25) : rouge = donnée manuelle, bleu = niveau
-monte, vert = niveau descend, magenta = tracké. Valeurs exactes non
-transcrites ici — illisibles avec certitude à la résolution disponible ;
-voir source PDF `manuals/l1-essentials-workbook/source/Eos_Family_L1_Essentials_v3.3.pdf`,
-page 27, pour le détail exact des niveaux.)
+monte, vert = niveau descend, magenta = tracké. Voir source PDF
+`manuals/l1-essentials-workbook/source/Eos_Family_L1_Essentials_v3.3.pdf`,
+page 27, pour vérification — la transcription ci-dessous est une lecture
+visuelle de bonne foi, PAS un OCR, et son alignement colonne par colonne
+n'est pas garanti pixel-exact.)
+
+```text
+Cue  Label      1   2   3   4   5   6   7   8   9   10  11  12(sél.)
+1                -   -   -   -   -   -   -   -   -   -   -   -
+2                -   -   35  -   -   35  35  35  -   -   -   -
+3                -   -   0   -   -   35  35  0   -   -   -   -
+4                75  75  75  75  75  75  75  75  75  -   -   -
+5                0   0   0   0   0   0   0   50  0   -   -   -
+6                -   -   -   -   -   -   -   -   -   -   -   -
+7                -   -   -   -   -   -   -   -   -   -   -   -
+8                -   -   -   -   -   -   -   -   -   -   -   -
+9    speech      -   FL  -   -   -   -   -   -   -   -   -   -
+10   blackout    -   0   -   -   -   -   -   -   -   -   -   -
+11   entrance    FL  -   FL  -   -   FL  -   -   -   -   -   (sél.)
+```
 
 ### TRACK
 

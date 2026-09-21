@@ -177,9 +177,11 @@ valeurs numériques nettes), soit par un bloc `(figure omise : description...)` 
 renvoi à la page exacte du PDF source (quand illisible ou trop complexe pour être
 transcrit sans risque d'inventer une valeur).
 
-**Ce qui reste ouvert** : les valeurs exactes de la table de tracking `l1-essentials`
-(p.27 du PDF) n'ont pas été transcrites, faute de lisibilité certaine à la résolution
-disponible — à relire directement dans le PDF source si le détail devient nécessaire.
+**Mise à jour** : la table de tracking `l1-essentials` (p.27 du PDF) a finalement été
+transcrite à la demande de l'utilisateur — lecture visuelle de bonne foi, explicitement
+marquée non-OCR dans le `.md`, alignement colonne par colonne non garanti pixel-exact.
+À revérifier contre le PDF source avant toute utilisation qui dépendrait des valeurs
+exactes.
 
 **Leçon méthodologique retenue** : toute future conversion PDF→MD doit désormais
 marquer systématiquement chaque figure omise (même principe que la conversion DOCX),
