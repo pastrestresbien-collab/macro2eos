@@ -164,12 +164,20 @@ comptage XML (`word/document.xml`) des références d'image, comparé aux marque
 | `l2-enhanced-workbook` | 1 | Magic sheet Appendix 2 entièrement absente |
 | `virtual-media-server-workbook` | 1 | Schéma comparatif External/Virtual Media Server Control |
 | `l4-proficient-workbook` | 2 | Petites captures de contenu de macro affiché à l'écran |
-| `augment3d-workbook` | 0 | Propre — captures uniquement illustratives, jamais seules porteuses de données |
-| `control-philosophy-whitepaper` | 0 | Propre — icônes/photos décoratives, légendes déjà en texte |
-| `osc-integration` | 0 | Propre — aucune image dans le PDF source, contenu 100% texte vérifié |
-| `hotkeys` | 0 | Propre — table à raccourcis secondaires (cellule gauche vide) correctement fusionnée |
-| `reference/Supported_OSC_Commands` | 0 | Propre — table dense entièrement vérifiée |
+| `augment3d-workbook` | 0 | Propre — **80/80 pages vérifiées intégralement** (2026-09-21, suite à demande), captures uniquement illustratives, jamais seules porteuses de données |
+| `control-philosophy-whitepaper` | 0 | Propre — **12/12 pages vérifiées intégralement**, icônes/photos décoratives, légendes déjà en texte |
+| `osc-integration` | 0 | Propre — **14/14 pages vérifiées intégralement**, aucune image dans le PDF source, contenu 100% texte vérifié |
+| `hotkeys` | 0 | Propre — **5/5 pages vérifiées intégralement**, table à raccourcis secondaires (cellule gauche vide) correctement fusionnée |
+| `reference/Supported_OSC_Commands` | 0 | Propre — **17/17 pages vérifiées intégralement**, table dense entièrement vérifiée |
 | `operations-manual` (.docx) | 0 | Propre — 550/550 figures comptées, conversion DOCX fiable dès le départ |
+
+**Note méthode (2026-09-21)** : ces 5 documents marqués « propres » ont été vérifiés
+**page par page en intégralité**, pas par échantillonnage — `augment3d-workbook`
+notamment, plus gros volume du corpus (80 pages, 393 images intégrées), initialement
+sondé sur ~44 pages puis complété aux 80 sur demande explicite. Aucun trou
+supplémentaire trouvé. Les autres workbooks du tableau ci-dessus (`effects`,
+`magic-sheets`, etc.) restent, eux, sondés par échantillonnage large mais pas
+exhaustif page par page — un passage exhaustif y reste possible si jugé utile.
 
 **Où sont les fixes** : chaque trou corrigé directement inline dans le `.md` concerné,
 soit par transcription complète (quand lisible avec confiance : tables de commandes,
