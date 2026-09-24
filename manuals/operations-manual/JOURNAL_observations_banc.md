@@ -164,6 +164,20 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
 - ⚠ Le test n'est donc plus « sans dummy » : 9001 a servi de réservoir automatique.
 - Piste ouverte : un simple dummy sans adresse par type, **sans aucune préparation des
   palettes**, suffirait-il pour qu'Eos y range lui-même les défauts ? (à valider en B3)
+- Blind palette 3, Data Latched, après l'aller :
+  - 9001 (Rush, défaut, bleu) : R 100 / G 61.103 / B 0 / W 29.91 / Color Mix 0
+  - ch 1 (Beam, discret, blanc) : R 100 / G 61.103 / B 0 / W 29.91 / Color Mix 0.0 Normal
+  - ch 2 (Beam) : **R/G/B/W VIDES** ; Color Mix 0.0 Normal (blanc)
+- **Constat (S) — CRITIQUE** : quand **tous** les channels d'un type changent de type
+  sans défaut préparé pour le nouveau type, **seul l'ancien défaut garde ses valeurs**
+  (converties en discret). **Les channels qui suivaient le défaut perdent leurs
+  données** (ici ch 2 perd son orange). C'est le bug décrit sur le forum, qui se
+  manifeste dans ce cas précis (et pas dans celui de la phase 6 D, où un channel de
+  l'ancien type restait).
+- Valeur discrète du ch 2 Color Mix -138.0 Normal → 0.0 Normal (convertie/perdue).
+- **Conséquence** : la « solution 1 » (changer le type sans rien préparer) est
+  **à proscrire** pour un show avec palettes By Type. Un défaut préparé pour le
+  **nouveau** type (dummy, phases 1-5) est nécessaire.
 
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
