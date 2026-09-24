@@ -116,5 +116,20 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
   — le comportement correspond à la demande d'évolution
   « changing a palette's default channel type … should create a new default channel ».
 - **Signal D sur la source forum** pour ce point : obsolète sur cette version.
-- Question ouverte : d'où ch 1 (Beam) tient-il `L124` alors qu'il n'apparaît pas dans la
-  colonne By Type et que la palette n'a pas de `+` ? (vérification Blind en cours)
+- Live, Data déverrouillé : ch 1 et ch 2 = `PC 2` sur tous les paramètres couleur →
+  références de cue intactes.
+- Blind palette 2 : ch 2 (Rush) `G L124` en **bleu** (nouveau défaut) ; ch 1 (Beam)
+  `G L124` en **blanc** (discret) → Eos a conservé la valeur du ch 1 **en donnée
+  discrète, convertie vers le nouveau type**.
+- **Piège d'affichage (S)** : la liste des palettes (colonne By Type = `2`, indicateur
+  `T` sans `+`) ne signale **pas** cette donnée discrète du ch 1. Seul Blind la révèle.
+
+**Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
+(nom d'appareil PCFIXE).
+
+**Bilan phase 6** : sur 3.3.9, changer le type du channel par défaut d'une palette By
+Type ne fait **rien perdre** : défaut réassigné au plus petit channel restant de
+l'ancien type, valeur du channel changé gardée en discret (convertie). Les dummies
+restent utiles pour avoir une valeur **réglée par type** (au lieu d'une conversion
+automatique) et pour que les vrais channels restent en suivi pur (pas de discrets qui
+s'accumulent).
