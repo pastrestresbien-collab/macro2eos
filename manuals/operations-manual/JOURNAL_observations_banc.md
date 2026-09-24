@@ -124,6 +124,22 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
 - **Piège d'affichage (S)** : la liste des palettes (colonne By Type = `2`, indicateur
   `T` sans `+`) ne signale **pas** cette donnée discrète du ch 1. Seul Blind la révèle.
 
+### Phase 7 — Retour vers l'ancien type SANS dummy (solution 1)
+
+**Partie A — ch 1 : Rush → Beam → Rush, palette 2**
+- Patch : `[1] {Type}` → `Rush Par 2 RGBW Zoom 9ch` `[Enter]`.
+- Blind palette 2, Data Latched :
+  - ch 1 (discret, blanc) : R 0.503 / G 100 / B 0 / W 17.128 / **Color Mix 0**
+  - ch 2 (défaut, bleu)   : R 0.503 / G 100 / B 0 / W 17.128 / Color Mix -138.0 Normal
+- Référence d'origine du ch 1 (phase 6 A) : Color Mix **-138.0 Normal**.
+- **Constat (S)** : RGBW revenu à l'identique ; **Color Mix perdu** (repris de la valeur
+  Beam `0.0 Normal` au lieu de la valeur Rush d'origine). Le ch 1 reste discret.
+- Liste palettes : palette 2 = `T+`, By Type = `2 ( + particulier )` → ici la donnée
+  discrète est bien signalée (même type que le défaut), contrairement à la phase 6 D
+  (discret d'un autre type, non signalé).
+- Impact réel du Color Mix 0 sur la sortie du Rush : **non vérifié** (pas de sortie DMX
+  dans ce test).
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
