@@ -305,8 +305,13 @@ Références (Blind, Data Latched) :
 |---------|----|---------|
 | 1 orange | 201 | R 100 / G 36.13 / B 0 / W 0.621 / Color Mix -138.0 Normal |
 | 1 orange | 301 | Red 100 / Amber 100 / Lime 25.494 / Green 0 / Blue 0 / Indigo 5.053 / Cyan 0 / Deep Red 100 / Cooling Fan -2.0 Auto |
-| 2 bleu | 201 | R 11 / G 0 / B 100 / W 19 / Color Mix `Normal` (valeur numérique non relevée) |
-| 2 bleu | 301 | Red 0 / Amber 0 / Lime 0 / Green 0 / Blue 87 / Indigo 100 / Cyan 0 / Deep Red 72 / Cooling Fan `Auto` (valeur numérique non relevée) |
+| 2 bleu | 201 | R 11.649 / G 0 / B 100 / W 19.34 / Color Mix -138.0 Normal |
+| 2 bleu | 301 | Red 0 / Amber 0 / Lime 0 / Green 0 / Blue 87.407 / Indigo 100 / Cyan 0 / Deep Red 72.92 / Cooling Fan -2.0 Auto |
+
+**Constat (S) — méthode d'observation** : hors Data Latched, le tableau Blind **arrondit**
+les valeurs (11 / 19 / 87 / 72 affichés pour 11.649 / 19.34 / 87.407 / 72.92) et montre
+le nom de plage au lieu du nombre (`Normal` pour -138.0). Toute mesure de dérive doit se
+faire en **Data Latched**.
 
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
