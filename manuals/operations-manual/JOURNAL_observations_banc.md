@@ -385,6 +385,17 @@ rangée basse dummies — pour contrôle visuel.)
 - Après exécution, Live : 201 reste **en rouge (manuel)** R 100 / G 20 / B 0 / W 0.621 ;
   202 (même type, suit le défaut) reste G **36.13** en bleu → **le défaut 2002 ne semble
   pas avoir été mis à jour**. À confirmer en Blind palette 1.
+- **Blind palette 1 (Data Latched) : la mise à jour A FONCTIONNÉ.**
+  - 2002 (défaut Beam 350, bleu) : R 100 / **G 20** / B 0 / W 0.621 / Color Mix 0.0 Normal.
+  - 201, 202 : **magenta** (suivi), G 20 → aucune donnée discrète créée.
+  - 2001 (maître Rush) : **inchangé** R 100 / G 36.13 / B 0 / W 0.621 / -138.0 Normal.
+  - 3001, 3002, 301, 302 : inchangés. Liste : `T`, `2001 2002 3001 3002`, pas de `+`.
+- **Constat (S)** : `Update … {By Type}` sur un channel suiveur écrit la valeur dans le
+  **défaut de son type actuel** (le dummy équivalent), sans toucher au maître, sans créer
+  de discret — **même sans afficher de crochets** dans la fenêtre Update.
+- **Piège d'affichage (S)** : juste après l'Update, le Live **n'est pas rafraîchi**
+  (201 reste en rouge manuel, 202 affiche encore l'ancienne valeur). Ne pas juger le
+  résultat d'un Update depuis le Live sans rafraîchir (Go To Cue) ou vérifier en Blind.
 
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
