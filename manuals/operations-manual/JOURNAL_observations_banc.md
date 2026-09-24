@@ -179,6 +179,29 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
   **à proscrire** pour un show avec palettes By Type. Un défaut préparé pour le
   **nouveau** type (dummy, phases 1-5) est nécessaire.
 
+**Partie B3 — retour : ch 1 et 2 en Rush**
+- Patch : `[1] [Thru] [2] {Type}` → `Rush Par 2 RGBW Zoom 9ch` `[Enter]`.
+- Blind palette 3 (affichage gel, sans Data Latched) :
+  - 9001 (défaut, bleu) : `G L147` ×4, Color Mix 0
+  - ch 1 (blanc, discret) : `G L147` ×4, Color Mix 0
+  - ch 2 : `G L147` ×4 en **magenta (suivi de 9001)**, Color Mix 0 en blanc
+- Liste : palettes 2 et 3 = `T+`, By Type = `9001 ( + particulier )`.
+- **Constat (S)** : au retour, les channels qui avaient perdu leurs données pendant
+  l'aller **les retrouvent** en suivant le défaut que le dummy de l'ancien type a
+  conservé (9001). Le ch 1 (ancien défaut, discret) a des valeurs identiques à 9001.
+- Dérive restante : Color Mix du ch 2, -138.0 Normal → 0.
+
+### Synthèse phase 7
+
+| Élément | Rôle | Préparation nécessaire |
+|---|---|---|
+| Dummy de l'**ancien** type (ex. 9001 Rush) | Eos y range **automatiquement** les défauts quand plus aucun vrai channel de ce type ne reste → retour sans perte des couleurs | **Aucune** : il suffit qu'il existe dans le patch (sans adresse) |
+| Dummy du **nouveau** type (ex. 9002 Beam) | Donne des valeurs aux channels convertis pendant le séjour dans la salle | Valeurs à mettre dans chaque palette (phases 1-5) |
+| `{Cleanup}` après le retour | Remet en suivi ce qui est identique, laisse en blanc ce qui a dérivé | Aucune |
+
+Non testé : ce que deviennent les défauts si **aucun** channel de l'ancien type ne reste
+dans le show (ni réel, ni dummy).
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
