@@ -313,6 +313,13 @@ les valeurs (11 / 19 / 87 / 72 affichés pour 11.649 / 19.34 / 87.407 / 72.92) e
 le nom de plage au lieu du nombre (`Normal` pour -138.0). Toute mesure de dérive doit se
 faire en **Data Latched**.
 
+**V2b — cues** : cue 1 = palette 1 (201, 202, 301, 302), cue 2 = palette 2, cue 3 =
+témoin **hors palette** sur 202 et 302.
+- Cue 3, 1er enregistrement (Data Latched) : 202 = R/G/B/W 100, Color Mix -138.0 Normal ;
+  302 = les 8 émetteurs à 100, pas de Cooling Fan stockée. Valeurs extrêmes (blanc
+  plein) → peu sensibles à une dérive ; ré-enregistrement avec une couleur
+  intermédiaire conseillé.
+
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
 
