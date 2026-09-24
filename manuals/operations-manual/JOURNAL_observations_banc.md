@@ -43,9 +43,18 @@ adresse par type de fixture, porteur des valeurs par défaut des palettes By Typ
   (`02-system-basics.md:734-736`) — c'est le moyen de lire la couleur réelle sur des
   channels sans adresse.
 
-### Phase 4 — Channels 1-2 passés en LEDBeam 350
+### Phase 4 — Channels 1-2 passés en LEDBeam 350 (OK — hypothèse confirmée)
 
-_(en cours)_
+- Patch : softkey « Préserver Natif » = **Désactivé** (vérifié à l'écran).
+- `[1] [Thru] [2] {Type}` → `Robin LEDBeam 350 M1` `[Enter]`.
+- Live, cue 1 active, Data Latched : 1 et 2 affichent **`G L120+`** en bleu (valeur du
+  défaut Beam 9002), au lieu de `L106` (défaut Rush 9001) avant le changement.
+- **Constat (S)** : un channel dont on change le Type suit automatiquement le channel par
+  défaut By Type du nouveau type, sans aucune retouche de palette ni de cue.
+- Note vocabulaire interface FR : softkey Patch « Remplacer » = `{Replace}` (change
+  l'adresse DMX seulement, `04-patch.md:156-164`), « Permuter » = `{Swap}`,
+  « Dépatcher » = `{Unpatch}`.
+- Reste à voir : affichage de la référence (`PC 1`) avec Data déverrouillé.
 
 ### Phase 5 — Retour Rush Par 2
 
