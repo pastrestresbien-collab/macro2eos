@@ -81,4 +81,27 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
 
 ### Phase 6 — Témoin : bug du défaut qui change de type (forum B)
 
+**Partie A — palette 2 avec un vrai channel comme défaut (OK)**
+- Live : `[1] [Thru] [2]` en vert, `[Record] [Color Palette] [2] {By Type} [Enter]`.
+- Liste palettes : palette 2 = `T+`, colonne By Type = `1 ( + particulier )`.
+  « particulier » = traduction FR de *discrete* dans l'interface.
+- Blind tableau : ch 1 en bleu (défaut) R 0.503 / G 100 / B 0 / W 17.128 /
+  Color Mix -138.0 Normal ; ch 2 en blanc (discret), valeurs identiques.
+- Conforme à `10-palettes.md:431` (canal le plus bas = défaut, les autres discrets).
+
+**Partie B — faire suivre le ch 2 (OK)**
+- Softkey `{Cleanup}` (« Nettoyer » en FR) : ligne de commande
+  « BLIND: Palette Couleur 2 : Palette Couleur 2 Nettoyer ».
+- Résultat : palette 2 = `T` (plus de `+`), By Type = `1`, ch 2 disparaît du tableau
+  (suit le défaut).
+- **Constat (S)** : `{Cleanup}` convertit en suivi les valeurs discrètes identiques au
+  défaut (`10-palettes.md:455`). Plus sûr que `[n] [At] [Enter]` pour préparer un show
+  réel : une valeur volontairement différente n'est pas écrasée.
+
+**Partie C — cue 2 référençant la palette 2**
+
+_(en cours)_
+
+**Partie D — ch 1 (défaut) passé en LEDBeam**
+
 _(en cours)_
