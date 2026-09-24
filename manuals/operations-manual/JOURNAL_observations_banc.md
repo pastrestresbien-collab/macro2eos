@@ -103,6 +103,18 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
 - Live tableau, Data Latched : ch 1 et 2 = `G L124` (R/G/B/W) en bleu, Color Mix
   -138.0 Normal. État de référence avant la partie D.
 
-**Partie D — ch 1 (défaut) passé en LEDBeam**
-
-_(en cours)_
+**Partie D — ch 1 (défaut) passé en LEDBeam : bug forum NON reproduit**
+- Patch : `[1] {Type}` → `Robin LEDBeam 350 M1` `[Enter]` (Préserver Natif désactivé).
+- Live, cue 2, Data Latched :
+  - ch 2 (resté Rush) = `G L124` en bleu → **n'a PAS perdu sa couleur**.
+  - ch 1 (devenu Beam) = `G L124` en bleu (converti ; Color Priority -4.0 Additive,
+    Color Mix 0.0 Normal, Color Temperature 7200 affichés en gris).
+- Liste palettes : palette 2 = `T`, colonne By Type = **`2`** (au lieu de `1`).
+- **Constat (S)** : sur la version testée, quand le channel par défaut change de type,
+  Eos **réassigne automatiquement** le défaut au plus petit channel restant de l'ancien
+  type (ici ch 2). Le bug décrit sur le forum (fils anciens, ~2011) ne se reproduit pas
+  — le comportement correspond à la demande d'évolution
+  « changing a palette's default channel type … should create a new default channel ».
+- **Signal D sur la source forum** pour ce point : obsolète sur cette version.
+- Question ouverte : d'où ch 1 (Beam) tient-il `L124` alors qu'il n'apparaît pas dans la
+  colonne By Type et que la palette n'a pas de `+` ? (vérification Blind en cours)
