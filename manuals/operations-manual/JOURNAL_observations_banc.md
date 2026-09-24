@@ -279,6 +279,38 @@ type (ex. Color Mix du Rush) : dérive possible, à vérifier à la main.
   plus simple que `Copy To` pour patcher plusieurs channels (réels + dummy) du même type.
   Nom exact dans la librairie : « Martin Rush Par 2 RGBW Zoom 9ch ».
 
+### Phase 9 — Validation « défauts miroirs » (deux familles)
+
+**V1 — patch (OK)** : show vierge, Préserver Natif désactivé, tout **sans adresse**.
+
+| Circ | Type (nom Eos) | Label |
+|------|----------------|-------|
+| 201, 202 | Rush Par 2 RGBW Zoom 9ch | — |
+| 301, 302 | S4 LED S3 Lustr X8 Direct | — |
+| 2001 | Rush Par 2 RGBW Zoom 9ch (maître) | Rush2 Zoom |
+| 2002 | Robin LEDBeam 350 M1 (équivalent) | Rush2 Zoom |
+| 3001 | S4 LED S3 Lustr X8 Direct (maître) | Lustr3 |
+| 3002 | Sully 653SX 4C Full XY (équivalent) | Lustr3 |
+
+Groupe 1 = `201>202 301>302 2001>2002 3001>3002`, affichage filtré « Circuits
+Sélectionnés ».
+
+**V2a — palettes « show existant » (OK)** : `[201] [+] [202] [+] [301] [+] [302]`,
+Record `{By Type}`, puis `{Cleanup}`. Liste : palettes 1 et 2 = `T`, By Type =
+`201 301`, pas de `+`.
+
+Références (Blind, Data Latched) :
+
+| Palette | Ch | Valeurs |
+|---------|----|---------|
+| 1 orange | 201 | R 100 / G 36.13 / B 0 / W 0.621 / Color Mix -138.0 Normal |
+| 1 orange | 301 | Red 100 / Amber 100 / Lime 25.494 / Green 0 / Blue 0 / Indigo 5.053 / Cyan 0 / Deep Red 100 / Cooling Fan -2.0 Auto |
+| 2 bleu | 201 | R 11 / G 0 / B 100 / W 19 / Color Mix `Normal` (valeur numérique non relevée) |
+| 2 bleu | 301 | Red 0 / Amber 0 / Lime 0 / Green 0 / Blue 87 / Indigo 100 / Cyan 0 / Deep Red 72 / Cooling Fan `Auto` (valeur numérique non relevée) |
+
+Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
+couleur) — candidat à la dérive, comme le Color Mix du Rush.
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
