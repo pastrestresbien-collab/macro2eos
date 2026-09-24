@@ -139,6 +139,11 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
   (discret d'un autre type, non signalé).
 - Impact réel du Color Mix 0 sur la sortie du Rush : **non vérifié** (pas de sortie DMX
   dans ce test).
+- `{Cleanup}` sur la palette 2 ensuite : R/G/B/W du ch 1 passent en **magenta** (suivi),
+  **seul Color Mix `0` reste blanc** (discret). Liste inchangée : `T+`, `2 ( + particulier )`.
+- **Constat (S)** : `{Cleanup}` opère **paramètre par paramètre**. Après un retour à
+  l'ancien type, `{Cleanup}` puis lecture en Blind = **détecteur de dérive** : tout ce
+  qui reste en blanc a changé pendant l'aller-retour.
 
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
