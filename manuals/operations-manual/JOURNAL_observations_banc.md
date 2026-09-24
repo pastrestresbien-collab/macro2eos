@@ -202,6 +202,19 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
 Non testé : ce que deviennent les défauts si **aucun** channel de l'ancien type ne reste
 dans le show (ni réel, ni dummy).
 
+### Phase 8 — Changement de type SANS aucun channel de l'ancien type restant
+
+**Cadre** : show vierge, **aucun dummy**, ch 1-3 en `Rush Par 2 RGBW Zoom 9ch`, sans
+adresse, Préserver Natif désactivé (ch 2-3 patchés par `Copy To` depuis ch 1).
+
+**Phases 0-2 — référence (OK)**
+- Orange, `[Record] [Color Palette] [1] {By Type} [Enter]`, puis `{Cleanup}` en Blind.
+- Liste palettes : palette 1 = `T`, By Type = `1`.
+- Blind palette 1 : seul ch 1 affiché, `G L147` (R/G/B/W) + Color Mix `Normal`, en bleu ;
+  ch 2-3 absents (suivi pur).
+- Cue 1 : ch 1-3 = `PC 1` sur tous les paramètres couleur ; Beam : Zoom 10,
+  Shutter Strobe 255, Strobe Mode Open.
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
