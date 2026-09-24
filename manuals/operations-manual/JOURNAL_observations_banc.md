@@ -98,9 +98,10 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
   défaut (`10-palettes.md:455`). Plus sûr que `[n] [At] [Enter]` pour préparer un show
   réel : une valeur volontairement différente n'est pas écrasée.
 
-**Partie C — cue 2 référençant la palette 2**
-
-_(en cours)_
+**Partie C — cue 2 référençant la palette 2 (OK)**
+- Live : `[1] [Thru] [2] [Color Palette] [2] [Enter]`, `[Record] [Cue] [2] [Enter]`.
+- Live tableau, Data Latched : ch 1 et 2 = `G L124` (R/G/B/W) en bleu, Color Mix
+  -138.0 Normal. État de référence avant la partie D.
 
 **Partie D — ch 1 (défaut) passé en LEDBeam**
 
