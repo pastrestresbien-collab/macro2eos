@@ -319,6 +319,10 @@ témoin **hors palette** sur 202 et 302.
   302 = les 8 émetteurs à 100, pas de Cooling Fan stockée. Valeurs extrêmes (blanc
   plein) → peu sensibles à une dérive ; ré-enregistrement avec une couleur
   intermédiaire conseillé.
+- **Cue 3 ré-enregistrée (vert intermédiaire) — référence retenue** (Live, Data Latched) :
+  - 202 : R 0 / G 100 / B 0.017 / W 7.622 / Color Mix -138.0 Normal
+  - 302 : Red 0 / Amber 0 / Lime 1.619 / Green 100 / Blue 0 / Indigo 0 / Cyan 19.749 /
+    Deep Red 0
 
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
