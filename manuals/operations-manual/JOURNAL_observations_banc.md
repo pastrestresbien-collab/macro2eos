@@ -396,6 +396,8 @@ rangée basse dummies — pour contrôle visuel.)
 - **Piège d'affichage (S)** : juste après l'Update, le Live **n'est pas rafraîchi**
   (201 reste en rouge manuel, 202 affiche encore l'ancienne valeur). Ne pas juger le
   résultat d'un Update depuis le Live sans rafraîchir (Go To Cue) ou vérifier en Blind.
+- Après `[Go To Cue] [1]` : Live 201 et 202 = R 100 / **G 20** / B 0 / W 0.621 en bleu
+  → la retouche est bien effective en sortie une fois le Live rafraîchi.
 
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
