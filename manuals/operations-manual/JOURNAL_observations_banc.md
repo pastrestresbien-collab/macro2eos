@@ -366,6 +366,14 @@ rangée basse dummies — pour contrôle visuel.)
     Tint 0, Intens 2 100).
 - **Constat (S)** : à l'aller, tous les channels convertis suivent le dummy de leur
   nouveau type, **aucune donnée discrète créée**.
+- Cue 3 (témoin hors palette), Live Data Latched après conversion :
+  - 202 (Beam 350) : R 56.34 / G 64.0156 / B 0.0074 / W 3.6776 / Color Mix 0.0 Normal
+    (réf. Rush : R 0 / G 100 / B 0.017 / W 7.622) → **conversion colorimétrique** (pas une
+    copie brute comme `Copy To`), résultat visiblement jaune-vert.
+  - 302 (Sully) : CIE X 0.6956 / CIE Y 0.5897 → **x + y = 1.285 > 1**, coordonnées
+    chromatiques **impossibles** : conversion douteuse (bug ou échelle propre au profil).
+  - **Constat (S)** : les valeurs **hors palette** sont converties à chaque changement de
+    type, avec un résultat discutable → confirme la règle « couleur via palette ».
 
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
