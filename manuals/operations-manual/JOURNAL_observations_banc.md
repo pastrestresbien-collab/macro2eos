@@ -375,6 +375,17 @@ rangée basse dummies — pour contrôle visuel.)
   - **Constat (S)** : les valeurs **hors palette** sont converties à chaque changement de
     type, avec un résultat discutable → confirme la règle « couleur via palette ».
 
+(Intensités de 201-302 montées à 80 % pour la visualisation Augment3d.)
+
+**V6 (T3) — retouche en salle par Update By Type (en cours)**
+- Live cue 1 : 201 Green 36.13 → 20 (encodeur).
+- Fenêtre Update : Target « Palette Couleur 1 », Circuits « 201 » ; style « Seulement
+  les Ref » ; modificateurs « Dernière Ref » et « Casser Liens » surlignés. Ligne de
+  commande : « Update Seulement les Ref Par Type ♦ ». Aucun défaut entre crochets affiché.
+- Après exécution, Live : 201 reste **en rouge (manuel)** R 100 / G 20 / B 0 / W 0.621 ;
+  202 (même type, suit le défaut) reste G **36.13** en bleu → **le défaut 2002 ne semble
+  pas avoir été mis à jour**. À confirmer en Blind palette 1.
+
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
 
