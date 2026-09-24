@@ -269,6 +269,15 @@ type (ex. Color Mix du Rush) : dérive possible, à vérifier à la main.
   n'est pas exécutable depuis une macro (au moins sous cette forme).
 - Contournement proposé : retirer `Type` de la macro, l'utilisateur appuie lui-même sur
   `{Type}` pendant la première pause (`Wait_For_Input`). À valider.
+- **Abandonné** par l'utilisateur : la version sans `Type` n'apporte rien.
+
+### Patch multi-channels en une commande (OK)
+
+- `[201] [+] [202] [+] [2001] {Type}` → ligne de commande
+  « Circ 201 + 202 + 2001 Type Martin Rush Par 2 RGBW Zoom 9ch ♦ ».
+- **Constat (S)** : une sélection en liste (`+`) accepte `{Type}` en une seule commande —
+  plus simple que `Copy To` pour patcher plusieurs channels (réels + dummy) du même type.
+  Nom exact dans la librairie : « Martin Rush Par 2 RGBW Zoom 9ch ».
 
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
