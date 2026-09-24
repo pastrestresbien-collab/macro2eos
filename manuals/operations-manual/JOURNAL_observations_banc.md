@@ -261,6 +261,15 @@ retrouve alors dans un type sans défaut → données vides.
 **tous** les channels d'un type en une seule commande `{Type}`. Paramètres propres à un
 type (ex. Color Mix du Rush) : dérive possible, à vérifier à la main.
 
+### Macro de patch — softkey `{Type}` en macro (ÉCHEC)
+
+- Macro 901 (Foreground, lancée depuis Patch) :
+  `Wait_For_Input  Type  Wait_For_Input  Select_Last  Label`
+- **Constat (S)** : la macro **bloque à l'étape `Type`** — le softkey `{Type}` du Patch
+  n'est pas exécutable depuis une macro (au moins sous cette forme).
+- Contournement proposé : retirer `Type` de la macro, l'utilisateur appuie lui-même sur
+  `{Type}` pendant la première pause (`Wait_For_Input`). À valider.
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
