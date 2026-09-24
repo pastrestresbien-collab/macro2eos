@@ -215,6 +215,21 @@ adresse, Préserver Natif désactivé (ch 2-3 patchés par `Copy To` depuis ch 1
 - Cue 1 : ch 1-3 = `PC 1` sur tous les paramètres couleur ; Beam : Zoom 10,
   Shutter Strobe 255, Strobe Mode Open.
 
+**Phase 3 — tout passe en LEDBeam, aucun Rush restant**
+- Patch : `[1] [Thru] [3] {Type}` → `Robin LEDBeam 350 M1` `[Enter]`.
+- Liste palettes : palette 1 = `T`, By Type = **`1`** (inchangé).
+- Blind palette 1 : ch 1 (**Beam**) `G L147` ×4 + Color Mix `Normal`, **en bleu
+  (défaut)** ; ch 2-3 absents (suivi).
+- Live cue 1 (Data déverrouillé) : ch 1-3 = `PC 1` ; Color Priority « Addition… » et
+  Color Temperature 7200 en gris (paramètres propres au Beam, non stockés).
+- **Constat (S)** : s'il ne reste **aucun** channel de l'ancien type, le défaut
+  **change de type avec son channel** et les autres (même nouveau type) continuent de
+  le suivre → **aucune perte**.
+- **Paradoxe avec la phase 7 B2** : c'est l'existence du dummy Rush 9001 qui a capté le
+  défaut Rush, laissant le ch 1 en discret et le ch 2 (Beam) sans rien à suivre → perte.
+  **Un dummy de l'ancien type provoque la perte pendant le séjour** dans le nouveau type.
+- Valeurs Live Data Latched de ch 2-3 : à confirmer.
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
