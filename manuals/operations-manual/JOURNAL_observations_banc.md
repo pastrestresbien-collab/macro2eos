@@ -343,6 +343,15 @@ témoin **hors palette** sur 202 et 302.
 - **Constat (S)** : `Copy To` en Blind avec `[Color Palette] [1] [Thru] [2]` sélectionnées
   agit sur **toutes les palettes sélectionnées** en une commande.
 
+**V4 — dummies désignés défauts (OK)** : palettes 1 Thru 2 sélectionnées,
+`[2001] [+] [2002] [+] [3001] [+] [3002] {By Type} [Enter]`, puis
+`[Color Palette] [1] [Thru] [2] {Cleanup} [Enter]`.
+- Liste : palettes 1 et 2 = `T`, By Type = **`2001 2002 3001 3002`**, pas de `+`.
+- Palette 1 : 2001 / 2002 / 3001 / 3002 en bleu (défauts) ; 201 / 202 / 301 / 302 en
+  magenta (suivi), valeurs inchangées.
+- **Constat (S)** : `{By Type}` sur une liste de channels + `{Cleanup}` sur une plage de
+  palettes = conversion d'un show existant en « défauts miroirs » en **deux commandes**.
+
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
 
