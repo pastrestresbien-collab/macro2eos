@@ -33,9 +33,15 @@ adresse par type de fixture, porteur des valeurs par défaut des palettes By Typ
   chacun le channel par défaut de son type (conforme à `10-palettes.md:431`, désormais
   confirmé au banc).
 
-### Phase 3 — Cue référençant la palette
+### Phase 3 — Cue référençant la palette (OK)
 
-_(en cours)_
+- `[9001] [+] [9002] [Sneak] [Enter]`, puis `[1] [Thru] [2] [Color Palette] [1] [Enter]` :
+  Live affiche `PC 1` (Palette Couleur 1, interface FR) en rouge (= manuel) sur 1 et 2.
+- `[Record] [Cue] [1] [Enter]` : ligne de commande « LIVE: Cue 1 : Record Cue 1 ».
+- `[Data] [Data]` (« Data Latched ») : 1 et 2 affichent `G L106+` en bleu (= enregistré).
+- **Astuce d'observation retenue** : `[Data]` expose la valeur derrière la référence
+  (`02-system-basics.md:734-736`) — c'est le moyen de lire la couleur réelle sur des
+  channels sans adresse.
 
 ### Phase 4 — Channels 1-2 passés en LEDBeam 350
 
