@@ -145,6 +145,15 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
   l'ancien type, `{Cleanup}` puis lecture en Blind = **détecteur de dérive** : tout ce
   qui reste en blanc a changé pendant l'aller-retour.
 
+**Partie B1 — palette 3 de référence (ch 1 et 2 en Rush, orange)**
+- `[Record] [Color Palette] [3] {By Type} [Enter]` puis `{Cleanup}` en Blind.
+- Blind palette 3, Data Latched, après Cleanup :
+  - ch 1 (défaut, bleu) : R 100 / G 61.103 / B 0 / W 29.91 / Color Mix **0**
+  - ch 2 : R/G/B/W en magenta (suivi) ; Color Mix **-138.0 Normal** en blanc (discret)
+- Liste : palette 3 = `T+`, By Type = `1 ( + particulier )`.
+- **Constat (S)** : le Color Mix `0` du ch 1 est la dérive de la partie A restée dans le
+  Live → **une dérive non corrigée contamine les enregistrements suivants**.
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
