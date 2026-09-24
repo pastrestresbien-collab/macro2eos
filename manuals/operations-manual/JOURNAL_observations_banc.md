@@ -154,6 +154,17 @@ Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam
 - **Constat (S)** : le Color Mix `0` du ch 1 est la dérive de la partie A restée dans le
   Live → **une dérive non corrigée contamine les enregistrements suivants**.
 
+**Partie B2 — aller : ch 1 et 2 en LEDBeam**
+- Patch : `[1] [Thru] [2] {Type}` → `Robin LEDBeam 350 M1` `[Enter]`.
+- Liste palettes : palettes 2 et 3 = `T`, By Type = **`9001`** (au lieu de `2` et `1`).
+- **Constat (S)** : quand plus aucun channel « réel » de l'ancien type ne reste, Eos
+  réassigne le défaut au **seul channel restant de ce type, même un dummy sans adresse
+  de numéro élevé** (9001, présent depuis la phase 1, n'avait jamais été défaut des
+  palettes 2 et 3).
+- ⚠ Le test n'est donc plus « sans dummy » : 9001 a servi de réservoir automatique.
+- Piste ouverte : un simple dummy sans adresse par type, **sans aucune préparation des
+  palettes**, suffirait-il pour qu'Eos y range lui-même les défauts ? (à valider en B3)
+
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
 
