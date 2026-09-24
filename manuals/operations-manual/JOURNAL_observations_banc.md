@@ -228,7 +228,38 @@ adresse, Préserver Natif désactivé (ch 2-3 patchés par `Copy To` depuis ch 1
 - **Paradoxe avec la phase 7 B2** : c'est l'existence du dummy Rush 9001 qui a capté le
   défaut Rush, laissant le ch 1 en discret et le ch 2 (Beam) sans rien à suivre → perte.
   **Un dummy de l'ancien type provoque la perte pendant le séjour** dans le nouveau type.
-- Valeurs Live Data Latched de ch 2-3 : à confirmer.
+- Live cue 1, Data Latched : ch 1-3 = `G L147` ×4 en bleu, Color Mix `0.0 Normal`,
+  Color Priority `-4.0 Additive` et Color Temperature 7200 en gris → **les trois
+  channels ont gardé la couleur**.
+
+**Phase 4 — retour : ch 1-3 en Rush**
+- Patch : `[1] [Thru] [3] {Type}` → `Rush Par 2 RGBW Zoom 9ch` `[Enter]`.
+- Blind palette 1, Data Latched : ch 1 (défaut, bleu) R 100 / G 61.103 / B 0 /
+  W 29.91 / Color Mix **0** ; ch 2-3 absents (suivi). Liste : `T`, By Type = `1`, pas
+  de `+`.
+- Live cue 1 : ch 1-3 = `PC 1`. **Aucun `{Cleanup}` nécessaire** (aucun discret).
+- **Constat (S)** : sans aucun channel de l'ancien type restant, l'aller-retour complet
+  se fait **sans perte de couleur ni de référence**.
+- **Dérive probable du Color Mix** : référence phase 2 affichée `Normal` (hors Data
+  Latched ; en phase 7 cet affichage correspondait à `-138.0 Normal`), retour = `0`.
+  **Non détectable par `{Cleanup}`** ici, car c'est le **défaut lui-même** qui a dérivé
+  (aucune valeur de comparaison).
+
+### Règle déduite des phases 6-8 (S)
+
+La perte ne survient que dans un cas : **un channel qui suivait le défaut change de
+type, alors que le défaut reste sur un channel de l'ancien type** (réel ou dummy). Il se
+retrouve alors dans un type sans défaut → données vides.
+
+| Situation | Résultat |
+|---|---|
+| Tous les channels d'un type changent ensemble, aucun autre channel de ce type dans le show | **Aucune perte** (phase 8) |
+| Seul le défaut change, d'autres channels de l'ancien type restent | Aucune perte : défaut réassigné, ancien défaut gardé en discret converti (phase 6 D) |
+| Défaut + channels suiveurs changent, mais un channel de l'ancien type reste (ex. dummy) | **Perte pour les suiveurs** pendant le séjour (phase 7 B2), récupérée au retour (7 B3) |
+
+**Conséquence pratique** : ne **pas** garder de dummy de l'ancien type ; convertir
+**tous** les channels d'un type en une seule commande `{Type}`. Paramètres propres à un
+type (ex. Color Mix du Rush) : dérive possible, à vérifier à la main.
 
 **Version testée** : Eos 3.3.9 Build 25, librairie fixtures 3.3.9.2, PC en mode Offline
 (nom d'appareil PCFIXE).
