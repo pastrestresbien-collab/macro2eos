@@ -352,6 +352,21 @@ témoin **hors palette** sur 202 et 302.
 - **Constat (S)** : `{By Type}` sur une liste de channels + `{Cleanup}` sur une plage de
   palettes = conversion d'un show existant en « défauts miroirs » en **deux commandes**.
 
+(Entre V4 et V5 : positions Augment3d attribuées aux 8 channels — rangée haute réels,
+rangée basse dummies — pour contrôle visuel.)
+
+**V5 (T2) — aller : 201-202 → LEDBeam 350 M1, 301-302 → Sully 653SX 4C Full XY (OK)**
+- Liste palettes : 1 et 2 = `T`, By Type `2001 2002 3001 3002`, **pas de `+`**.
+- Live cue 1, Data Latched :
+  - 201, 202 : R 100 / G 36.13 / B 0 / W 0.621 / Color Mix 0.0 Normal (bleu) = valeurs
+    de 2002 ; Color Priority -4.0 Additive et Color Temperature 7200 en gris (non
+    stockés).
+  - 301, 302 : CIE X 0.576 / CIE Y 0.388 (bleu) = valeurs de 3002 ; autres paramètres
+    Sully en gris (Saturation 100, Color Mix Mode 0.0 Direct, Color Temperature 1700,
+    Tint 0, Intens 2 100).
+- **Constat (S)** : à l'aller, tous les channels convertis suivent le dummy de leur
+  nouveau type, **aucune donnée discrète créée**.
+
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
 
