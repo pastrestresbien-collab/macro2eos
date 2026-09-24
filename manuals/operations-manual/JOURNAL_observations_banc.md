@@ -337,8 +337,11 @@ témoin **hors palette** sur 202 et 302.
   l'espace xy (paramètres différents).
 - Liste : By Type toujours `201 301` (normal, étape `{By Type}` pas encore faite).
 - **Constat (S)** : `Copy To` entre types différents copie les paramètres de même nom
-  à l'identique et ne convertit que lorsque les paramètres diffèrent. Palette 2 : à
-  vérifier.
+  à l'identique et ne convertit que lorsque les paramètres diffèrent.
+- Palette 2 : 2001 et 3001 en magenta (suivi) ; 2002 blanc 11.649 / 0 / 100 / 19.34,
+  Color Mix 0.0 Normal ; 3002 blanc CIE X 0.186 / Y 0.056.
+- **Constat (S)** : `Copy To` en Blind avec `[Color Palette] [1] [Thru] [2]` sélectionnées
+  agit sur **toutes les palettes sélectionnées** en une commande.
 
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
