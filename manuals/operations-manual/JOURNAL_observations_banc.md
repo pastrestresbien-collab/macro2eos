@@ -1,0 +1,50 @@
+# Journal d'observations au banc — manuel d'exploitation (patch, palettes)
+
+Observations testées sur console réelle (confiance S). Ne jamais les insérer dans les
+`.md` convertis du manuel (règle de fidélité, voir `CLAUDE.md` Règle n°3).
+
+---
+
+## 2026-09-24 — Palettes By Type et changement de type de fixture (dummy channels)
+
+**Question testée** : un channel dont on change le Type en Patch suit-il automatiquement
+le channel par défaut By Type du nouveau type, et retrouve-t-il ses valeurs au retour à
+l'ancien type ? Méthode « dummy channels » (forum ETC, confiance B) : un channel sans
+adresse par type de fixture, porteur des valeurs par défaut des palettes By Type.
+
+**Cadre** : show vierge, tous les channels sans adresse DMX (aucune sortie vers le kit).
+
+### Phase 1 — Patch (OK)
+
+| Circ | Adresse | Type |
+|------|---------|------|
+| 1    | —       | Rush Par 2 RGBW Zoom 9ch |
+| 2    | —       | Rush Par 2 RGBW Zoom 9ch |
+| 9001 | —       | Rush Par 2 RGBW Zoom 9ch |
+| 9002 | —       | Robin LEDBeam 350 M1 |
+
+### Phase 2 — Palette By Type avec deux dummies (OK)
+
+- 9001 réglé en rouge (affiché `G L106+`), 9002 en bleu (affiché `G L120+`).
+- `[9001] [+] [9002] [Record] [Color Palette] [1] {By Type} [Enter]`
+- Liste des palettes couleur : palette 1 avec indicateur `T`, colonne « Par Type de
+  circuits » = `9001 9002`, **sans astérisque**.
+- **Constat** : un seul Record By Type sur deux channels de types différents fait de
+  chacun le channel par défaut de son type (conforme à `10-palettes.md:431`, désormais
+  confirmé au banc).
+
+### Phase 3 — Cue référençant la palette
+
+_(en cours)_
+
+### Phase 4 — Channels 1-2 passés en LEDBeam 350
+
+_(en cours)_
+
+### Phase 5 — Retour Rush Par 2
+
+_(en cours)_
+
+### Phase 6 — Témoin : bug du défaut qui change de type (forum B)
+
+_(en cours)_
