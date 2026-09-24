@@ -57,11 +57,27 @@ adresse par type de fixture, porteur des valeurs par défaut des palettes By Typ
 - Blind `[Color Palette] [1]` après le changement : 9001 = `G L106+`, 9002 = `G L120+`
   — la palette conserve **les deux** valeurs (une par type) ; 1 et 2 n'y figurent pas
   (aucune donnée propre, ils suivent le défaut de leur type).
-- Reste à voir : affichage de la référence (`PC 1`) avec Data déverrouillé.
+- Data déverrouillé : 1 et 2 affichent `PC 1+` en bleu — la référence palette de la cue
+  est intacte.
 
-### Phase 5 — Retour Rush Par 2
+### Phase 5 — Retour Rush Par 2 (OK)
 
-_(en cours)_
+- `[1] [Thru] [2] {Type}` → `Rush Par 2 RGBW Zoom 9ch` `[Enter]`.
+- Live, cue 1, Data Latched : 1 et 2 affichent de nouveau **`G L106+`** en bleu.
+- **Constat (S)** : aller-retour Rush → Beam → Rush **sans aucune perte**, la cue garde
+  sa référence `PC 1` tout du long. Méthode « dummy channel par type comme défaut By
+  Type » validée pour les palettes couleur.
+
+### Conclusion opérationnelle (palettes couleur By Type)
+
+1. Un dummy channel **sans adresse** par type de fixture (ici 9001 Rush, 9002 Beam).
+2. Chaque dummy est le channel par défaut By Type de son type dans chaque palette.
+3. Les vrais channels ne portent **aucune** donnée propre dans les palettes (suivi pur).
+4. Changement de salle : `{Type}` en Patch, Préserver Natif désactivé — rien d'autre.
+
+Non couvert par ce test (à tester séparément si besoin) : palettes Focus/Beam, valeurs
+**absolues** (hors palette) stockées dans les cues, channels portant des données
+**discrètes** dans une palette, gobos.
 
 ### Phase 6 — Témoin : bug du défaut qui change de type (forum B)
 
