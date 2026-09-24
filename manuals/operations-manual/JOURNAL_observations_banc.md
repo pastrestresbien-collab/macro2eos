@@ -399,6 +399,32 @@ rangée basse dummies — pour contrôle visuel.)
 - Après `[Go To Cue] [1]` : Live 201 et 202 = R 100 / **G 20** / B 0 / W 0.621 en bleu
   → la retouche est bien effective en sortie une fois le Live rafraîchi.
 
+**V7 (T4/T5) — retour : 201-202 → Rush Par 2, 301-302 → S4 LED S3 Lustr X8 Direct**
+- Liste palettes : 1 et 2 = `T`, `2001 2002 3001 3002`, **pas de `+`**.
+- Live cue 1 (Data Latched) :
+  - 201, 202 : R 100 / G 36.13 / B 0 / W 0.621 / **Color Mix -138.0 Normal** →
+    **identique à la référence** (la retouche G 20 faite sur le Beam 350 n'a pas touché le
+    maître Rush).
+  - 301, 302 : Red 100 / Amber 100 / Lime 25.494 / Green 0 / Blue 0 / Indigo 5.053 /
+    Cyan 0 / Deep Red 100 → **identique à la référence**. Cooling Fan non affichée dans
+    ce tableau Live ; 301-302 suivent 3001 (jamais converti, -2.0 Auto en Blind).
+- Live cue 3 (témoin **hors palette**) :
+  - 202 : R 0 / G 100 / B 0.017 / W 7.622 (identiques) mais **Color Mix 0** au lieu de
+    -138.0 Normal → **dérive**.
+  - 302 : Red 0 / **Amber 100 / Lime 11.162** / Green 0 / Blue 0 / Indigo 0 / Cyan 0 /
+    Deep Red 0 au lieu de Lime 1.619 / Green 100 / Cyan 19.749 → **couleur totalement
+    différente** (vert devenu ambre).
+
+**Conclusion phase 9 (S)** :
+1. Méthode « défauts miroirs » **validée** : aller-retour **exact** pour toutes les
+   valeurs de palettes (Color Mix et paramètres Lustr compris), retouche en salle sans
+   effet sur le maître, aucun discret créé.
+2. Préparation d'un show existant : `Copy To` (réel → maître, maître → équivalents) +
+   `{By Type}` sur la liste des dummies + `{Cleanup}` sur la plage de palettes, toutes
+   palettes sélectionnées en Blind.
+3. Les valeurs **hors palette** ne survivent **pas** à l'aller-retour → règle
+   obligatoire : **en cue, la couleur passe toujours par une palette**.
+
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
 
