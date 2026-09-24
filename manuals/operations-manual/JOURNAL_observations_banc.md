@@ -324,6 +324,22 @@ témoin **hors palette** sur 202 et 302.
   - 302 : Red 0 / Amber 0 / Lime 1.619 / Green 100 / Blue 0 / Indigo 0 / Cyan 19.749 /
     Deep Red 0
 
+**V3 (T1) — Copy To vers les dummies** (Blind, palettes 1 Thru 2 sélectionnées) :
+`[201] [Copy To] [2001]`, `[301] [Copy To] [3001]`, `[2001] [Copy To] [2002]`,
+`[3001] [Copy To] [3002]`. Lecture palette 1 (Data Latched) :
+- 2001 (Rush) : 100 / 36.13 / 0 / 0.621 / -138.0 en **magenta** → copie vers un channel
+  de **même type** = channel en **suivi** du défaut 201 (pas de donnée propre).
+- 3001 (Lustr 3) : valeurs de 301 en **magenta** → idem, suivi de 301.
+- 2002 (Beam 350) : R 100 / G 36.13 / B 0 / W 0.621 en **blanc** (discret), Color Mix
+  0.0 Normal → paramètres homonymes (R/G/B/W) copiés **tels quels, sans conversion
+  colorimétrique** ; Color Mix -138.0 → 0.0 Normal.
+- 3002 (Sully Full XY) : CIE X 0.576 / CIE Y 0.388 en blanc → **conversion réelle** vers
+  l'espace xy (paramètres différents).
+- Liste : By Type toujours `201 301` (normal, étape `{By Type}` pas encore faite).
+- **Constat (S)** : `Copy To` entre types différents copie les paramètres de même nom
+  à l'identique et ne convertit que lorsque les paramètres diffèrent. Palette 2 : à
+  vérifier.
+
 Note : la palette couleur de la Lustr stocke aussi **Cooling Fan** (paramètre non
 couleur) — candidat à la dérive, comme le Color Mix du Rush.
 
