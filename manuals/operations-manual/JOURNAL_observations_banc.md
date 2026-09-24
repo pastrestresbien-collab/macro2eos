@@ -54,6 +54,9 @@ adresse par type de fixture, porteur des valeurs par défaut des palettes By Typ
 - Note vocabulaire interface FR : softkey Patch « Remplacer » = `{Replace}` (change
   l'adresse DMX seulement, `04-patch.md:156-164`), « Permuter » = `{Swap}`,
   « Dépatcher » = `{Unpatch}`.
+- Blind `[Color Palette] [1]` après le changement : 9001 = `G L106+`, 9002 = `G L120+`
+  — la palette conserve **les deux** valeurs (une par type) ; 1 et 2 n'y figurent pas
+  (aucune donnée propre, ils suivent le défaut de leur type).
 - Reste à voir : affichage de la référence (`PC 1`) avec Data déverrouillé.
 
 ### Phase 5 — Retour Rush Par 2
