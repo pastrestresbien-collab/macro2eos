@@ -620,3 +620,28 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
   probablement à une **sélection de la macro 902 dans l'éditeur**, pas à l'exécution de
   la 920. Les commandes de la 920 n'apparaissent pas dans l'historique ; cause non
   établie.
+
+### Phase 15 — Macro de mise à jour des palettes par type (retouche en Live)
+
+- Macro écrite par l'utilisateur dans l'éditeur (onglet 18), **sur le numéro 902**
+  (l'ancien essai `Type_` est écrasé), sans label :
+  `Select_Last Color Update Seulement_les_Ref Par_Type` — **pas de `<Enter>` final**
+  (la commande reste ouverte, validation à la main).
+- Nom du softkey confirmé : **`Seulement_les_Ref`** (= {Only Ref} FR). Code numérique
+  **inconnu** (à extraire d'un export ASCII).
+- **Blind palette 13** (créée par la macro 920 en Lee 201), Data Latched désactivé →
+  noms de gel affichés :
+  - 2001 (maître Rush) : `G L200` en bleu ; 3001 (maître Lustr) : `G L200` en bleu.
+  - 2002 (LEDBeam, équivalent) : `G L201` bleu, Color Priority Addition Mode ;
+    3002 (Sully, équivalent) : CIE X/Y `G L201` bleu, Saturation 100, Color Mix Mode
+    DirectXY+Li…, 1700.
+  - 201, 202, 301, 302 : `G L200` en **magenta** (suivi), Color Mix Normal.
+- **Constat (S)** : retouche en Live sur les vrais projecteurs (type kit) passée de
+  Lee 201 à Lee 200, puis Update `Seulement_les_Ref` `Par_Type` → **seuls les défauts
+  du type courant (maîtres 2001, 3001) sont modifiés** ; les équivalents 2002 / 3002
+  gardent Lee 201 ; aucun discret sur les vrais projecteurs. Même comportement qu'en
+  phase 9 V6, cette fois via macro.
+- Liste des palettes : 1, 2, 11-16 toutes `T`, By Type `2001 2002 3001 3002`, pas de `+`
+  (palette 11 réparée en phase 14).
+- À confirmer : Update lancé par la macro (et `[Enter]` tapé à la main) ou tapé en
+  entier ; seule la palette 13 touchée ou plusieurs palettes référencées à la fois.
