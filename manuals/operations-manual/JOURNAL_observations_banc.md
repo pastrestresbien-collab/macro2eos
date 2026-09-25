@@ -643,5 +643,7 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
   phase 9 V6, cette fois via macro.
 - Liste des palettes : 1, 2, 11-16 toutes `T`, By Type `2001 2002 3001 3002`, pas de `+`
   (palette 11 réparée en phase 14).
-- À confirmer : Update lancé par la macro (et `[Enter]` tapé à la main) ou tapé en
-  entier ; seule la palette 13 touchée ou plusieurs palettes référencées à la fois.
+- **Confirmé par l'utilisateur** : l'Update a été lancé **par la macro**, `[Enter]` tapé
+  à la main → macro de retouche en salle **validée (S)**.
+- À confirmer : comportement quand **plusieurs palettes** référencées sont retouchées
+  avant un seul Update.
