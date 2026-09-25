@@ -517,3 +517,18 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
     circuit réel, **pas encore sur un dummy ni sur une sélection multi-types**.
   - Traduction FR du Gel Picker : `{Show}` = « Conduite », `{Sort Hue}` = « Trier Hue »,
     `{Similar}` = « Similaire », `{Brightest}` = « +Lumineux ».
+
+### Phase 12 — Import ASCII d'une macro écrite à la main (OK)
+
+- Fichier `macros/920_palettes_lee_11-16.asc` : en-tête minimal (`Ident`, `Manufacturer`,
+  `Console`, `$$Format`, `$$Software Version`), **sans `Clear All`**, un seul `$MacroDef`,
+  `EndData`. Latin-1, CRLF. Import dans un show sans titre (« (sanstitre)* »), écran Blind.
+- **Constat (S)** : la console accepte un ASCII partiel ne contenant qu'une macro.
+  Macro éditeur : 920, Label « Palettes Lee 11-16 », Color « Blanc », Mode vide,
+  Appareil ciblé vide, SC Learn vide.
+- Contenu affiché : `2 0 0 1 Jusqu'à 3 9 9 9 ♦ Color Home ♦ Record Palette_Couleur 1 1
+  Par_Type ♦ @ 3 / 2 0 5 ♦ Record Palette_Couleur 1 2 Par_Type ♦ @ 3 / 2 0 1 ♦ …`
+  → chaque `<Enter>` devient `♦`, l'accent de « Jusqu'à » passe correctement (Latin-1).
+- `$$MacroMode` absent → colonne Mode **vide** (mode par défaut, nature à préciser).
+- Reste à vérifier : exécution réelle (lequel de `$$MacroContents` / `$$MacroCommands`
+  pilote), comportement de `@` en début de ligne après un Record.
