@@ -553,3 +553,23 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
 - **Non encore vérifié** : liste des palettes (11-16 toutes présentes, `T`, By Type =
   `2001 2002 3001 3002`, pas de `+`) ; palettes 11-14 et 16 ; valeurs des dummies
   2002 (LEDBeam) et 3002 (Sully).
+- **Liste des palettes (onglet 24)** après la macro :
+
+  | Palette | `T` | Par Type de circuits |
+  |---|---|---|
+  | 1, 2 (phase 9) | oui | 2001 2002 3001 3002 |
+  | **11 (Home)** | **non** | **vide** |
+  | 12, 13, 14, 15, 16 | oui | 2001 2002 3001 3002 |
+
+  Label, Icône, Absolu, Verrouillé vides partout, aucun `+`.
+- **Constat (S)** : les 5 palettes créées par `@ 3/<gel>` + `Record … Par_Type` sont
+  correctes ; la palette 11, créée après `Color Home`, **existe mais n'est pas By Type**.
+  Cause **non établie** (palette vide ? données discrètes ?) → Blind palette 11 à lire.
+- **Blind palette 15, Data Latched** (filtre Circuits Sélectionnés, dummies non
+  affichés) — vrais projecteurs en **magenta** (suivi du défaut, aucun discret) :
+  - 201, 202 (Rush) : R 0.503 / G 100 / B 0 / W 17.128 / Color Mix -138.0 Normal
+  - 301, 302 (Lustr) : Red 0 / Amber 0 / Lime 6.812 / Green 100 / Blue 0 / Indigo 0 /
+    Cyan 43.218 / Deep Red 0 / Cooling Fan -2.0 Auto
+  - En Blind Data Latched, valeurs **numériques** : le `G L124` vu en Live est un
+    affichage, la palette stocke des nombres.
+- Reste : valeurs des dummies 2002 (LEDBeam) et 3002 (Sully) ; contenu de la palette 11.
