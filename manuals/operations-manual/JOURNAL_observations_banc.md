@@ -614,3 +614,9 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
 - Liste des groupes : 1 = `201>202 301>302 2001>2002 3001>3002` ; 2 = `201>302` ;
   **3 = `2001>3020`** → confirmé : le groupe 3 ne contient que les dummies (plage du plan
   de numérotation), d'où By Type = `2001 2002 3001 3002` sur la palette 11.
+- Liste des macros : 901 = `Type_ Attente_Input Label`, 902 = `Type_` (anciens essais
+  du `{Type}` du Patch, phase 9 — le softkey s'écrit `Type_` avec un tiret bas), 920 =
+  « Palettes Lee 11-16 ». La ligne d'historique `BLIND: Macro 902` correspond donc très
+  probablement à une **sélection de la macro 902 dans l'éditeur**, pas à l'exécution de
+  la 920. Les commandes de la 920 n'apparaissent pas dans l'historique ; cause non
+  établie.
