@@ -532,3 +532,24 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
 - `$$MacroMode` absent → colonne Mode **vide** (mode par défaut, nature à préciser).
 - Reste à vérifier : exécution réelle (lequel de `$$MacroContents` / `$$MacroCommands`
   pilote), comportement de `@` en début de ligne après un Record.
+
+### Phase 13 — Exécution de la macro 920 (palettes Lee 11-16 By Type) — partiel OK
+
+- Macro lancée en Live dans « test copie tour claude code ». Contrôle fait par
+  l'utilisateur : `Groupe 2 Palette Couleur 15 ♦` (groupe 2 = `201>202 301>302`, vrais
+  projecteurs, en type kit : Rush Par 2 et Lustr X8 Direct).
+- **Constat (S)** : la palette 15 existe et s'applique aux **deux types** : Augment3d
+  montre 201/202 (faisceaux) et 301/302 (disques) en **vert foncé** = Lee 124 (Dark
+  Green) → la macro a exécuté au moins jusqu'à `@ 3/124` + `Record Palette_Couleur 15
+  Par_Type`, et les vrais projecteurs suivent bien leur dummy de type.
+  - Donc confirmé : un import ASCII écrit à la main **s'exécute** ; `@` en début de
+    ligne après un Record s'applique à la **sélection restée active**.
+- Affichage Live (Data Latched, en rouge = manuel) : toutes les cases couleur montrent
+  **`G L124`** (et non une référence de palette type `CP 15`) ; Color Mix Rush reste
+  `-138.0 Normal` (hors gel). Encodeurs sur la Lustr : Red 0.503 / Amber 0 / Lime 6.812 /
+  Green 100. Signification exacte de `G L124` (référence gel stockée dans la palette ?)
+  **à éclaircir** (Blind palette 15, Data Latched).
+- Intensités 201-302 à 80 (manuel, pour la visualisation).
+- **Non encore vérifié** : liste des palettes (11-16 toutes présentes, `T`, By Type =
+  `2001 2002 3001 3002`, pas de `+`) ; palettes 11-14 et 16 ; valeurs des dummies
+  2002 (LEDBeam) et 3002 (Sully).
