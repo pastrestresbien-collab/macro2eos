@@ -611,3 +611,6 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
 - Correction reportée dans `macros/920_palettes_lee_11-16.asc` (v2) :
   `Color Convertir_en_Manuel <Enter>` inséré entre `Color Home` et le Record de la
   palette 11. **[non testé]** en l'état.
+- Liste des groupes : 1 = `201>202 301>302 2001>2002 3001>3002` ; 2 = `201>302` ;
+  **3 = `2001>3020`** → confirmé : le groupe 3 ne contient que les dummies (plage du plan
+  de numérotation), d'où By Type = `2001 2002 3001 3002` sur la palette 11.
