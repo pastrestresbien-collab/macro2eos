@@ -105,5 +105,13 @@ la liste des dummies, **aucun `+`**.
   (pan/tilt à régler en salle, sujet séparé).
 - **[non testé]** `Copy To` vers une plage de dummies (`[2002] [Thru] [2013]`) : copier
   un par un en attendant.
-- Macro de préparation (B) : **[en test]** — les softkeys `{By Type}` / `{Cleanup}` en
-  macro ne sont pas encore validés (`{Type}` bloque en macro).
+- Macro de préparation (B) et de retouche (E.4) : **[en test]** — confirmé au banc :
+  `{Type}` du **Patch** bloque en macro (`Wait_For_Input Type` ne s'exécute pas).
+  Trouvé dans un export ASCII réel (analyse externe, pas testé sur notre console) :
+  `{By Type}` d'un **Record/Update de palette** s'exécute en macro sans problème — ce
+  n'est pas le même softkey. Deux gabarits de macro à essayer au banc dans
+  `reference/ASCII_MACRO_SYNTAX.md` (préparation §B, retouche §E.4).
+- Convention de nom des dummies : le tuto utilise le nom de la famille (`Rush2 Zoom`,
+  `Lustr3`) ; un show de tournée réel analysé utilise `Reference` pour tous — les deux
+  fonctionnent, question de préférence (voir `reference/ASCII_MACRO_SYNTAX.md`,
+  phase 10 du journal).

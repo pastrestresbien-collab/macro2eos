@@ -448,3 +448,42 @@ l'ancien type, valeur du channel changé gardée en discret (convertie). Les dum
 restent utiles pour avoir une valeur **réglée par type** (au lieu d'une conversion
 automatique) et pour que les vrais channels restent en suivi pur (pas de discrets qui
 s'accumulent).
+
+### Phase 10 — Analyse externe : export ASCII réel d'une tournée (busking)
+
+Pas un test au banc : analyse d'un fichier fourni par l'utilisateur,
+`Eos_Family_Busking_Rev_B.asc` (Eos 3.3.9, show de tournée réel, hors du banc de
+transport). Objectif : confronter la méthode « défauts miroirs » à un usage en
+production, et comprendre la syntaxe des macros dans un export ASCII.
+
+**Patch — le motif dummy existe déjà en production**, sous une forme voisine de la
+méthode du tuto :
+- Channels 9000-9032 patchés **sans adresse** (`$Patch <circ> <persID> 0 1 1`), un par
+  modèle (SolaFrame Theatre, SolaFrame 750, SolaWash 2000…), labellisés `Reference`
+  (au lieu du nom de famille comme dans le tuto — convention de nommage différente,
+  même principe).
+- Ces channels de référence sont **inclus** dans le groupe utilitaire `Highlight`
+  (9997) aux côtés des vrais circuits — confirme qu'un dummy sans adresse n'a pas
+  besoin d'être exclu des groupes généraux, seulement des palettes tant qu'il n'est pas
+  désigné défaut.
+- Champ ASCII correspondant à la colonne « Par Type » de la liste des palettes :
+  `$$TypeChanList` (liste des circuits désignés défauts pour cette palette, distincte
+  des lignes `$$Param` qui portent les valeurs de circuits normaux).
+
+**Macros — deux `{Type}` différents, un seul bloque en macro** : ce show réel contient
+deux macros (8031 « New Color BT », 8032 « Upd Color BT ») qui exécutent
+`Record`/`Update Palette_Couleur Par_Type` — c'est-à-dire le softkey **`{By Type}` d'un
+Record/Update de palette**, avec succès (le fichier vient d'un show utilisé en
+tournée). Confronté au constat de la phase 9 (« Macro de patch — softkey `{Type}` en
+macro — ÉCHEC ») : ce n'est **pas le même softkey**. Celui du **Patch** (assigner un
+modèle à un channel) bloque en macro ; celui d'un **Record/Update de palette**
+(désigner un circuit comme défaut de type) ne bloque pas. Détail de la syntaxe ASCII
+des macros (`$MacroDef`, `$$MacroContents`, `$$MacroCommands`) et dictionnaire de codes
+déduit par alignement : `reference/ASCII_MACRO_SYNTAX.md`.
+
+**Conséquence pour le tuto** : la limite « Macro de préparation : `{By Type}` /
+`{Cleanup}` en macro non validés » (tuto §B) était trop pessimiste — seul le `{Type}`
+du Patch est confirmé bloqué ; le `{By Type}` d'un Record/Update de palette a un
+exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (préparation
+§B, retouche en salle §E.4) proposés dans `reference/ASCII_MACRO_SYNTAX.md`, marqués
+**[non testé]** jusqu'à validation sur notre propre console.
