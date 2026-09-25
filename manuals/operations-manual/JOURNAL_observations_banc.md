@@ -647,3 +647,36 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
   à la main → macro de retouche en salle **validée (S)**.
 - À confirmer : comportement quand **plusieurs palettes** référencées sont retouchées
   avant un seul Update.
+
+### Phase 16 — Un seul Update par type pour deux palettes retouchées (OK)
+
+- Macro 902 modifiée : label **« Update PC par type »**, contenu
+  **`Color Update Seulement_les_Ref Par_Type`** (le `Select_Last` a été retiré), toujours
+  sans `<Enter>` final.
+- Préparation (historique de commande, onglet 30.2) : cue 1 = groupe 2 en palette 12 ;
+  cue 2 = `Circ 201 + 301 Palette Couleur 13` et `Circ 202 + 302 Palette Couleur 14`
+  (via deux `Update` successifs de la cue).
+- Retouche en Live sur la cue 2 :
+  - `Circ 202 + 302 Color 3 / 24` → **autre syntaxe de gel** : `[Color]` suivi de
+    `livre / gel`, sans `@` (Lee 24 sur des projecteurs référençant la palette 14) ;
+  - `Circ 201 + 301 @ 3 / 202` (Lee 202 sur des projecteurs référençant la palette 13).
+- Puis **une seule** exécution : `BLIND: Macro 902` → `LIVE Color Update Seulement les
+  Ref Par Type` (Enter à la main) → `GoTo Cue 2`.
+- **Blind palette 13** (Data Latched) : 2001 R 100 / G 91.065 / B 4.661 / W 100 /
+  -138.0 Normal et 3001 Red/Amber/Lime/Green 100 / Blue 48.423 en **bleu** (Lee 202) ;
+  2002 R 59.759 / G 64.81 / B 100 / W 100 / -4.0 Addition et 3002 CIE X 0.337 / Y 0.349
+  en bleu (**inchangés**, Lee 201) ; 201-202 et 301-302 en magenta = valeurs des maîtres.
+- **Blind palette 14** : 2001 et 3001 `G L24` en bleu ; 2002 et 3002 `G L106`
+  (**inchangés**) ; 201-202 et 301-302 `G L24` en magenta.
+- **Constat (S)** : un seul `Update Seulement_les_Ref Par_Type` met à jour **toutes
+  les palettes** référencées par des valeurs retouchées, chacune dans le dummy du type
+  courant, équivalents intacts, aucun discret.
+- **Constat (S)** : sans `Select_Last`, l'Update a pris les retouches de 202 + 302 alors
+  que la sélection active était 201 + 301 → l'Update porte sur **toutes les valeurs
+  manuelles**, pas sur la sélection. Conséquence pratique : avant la macro, annuler
+  (`Sneak`) toute retouche qu'on ne veut pas pousser dans les palettes. `Color` limite
+  bien à la couleur : `Groupe 2 Level` (intensité) n'est pas remonté dans les palettes.
+- **Correction de la phase 14** : la ligne `BLIND: Macro 902` apparaît aussi quand la
+  macro est **lancée** (elle est suivie ici de sa commande en LIVE) ; l'interprétation
+  « simple sélection dans l'éditeur » n'est donc pas sûre.
+- Setup : `OSC RX Activer`, `OSC TX Activer` visibles dans l'historique (Blind : Setup).
