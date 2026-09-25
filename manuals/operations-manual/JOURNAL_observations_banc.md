@@ -584,3 +584,30 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
   donc pire qu'inutile ; ne pas l'utiliser en l'état.
 - Paramètres du Sully 653SX 4C Full XY vus en Blind : Saturation, Color Mix Mode, Color
   Temperature, CIE X, CIE Y, Tint, Color Mix Crossfade, **Gel Range, Gel**.
+
+### Phase 14 — Palette « Home » réparée par `Convertir en Manuel` (OK)
+
+- Historique de commande (onglet **30 Historique de commande**), dans l'ordre :
+  `[Propriété de la conduite]` · `Sneak` · **BLIND : `Macro 902`** · `Record Palette
+  Couleur 12 Par Type` · `Groupe 2 Level` · `Groupe 2 Palette Couleur 15` · `Groupe 2
+  Home` · `Sneak` · **`Groupe 3 Convertir en Manuel`** · **`Groupe 3 Record Palette
+  Couleur 11 Par Type`** · `Palette Couleur 11` (Blind, ×2).
+- **Blind palette 11** ensuite (Data Latched désactivé → noms de plage affichés) : `T`,
+  By Type = `2001 2002 3001 3002`.
+  - Défauts (bleu) : 2001 R/G/B/W 100, Color Mix Normal ; 2002 R/G/B/W 100, Color
+    Priority Addition Mode, Color Mix Normal, Color Temperature 7200 ; 3001 les 8
+    émetteurs 100, Cooling Fan Auto ; 3002 Saturation 100, Color Mix Mode DirectXY+Li…,
+    Color Temperature 1700, CIE X 0.333 / Y 0.333, Tint 0, Color Mix Crossfade 0, Gel
+    Range 0, Gel 0.
+  - 201, 202, 301, 302 en **magenta** (suivi), mêmes valeurs que leur défaut.
+- **Constat (S)** : des valeurs au Home ne sont pas enregistrées par un Record de
+  palette ; **`{Conv Man}` (Convertir en Manuel)** les transforme en valeurs manuelles, et
+  le Record `{By Type}` les stocke. Même enchaînement que la macro 8032 du show busking
+  (`Color Convertir_en_Manuel <Enter>` avant le Record).
+- By Type = dummies seuls → le groupe 3 ne contenait que les dummies (à confirmer).
+- **Anomalies d'historique non expliquées** : la ligne indique `Macro 902` (et non
+  920), lancée en **Blind** ; seules une partie des commandes de la macro apparaissent
+  (`Record … 12 Par Type`, pas les `@ 3/…` ni les palettes 13-16). À clarifier.
+- Correction reportée dans `macros/920_palettes_lee_11-16.asc` (v2) :
+  `Color Convertir_en_Manuel <Enter>` inséré entre `Color Home` et le Record de la
+  palette 11. **[non testé]** en l'état.
