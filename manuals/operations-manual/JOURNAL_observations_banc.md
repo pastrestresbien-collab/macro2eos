@@ -505,3 +505,15 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
   cf. `reference/ASCII_MACRO_SYNTAX.md`), sans passer par `[Learn]`.
 - Mode de conversion (Brightest / Spectral / Hybrid) appliqué par cette commande :
   **non vérifié**.
+- Complément lecture de la capture (show « test copie tour claude code », Offline) :
+  - Le numéro de livre est un **identifiant fixe**, pas la position à l'écran : ordre
+    affiché 3 Lee, 5, 6, 7, 4, 2, 1, 8, 9, Standard Colors. Une macro peut donc s'y fier.
+  - Mode de correspondance affiché dans le picker : **`+Lumineux`** (= {Brightest}).
+    Que la commande `@ 3/106` suive ce réglage reste **à vérifier** (changer le mode puis
+    retaper la commande, comparer les valeurs).
+  - Valeurs en rouge (« Circuits Manuels ») : la commande crée des valeurs **manuelles**
+    en Live, prêtes pour un Record. Intensité non touchée (vide).
+  - Seul 301 était sélectionné (filtre « Circuits Sélectionnés ») : test fait sur un
+    circuit réel, **pas encore sur un dummy ni sur une sélection multi-types**.
+  - Traduction FR du Gel Picker : `{Show}` = « Conduite », `{Sort Hue}` = « Trier Hue »,
+    `{Similar}` = « Similaire », `{Brightest}` = « +Lumineux ».
