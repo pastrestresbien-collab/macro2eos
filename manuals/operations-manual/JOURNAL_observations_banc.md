@@ -573,3 +573,14 @@ exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (prép
   - En Blind Data Latched, valeurs **numériques** : le `G L124` vu en Live est un
     affichage, la palette stocke des nombres.
 - Reste : valeurs des dummies 2002 (LEDBeam) et 3002 (Sully) ; contenu de la palette 11.
+- **Blind palette 11** (filtre « Circuits dans la conduite », Data Latched **désactivé**
+  sur cette capture) : **toutes les cases vides** pour 201, 202, 301, 302, 2001, 2002,
+  3001, 3002.
+- **Constat (S)** : `Color Home` puis `Record Palette_Couleur 11 Par_Type` crée une
+  palette **vide**. Hypothèse (non vérifiée) : des valeurs ramenées à Home ne sont pas
+  stockées par un Record de palette.
+- **Risque en conduite** : une palette vide référencée dans une cue ne pose aucune
+  valeur → la couleur précédente **continue en tracking**. Une palette « Home » vide est
+  donc pire qu'inutile ; ne pas l'utiliser en l'état.
+- Paramètres du Sully 653SX 4C Full XY vus en Blind : Saturation, Color Mix Mode, Color
+  Temperature, CIE X, CIE Y, Tint, Color Mix Crossfade, **Gel Range, Gel**.
