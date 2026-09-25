@@ -3150,3 +3150,90 @@ Cette section est une mine d'information jamais explorée dans le corpus. Extrai
 <!-- ===== FIN : vague34_operations_manual_focus_tabs.md ===== -->
 
 ---
+
+<!-- ===== DÉBUT : vague35_ueliriegg_colour_palette_macro.md ===== -->
+
+# Corpus — vague 35 : macro « Colour Palette » — apports d'ueliriegg (forum ETC)
+
+Date de collecte : 25/09/2026
+Source : fil ETC Community « Colour Palette Macro » (Eos Family, n° 28039, ~2017, version
+Eos non précisée), transmis par l'utilisateur par copier-coller (forum inaccessible depuis
+la session). Auteur principal consigné : **ueliriegg**, contributeur reconnu de la
+communauté Eos selon l'utilisateur. Réponse finale marquée « verified » (+1).
+
+Contexte du fil : l'auteur (AMusgrave) voulait une macro qui prend la couleur d'un seul
+projecteur, l'applique à tous les projecteurs couleur (groupe 20), enregistre une palette
+couleur dans le prochain numéro libre et attend la saisie du label. Sa syntaxe d'origine
+échouait : `[Group] [20] [Color] [Recall_From] [Select Manual] [Chan] [Enter]` puis
+`[Record] [Color Palette] [Next] [Label] [Wait_for_Input]`.
+
+---
+
+## 175 — Méthode de débogage : taper la syntaxe en Live avant de la mettre en macro (B)
+
+- **ueliriegg** : <cite reformulé>si tu tapes cette syntaxe en Live plutôt que dans une
+  macro, tu verras que `SelectManual` n'est pas autorisé dans cette syntaxe.</cite>
+- **Enseignement 1 (méthode)** : une macro rejoue des touches ; toute séquence doit
+  d'abord être validée **à la main en Live**, qui affiche le refus sur la ligne de
+  commande — plus lisible qu'un échec silencieux en macro.
+- **Enseignement 2 (grammaire)** : `[Color] [Recall_From] [Select Manual]` est
+  **refusé** — `Select Manual` n'est pas une source valide pour `Recall From`.
+- **Confiance** : B
+
+## 176 — Première proposition, retirée par son auteur : `Copy To` ne crée pas de palette (B)
+
+- **ueliriegg** propose d'abord :
+  `SelectManual Color CopyTo Group 20 ColorPalette Next Enter` / `Label WaitForEnter Enter`
+- Puis se corrige lui-même : <cite reformulé>désolé, ça ne marche pas, parce que
+  `CopyTo` ne peut pas créer de nouvelles palettes couleur.</cite>
+- **Règle** : `Copy To` copie des **données de channels** (vers d'autres channels, ou
+  entre enregistrements existants) mais **ne crée pas** d'objet palette ; la création
+  passe obligatoirement par `Record`.
+- **Confiance** : B
+
+## 177 — Solution validée : copier la couleur manuelle vers un groupe, puis enregistrer dans la prochaine palette libre (B, « verified »)
+
+- **ueliriegg** (réponse +1, verified) :
+  ```
+  SelectManual Color CopyTo Group 20 Enter
+  Group 20 Record ColorPalette Next Label WaitForEnter Enter
+  ```
+- **Décomposition** :
+  - `SelectManual Color CopyTo Group 20 Enter` — sélectionne les channels à valeur
+    manuelle, restreint à la **catégorie couleur**, et copie cette couleur vers tous les
+    channels du groupe 20 (pas besoin de connaître le numéro du projecteur réglé).
+  - `Group 20 Record ColorPalette Next` — enregistre dans la **prochaine palette couleur
+    libre** (`Next`), sans saisir de numéro.
+  - `Label WaitForEnter Enter` — ouvre le label et met la macro en pause jusqu'à `Enter`.
+- **Confiance** : B (réponse communautaire validée ; non testée au banc dans ce projet)
+- **Non précisé dans le fil** : comportement de `CopyTo` entre **types de fixtures
+  différents** (copie brute des paramètres homonymes ou conversion). Au banc
+  (JOURNAL_observations_banc.md, phase 9 V3), `Copy To` en Blind palette entre types
+  différents copie les paramètres homonymes **à l'identique** et ne convertit que les
+  paramètres différents — même comportement probable en Live, **à vérifier**.
+
+## 178 — Mises en garde complémentaires du même fil (Mike A, contexte) (B)
+
+- Non attribuées à ueliriegg, consignées pour le contexte :
+  - `Label` se comporte mal dans les macros.
+  - Si le projecteur source est **sur une palette**, `Copy To` copie la **référence** à la
+    palette et non ses valeurs, sauf `Make Absolute` préalable.
+- **Confiance** : B
+
+---
+
+## Synthèse — apports de cette vague
+
+1. **Méthode** : valider toute séquence en Live avant de l'enregistrer en macro (#175).
+2. **Grammaire** : `Recall From` n'accepte pas `Select Manual` comme source (#175) ;
+   `Copy To` ne crée jamais de palette (#176).
+3. **Brique réutilisable** : `Record … Palette_Couleur Next` enregistre dans la prochaine
+   palette libre (#177) — pertinent pour les macros de préparation « défauts miroirs »
+   (`procedures/TUTO_changement_type_famille.md`), qui exigeaient jusqu'ici de saisir le
+   numéro de palette deux fois.
+4. **À tester au banc** : `SelectManual Color CopyTo` vers des dummies d'un **autre
+   modèle** (copie brute ou conversion) ; `Next` dans une macro sur Eos 3.3.9.
+
+<!-- ===== FIN : vague35_ueliriegg_colour_palette_macro.md ===== -->
+
+---
