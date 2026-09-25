@@ -61,6 +61,19 @@ la liste des dummies, **aucun `+`**.
 4. `[2003] {By Type} [Enter]`
 5. Contrôle : liste des palettes, `2003` présent, aucun `+`.
 
+Pas de macro pour ce §C (deux commandes seulement ; relancée par erreur, elle écraserait
+les retouches de salle). Les palettes créées **après** l'ajout du dummy le couvrent
+d'office (macro 920 : sélection `2001 Thru 3999`).
+
+**[en test] — vigilance particulière** (protocole en cours, journal à suivre) :
+- `Copy To` entre types différents copie **tels quels** les paramètres de même nom (V3) :
+  Rush → autre RGBW = mêmes chiffres R/G/B/W, **couleur probablement fausse**. À
+  vérifier en Live, et retoucher si besoin (§E.4).
+- Le maître 2001 ne doit pas bouger ; toutes les palettes doivent recevoir 2003 (y
+  compris la palette Home et les palettes déjà retouchées).
+- Valider par un aller-retour réel (201-202 → nouveau type → Rush) comparé à des
+  valeurs relevées **avant**, en Data verrouillé.
+
 ## D. Avant de partir
 
 1. File > Save As (sauvegarde datée).
@@ -75,6 +88,11 @@ la liste des dummies, **aucun `+`**.
 4. **Retoucher une palette** : sélectionner un projecteur, régler, puis
    `[Update] [Color Palette] [n] {By Type} [Enter]` → la valeur part dans le dummy
    équivalent, le maître n'est jamais touché.
+   **Macro validée (phase 15-16)** : `Color Update Seulement_les_Ref Par_Type`, **sans
+   `[Enter]`** — relire la fenêtre Update (palettes cibles, circuits) puis `[Enter]` à
+   la main. Un seul Update met à jour **toutes** les palettes retouchées.
+   ⚠ L'Update prend **toutes les valeurs manuelles**, pas seulement la sélection :
+   `[Sneak]` d'abord sur ce qu'on ne veut pas pousser.
 5. Vérifier une retouche **en Blind** (ou après Go To Cue), jamais dans le Live juste
    après l'Update.
 
@@ -105,12 +123,17 @@ la liste des dummies, **aucun `+`**.
   (pan/tilt à régler en salle, sujet séparé).
 - **[non testé]** `Copy To` vers une plage de dummies (`[2002] [Thru] [2013]`) : copier
   un par un en attendant.
-- Macro de préparation (B) et de retouche (E.4) : **[en test]** — confirmé au banc :
-  `{Type}` du **Patch** bloque en macro (`Wait_For_Input Type` ne s'exécute pas).
-  Trouvé dans un export ASCII réel (analyse externe, pas testé sur notre console) :
-  `{By Type}` d'un **Record/Update de palette** s'exécute en macro sans problème — ce
-  n'est pas le même softkey. Deux gabarits de macro à essayer au banc dans
-  `reference/ASCII_MACRO_SYNTAX.md` (préparation §B, retouche §E.4).
+- `{Type}` du **Patch** bloque en macro (phase 9) : le changement de type (§E.2, §F.1)
+  reste manuel. `{By Type}` d'un Record/Update de palette fonctionne en macro.
+- **Macros validées au banc** :
+  - `macros/920_palettes_lee_11-16.asc` — création de palettes By Type sur les dummies
+    par gel (`@ <livre>/<gel>`, ex. `@ 3/106` = Lee 106 ; `[Color] 3/24` marche aussi),
+    import ASCII partiel accepté (**{Merge Data?}**, Macros seules, pas de `Clear All`).
+    Palette « Home » : `Convertir en Manuel` obligatoire, sinon palette **vide** (v2,
+    correctif **[non retesté]** en macro).
+  - Macro de retouche §E.4 (ci-dessus), en attente du code ASCII de `Seulement_les_Ref`.
+- **[en attente]** palettes par valeurs CIE x/y : syntaxe clavier et codes `{CIE X}` /
+  `{CIE Y}` à relever au banc.
 - Convention de nom des dummies : le tuto utilise le nom de la famille (`Rush2 Zoom`,
   `Lustr3`) ; un show de tournée réel analysé utilise `Reference` pour tous — les deux
   fonctionnent, question de préférence (voir `reference/ASCII_MACRO_SYNTAX.md`,
