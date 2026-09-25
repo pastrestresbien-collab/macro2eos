@@ -245,6 +245,17 @@ adresse, Préserver Natif désactivé (ch 2-3 patchés par `Copy To` depuis ch 1
   **Non détectable par `{Cleanup}`** ici, car c'est le **défaut lui-même** qui a dérivé
   (aucune valeur de comparaison).
 
+### Explication de la dérive Color Mix (export ASCII utilisateur, Eos 3.3.9)
+
+Table de plages du profil `Martin Rush_Par_2_RGBW_Zoom_9ch` (`$Personality 65241`,
+paramètre 208 Color_Mix) : `-138.0` = **Normal** (DMX 0-10) ; -137…-102 = Color 1…36 ;
+**-100…100 = « Cycle -100 to 100% »** (DMX 193-243). La valeur `0` revenue après
+l'aller-retour sans dummy place donc le Rush en **mode cycle couleur** : dérive **réelle
+en sortie**, pas seulement d'affichage.
+Idem Lustr X8 Direct (`$Personality 25798`, paramètre 17 Cooling_Fan) : `-2.0` = Auto
+(DMX 0-9), `0…100` = vitesse (DMX 20-249) → une dérive vers 0 = ventilation à vitesse 0.
+→ Justifie la méthode « défauts miroirs » (maître jamais converti).
+
 ### Règle déduite des phases 6-8 (S)
 
 La perte ne survient que dans un cas : **un channel qui suivait le défaut change de
