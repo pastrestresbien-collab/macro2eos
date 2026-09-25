@@ -487,3 +487,21 @@ du Patch est confirmé bloqué ; le `{By Type}` d'un Record/Update de palette a 
 exemple qui fonctionne ailleurs. Deux gabarits de macro à tester au banc (préparation
 §B, retouche en salle §E.4) proposés dans `reference/ASCII_MACRO_SYNTAX.md`, marqués
 **[non testé]** jusqu'à validation sur notre propre console.
+
+### Phase 11 — Gélatine en ligne de commande : `[circ] @ <livre>/<gel>` (OK)
+
+- Commande tapée : `[301] [At] [3] [/] [1] [0] [6] [Enter]` → ligne de commande
+  « LIVE: Cue 1 : Circ 301 @ 3 / 106 ♦ ».
+- `3` = numéro du livre de gélatines tel qu'affiché sur le softkey du Gel Picker
+  (« 3 Lee » ; autres livres vus : 1 Apollo Gel, 2 GAM GamColor, 4 Rosco Other,
+  5 Rosco Roscolux, 6 Rosco SuperGel, 7 Rosco E Color, 8 TokyoBS Poly Color, 9 Lee CL).
+- Résultat (Live, Data Latched, 301 = S4 LED S3 Lustr X8 Direct) : Red 100 / Amber
+  18.95 / Lime 0 / Green 0 / Blue 0 / Indigo 0 / Cyan 0 / Deep Red 95.795 ; picker CIE
+  x 0.6872 / y 0.3092 = Lee 106 (Primary Red).
+- **Constat (S)** : un gel se choisit **au clavier**, sans toucher la tuile du picker.
+  Syntaxe non trouvée dans le manuel converti (`06-manual-control.md` ne documente que
+  `{Scroller}` pour les changeurs mécaniques). Conséquence : une macro de création de
+  palettes par gel peut s'écrire entièrement en ASCII (`@` = code 10, `/` = code 57,
+  cf. `reference/ASCII_MACRO_SYNTAX.md`), sans passer par `[Learn]`.
+- Mode de conversion (Brightest / Spectral / Hybrid) appliqué par cette commande :
+  **non vérifié**.
