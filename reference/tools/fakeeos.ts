@@ -10,6 +10,12 @@
  *    3 s plus tard sur la même adresse (sans /out — comportement réel d'Eos,
  *    cf. Luminosus EosFaderBankBlock), pour valider l'anti-boucle en phase 2
  *  - écho immédiat des touches sur /eos/out/key/<nom>
+ *  - /eos/sub/<n> : reçu et journalisé, SANS écho — un vrai Eos ne republie
+ *    jamais spontanément sur cette adresse (JOURNAL_observations_nomad.md),
+ *    le retour d'état passe uniquement par les banques de faders
+ *  - /eos/macro/<n>/fire et /eos/macro/fire : reçus et journalisés (niveau A,
+ *    cf. JOURNAL_nomad_complements.md) ; aucun écho, car aucun n'est documenté
+ *    ou observé pour ce déclenchement
  *
  * ⚠ Ce simulateur ne remplace PAS la validation en conditions réelles
  * (gate de la phase 0) : R1 et R7 ne peuvent être levés que sur le vrai nomad.
@@ -108,8 +114,20 @@ const server = createServer((socket: Socket) => {
 
     const subMatch = msg.address.match(/^\/eos\/sub\/(\d+)$/);
     if (subMatch && msg.args.length > 0) {
-      const echoArgs = msg.args;
-      setTimeout(() => reply(msg.address.replace("/eos/", "/eos/out/"), ...echoArgs), echoDelayMs);
+      // Pas d'écho ici : le journal terrain (JOURNAL_observations_nomad.md)
+      // confirme qu'un vrai Eos ne republie jamais spontanément sur
+      // /eos/sub/<n> — le retour d'état passe uniquement par les banques de
+      // faders (/eos/out/fader/...). Republier ici serait un comportement
+      // inventé, pas observé.
+      return;
+    }
+
+    const macroFireMatch = msg.address.match(/^\/eos\/macro\/(\d+)\/fire$/);
+    if (macroFireMatch || msg.address === "/eos/macro/fire") {
+      // Adresse confirmée niveau A pour l'envoi (manuel v3.2.0 chap.31 + capture
+      // de trafic réelle, cf. JOURNAL_nomad_complements.md). Aucun écho documenté
+      // ou observé pour ce déclenchement : on accuse réception dans le log sans
+      // inventer une adresse de retour.
       return;
     }
 

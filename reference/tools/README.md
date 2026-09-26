@@ -1,10 +1,12 @@
 # Outils de test — banc transport OSC/TCP
 
-- `fakeeos.ts` — simulateur ETCnomad minimal (projet xtouch2Eos, fourni tel quel).
-  Reproduit le comportement réseau observé sur un vrai nomad : état initial diffusé
-  à la connexion, `/eos/ping` → `/eos/out/ping`, config de banque de faders, écho
+- `fakeeos.ts` — simulateur ETCnomad minimal (projet xtouch2Eos, fourni tel quel,
+  puis corrigé le 2026-09-26 sur les deux points listés ci-dessous). Reproduit le
+  comportement réseau observé sur un vrai nomad : état initial diffusé à la
+  connexion, `/eos/ping` → `/eos/out/ping`, config de banque de faders, écho
   fader différé (~3 s par défaut, configurable), écho de touche, écho de ligne de
-  commande sur `/eos/cmd`/`/eos/newcmd` (préfixé `"LIVE: "`).
+  commande sur `/eos/cmd`/`/eos/newcmd` (préfixé `"LIVE: "`), réception journalisée
+  (sans écho inventé) de `/eos/macro/<n>/fire` et de `/eos/sub/<n>`.
 - `test-client.ts` — client de test minimal utilisé pour valider le pipeline
   (session de consolidation, 2026-07-31) : connexion TCP, envoi d'une commande
   OSC framée (1.0, longueur 4 octets), lecture de la réponse.
@@ -32,10 +34,15 @@ générée pour la traduction NL « circuit 10 à 20 en L195 ») via `/eos/newcm
 reçu `/eos/out/cmd "LIVE: Chan 10 Thru 20 Color 3/195 Enter"` — pipeline transport OK.
 
 **Test 2** (`test-client2.ts`) : envoi de `/eos/macro/1/fire` (1.0 puis 0.0) et
-`/eos/key/go_0`. **Constat** : `fakeeos.ts` ne gère pas `/eos/macro/.../fire`
-(aucune réponse, silencieusement ignoré) — lacune du simulateur, pas du paquet
-envoyé (correctement formé/transporté). `/eos/key/go_0` en revanche échoué
-correctement sur `/eos/out/key/go_0`.
+`/eos/key/go_0`. **Constat d'origine** : `fakeeos.ts` ne gérait pas
+`/eos/macro/.../fire` (aucune réponse, silencieusement ignoré, sans même une
+trace dans le log serveur) — lacune du simulateur, pas du paquet envoyé
+(correctement formé/transporté). `/eos/key/go_0` en revanche échoué correctement
+sur `/eos/out/key/go_0`. **Corrigé le 2026-09-26** : `/eos/macro/<n>/fire` et
+`/eos/macro/fire` sont maintenant reconnus et journalisés à la réception ;
+toujours sans écho, faute d'adresse de retour documentée ou observée pour ce
+déclenchement — inventer une adresse serait aller au-delà de ce que le corpus
+confirme.
 
 **Test 3** (`test-client3.ts`) : macro à deux lignes générée pour la traduction NL
 « groupe 5 + circuits 1 à 6 en Lee 195, enregistrer dans palette couleur 5,
@@ -51,11 +58,11 @@ d'exemple exact dans le corpus, et le comportement réel de `Record ... Label`
 avec un libellé multi-mots dépend du clavier virtuel de la console — à vérifier
 au banc réel.
 
-**Constat récurrent, à garder en tête** : l'écho simulé sur `/eos/sub/<n>` (avec
-délai) dans `fakeeos.ts` contredit le journal terrain (`JOURNAL_observations_nomad.md`),
-qui affirme qu'un vrai Eos ne republie **jamais** spontanément sur cette adresse
-(feedback uniquement via les banques de faders). Simplification du simulateur à
-ne pas prendre pour argent comptant sur ce point précis.
+**Constat d'origine, corrigé le 2026-09-26** : l'écho simulé sur `/eos/sub/<n>`
+(avec délai) dans `fakeeos.ts` contredisait le journal terrain
+(`JOURNAL_observations_nomad.md`), qui affirme qu'un vrai Eos ne republie
+**jamais** spontanément sur cette adresse (feedback uniquement via les banques de
+faders). Le simulateur reçoit et journalise désormais `/eos/sub/<n>` sans écho.
 
 ## Usage
 
