@@ -54,20 +54,49 @@ manuel officiel) — jamais de syntaxe devinée, conformément à la règle du d
   Force `flag_erreur_int=1` sur les commandes dont le texte matche la regex,
   pour exercer le chemin « refus » côté app (`APP.md`) sans vrai validateur de
   syntaxe. Aucun refus par défaut.
+- `/eos/out/pending/cue/text` ajouté au burst initial (confirmé manuel chap.31,
+  et vu dans le layout `reference/touchosc/` — voir plus bas).
+- Fader `load`/`unload`/`stop`/`fire`/`out` (`/eos/fader/<b>/<f>/<action>`) :
+  reçus et journalisés, sans écho — le manuel (table Fader) confirme ces cinq
+  actions sans argument, et ne documente aucun accusé de réception distinct du
+  niveau/nom déjà simulés.
+- Direct Select — pagination (`/eos/ds/<n>/page/<delta>`) et appui bouton
+  (`/eos/ds/<n>/<bouton>`) : reçus et journalisés, sans écho (aucun accusé
+  documenté pour l'appui lui-même dans le manuel).
+
+**Analysé mais volontairement pas simulé** : la **création** de banque Direct
+Select (`/eos/ds/<n>/<target type>/<count>`, manuel chap.31). Le layout
+`reference/touchosc/ANALYSE_LAYOUT_TOUCHOSC.md` (voir plus bas) utilise aussi
+des sous-formes non documentées dans notre corpus (`/eos/ds/2/fx/20`, `/ip/`,
+`/fp/`, `/cp/`, `/bp/`, `/preset/`) qu'on ne sait pas distinguer avec certitude
+d'une vraie création sans connaître le vocabulaire complet des `<target
+type>` — les traiter comme des créations serait deviner leur format d'écho.
 
 **Volontairement absent**, faute de syntaxe exacte confirmée dans le corpus —
 adresse observée en catégorie seulement (journal terrain, l.188-192), ou format
 d'argument non capturé :
 
 - les 12 softkeys (libellés localisés observés, adresses jamais capturées) ;
-- l'état de cue précédente/en attente ;
+- l'état de cue précédente (l'état *en attente* est désormais couvert, voir
+  ci-dessus) ;
 - `/eos/out/color/hs` ;
 - le format exact des arguments de `/eos/out/pantilt` et `/eos/out/xyz` ;
 - `/eos/out/event/locked` ;
-- les événements LED (`/eos/out/event/sub/<n>`, `/eos/out/event/cue/<liste>/<cue>/fire|stop`).
+- les événements LED (`/eos/out/event/sub/<n>`, `/eos/out/event/cue/<liste>/<cue>/fire|stop`) ;
+- la création de banque Direct Select (voir ci-dessus).
 
 Les inventer romprait la règle de fidélité du dépôt. Chacun reste une piste
 « banc réel » ouverte — pas un oubli.
+
+## Source des adresses Direct Select et Fader étendu
+
+Confirmées par recoupement entre le manuel officiel (chap.31 Show Control,
+tables Fader et Direct Select) et le layout TouchOSC officiel Eos analysé dans
+[`reference/touchosc/ANALYSE_LAYOUT_TOUCHOSC.md`](../touchosc/ANALYSE_LAYOUT_TOUCHOSC.md)
+— ce dernier a servi de point de départ (patterns d'adresses observés dans un
+vrai fichier `.touchosc`), vérifié ensuite contre le manuel avant toute
+implémentation ici. Rien de ce layout n'a été simulé sans cette double
+confirmation.
 
 ## Tests réalisés (2026-07-31)
 

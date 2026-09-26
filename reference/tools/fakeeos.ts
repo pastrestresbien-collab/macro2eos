@@ -107,6 +107,7 @@ const server = createServer((socket: Socket) => {
   reply("/eos/out/user", { type: "i", value: 1 });
   reply("/eos/out/active/cue", { type: "f", value: 0.0 }); // aucune cue en cours
   reply("/eos/out/active/cue/text", { type: "s", value: "" });
+  reply("/eos/out/pending/cue/text", { type: "s", value: "" }); // aucune cue en attente
   reply("/eos/out/active/chan", { type: "s", value: "" }); // aucun canal sélectionné
   reply("/eos/out/wheel", { type: "f", value: 0.0 }); // 0=coarse
   reply("/eos/out/switch", { type: "f", value: 0.0 });
@@ -146,6 +147,41 @@ const server = createServer((socket: Socket) => {
       // écho différé, comme le vrai Eos (~3 s), sur l'adresse SANS /out
       const echoArgs = msg.args;
       setTimeout(() => reply(msg.address, ...echoArgs), echoDelayMs);
+      return;
+    }
+
+    const faderActionMatch = msg.address.match(/^\/eos\/fader\/(\d+)\/(\d+)\/(load|unload|stop|fire|out)$/);
+    if (faderActionMatch) {
+      // Confirmé niveau A (manuel chap.31, table Fader) : ces 5 actions
+      // n'attendent aucun argument et le manuel ne documente aucun écho de
+      // confirmation — seuls le niveau et le nom du fader sont republiés
+      // (géré plus haut). Reçu et journalisé, sans écho inventé.
+      return;
+    }
+
+    // Note : la création de banque (`/eos/ds/<index>/<target type>/<count>`,
+    // manuel chap.31 "Direct Select Creation") N'EST PAS gérée ici. Le layout
+    // touchosc analysé (reference/touchosc/) utilise aussi des sous-formes non
+    // confirmées (`/eos/ds/2/fx/20`, `/ip/`, `/fp/`, `/cp/`, `/bp/`, `/preset/`)
+    // qu'on ne sait pas distinguer avec certitude d'une vraie création sans
+    // connaître le vocabulaire complet des <target type> — les traiter comme
+    // des créations serait deviner. Laissé sans écho tant que non tranché.
+
+    const dsPageMatch = msg.address.match(/^\/eos\/ds\/(\d+)\/page\/(-?\d+)$/);
+    if (dsPageMatch) {
+      // Pagination (manuel chap.31, "Direct Select Paging") : reçu et
+      // journalisé. Pas d'écho ici faute de contexte (nombre de boutons non
+      // reconnu à ce stade) — un vrai bridge devra retenir la config de la
+      // banque pour republier les boutons de la nouvelle page.
+      return;
+    }
+
+    const dsButtonMatch = msg.address.match(/^\/eos\/ds\/(\d+)\/(\d+)$/);
+    if (dsButtonMatch) {
+      // Appui bouton (manuel chap.31, "Using Direct Selects") : argument
+      // optionnel 1.0=appui/0.0=relâchement. Aucun écho de confirmation
+      // documenté pour l'appui lui-même (seul l'état de la banque l'est,
+      // via dsCreateMatch/dsPageMatch) : reçu et journalisé sans écho inventé.
       return;
     }
 
