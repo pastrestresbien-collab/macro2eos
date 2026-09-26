@@ -93,7 +93,13 @@ def main() -> int:
             print(f"  {ligne!r} → (aucun écho reçu avant {args.timeout}s)")
             echecs += 1
         else:
-            print(f"  {ligne!r} → {echo.adresse} {echo.args}")
+            # Format confirmé au banc actif (corpus #140) : (texte, flag_erreur_int).
+            texte, *reste = echo.args
+            flag = reste[0] if reste else None
+            statut = {0: "acceptée", 1: "REFUSÉE (erreur de syntaxe)"}.get(flag, "statut inconnu")
+            print(f"  {ligne!r} → {echo.adresse} {texte!r} — {statut}")
+            if flag == 1:
+                echecs += 1
 
     client.close()
     return 1 if echecs else 0

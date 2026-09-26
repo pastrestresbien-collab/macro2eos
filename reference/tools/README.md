@@ -1,12 +1,13 @@
 # Outils de test — banc transport OSC/TCP
 
 - `fakeeos.ts` — simulateur ETCnomad minimal (projet xtouch2Eos, fourni tel quel,
-  puis corrigé le 2026-09-26 sur les deux points listés ci-dessous). Reproduit le
-  comportement réseau observé sur un vrai nomad : état initial diffusé à la
+  puis corrigé/enrichi le 2026-09-26, voir « Fidélité » ci-dessous). Reproduit le
+  comportement réseau observé sur un vrai nomad : burst d'état initial à la
   connexion, `/eos/ping` → `/eos/out/ping`, config de banque de faders, écho
-  fader différé (~3 s par défaut, configurable), écho de touche, écho de ligne de
-  commande sur `/eos/cmd`/`/eos/newcmd` (préfixé `"LIVE: "`), réception journalisée
-  (sans écho inventé) de `/eos/macro/<n>/fire` et de `/eos/sub/<n>`.
+  fader différé (500 ms par défaut, configurable), écho de touche, écho de ligne
+  de commande sur `/eos/out/cmd` **et** `/eos/out/user/<u>/cmd` avec le flag
+  d'erreur (`texte, flag_erreur_int`), réception journalisée (sans écho inventé)
+  de `/eos/macro/<n>/fire` et de `/eos/sub/<n>`.
 - `test-client.ts` — client de test minimal utilisé pour valider le pipeline
   (session de consolidation, 2026-07-31) : connexion TCP, envoi d'une commande
   OSC framée (1.0, longueur 4 octets), lecture de la réponse.
@@ -19,13 +20,54 @@
 ## Ce que ça valide
 
 Le **transport** OSC/TCP (framing, encodage, connexion, écho) — pas la **grammaire**
-Eos. `fakeeos.ts` accepte n'importe quelle chaîne de commande sans validation
-syntaxique, contrairement à un vrai Eos qui renvoie un flag d'erreur
-(`flag_erreur_int` sur `/eos/out/cmd`, cf. `JOURNAL_observations_nomad.md` et
-`corpus/CORPUS_EOS_COMPLET.md` #140) en cas de syntaxe invalide.
+Eos. `fakeeos.ts` accepte n'importe quelle chaîne de commande sans jamais la
+valider syntaxiquement : `flag_erreur_int` (voir « Fidélité ») vaut toujours 0,
+sauf si on force artificiellement un refus avec `--erreur-pattern` (commodité de
+test, pas une vraie validation — voir plus bas).
 
 **Toute macro validée uniquement contre ce simulateur reste non confirmée
 syntaxiquement** — seul un vrai nomad/console peut trancher ce point.
+
+## Fidélité au vrai Eos (mise à jour 2026-09-26)
+
+Le simulateur ne reproduit que ce qui est **confirmé** (niveau S banc réel ou A
+manuel officiel) — jamais de syntaxe devinée, conformément à la règle du dépôt
+(`CLAUDE.md`, `grammar/README.md`).
+
+**Corrigé / ajouté** :
+
+- `/eos/macro/<n>/fire` et `/eos/macro/fire` : reçus et journalisés (avant :
+  ignorés en silence, même dans le log serveur). Toujours sans écho — aucune
+  adresse de retour n'est documentée ou observée pour ce déclenchement.
+- `/eos/sub/<n>` : reçu et journalisé, écho inventé supprimé (un vrai Eos ne
+  republie jamais spontanément sur cette adresse, corpus #139).
+- `/eos/out/cmd` porte maintenant ses **deux** arguments confirmés
+  `(texte, flag_erreur_int)` au lieu d'un seul — format du corpus #140. Diffusé
+  aussi sur `/eos/out/user/<u>/cmd`, comme observé au banc actif.
+- Écho fader par défaut passé de 3 s (chiffre communautaire jamais confirmé) à
+  **500 ms**, mesuré empiriquement à +522 ms au banc actif (corpus #139).
+- Burst initial étendu de 2 à 8 messages à la connexion : `show/name`, `user`,
+  `active/cue`, `active/cue/text`, `active/chan`, `wheel`, `switch`,
+  `event/state` — toutes des adresses ET formats d'argument confirmés par le
+  manuel officiel (chap. 31, Show Control).
+- `--erreur-pattern <regex>` : **commodité de test, pas un comportement Eos**.
+  Force `flag_erreur_int=1` sur les commandes dont le texte matche la regex,
+  pour exercer le chemin « refus » côté app (`APP.md`) sans vrai validateur de
+  syntaxe. Aucun refus par défaut.
+
+**Volontairement absent**, faute de syntaxe exacte confirmée dans le corpus —
+adresse observée en catégorie seulement (journal terrain, l.188-192), ou format
+d'argument non capturé :
+
+- les 12 softkeys (libellés localisés observés, adresses jamais capturées) ;
+- l'état de cue précédente/en attente ;
+- `/eos/out/color/hs` ;
+- le format exact des arguments de `/eos/out/pantilt` et `/eos/out/xyz` ;
+- `/eos/out/event/locked` ;
+- les événements LED (`/eos/out/event/sub/<n>`, `/eos/out/event/cue/<liste>/<cue>/fire|stop`).
+
+Les inventer romprait la règle de fidélité du dépôt. Chacun reste une piste
+« banc réel » ouverte — pas un oubli.
 
 ## Tests réalisés (2026-07-31)
 
@@ -69,6 +111,8 @@ faders). Le simulateur reçoit et journalise désormais `/eos/sub/<n>` sans éch
 ```bash
 npm install osc
 npx tsx fakeeos.ts --port 3032 --framing 1.0 --echo-delay 500
+# pour tester le chemin "refus" côté app (voir APP.md) :
+npx tsx fakeeos.ts --port 3032 --erreur-pattern "Bogus"
 # dans un autre terminal :
 npx tsx test-client.ts
 ```

@@ -1,26 +1,45 @@
 /**
  * Simulateur ETCnomad minimal pour tester le banc de test SANS nomad.
  *
- * Reproduit les comportements documentés utiles à la phase 0 :
- *  - envoie un état initial dès la connexion TCP (comme le vrai Eos, qui
- *    diffuse show/name, cue active, softkeys, etc. — observé sur nomad 3.3.5)
+ * Reproduit les comportements confirmés au banc réel (voir sources citées
+ * inline) :
+ *  - burst initial à la connexion TCP : show/name, user, état de cue actif,
+ *    molette, sélection de canal, état live/blind (voir la fonction
+ *    `envoyerBurstInitial` pour le détail et les sources)
  *  - répond à /eos/ping sur /eos/out/ping (mêmes arguments)
  *  - accuse la config de banque : /eos/fader/<b>/config/... → label + niveaux
- *  - ÉCHO FADER À +3 s : un niveau reçu sur /eos/fader/<b>/<f> est renvoyé
- *    3 s plus tard sur la même adresse (sans /out — comportement réel d'Eos,
- *    cf. Luminosus EosFaderBankBlock), pour valider l'anti-boucle en phase 2
+ *  - ÉCHO FADER : un niveau reçu sur /eos/fader/<b>/<f> est renvoyé sur la
+ *    même adresse (sans /out) après `--echo-delay` ms — défaut 500 ms,
+ *    mesuré empiriquement à +522 ms au banc actif (corpus #139), et NON les
+ *    ~3 s supposés dans l'étude de cadrage initiale (chiffre communautaire,
+ *    jamais confirmé)
  *  - écho immédiat des touches sur /eos/out/key/<nom>
  *  - /eos/sub/<n> : reçu et journalisé, SANS écho — un vrai Eos ne republie
- *    jamais spontanément sur cette adresse (JOURNAL_observations_nomad.md),
- *    le retour d'état passe uniquement par les banques de faders
+ *    jamais spontanément sur cette adresse (corpus #139,
+ *    JOURNAL_observations_nomad.md), le retour d'état passe uniquement par
+ *    les banques de faders
  *  - /eos/macro/<n>/fire et /eos/macro/fire : reçus et journalisés (niveau A,
  *    cf. JOURNAL_nomad_complements.md) ; aucun écho, car aucun n'est documenté
  *    ou observé pour ce déclenchement
+ *  - ligne de commande (/eos/cmd, /eos/newcmd) : écho sur /eos/out/cmd ET
+ *    /eos/out/user/<u>/cmd, chacun avec DEUX arguments (texte, flag_erreur_int)
+ *    — format confirmé au banc actif, corpus #140. `flag_erreur_int` vaut 0
+ *    par défaut (ce simulateur ne valide aucune syntaxe) ; `--erreur-pattern`
+ *    permet de le forcer à 1 pour tester le chemin "refus" côté app — c'est
+ *    une commodité de test, PAS un comportement observé sur un vrai Eos.
+ *
+ * Volontairement absent, faute de syntaxe exacte confirmée dans le corpus
+ * (adresse observée en catégorie seulement, ou format d'argument non capturé) :
+ * les 12 softkeys, l'état de cue précédente/en attente, /eos/out/color/hs,
+ * le format exact de /eos/out/pantilt et /eos/out/xyz, /eos/out/event/locked,
+ * et les événements LED (/eos/out/event/sub, /eos/out/event/cue/.../fire|stop).
+ * Les inventer romprait la règle du dépôt : jamais de syntaxe non tranchée
+ * présentée comme acquise (voir CLAUDE.md, `grammar/README.md`).
  *
  * ⚠ Ce simulateur ne remplace PAS la validation en conditions réelles
  * (gate de la phase 0) : R1 et R7 ne peuvent être levés que sur le vrai nomad.
  *
- * Usage : npm run fake-eos -- [--port 3032] [--framing 1.0|1.1] [--echo-delay 3000]
+ * Usage : npm run fake-eos -- [--port 3032] [--framing 1.0|1.1] [--echo-delay 500] [--erreur-pattern <regex>]
  */
 
 import { createServer, Socket } from "node:net";
@@ -33,7 +52,15 @@ function cliOption(name: string): string | undefined {
 
 const port = Number(cliOption("port") ?? 3032);
 const framing = (cliOption("framing") ?? "1.0") as "1.0" | "1.1";
-const echoDelayMs = Number(cliOption("echo-delay") ?? 3000);
+// 500 ms par défaut : mesuré à +522 ms au banc actif (corpus #139), corrige
+// les "+3 s" supposés dans l'étude de cadrage initiale (jamais confirmés).
+const echoDelayMs = Number(cliOption("echo-delay") ?? 500);
+// Commodité de TEST, pas un comportement Eos : si la ligne de commande envoyée
+// matche cette regex, flag_erreur_int est forcé à 1 dans l'écho /eos/out/cmd,
+// pour exercer le chemin "refus" côté app (voir APP.md) sans vrai validateur
+// de syntaxe. Aucune commande n'est refusée par défaut.
+const erreurPatternRaw = cliOption("erreur-pattern");
+const erreurPattern = erreurPatternRaw ? new RegExp(erreurPatternRaw) : null;
 
 const SLIP_END = 0xc0;
 const SLIP_ESC = 0xdb;
@@ -70,10 +97,20 @@ const server = createServer((socket: Socket) => {
     log(`  → ${address} ${JSON.stringify(args.map((a) => a.value))}`);
   }
 
-  // le vrai Eos rejoue son état à chaque nouvelle connexion — c'est aussi ce
-  // qui permet l'auto-détection de framing côté client (Eos parle le premier)
+  // Le vrai Eos rejoue tout son état à chaque nouvelle connexion (~40 messages
+  // en ~130 ms, JOURNAL_observations_nomad.md l.188-192) — c'est aussi ce qui
+  // permet l'auto-détection de framing côté client (Eos parle le premier).
+  // Seules les adresses ET le format d'argument confirmés par le manuel
+  // officiel (chap.31 Show Control) sont reproduits ici ; voir le commentaire
+  // en tête de fichier pour la liste de ce qui manque et pourquoi.
   reply("/eos/out/show/name", { type: "s", value: "fake-eos" });
   reply("/eos/out/user", { type: "i", value: 1 });
+  reply("/eos/out/active/cue", { type: "f", value: 0.0 }); // aucune cue en cours
+  reply("/eos/out/active/cue/text", { type: "s", value: "" });
+  reply("/eos/out/active/chan", { type: "s", value: "" }); // aucun canal sélectionné
+  reply("/eos/out/wheel", { type: "f", value: 0.0 }); // 0=coarse
+  reply("/eos/out/switch", { type: "f", value: 0.0 });
+  reply("/eos/out/event/state", { type: "i", value: 1 }); // 1=Live
 
   function handleMessage(msg: osc.OscMessage): void {
     log(`← ${msg.address} ${JSON.stringify(msg.args.map((a) => a.value))}`);
@@ -139,7 +176,15 @@ const server = createServer((socket: Socket) => {
 
     if (msg.address === "/eos/cmd" || msg.address === "/eos/newcmd") {
       const text = String(msg.args[0]?.value ?? "");
-      reply("/eos/out/cmd", { type: "s", value: `LIVE: ${text}` });
+      const echo = `LIVE: ${text}`;
+      // Format confirmé au banc actif (corpus #140) : (texte, flag_erreur_int),
+      // diffusé à la fois sur /eos/out/cmd et /eos/out/user/<u>/cmd. flag=1
+      // signifie "erreur de syntaxe" sur un vrai Eos ; ce simulateur ne valide
+      // aucune syntaxe, donc flag=0 sauf si --erreur-pattern matche (commodité
+      // de test, voir en tête de fichier).
+      const erreur = erreurPattern !== null && erreurPattern.test(text) ? 1 : 0;
+      reply("/eos/out/cmd", { type: "s", value: echo }, { type: "i", value: erreur });
+      reply("/eos/out/user/1/cmd", { type: "s", value: echo }, { type: "i", value: erreur });
       return;
     }
   }
@@ -188,5 +233,6 @@ const server = createServer((socket: Socket) => {
 
 server.listen(port, "127.0.0.1", () => {
   log(`simulateur Eos en écoute sur 127.0.0.1:${port} (TCP OSC ${framing}, écho fader +${echoDelayMs} ms)`);
+  if (erreurPattern) log(`  motif de refus simulé : ${erreurPattern} (commodité de test, pas un comportement Eos)`);
   log("Ctrl+C pour arrêter");
 });

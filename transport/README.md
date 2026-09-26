@@ -31,9 +31,15 @@ python3 transport/eos_send.py --send --ir-json exemple_ir.json
 ## Ce que ça valide, ce que ça ne valide pas
 
 Même limite que `reference/tools/` : ceci prouve le **transport**, jamais la
-**syntaxe**. Le simulateur accepte n'importe quelle chaîne sans la refuser ;
-seul un Eos/ETCnomad réel peut confirmer qu'une commande est valide (voir
-`APP.md`, « La console fait autorité »).
+**syntaxe**. Le simulateur accepte n'importe quelle chaîne sans la refuser (sauf
+si on lance `fakeeos.ts --erreur-pattern <regex>`, commodité de test — voir
+`reference/tools/README.md`) ; seul un Eos/ETCnomad réel peut confirmer qu'une
+commande est valide (voir `APP.md`, « La console fait autorité »).
+
+`eos_send.py` lit désormais les deux arguments confirmés de l'écho
+(`texte, flag_erreur_int`, corpus #140) et affiche « acceptée » / « REFUSÉE » en
+conséquence — utile pour développer le chemin de refus de l'écran 1 (`APP.md`)
+avant d'avoir accès à une vraie console.
 
 ## Portée actuelle
 
