@@ -76,6 +76,21 @@ def verifier(modele: dict, patrons: dict) -> list[str]:
         if act and act not in actions:
             erreurs.append(f"legalite[{i}] : action inconnue `{act}`")
 
+    for nom, regle in modele.get("osc_direct", {}).items():
+        if regle.get("confiance") not in CONFIANCES or regle.get("confiance") is None:
+            erreurs.append(
+                f"osc_direct.{nom} : confiance `{regle.get('confiance')}` invalide "
+                f"ou absente (une entrée `osc_direct` doit être tranchée — sinon "
+                f"elle appartient à `osc_direct_inconnu`)"
+            )
+
+    for i, regle in enumerate(modele.get("osc_direct_inconnu", [])):
+        ref = regle.get("adresse", f"osc_direct_inconnu[{i}]")
+        if regle.get("valide") != "inconnu":
+            erreurs.append(f"osc_direct_inconnu ({ref}) : `valide` doit être `inconnu`")
+        if "backlog" not in regle:
+            erreurs.append(f"osc_direct_inconnu ({ref}) : sans renvoi PLANNING.md")
+
     for p in patrons["patrons"]:
         if p.get("confiance") not in CONFIANCES:
             erreurs.append(f"patron `{p['id']}` : confiance invalide")
@@ -106,6 +121,10 @@ def main() -> int:
           f"{len(modele['legalite'])} règles de légalité")
     print(f"  {len(inconnues)} zone(s) non tranchée(s) → banc réel : "
           f"{', '.join('PLANNING#%s' % r['backlog'] for r in inconnues)}")
+    osc_direct_inconnu = modele.get("osc_direct_inconnu", [])
+    print(f"  {len(modele.get('osc_direct', {}))} adresse(s) OSC directe(s) confirmée(s), "
+          f"{len(osc_direct_inconnu)} non tranchée(s) → banc réel : "
+          f"{', '.join('PLANNING#%s' % r['backlog'] for r in osc_direct_inconnu)}")
     print(f"  {len(patrons['patrons'])} patron(s)")
     print(f"  {len(refus_terrain.get('refus', []))} refus terrain enregistré(s)")
 

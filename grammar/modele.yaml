@@ -131,3 +131,111 @@ legalite:
     note: >
       Comportement réel du clavier virtuel avec espaces et tirets dans le
       libellé — non observé.
+
+# --------------------------------------------------------------------------
+# CONTRÔLE OSC DIRECT — hors grammaire de ligne de commande
+#
+# Distinct du modèle Objet → Action → Cible ci-dessus : ce ne sont pas des
+# lignes de commande texte envoyées via /eos/cmd ou /eos/newcmd (pas de
+# `Enter`), mais des adresses OSC déclenchées directement par un contrôle
+# physique/virtuel (fader, bouton Direct Select, macro). Simulées dans
+# `reference/tools/fakeeos.ts` — voir son README pour le détail des échos.
+#
+# Recoupé entre le manuel officiel (chap.31 Show Control) et le layout
+# TouchOSC officiel Eos analysé dans reference/touchosc/ — jamais l'un sans
+# l'autre pour une entrée confiance A.
+# --------------------------------------------------------------------------
+osc_direct:
+  macro_fire:
+    adresse: "/eos/macro/<n>/fire"
+    adresse_alt: "/eos/macro/fire"
+    argument: "flottant optionnel, front de bouton : 1.0=appui, 0.0=relâchement"
+    confiance: A
+    source: "manuel chap.31 + JOURNAL_nomad_complements.md (capture de trafic réelle)"
+    echo: "aucun documenté ou observé"
+
+  sub_niveau:
+    adresse: "/eos/sub/<n>"
+    argument: "flottant 0.0-1.0"
+    confiance: S
+    source: "corpus #139, banc actif"
+    echo: >
+      AUCUN — un vrai Eos ne republie jamais spontanément sur cette adresse ;
+      le retour d'état passe uniquement par les banques de faders
+      (/eos/out/fader/...).
+
+  fader_niveau:
+    adresse: "/eos/fader/<banque>/<index>"
+    argument: "flottant 0.0-1.0"
+    confiance: S
+    source: "corpus #139"
+    echo: "même adresse (sans /out), mesuré à +522 ms au banc actif"
+
+  fader_config:
+    adresse: "/eos/fader/<banque>/config/<page>/<nombre>"
+    argument: "aucun"
+    confiance: A
+    source: "manuel chap.31, table Fader"
+    echo: "/eos/out/fader/<banque> (page), puis /eos/out/fader/<banque>/<n>/name par fader"
+
+  fader_action:
+    adresse: "/eos/fader/<banque>/<index>/<action>"
+    valeurs_action: [load, unload, stop, fire, out]
+    argument: "aucun"
+    confiance: A
+    source: "manuel chap.31, table Fader"
+    echo: "aucun documenté au-delà du niveau/nom déjà couverts par fader_niveau/fader_config"
+
+  ds_page:
+    adresse: "/eos/ds/<index>/page/<delta>"
+    argument: "nombre, delta de page"
+    confiance: A
+    source: "manuel chap.31, table Direct Select Paging"
+    echo: "aucun documenté pour la pagination elle-même"
+
+  ds_bouton:
+    adresse: "/eos/ds/<index>/<bouton>"
+    argument: "flottant optionnel, front de bouton : 1.0=appui, 0.0=relâchement"
+    confiance: A
+    source: "manuel chap.31, table Using Direct Selects"
+    echo: "aucun documenté pour l'appui lui-même"
+
+  ds_sortie:
+    adresse: "/eos/out/ds/<index>"
+    adresse_alt: "/eos/out/ds/<index>/<bouton>"
+    argument: "chaîne descriptive (nom de cible, page, mode, ou description du bouton)"
+    confiance: A
+    source: "manuel chap.31, table Using Direct Selects"
+
+  cmd_echo:
+    adresse: "/eos/out/cmd"
+    adresse_alt: "/eos/out/user/<u>/cmd"
+    argument: "chaîne (texte), entier (flag_erreur_int : 1=erreur de syntaxe)"
+    confiance: S
+    source: "corpus #140, banc actif"
+
+  cue_active_texte:
+    adresse: "/eos/out/active/cue/text"
+    argument: "chaîne descriptive de la cue active"
+    confiance: A
+    source: "manuel chap.31"
+
+  cue_attente_texte:
+    adresse: "/eos/out/pending/cue/text"
+    argument: "chaîne descriptive de la cue en attente"
+    confiance: A
+    source: "manuel chap.31"
+
+# --------------------------------------------------------------------------
+# ZONES NON TRANCHÉES — contrôle OSC direct
+# --------------------------------------------------------------------------
+osc_direct_inconnu:
+  - adresse: "/eos/ds/<index>/<target type>/<count>"
+    valide: inconnu
+    backlog: 13
+    note: >
+      Création de banque Direct Select (manuel chap.31, "Direct Select
+      Creation"). Le layout TouchOSC officiel (reference/touchosc/) utilise
+      des sous-formes non documentées dans ce corpus (fx, ip, fp, cp, bp,
+      preset) qu'on ne sait pas distinguer avec certitude d'une vraie
+      création sans connaître le vocabulaire complet des <target type>.

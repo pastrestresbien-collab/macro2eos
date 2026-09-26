@@ -21,7 +21,7 @@ aveugle. Chaque validation au banc réel remplit une case.
 
 | Fichier | Rôle |
 |---|---|
-| `modele.yaml` | Objets, actions, opérateurs, nuanciers, **matrice de légalité**. Écrit à la main, relisible. Source de vérité. |
+| `modele.yaml` | Objets, actions, opérateurs, nuanciers, **matrice de légalité** (ligne de commande) et **`osc_direct`** (adresses de contrôle OSC direct — fader, Direct Select, macro — hors ligne de commande). Écrit à la main, relisible. Source de vérité. |
 | `patrons.yaml` | Recettes éprouvées (couche haute). Un patron n'invente jamais de syntaxe, il pré-remplit une intention connue. |
 | `build.py` | Compile le YAML en JSON (`dist/`) et vérifie la cohérence interne. |
 | `generateur.py` | IR → chaîne de commande Eos, avec avertissements sur les zones non validées. |
@@ -72,3 +72,17 @@ modèle les régénère à l'identique avant d'y verser le reste de la grammaire
 
 **Rappel** : régénérer une macro déjà transportée ne la valide pas syntaxiquement.
 Seul un Eos/ETCnomad réel tranche (voir `../PLANNING.md`).
+
+## `osc_direct` — contrôle OSC hors ligne de commande
+
+Section séparée de la matrice objet/action/légalité : elle documente les adresses OSC
+déclenchées directement par un contrôle physique/virtuel (fader, bouton Direct Select,
+macro), qui n'ont ni sélection, ni `Enter`, ni les mêmes garanties de contexte que la
+ligne de commande. Simulées dans `reference/tools/fakeeos.ts` — voir son README pour le
+détail des échos implémentés.
+
+Recoupée entre le manuel officiel (chap.31 Show Control) et le layout TouchOSC officiel
+Eos analysé dans [`../reference/touchosc/`](../reference/touchosc/) : une entrée n'entre
+dans `osc_direct` (confiance tranchée) que si les deux s'accordent ; sinon elle va dans
+`osc_direct_inconnu`, avec renvoi `PLANNING.md`, même règle que pour la matrice de
+légalité.

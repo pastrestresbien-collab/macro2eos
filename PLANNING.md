@@ -118,13 +118,19 @@ Le simulateur `reference/tools/fakeeos.ts` ne valide que le transport, jamais la
     RTC/Astro (déclenchement horaire), Pixel Mapping complet, édition de courbes,
     `startup_macro` / `shutdown_macro`. Corpus #152.
 12. **Lamp Control** — incohérence de softkeys en édition directe. Corpus #091.
+13. **Création de banque Direct Select** (`/eos/ds/<n>/<target type>/<count>`) — le
+    layout TouchOSC officiel analysé dans `reference/touchosc/` utilise des sous-formes
+    (`fx`, `ip`, `fp`, `cp`, `bp`, `preset`) non documentées dans ce corpus, qu'on ne
+    sait pas distinguer avec certitude d'une vraie création sans connaître le
+    vocabulaire complet des `<target type>`. Voir `grammar/modele.yaml`
+    (`osc_direct_inconnu`).
 
-### Contradiction connue, non résolue
+### Contradictions connues, résolues
 
-- Le simulateur `fakeeos.ts` émet un écho différé sur `/eos/sub/<n>`, alors que le journal
-  terrain (`reference/JOURNAL_observations_nomad.md`, confiance S) affirme qu'un Eos réel
-  ne republie **jamais** spontanément sur cette adresse. Simplification du simulateur
-  probable — à ne pas prendre pour argent comptant.
+- ~~Le simulateur `fakeeos.ts` émet un écho différé sur `/eos/sub/<n>`...~~ **Corrigé le
+  2026-09-26** : le journal terrain (`reference/JOURNAL_observations_nomad.md`, confiance
+  S) confirme qu'un Eos réel ne republie jamais spontanément sur cette adresse — l'écho
+  inventé a été supprimé de `fakeeos.ts` (voir `grammar/modele.yaml`, `osc_direct.sub_niveau`).
 
 ---
 
